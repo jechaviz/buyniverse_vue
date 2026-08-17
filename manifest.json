@@ -1,0 +1,25 @@
+{
+  "name": "Buyniverse · B2B Procurement & Freelance Platform",
+  "short_name": "Buyniverse",
+  "description": "Enterprise SaaS platform for B2B procurement, live reverse auctions, RFX quote rounds, and freelance talent marketplace.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#e5484d",
+  "categories": ["business", "productivity", "finance"],
+  "lang": "es",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='48' fill='%23e5484d'/%3E%3Cpath d='M48 60h96v18H48zm0 30h72v18H48zm0 30h84v18H48z' fill='%23fff'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23e5484d'/%3E%3Cpath d='M128 160h256v48H128zm0 80h192v48H128zm0 80h224v48H128z' fill='%23fff'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

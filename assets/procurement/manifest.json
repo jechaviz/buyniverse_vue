@@ -1,0 +1,24 @@
+{
+  "principle": "Canonical, deduplicated visual references; source projects remain the system of record.",
+  "auditedImages": 79,
+  "uniqueImages": 75,
+  "incorporatedCanonicalImages": 16,
+  "assets": [
+    { "file": "procurement-cockpit.png", "sourceProject": "oktio", "source": "Procurement-cockpit.png", "concepts": ["cockpit-first", "health KPIs", "exception-first", "direct actions"] },
+    { "file": "rfx.png", "sourceProject": "oktio", "source": "RFX.png", "concepts": ["RFX workspace", "stable tabs", "dense decision surface"] },
+    { "file": "auction-live.png", "sourceProject": "oktio", "source": "auction_live.png", "concepts": ["live auction graph", "bidder console", "organizer controls"] },
+    { "file": "auction-detail-en.png", "sourceProject": "oktio", "source": "auction.png", "concepts": ["auction detail", "commercial configuration", "participant status"] },
+    { "file": "auction-detail-es.png", "sourceProject": "oktio", "source": "auction2.png", "concepts": ["localized auction detail", "event guardrails"] },
+    { "file": "auction-home.jpg", "sourceProject": "oktio", "source": "Auction-Live-Homepage.jpg", "concepts": ["live room hierarchy", "timer", "rank pressure"] },
+    { "file": "dashboard-oktio.jpeg", "sourceProject": "oktio", "source": "dashboard_oktio.jpeg", "concepts": ["role cockpit", "portfolio health", "operational navigation"] },
+    { "file": "projects.png", "sourceProject": "oktio", "source": "project.png", "concepts": ["project-linked procurement", "lifecycle continuity"] },
+    { "file": "proposal-dashboard.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/09-dashboard-light.png", "concepts": ["native-first dashboard", "compact KPIs"] },
+    { "file": "proposal-requests.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/11-requests-light.png", "concepts": ["request intake", "approval queue"] },
+    { "file": "proposal-rfq.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/12-rfq-light.png", "concepts": ["RFQ authoring", "supplier response"] },
+    { "file": "proposal-orders.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/10-orders-light.png", "concepts": ["purchase order", "receipt continuity"] },
+    { "file": "proposal-vendors.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/13-vendors-light.png", "concepts": ["supplier scorecard", "qualification"] },
+    { "file": "proposal-products.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/14-products-light.png", "concepts": ["catalog reuse", "preferred supplier"] },
+    { "file": "proposal-reporting.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/15-reporting-light.png", "concepts": ["spend reporting", "savings evidence"] },
+    { "file": "proposal-configuration.png", "sourceProject": "oktio/purchase_mock_proposal", "source": "docs/screenshots/purchase-offline-surface-gallery-2026-03-18/16-configuration-light.png", "concepts": ["native-first configuration", "thin custom layer"] }
+  ]
+}

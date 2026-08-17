@@ -1,0 +1,116 @@
+<template>
+  <div class="grid gap-0 xl:grid-cols-[minmax(0,1.25fr)_360px]">
+    <div class="border-b border-slate-200/70 p-5 dark:border-slate-700 xl:border-b-0 xl:border-r">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-800">Quote setup</h3>
+          <p class="mt-1 text-xs text-slate-500">The essentials suppliers need to respond.</p>
+        </div>
+        <span class="text-[10px] font-bold text-slate-400">Auto-saved</span>
+      </div>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <label>
+          <span class="mb-1.5 block text-xs font-bold">Deadline</span>
+          <input :value="deadlineDate" type="date" class="field" @change="$emit('update:deadline', $event.target.value)" />
+        </label>
+        <label>
+          <span class="mb-1.5 block text-xs font-bold">Visibility</span>
+          <select v-model="event.visibility" class="field" @change="$emit('record', 'Visibility updated', event.visibility)">
+            <option>Public</option>
+            <option>Private</option>
+            <option>Restricted</option>
+          </select>
+        </label>
+        <label>
+          <span class="mb-1.5 block text-xs font-bold">Savings target</span>
+          <div class="relative">
+            <input v-model.number="event.savingsTarget" type="number" min="0" max="100" class="field pr-8" @change="$emit('record', 'Savings target updated', event.savingsTarget + '%')" />
+            <span class="absolute right-3 top-2 text-sm text-slate-400">%</span>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 rounded-xl border border-slate-200/70 p-3 dark:border-slate-700">
+          <input v-model="event.autoExtend" type="checkbox" class="h-4 w-4 accent-[var(--accent)]" />
+          <span>
+            <b class="block text-xs">Auto-extend deadline</b>
+            <small class="text-[10px] text-slate-500">Protect late supplier activity.</small>
+          </span>
+        </label>
+      </div>
+      <div class="mt-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-800">Items to quote</h3>
+          <p class="mt-1 text-xs text-slate-500">These items stay consistent through offers and selection.</p>
+        </div>
+        <button class="text-xs font-bold text-brand" @click="$emit('add-lot')">
+          <i class="fa-solid fa-plus mr-1"></i>Add item group
+        </button>
+      </div>
+      <div class="mt-3 overflow-x-auto rounded-xl border border-slate-200/70 dark:border-slate-700">
+        <table class="w-full min-w-150 text-left text-xs">
+          <thead class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800">
+            <tr>
+              <th class="px-3 py-2.5">Description</th>
+              <th class="px-3 py-2.5">Quantity</th>
+              <th class="px-3 py-2.5">Unit</th>
+              <th class="px-3 py-2.5 text-right">Ceiling</th>
+              <th class="w-10"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            <tr v-for="lot in event.lots" :key="lot.id">
+              <td class="p-2"><input v-model="lot.description" class="field py-1.5 text-xs" /></td>
+              <td class="p-2"><input v-model.number="lot.quantity" type="number" min="1" class="field py-1.5 text-xs" /></td>
+              <td class="p-2"><input v-model="lot.unit" class="field py-1.5 text-xs" /></td>
+              <td class="p-2"><input v-model.number="lot.ceiling" type="number" min="0" class="field py-1.5 text-right text-xs" /></td>
+              <td>
+                <button class="text-rose-500" title="Remove lot" @click="$emit('remove-lot', lot.id)">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <aside class="p-5">
+      <h3 class="text-sm font-800">Ready to send?</h3>
+      <p class="mt-1 text-xs text-slate-500">A quick check before inviting suppliers.</p>
+      <div class="mt-4 space-y-3">
+        <div
+          v-for="check in readiness"
+          :key="check.label"
+          class="flex gap-3 rounded-xl border border-slate-200/70 p-3 dark:border-slate-700"
+        >
+          <span
+            class="grid h-7 w-7 flex-none place-items-center rounded-full"
+            :class="check.done ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10'"
+          >
+            <i class="fa-solid" :class="check.done ? 'fa-check' : 'fa-clock'"></i>
+          </span>
+          <div>
+            <b class="text-xs">{{ check.label }}</b>
+            <p class="mt-1 text-[10px] leading-4 text-slate-500">{{ check.detail }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 rounded-xl bg-slate-950 p-4 text-white">
+        <span class="text-[10px] font-bold uppercase tracking-wide text-brand-100">Next</span>
+        <p class="mt-2 text-sm font-bold">{{ nextAction }}</p>
+        <button class="mt-4 w-full rounded-lg bg-white/10 px-3 py-2 text-xs font-bold hover:bg-white/15" @click="$emit('next')">
+          Continue <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+    </aside>
+  </div>
+</template>
+<script>
+export default {
+  props: {
+    event: Object,
+    deadlineDate: String,
+    readiness: Array,
+    nextAction: String,
+  },
+  emits: ["update:deadline", "record", "add-lot", "remove-lot", "next"],
+};
+</script>
