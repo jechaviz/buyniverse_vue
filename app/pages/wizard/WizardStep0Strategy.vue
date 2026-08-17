@@ -1,0 +1,24 @@
+<template>
+  <div class="mx-auto max-w-2xl text-center">
+    <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">Sourcing strategy</p>
+    <h2 class="font-head mt-1 text-2xl font-800 tracking-tight text-slate-900 dark:text-white">What do you need from the market?</h2>
+    <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Choose the process that best matches the maturity of your requirement.</p>
+    <div class="mt-8 grid gap-4 md:grid-cols-2">
+      <button class="rounded-3xl border border-slate-200/90 bg-white p-6 text-left transition hover:border-brand hover:shadow-elevated dark:border-slate-800 dark:bg-slate-800/60 shadow-card" @click="$emit('choose-type', 'RFI')">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 text-lg shadow-xs"><i class="fa-solid fa-lightbulb"></i></span>
+        <b class="font-head mt-4 block text-base font-800 text-slate-900 dark:text-white">Request for information</b>
+        <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 dark:text-slate-400">Explore solutions and refine a problem before defining a commercial scope.</span>
+      </button>
+      <button class="rounded-3xl border border-slate-200/90 bg-white p-6 text-left transition hover:border-brand hover:shadow-elevated dark:border-slate-800 dark:bg-slate-800/60 shadow-card" @click="$emit('choose-type', 'RFP')">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand dark:bg-brand/20 text-lg shadow-xs"><i class="fa-solid fa-file-signature"></i></span>
+        <b class="font-head mt-4 block text-base font-800 text-slate-900 dark:text-white">Request for proposal</b>
+        <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 dark:text-slate-400">Define scope, budget, team and approvals to receive comparable proposals.</span>
+      </button>
+    </div>
+  </div>
+</template>
+<script>
+export default {
+  emits: ["choose-type"],
+};
+</script>
