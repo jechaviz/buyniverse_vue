@@ -5,7 +5,12 @@ const { loadModule } = window["vue3-sfc-loader"];
 window.sfcOptions = {
   moduleCache: { vue: Vue, "vue-router": VueRouter },
   async getFile(url) {
-    const resolved = new URL(url, window.location.href);
+    const basePath = window.location.pathname.startsWith("/buyniverse_vue")
+      ? "/buyniverse_vue/"
+      : "/";
+    const base = new URL(basePath, window.location.origin);
+    const cleanUrl = String(url).replace(/^\.\//, "").replace(/^\//, "");
+    const resolved = new URL(cleanUrl, base);
     if (resolved.origin !== window.location.origin)
       throw new Error("Cross-origin SFC loading is blocked.");
     const response = await fetch(resolved, {
