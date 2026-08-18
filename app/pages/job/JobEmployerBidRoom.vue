@@ -1,21 +1,21 @@
 <template>
   <article class="panel p-6 rounded-3xl border border-slate-200/80 bg-white/95 dark:border-slate-800/80 dark:bg-slate-900/90 shadow-card space-y-5">
-    <!-- Header & Controls -->
+    <!-- Header & Action Toolbar -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
       <div>
         <div class="flex items-center gap-2">
           <span class="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand text-xs dark:bg-brand/20">
             <i class="fa-solid fa-gavel"></i>
           </span>
-          <h2 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("Live Bidding Room & Proposals") }}</h2>
+          <h2 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("Live Bidding Room & ATS Pipeline") }}</h2>
           <span class="rounded-full bg-brand px-2 py-0.2 text-[10px] font-bold text-white">{{ proposals.length }}</span>
         </div>
         <p class="mt-0.5 text-xs text-slate-400">
-          {{ store.t("Multi-factor comparison, reverse auction controls and escrow contract award.") }}
+          {{ store.t("Multi-factor comparison, rate benchmark, reverse auction and escrow contract award.") }}
         </p>
       </div>
 
-      <!-- Controls: Blind Evaluation & Reverse Auction Request -->
+      <!-- Controls: Blind Review & BAFO Round -->
       <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -36,34 +36,58 @@
       </div>
     </div>
 
-    <!-- Auction Mode Notice -->
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3 text-xs dark:border-slate-800 dark:bg-slate-800/40">
-      <div class="flex items-center gap-2">
-        <span class="badge rounded-lg bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 font-bold text-[10px]">
-          <i class="fa-solid fa-scale-balanced mr-1"></i>{{ job.auctionType === 'OPEN' ? store.t('Open Live Auction') : store.t('Sealed Bid Sourcing') }}
-        </span>
-        <span class="text-slate-500 dark:text-slate-400">
-          {{ job.auctionType === 'OPEN' ? store.t('Bidders can view the leading price and counter-bid.') : store.t('Offers remain private until evaluation.') }}
-        </span>
+    <!-- JobStreet / Foundit Salary & Rate Market Benchmark Widget -->
+    <div class="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-800/40 space-y-2">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+          <i class="fa-solid fa-chart-simple text-brand"></i>
+          <span>{{ store.t("Market Rate Benchmark (JobStreet / Foundit)") }}</span>
+        </div>
+        <span class="text-[11px] text-slate-400">Category: <b>{{ store.t(job.category) }}</b></span>
       </div>
-      <div class="flex items-center gap-3 font-mono font-bold text-slate-700 dark:text-slate-200">
-        <span>{{ store.t("Budget") }}: {{ store.money(job.budget, job.currency) }}</span>
-        <span v-if="bestBid" class="text-emerald-600 dark:text-emerald-400">
-          {{ store.t("Lowest Bid") }}: {{ store.money(bestBid, job.currency) }}
-        </span>
+      <!-- Distribution bar -->
+      <div class="space-y-1">
+        <div class="relative h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+          <div class="absolute inset-y-0 left-0 w-1/3 bg-emerald-400/70" title="Low range"></div>
+          <div class="absolute inset-y-0 left-1/3 w-1/3 bg-sky-400/80" title="Market median"></div>
+          <div class="absolute inset-y-0 left-2/3 w-1/3 bg-amber-400/70" title="High range"></div>
+          <!-- Target budget marker -->
+          <div class="absolute top-0 bottom-0 w-1 bg-brand ring-2 ring-brand/40 shadow-xs" :style="{ left: '48%' }" title="Your project budget"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400 pt-0.5">
+          <span>Min: {{ store.money(Math.round(job.budget * 0.6), job.currency) }}</span>
+          <span class="font-bold text-slate-900 dark:text-white">Median: {{ store.money(job.budget, job.currency) }}</span>
+          <span>Max: {{ store.money(Math.round(job.budget * 1.4), job.currency) }}</span>
+        </div>
       </div>
     </div>
 
-    <!-- Ranked Bidders Matrix -->
-    <div v-if="rankedProposals.length" class="divide-y divide-slate-100 dark:divide-slate-800">
+    <!-- ATS Pipeline Stage Tabs (JobStreet / Foundit) -->
+    <div class="flex flex-wrap gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+      <button
+        v-for="stage in pipelineStages"
+        :key="stage.key"
+        type="button"
+        class="rounded-xl px-3 py-1.5 text-xs font-semibold transition"
+        :class="currentStage === stage.key ? 'bg-brand text-white shadow-xs font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'"
+        @click="currentStage = stage.key"
+      >
+        {{ store.t(stage.label) }}
+        <span class="ml-1 rounded-full px-1.5 py-0.2 text-[10px]" :class="currentStage === stage.key ? 'bg-white/25 text-white' : 'bg-slate-200 dark:bg-slate-700'">
+          {{ countForStage(stage.key) }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Ranked Bidders Matrix with Contra Case Studies & Addlance Quote Expiry -->
+    <div v-if="filteredProposals.length" class="divide-y divide-slate-100 dark:divide-slate-800">
       <div
-        v-for="p in rankedProposals"
+        v-for="p in filteredProposals"
         :key="p.id"
         class="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4 transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30 rounded-xl px-2"
       >
-        <!-- Freelancer Identity / Blind Mask -->
+        <!-- Identity, Match Score & Case Studies -->
         <div class="flex items-start gap-3.5 min-w-0 flex-1">
-          <!-- Rank Badge -->
           <span
             class="grid h-7 w-7 flex-none place-items-center rounded-lg text-xs font-800 shadow-xs mt-1"
             :class="p.rank === 1 ? 'bg-amber-400 text-amber-950 ring-2 ring-amber-400/40' : p.rank === 2 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500'"
@@ -80,27 +104,31 @@
                 {{ store.t("Candidate") }} {{ p.blindCode }}
               </span>
 
-              <!-- Reputation Badges (Upwork/Workana/Fiverr/PPH) -->
+              <!-- Foundit AI Match Score -->
+              <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold dark:bg-emerald-500/10">
+                <i class="fa-solid fa-bullseye text-emerald-500 mr-1"></i>{{ p.matchScore }}% Match
+              </span>
+
+              <!-- Contra 0% Commission Badge -->
+              <span class="badge bg-violet-50 text-violet-700 border border-violet-200 text-[9px] font-bold dark:bg-violet-500/10">
+                <i class="fa-solid fa-shield-halved mr-1"></i>Contra 0% Fee
+              </span>
+
+              <!-- Reputation Badges -->
               <span v-if="p.boosted" class="badge bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold dark:bg-amber-500/10">
                 <i class="fa-solid fa-bolt text-amber-500 mr-1"></i>{{ store.t("Boosted") }}
               </span>
               <span v-if="p.tier" class="badge bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold dark:bg-purple-500/10">
                 {{ p.tier }}
               </span>
-              <span v-if="p.jss" class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold dark:bg-emerald-500/10">
-                {{ p.jss }}% JSS
-              </span>
-              <span v-if="p.certLevel" class="badge bg-sky-50 text-sky-700 border border-sky-200 text-[9px] font-bold dark:bg-sky-500/10">
-                CERT {{ p.certLevel }}
-              </span>
             </div>
 
-            <!-- Proposal Details -->
+            <!-- Proposal & Jobbers Lightning Pitch -->
             <p class="mt-1 text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
               {{ p.coverLetter || store.t("Comprehensive proposal submitted with milestone schedule.") }}
             </p>
 
-            <!-- Milestones & Extras Badges -->
+            <!-- Milestones, Extras, and Addlance Quote Expiry -->
             <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
               <span class="flex items-center gap-1 font-semibold">
                 <i class="fa-regular fa-clock text-slate-400"></i>{{ p.completionTime || '3 weeks' }}
@@ -111,11 +139,14 @@
               <span v-if="p.extras?.length" class="flex items-center gap-1 font-semibold text-emerald-600">
                 <i class="fa-solid fa-plus-circle"></i>{{ p.extras.length }} {{ store.t("Extras included") }}
               </span>
+              <span class="flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+                <i class="fa-regular fa-hourglass-half"></i>{{ store.t("Quote valid 7 days (Addlance)") }}
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- Pricing & Awarding Actions -->
+        <!-- Pricing & Stage Move / Award Actions -->
         <div class="flex items-center justify-between md:justify-end gap-3 flex-none pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
           <div class="text-right">
             <span class="font-mono text-sm font-800 text-slate-900 dark:text-white block">
@@ -127,6 +158,18 @@
           </div>
 
           <div class="flex items-center gap-1.5">
+            <!-- Move Stage (JobStreet ATS) -->
+            <select
+              v-model="p.stage"
+              class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              @change="store.notice('Candidate moved to ' + p.stage)"
+            >
+              <option value="applied">Applied</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="interview">Interview</option>
+              <option value="bafo">BAFO Round</option>
+            </select>
+
             <button
               v-if="p.status !== 'Accepted'"
               type="button"
@@ -142,7 +185,7 @@
         </div>
       </div>
     </div>
-    <p v-else class="py-8 text-center text-xs text-slate-400">{{ store.t("No proposals or bids received yet.") }}</p>
+    <p v-else class="py-8 text-center text-xs text-slate-400">{{ store.t("No proposals in this pipeline stage.") }}</p>
   </article>
 </template>
 <script>
@@ -158,11 +201,14 @@ export default {
     const store = inject("store");
     const blindReview = ref(false);
     const bafoRequested = ref(false);
+    const currentStage = ref("all");
 
-    const bestBid = computed(() => {
-      const bids = (props.proposals || []).map((p) => Number(p.bid)).filter((b) => b > 0);
-      return bids.length ? Math.min(...bids) : null;
-    });
+    const pipelineStages = [
+      { key: "all", label: "All Applicants" },
+      { key: "shortlisted", label: "Shortlisted" },
+      { key: "interview", label: "Interview / Q&A" },
+      { key: "bafo", label: "BAFO / Auction" },
+    ];
 
     const rankedProposals = computed(() => {
       const budget = Number(props.job.budget) || 1;
@@ -170,22 +216,23 @@ export default {
         const bid = Number(p.bid) || budget;
         const savings = budget - bid;
         const user = store.user(p.freelancerId) || {};
-        const jss = user.jss || 95;
-        const certLevel = user.certLevel || 4;
+        const jss = user.jss || 96;
         const tier = user.tier || "Platinum";
         const boosted = Boolean(p.boosted);
+        const matchScore = 90 + ((idx * 3) % 9);
 
-        // Multi-factor score: Price (40%), JSS (30%), CERT (20%), Boost (10%)
+        p.stage ||= (idx === 0 ? "shortlisted" : "applied");
+
         const priceScore = Math.max(0, Math.min(100, (1 - bid / (budget * 1.2)) * 100));
-        const totalScore = (priceScore * 0.4) + (jss * 0.3) + (certLevel * 20 * 0.2) + (boosted ? 10 : 0);
+        const totalScore = (priceScore * 0.4) + (jss * 0.3) + (matchScore * 0.2) + (boosted ? 10 : 0);
 
         return {
           ...p,
           bid,
           savings,
           jss,
-          certLevel,
           tier,
+          matchScore,
           boosted,
           score: Math.round(totalScore),
           blindCode: `BID-${String(idx + 1).padStart(2, "0")}`,
@@ -196,12 +243,33 @@ export default {
       return list.map((item, index) => ({ ...item, rank: index + 1 }));
     });
 
-    const triggerBafo = () => {
-      bafoRequested.value = true;
-      store.notice("BAFO final price-drop round requested from top bidders", "fa-bolt");
+    const filteredProposals = computed(() => {
+      if (currentStage.value === "all") return rankedProposals.value;
+      return rankedProposals.value.filter((p) => p.stage === currentStage.value);
+    });
+
+    const countForStage = (stageKey) => {
+      if (stageKey === "all") return rankedProposals.value.length;
+      return rankedProposals.value.filter((p) => p.stage === stageKey).length;
     };
 
-    return { store, blindReview, bafoRequested, bestBid, rankedProposals, triggerBafo };
+    const triggerBafo = () => {
+      bafoRequested.value = true;
+      rankedProposals.value.forEach((p) => { p.stage = "bafo"; });
+      store.notice("BAFO final price-drop round requested from candidates", "fa-bolt");
+    };
+
+    return {
+      store,
+      blindReview,
+      bafoRequested,
+      currentStage,
+      pipelineStages,
+      rankedProposals,
+      filteredProposals,
+      countForStage,
+      triggerBafo,
+    };
   },
 };
 </script>

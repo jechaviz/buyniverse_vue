@@ -323,7 +323,18 @@
     "Ask": "Preguntar",
     "Write an answer": "Escribe una respuesta",
     "Ask the client a public question": "Hazle una pregunta pública al cliente",
-    "Posted": "Publicado"
+    "Posted": "Publicado",
+    "Live Bidding Room & ATS Pipeline": "Sala de subastas en vivo y pipeline ATS",
+    "Multi-factor comparison, rate benchmark, reverse auction and escrow contract award.": "Comparación multicriterio, benchmark de tarifas, subasta inversa y adjudicación con fideicomiso.",
+    "Market Rate Benchmark (JobStreet / Foundit)": "Benchmark de tarifas de mercado (JobStreet / Foundit)",
+    "All Applicants": "Todos los postulantes",
+    "Shortlisted": "Preseleccionados",
+    "Interview / Q&A": "Entrevista / Q&A",
+    "BAFO / Auction": "BAFO / Subasta",
+    "No proposals in this pipeline stage.": "No hay propuestas en esta fase del pipeline.",
+    "Quote valid 7 days (Addlance)": "Cotización válida 7 días (Addlance)",
+    "Featured Case Studies (Contra style)": "Casos de estudio destacados (estilo Contra)",
+    "Package": "Paquete"
   };
 
   if (typeof module !== "undefined" && module.exports) {
