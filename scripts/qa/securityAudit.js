@@ -6,7 +6,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const dep of ["vue.global.prod.js", "vue-router.global.prod.js", "vue3-sfc-loader", "unocss"]) {
     if (!index.toLowerCase().includes(dep)) throw new Error(`Missing CDN dependency: ${dep}`);
   }
-  if (!index.includes("lib/procurement-common/browser.js")) throw new Error("Missing shared procurement browser library");
+  if (!index.includes("app/lib/procurement-common.js")) throw new Error("Missing shared procurement browser library");
   if (/node_modules|\/dist\/assets\//i.test(index)) throw new Error("Production HTML depends on a Node build artifact");
   if (!index.includes("Content-Security-Policy") || !index.includes('integrity="sha384-')) throw new Error("CSP or subresource integrity is missing");
   if (/vue@3\/|vue-router@4\/|npm\/@unocss\/runtime["']|npm\/vue3-sfc-loader\/dist/.test(index)) throw new Error("A security-sensitive CDN dependency is not pinned");
