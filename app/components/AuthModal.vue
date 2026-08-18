@@ -341,8 +341,18 @@ export default {
       return { pct: score, label: "Fuerte (Segura)", colorClass: "bg-emerald-500", textClass: "text-emerald-500" };
     });
 
+    const activateUser = (userId) => {
+      if (typeof store.selectUser === "function") {
+        store.selectUser(userId);
+      } else if (typeof store.switchUser === "function") {
+        store.switchUser(userId);
+      } else if (store.state) {
+        store.state.currentUserId = userId;
+      }
+    };
+
     const loginAs = (userId) => {
-      store.switchUser(userId);
+      activateUser(userId);
       store.notice(store.t("Sesión iniciada correctamente"), "fa-circle-check");
       emit("close");
       router.push("/dashboard");
@@ -371,7 +381,7 @@ export default {
         };
         store.state.users.push(user);
       }
-      store.switchUser(user.id);
+      activateUser(user.id);
       store.notice(`${store.t("Acceso exitoso con")} ${prov.name}`, "fa-circle-check");
       emit("close");
       router.push("/dashboard");
@@ -380,7 +390,7 @@ export default {
     const handleEmailLogin = () => {
       const found = store.state.users.find(u => u.email.toLowerCase() === loginEmail.value.toLowerCase());
       const targetId = found ? found.id : store.state.users[0]?.id || "user-client-brenda";
-      store.switchUser(targetId);
+      activateUser(targetId);
       store.notice(store.t("Sesión iniciada con éxito"), "fa-circle-check");
       emit("close");
       router.push("/dashboard");
@@ -408,7 +418,7 @@ export default {
       };
 
       store.state.users.push(newUser);
-      store.switchUser(newId);
+      activateUser(newId);
       store.notice(store.t("¡Cuenta creada exitosamente! Bienvenido a Buyniverse."), "fa-sparkles");
       emit("close");
       router.push(regType.value === "Client" ? "/post-job/new" : "/dashboard");
@@ -450,7 +460,7 @@ export default {
       store.notice(store.t("Contraseña restablecida exitosamente. Iniciando sesión..."), "fa-circle-check");
       const found = store.state.users.find(u => u.email.toLowerCase() === forgotEmail.value.toLowerCase());
       const targetId = found ? found.id : store.state.users[0]?.id || "user-client-brenda";
-      store.switchUser(targetId);
+      activateUser(targetId);
       emit("close");
       router.push("/dashboard");
     };
