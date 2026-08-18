@@ -137,8 +137,14 @@ const store = {
 state,
 ui,
 locale,
-setLocale: window.BuyniverseI18n.setLocale,
-t: window.BuyniverseI18n.t,
+setLocale: (next) => {
+window.BuyniverseI18n.setLocale(next);
+locale.value = next;
+},
+t: (key, params) => {
+const _cur = locale.value;
+return window.BuyniverseI18n.t(key, params);
+},
 money,
 date,
 currentUser: computed(

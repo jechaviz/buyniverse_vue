@@ -11,10 +11,21 @@
                     type="text"
                     :placeholder="store.t('¿Qué proyecto o servicio necesitas hoy?')"
                     class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none"
-                  /></div><div class="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div><select
-                  v-model="selectedCategory"
-                  class="bg-transparent text-xs font-semibold text-slate-600 dark:text-slate-300 px-3 py-2 outline-none cursor-pointer"
-                ><option value="">{{ store.t("Todas las Categorías") }}</option><option value="software">{{ store.t("Desarrollo de Software") }}</option><option value="design">{{ store.t("Diseño UX/UI & 3D") }}</option><option value="procurement">{{ store.t("Sourcing & Compras B2B") }}</option><option value="marketing">{{ store.t("Marketing & BAFO") }}</option></select><button type="submit" class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-md"><i class="fa-solid fa-arrow-right mr-1 sm:hidden"></i>{{ store.t("Buscar") }}
+                  /></div><div class="relative"><button
+                    type="button"
+                    @click="categoryDropdownOpen = !categoryDropdownOpen"
+                    class="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:text-brand dark:text-slate-200 dark:hover:text-white transition whitespace-nowrap cursor-pointer"
+                  ><i :class="currentCategoryIcon" class="text-brand text-xs"></i><span>{{ currentCategoryLabel }}</span><i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': categoryDropdownOpen }"></i></button><div
+                    v-if="categoryDropdownOpen"
+                    class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-64 z-50 rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 space-y-0.5"
+                  ><button
+                      v-for="opt in categoryOptions"
+                      :key="opt.value"
+                      type="button"
+                      @click="selectCategory(opt.value)"
+                      class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition cursor-pointer"
+                      :class="selectedCategory === opt.value ? 'bg-brand-50 text-brand dark:bg-brand/20 dark:text-brand-300 font-bold' : 'text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800'"
+                    ><div class="flex items-center gap-2.5"><span class="grid h-7 w-7 place-items-center rounded-lg text-xs" :class="opt.iconBg"><i :class="opt.icon"></i></span><span>{{ opt.label }}</span></div><i v-if="selectedCategory === opt.value" class="fa-solid fa-check text-brand text-xs"></i></button></div></div><button type="submit" class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-md cursor-pointer"><i class="fa-solid fa-arrow-right mr-1 sm:hidden"></i>{{ store.t("Buscar") }}
                 </button></form></div><div class="flex flex-wrap items-center gap-2 text-xs"><span class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">{{ store.t("Tendencias") }}:</span><button
                 v-for="kw in trendingKeywords"
                 :key="kw"
@@ -166,6 +177,26 @@ query: window.WebCommon ? window.WebCommon.mergeRouteQuery(route.query, { view: 
 const searchQuery = ref("");
 const selectedCategory = ref("");
 const annualSpend = ref(75000);
+const categoryDropdownOpen = ref(false);
+const categoryOptions = computed(() => [
+{ value: "", label: store.t("Todas las Categorías"), icon: "fa-solid fa-layer-group", iconBg: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300" },
+{ value: "software", label: store.t("Desarrollo de Software"), icon: "fa-solid fa-code", iconBg: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20" },
+{ value: "design", label: store.t("Diseño UX/UI & 3D"), icon: "fa-solid fa-palette", iconBg: "bg-rose-50 text-rose-600 dark:bg-rose-500/20" },
+{ value: "procurement", label: store.t("Sourcing & Compras B2B"), icon: "fa-solid fa-gavel", iconBg: "bg-brand-50 text-brand dark:bg-brand/20" },
+{ value: "marketing", label: store.t("Marketing & BAFO"), icon: "fa-solid fa-bullhorn", iconBg: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20" }
+]);
+const currentCategoryLabel = computed(() => {
+const found = categoryOptions.value.find((opt) => opt.value === selectedCategory.value);
+return found ? found.label : store.t("Todas las Categorías");
+});
+const currentCategoryIcon = computed(() => {
+const found = categoryOptions.value.find((opt) => opt.value === selectedCategory.value);
+return found ? found.icon : "fa-solid fa-layer-group";
+});
+const selectCategory = (val) => {
+selectedCategory.value = val;
+categoryDropdownOpen.value = false;
+};
 const trendingKeywords = [
 "Subastas Inversas",
 "Desarrollo Web & Apps",
@@ -175,6 +206,7 @@ const trendingKeywords = [
 "Escrow Seguro"
 ];
 const executeSearch = () => {
+categoryDropdownOpen.value = false;
 const q = searchQuery.value.trim();
 router.push({
 path: "/browse-services",
@@ -198,9 +230,9 @@ const demoBids = ref([
 { id: "b2", name: "Jane Smith (Pixel Studio)", amount: 24000.0, tier: "Platinum", jss: 96 },
 { id: "b3", name: "Charlie Brown", amount: 24800.0, tier: "Gold", jss: 92 },
 ]);
-const categories = ref([
+const categories = computed(() => [
 {
-title: "Desarrollo de Software",
+title: store.t("Desarrollo de Software"),
 subtitle: "Full Stack, Apps Móviles, Cloud & APIs",
 count: "24 Proyectos",
 icon: "fa-solid fa-code",
@@ -208,7 +240,7 @@ iconBg: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20",
 to: "/browse-services"
 },
 {
-title: "Diseño UX/UI & Motion 3D",
+title: store.t("Diseño UX/UI & 3D"),
 subtitle: "Figma, Design Systems, Animación",
 count: "18 Proyectos",
 icon: "fa-solid fa-palette",
@@ -216,7 +248,7 @@ iconBg: "bg-rose-50 text-rose-600 dark:bg-rose-500/20",
 to: "/browse-services"
 },
 {
-title: "Sourcing & Compras B2B",
+title: store.t("Sourcing & Compras B2B"),
 subtitle: "Licitaciones RFX, Subastas BAFO",
 count: "32 Rondas",
 icon: "fa-solid fa-gavel",
@@ -224,7 +256,7 @@ iconBg: "bg-brand-50 text-brand dark:bg-brand/20",
 to: "/procurement/auction"
 },
 {
-title: "Marketing & Estrategia",
+title: store.t("Marketing & BAFO"),
 subtitle: "Growth, SEO, Campañas Globales",
 count: "15 Proyectos",
 icon: "fa-solid fa-bullhorn",
@@ -232,7 +264,7 @@ iconBg: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20",
 to: "/browse-services"
 }
 ]);
-const trendingServices = ref([
+const trendingServices = computed(() => [
 {
 id: "srv-1",
 title: "Desarrollo Completo de App iOS y Android en Flutter",
@@ -303,7 +335,7 @@ location: "Austin, USA",
 hourlyRate: 75.0
 }
 ]);
-const pricingPlans = ref([
+const pricingPlans = computed(() => [
 {
 name: "Básico",
 price: 15.0,
@@ -362,6 +394,11 @@ tab,
 openTab,
 searchQuery,
 selectedCategory,
+categoryDropdownOpen,
+categoryOptions,
+currentCategoryLabel,
+currentCategoryIcon,
+selectCategory,
 annualSpend,
 calculatedSavings,
 trendingKeywords,
