@@ -6,9 +6,11 @@
                 {{ store.t("Mejor Postor") }}
               </span></h1><p class="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 max-w-2xl">
               {{ store.t("Conecta con los mejores freelancers del mundo y proveedores corporativos. Subastas inversas BAFO, cotizaciones RFX, custodia en fideicomiso (Escrow) y pagos 100% seguros.") }}
-            </p><div class="rounded-2xl border border-slate-200/90 bg-white p-2 shadow-lg dark:border-slate-700/80 dark:bg-slate-900/90"><form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2"><div class="relative flex-1 flex items-center px-3"><i class="fa-solid fa-magnifying-glass text-slate-400 text-sm mr-2.5"></i><input
+            </p><div class="rounded-2xl border border-slate-200/90 bg-white p-2 shadow-lg dark:border-slate-700/80 dark:bg-slate-900/90"><form @submit.prevent="executeSearch" novalidate data-no-validate="true" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2"><div class="relative flex-1 flex items-center px-3"><i class="fa-solid fa-magnifying-glass text-slate-400 text-sm mr-2.5"></i><input
                     v-model="searchQuery"
                     type="text"
+                    data-optional="true"
+                    data-no-validate="true"
                     :placeholder="store.t('¿Qué proyecto o servicio necesitas hoy?')"
                     class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none"
                   /></div><div class="relative"><button
@@ -25,7 +27,12 @@
                       @click="selectCategory(opt.value)"
                       class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs font-semibold transition cursor-pointer"
                       :class="selectedCategory === opt.value ? 'bg-brand-50 text-brand dark:bg-brand/20 dark:text-brand-300 font-bold' : 'text-slate-700 hover:bg-slate-100/80 dark:text-slate-300 dark:hover:bg-slate-800'"
-                    ><div class="flex items-center gap-2.5"><span class="grid h-7 w-7 place-items-center rounded-lg text-xs" :class="opt.iconBg"><i :class="opt.icon"></i></span><span>{{ opt.label }}</span></div><i v-if="selectedCategory === opt.value" class="fa-solid fa-check text-brand text-xs"></i></button></div></div><button type="submit" class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-md cursor-pointer"><i class="fa-solid fa-arrow-right mr-1 sm:hidden"></i>{{ store.t("Buscar") }}
+                    ><div class="flex items-center gap-2.5"><span class="grid h-7 w-7 place-items-center rounded-lg text-xs" :class="opt.iconBg"><i :class="opt.icon"></i></span><span>{{ opt.label }}</span></div><i v-if="selectedCategory === opt.value" class="fa-solid fa-check text-brand text-xs"></i></button></div></div><button
+                  type="submit"
+                  :disabled="!canSearch"
+                  class="text-xs sm:text-sm py-2.5 px-5 font-bold rounded-xl transition inline-flex items-center justify-center"
+                  :class="canSearch ? 'btn-brand shadow-md cursor-pointer' : 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed opacity-50 pointer-events-none'"
+                ><i class="fa-solid fa-arrow-right mr-1 sm:hidden"></i>{{ store.t("Buscar") }}
                 </button></form></div><div class="flex flex-wrap items-center gap-2 text-xs"><span class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px]">{{ store.t("Tendencias") }}:</span><button
                 v-for="kw in trendingKeywords"
                 :key="kw"
@@ -205,7 +212,9 @@ const trendingKeywords = [
 "Marketing B2B",
 "Escrow Seguro"
 ];
+const canSearch = computed(() => !!(searchQuery.value.trim() || selectedCategory.value));
 const executeSearch = () => {
+if (!canSearch.value) return;
 categoryDropdownOpen.value = false;
 const q = searchQuery.value.trim();
 router.push({
@@ -401,6 +410,7 @@ currentCategoryIcon,
 selectCategory,
 annualSpend,
 calculatedSavings,
+canSearch,
 trendingKeywords,
 executeSearch,
 searchWithKeyword,

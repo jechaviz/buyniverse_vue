@@ -30,12 +30,14 @@
 
             <!-- Interactive Universal Search Bar -->
             <div class="rounded-2xl border border-slate-200/90 bg-white p-2 shadow-lg dark:border-slate-700/80 dark:bg-slate-900/90">
-              <form @submit.prevent="executeSearch" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <form @submit.prevent="executeSearch" novalidate data-no-validate="true" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <div class="relative flex-1 flex items-center px-3">
                   <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm mr-2.5"></i>
                   <input
                     v-model="searchQuery"
                     type="text"
+                    data-optional="true"
+                    data-no-validate="true"
                     :placeholder="store.t('¿Qué proyecto o servicio necesitas hoy?')"
                     class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none"
                   />
@@ -76,7 +78,12 @@
                   </div>
                 </div>
 
-                <button type="submit" class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-md cursor-pointer">
+                <button
+                  type="submit"
+                  :disabled="!canSearch"
+                  class="text-xs sm:text-sm py-2.5 px-5 font-bold rounded-xl transition inline-flex items-center justify-center"
+                  :class="canSearch ? 'btn-brand shadow-md cursor-pointer' : 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed opacity-50 pointer-events-none'"
+                >
                   <i class="fa-solid fa-arrow-right mr-1 sm:hidden"></i>{{ store.t("Buscar") }}
                 </button>
               </form>
@@ -710,7 +717,10 @@ export default {
       "Escrow Seguro"
     ];
 
+    const canSearch = computed(() => !!(searchQuery.value.trim() || selectedCategory.value));
+
     const executeSearch = () => {
+      if (!canSearch.value) return;
       categoryDropdownOpen.value = false;
       const q = searchQuery.value.trim();
       router.push({
@@ -917,6 +927,7 @@ export default {
       selectCategory,
       annualSpend,
       calculatedSavings,
+      canSearch,
       trendingKeywords,
       executeSearch,
       searchWithKeyword,

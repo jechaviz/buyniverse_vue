@@ -492,13 +492,13 @@ node.querySelectorAll?.("form").forEach(function (form) {
 forms.push(form);
 });
 forms.forEach(function (form) {
-if (form.querySelector("[required]")) return;
+if (form.hasAttribute("novalidate") || form.hasAttribute("data-no-validate") || form.querySelector("[required]")) return;
 form
 .querySelectorAll(
 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea',
 )
 .forEach(function (control) {
-if (!control.disabled && !control.hasAttribute("data-optional"))
+if (!control.disabled && !control.hasAttribute("data-optional") && !control.hasAttribute("data-no-validate"))
 control.required = true;
 });
 });
