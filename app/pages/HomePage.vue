@@ -22,7 +22,7 @@
           </h1>
 
           <p class="text-sm sm:text-base leading-relaxed text-slate-300 max-w-2xl">
-            {{ store.t("La plataforma integral que fusiona subastas inversas en vivo (BAFO), rondas de cotización RFX con 3-way matching, contratos en fideicomiso (Escrow) y facturación electrónica CFDI 4.0.") }}
+            {{ store.t("La plataforma integral que fusiona subastas inversas en vivo (BAFO), rondas de cotización RFX con 3-way matching, contratos en fideicomiso (Escrow) y pagos transparentes.") }}
           </p>
 
           <!-- Dual CTA Buttons -->
@@ -159,7 +159,7 @@
                 <b class="font-mono font-bold">{{ store.money(annualSpend * 0.05) }}</b>
               </div>
               <div class="flex items-center justify-between">
-                <span><i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>{{ store.t("Timbrado SAT CFDI 4.0 Automatizado") }}</span>
+                <span><i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>{{ store.t("Facturación y Conciliación Fiscal Automatizada") }}</span>
                 <b class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ store.t("100% Incluido") }}</b>
               </div>
             </div>
@@ -209,9 +209,9 @@
           <span class="grid h-12 w-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 text-lg dark:bg-indigo-500/20">
             <i class="fa-solid fa-code-compare"></i>
           </span>
-          <h3 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("3-Way Match & SAT CFDI") }}</h3>
+          <h3 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("3-Way Match & Conciliación") }}</h3>
           <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            {{ store.t("Conciliación perfecta de Órdenes de Compra, Recepción de Mercancías y Facturación Electrónica SAT CFDI 4.0 con validación de RFC.") }}
+            {{ store.t("Conciliación perfecta de Órdenes de Compra, Recepción de Mercancías y Facturas validadas con registro fiscal.") }}
           </p>
         </article>
 
@@ -297,7 +297,7 @@
           {{ store.t("¿Listo para transformar tus adquisiciones y ventas?") }}
         </h2>
         <p class="text-xs sm:text-sm text-brand-100 leading-relaxed">
-          {{ store.t("Únete a empresas líderes y freelancers certificados que ya operan bajo el estándar de subastas en vivo, 3-way match y CFDI 4.0.") }}
+          {{ store.t("Únete a empresas líderes y freelancers certificados que ya operan bajo el estándar de subastas en vivo, 3-way match y fideicomiso seguro.") }}
         </p>
       </div>
 

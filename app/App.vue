@@ -108,14 +108,6 @@
             <p class="text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
               {{ store.t("Plataforma SaaS empresarial para compras B2B, subastas inversas en vivo (BAFO), rondas RFX, contratos en fideicomiso (Escrow) y facturación SAT CFDI 4.0.") }}
             </p>
-            <div class="flex items-center gap-3 pt-2 text-slate-400">
-              <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold dark:bg-emerald-500/10">
-                <i class="fa-solid fa-shield-check mr-1 text-emerald-500"></i>OWASP ASVS Level 3
-              </span>
-              <span class="badge bg-brand-50 text-brand border border-brand-200 text-[10px] font-bold dark:bg-brand/10">
-                <i class="fa-solid fa-file-invoice mr-1"></i>SAT CFDI 4.0
-              </span>
-            </div>
           </div>
 
           <div class="space-y-2.5">
@@ -149,7 +141,6 @@
 
         <div class="max-w-7xl mx-auto mt-8 pt-6 border-t border-slate-100 dark:border-slate-900 flex flex-wrap items-center justify-between gap-4 text-[11px] text-slate-400">
           <p>© 2026 Buyniverse Technologies. {{ store.t("Todos los derechos reservados.") }}</p>
-          <p>Hosted on Spaceship · Linux Vlang Engine · MySQL InnoDB</p>
         </div>
       </footer>
     </div>
