@@ -18,10 +18,9 @@
       </span>
     </div>
 
-    <div class="flex items-center gap-3 sm:gap-4">
-      <span class="hidden items-center gap-1.5 text-[11px] font-medium lg:flex" :class="ui.saveState === 'error' ? 'text-rose-500' : 'text-slate-400'" :title="ui.lastSavedAt ? `Last local save ${ui.lastSavedAt}` : 'Local save status'">
-        <i class="fa-solid text-xs" :class="ui.saveState === 'saving' ? 'fa-circle-notch animate-spin' : ui.saveState === 'error' ? 'fa-triangle-exclamation' : 'fa-cloud-arrow-up'"></i>
-        {{ ui.saveState === "saving" ? "Saving…" : ui.saveState === "error" ? "Save failed" : "Saved locally" }}
+      <span class="hidden items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 lg:flex" title="Sincronizado en tiempo real con MySQL InnoDB">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        {{ store.t("Base de Datos Conectada") }}
       </span>
 
       <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">

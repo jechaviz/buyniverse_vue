@@ -1,6 +1,7 @@
 const { createApp, reactive, ref, computed, watch } = Vue;
 const { createRouter, createWebHistory, createWebHashHistory } = VueRouter;
 const { loadModule } = window["vue3-sfc-loader"];
+const fileCache = new Map();
 window.sfcOptions = {
 moduleCache: { vue: Vue, "vue-router": VueRouter },
 async getFile(url) {
@@ -12,16 +13,23 @@ const cleanUrl = String(url).replace(/^\.\
 const resolved = new URL(cleanUrl, base);
 if (resolved.origin !== window.location.origin)
 throw new Error("Cross-origin SFC loading is blocked.");
+const key = resolved.href;
+if (fileCache.has(key)) {
+const cachedData = fileCache.get(key);
+return {
+getContentData: (binary) => cachedData,
+};
+}
 const response = await fetch(resolved, {
 credentials: "same-origin",
-cache: "no-store",
 redirect: "error",
 });
 if (!response.ok)
 throw new Error(`${response.status} ${resolved.pathname}`);
+const text = await response.text();
+fileCache.set(key, text);
 return {
-getContentData: (binary) =>
-binary ? response.arrayBuffer() : response.text(),
+getContentData: (binary) => (binary ? new TextEncoder().encode(text).buffer : text),
 };
 },
 addStyle(textContent) {

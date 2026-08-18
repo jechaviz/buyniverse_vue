@@ -9,9 +9,9 @@
       <div class="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-rose-500/10 blur-3xl pointer-events-none dark:bg-indigo-500/15"></div>
 
       <div class="relative z-10 space-y-8">
-        <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+        <div class="flex flex-col lg:flex-row items-center gap-10">
           <!-- Hero Text -->
-          <div class="lg:col-span-7 space-y-5">
+          <div class="flex-1 w-full space-y-5">
             <div class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50/90 px-3.5 py-1.5 text-xs font-bold text-brand-700 backdrop-blur-md dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-300">
               <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
               {{ store.t("Ecosistema B2B & Marketplace de Subastas en Vivo") }}
@@ -72,7 +72,7 @@
           </div>
 
           <!-- Hero Right: Live Auction Widget -->
-          <div class="lg:col-span-5">
+          <div class="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0">
             <div class="rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-xl dark:border-white/15 dark:bg-slate-800/90 space-y-4">
               <div class="flex items-center justify-between">
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30">
@@ -148,7 +148,7 @@
         </h2>
       </div>
 
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <RouterLink
           v-for="cat in categories"
           :key="cat.title"
@@ -184,11 +184,11 @@
     <!-- ========================================================================= -->
     <!-- 3. SPLIT VALUE PROPOSITION ("Construye en Minutos con Escrow y BAFO")     -->
     <!-- ========================================================================= -->
-    <section class="rounded-3xl border border-slate-200/90 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-8 sm:p-12 text-white shadow-2xl overflow-hidden relative">
-      <div class="grid gap-8 lg:grid-cols-12 lg:items-center relative z-10">
+    <section class="rounded-3xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-rose-50/70 p-8 sm:p-12 text-slate-900 shadow-xl overflow-hidden relative dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:border-slate-800 dark:text-white">
+      <div class="flex flex-col lg:flex-row items-center gap-8 relative z-10">
         <!-- Visual Banner Left -->
-        <div class="lg:col-span-6 space-y-4">
-          <div class="rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+        <div class="w-full lg:w-1/2 space-y-4">
+          <div class="rounded-2xl overflow-hidden border border-slate-200/90 dark:border-white/15 shadow-2xl group">
             <img
               src="assets/homepage/categories_showcase.jpg"
               alt="Buyniverse Categories Showcase"
@@ -198,30 +198,30 @@
         </div>
 
         <!-- Copy Right -->
-        <div class="lg:col-span-6 space-y-5">
-          <p class="text-xs font-bold uppercase tracking-widest text-brand-300">{{ store.t("Innovación en Contratación y Compras B2B") }}</p>
-          <h2 class="font-head text-2xl sm:text-3xl lg:text-4xl font-800 tracking-tight leading-tight">
+        <div class="w-full lg:w-1/2 space-y-5">
+          <p class="text-xs font-bold uppercase tracking-widest text-brand dark:text-brand-300">{{ store.t("Innovación en Contratación y Compras B2B") }}</p>
+          <h2 class="font-head text-2xl sm:text-3xl lg:text-4xl font-800 tracking-tight leading-tight text-slate-900 dark:text-white">
             {{ store.t("Crea tu Ecosistema de Subastas y Servicios en Minutos") }}
           </h2>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {{ store.t("Experimenta una plataforma de adquisiciones de última generación. Con Buyniverse gestionas rondas de licitación, subastas en vivo, acuerdos por hitos y contratos respaldados por fideicomiso.") }}
           </p>
 
-          <div class="grid sm:grid-cols-2 gap-3 pt-2 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-slate-700 dark:text-slate-200">
             <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+              <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
               <span>{{ store.t("Subastas inversas transparentes") }}</span>
             </div>
             <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+              <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
               <span>{{ store.t("Custodia de fondos por entregable") }}</span>
             </div>
             <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+              <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
               <span>{{ store.t("0% comisiones ocultas para talento") }}</span>
             </div>
             <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+              <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
               <span>{{ store.t("Mensajería encriptada y videochat") }}</span>
             </div>
           </div>
@@ -249,7 +249,7 @@
         </RouterLink>
       </div>
 
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <article
           v-for="service in trendingServices"
           :key="service.id"
@@ -304,9 +304,9 @@
         </RouterLink>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-12">
-        <!-- Main: Job Listings (8 Cols) -->
-        <div class="lg:col-span-8 space-y-4">
+      <div class="flex flex-col lg:flex-row items-start gap-8">
+        <!-- Main: Job Listings (Width: 68%) -->
+        <div class="flex-1 w-full space-y-4 min-w-0">
           <article
             v-for="job in featuredJobs"
             :key="job.id"
@@ -339,7 +339,7 @@
               </div>
             </div>
 
-            <div class="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800">
+            <div class="flex sm:flex-col items-center sm:items-end justify-between gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800 flex-shrink-0">
               <div class="text-left sm:text-right">
                 <b class="font-mono text-base font-800 text-slate-900 dark:text-white block">{{ store.money(job.budget, job.currency) }}</b>
                 <span class="text-[10px] text-slate-400 font-bold uppercase">{{ job.budgetType || 'Fijo' }}</span>
@@ -351,18 +351,18 @@
           </article>
         </div>
 
-        <!-- Sidebar: Quick Links & Safety Banner (4 Cols) -->
-        <div class="lg:col-span-4 space-y-6">
+        <!-- Sidebar: Quick Links & Safety Banner (Width: 320px) -->
+        <div class="w-full lg:w-80 flex-shrink-0 space-y-6">
           <div class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/90 space-y-4">
             <h4 class="font-head text-sm font-800 text-slate-900 dark:text-white uppercase tracking-wider">
               {{ store.t("Habilidades Populares") }}
             </h4>
-            <div class="flex flex-wrap gap-1.5 text-xs">
+            <div class="flex flex-wrap gap-2 text-xs">
               <RouterLink
                 v-for="skill in popularSkills"
                 :key="skill"
                 to="/browse-services"
-                class="rounded-lg border border-slate-200/80 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-brand hover:text-brand dark:border-slate-700/80 dark:bg-slate-800/60 dark:text-slate-300 transition"
+                class="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-brand hover:text-brand dark:border-slate-700/80 dark:bg-slate-800/60 dark:text-slate-300 transition shadow-2xs"
               >
                 {{ skill }}
               </RouterLink>
@@ -393,7 +393,7 @@
         </h2>
       </div>
 
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <article
           v-for="freelancer in topFreelancers"
           :key="freelancer.id"
@@ -440,7 +440,7 @@
         </h2>
       </div>
 
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <article
           v-for="plan in pricingPlans"
           :key="plan.name"
@@ -489,9 +489,9 @@
         </p>
       </div>
 
-      <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
-        <!-- Slider Input -->
-        <div class="lg:col-span-6 space-y-6">
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <!-- Slider Input (50%) -->
+        <div class="w-full lg:w-1/2 space-y-6">
           <div>
             <div class="flex justify-between items-center mb-2">
               <label class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">{{ store.t("Gasto o Presupuesto de Contratación Anual") }}</label>
@@ -512,7 +512,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="rounded-2xl border border-slate-200/80 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
               <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase block">{{ store.t("Proyectos Anuales") }}</span>
               <b class="font-mono text-xl font-800 text-slate-900 dark:text-slate-100">{{ Math.round(annualSpend / 8000) }}</b>
@@ -524,8 +524,8 @@
           </div>
         </div>
 
-        <!-- Calculated Metrics Card -->
-        <div class="lg:col-span-6">
+        <!-- Calculated Metrics Card (50%) -->
+        <div class="w-full lg:w-1/2">
           <div class="rounded-3xl bg-gradient-to-br from-brand-50/70 via-rose-50/50 to-white border border-brand-200 p-6 sm:p-8 dark:from-slate-800 dark:to-slate-800/60 dark:border-brand-900/40 space-y-6 shadow-sm">
             <div class="flex items-center justify-between border-b border-brand-200/60 dark:border-slate-700 pb-4">
               <div>
@@ -565,37 +565,37 @@
     <!-- ========================================================================= -->
     <!-- 9. MOBILE EXPERIENCE & APP DOWNLOAD SHOWCASE                              -->
     <!-- ========================================================================= -->
-    <section class="rounded-3xl border border-slate-200/90 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-8 sm:p-12 text-white shadow-2xl overflow-hidden relative">
-      <div class="grid gap-8 lg:grid-cols-12 lg:items-center relative z-10">
-        <div class="lg:col-span-6 space-y-5">
-          <p class="text-xs font-bold uppercase tracking-widest text-brand-300">{{ store.t("Multi-plataforma & Notificaciones en Vivo") }}</p>
-          <h2 class="font-head text-2xl sm:text-3xl lg:text-4xl font-800 tracking-tight leading-tight">
+    <section class="rounded-3xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-indigo-50/70 p-8 sm:p-12 text-slate-900 shadow-xl overflow-hidden relative dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:border-slate-800 dark:text-white">
+      <div class="flex flex-col lg:flex-row items-center gap-8 relative z-10">
+        <div class="w-full lg:w-1/2 space-y-5">
+          <p class="text-xs font-bold uppercase tracking-widest text-brand dark:text-brand-300">{{ store.t("Multi-plataforma & Notificaciones en Vivo") }}</p>
+          <h2 class="font-head text-2xl sm:text-3xl lg:text-4xl font-800 tracking-tight leading-tight text-slate-900 dark:text-white">
             {{ store.t("Controla tus Subastas y Contratos desde Cualquier Dispositivo") }}
           </h2>
-          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {{ store.t("Recibe alertas de contraofertas BAFO al instante, aprueba hitos de trabajo sobre la marcha y comunícate en tiempo real con tu equipo.") }}
           </p>
 
           <div class="flex flex-wrap gap-4 pt-2">
-            <button class="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-xs font-bold text-white backdrop-blur-md hover:bg-white/20 transition flex items-center gap-3">
+            <button class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-xs font-bold text-slate-800 shadow-sm hover:border-brand hover:text-brand dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition flex items-center gap-3">
               <i class="fa-brands fa-apple text-2xl"></i>
               <div class="text-left">
-                <span class="text-[9px] text-slate-300 uppercase block">Disponible en</span>
+                <span class="text-[9px] text-slate-400 uppercase block">Disponible en</span>
                 <span class="text-xs font-bold">App Store</span>
               </div>
             </button>
-            <button class="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-xs font-bold text-white backdrop-blur-md hover:bg-white/20 transition flex items-center gap-3">
-              <i class="fa-brands fa-google-play text-xl text-emerald-400"></i>
+            <button class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-xs font-bold text-slate-800 shadow-sm hover:border-brand hover:text-brand dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 transition flex items-center gap-3">
+              <i class="fa-brands fa-google-play text-xl text-emerald-500"></i>
               <div class="text-left">
-                <span class="text-[9px] text-slate-300 uppercase block">Disponible en</span>
+                <span class="text-[9px] text-slate-400 uppercase block">Disponible en</span>
                 <span class="text-xs font-bold">Google Play</span>
               </div>
             </button>
           </div>
         </div>
 
-        <div class="lg:col-span-6">
-          <div class="rounded-2xl overflow-hidden border border-white/15 shadow-2xl group">
+        <div class="w-full lg:w-1/2">
+          <div class="rounded-2xl overflow-hidden border border-slate-200/90 dark:border-white/15 shadow-2xl group">
             <img
               src="assets/homepage/mobile_app_showcase.jpg"
               alt="Buyniverse Mobile App Showcase"
