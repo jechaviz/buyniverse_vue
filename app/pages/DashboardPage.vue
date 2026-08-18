@@ -33,8 +33,9 @@
         >{{ x.label }}</RouterLink
       >
     </nav>
-    <template v-if="section === 'overview'"
-      ><div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <template v-if="section === 'overview'">
+      <!-- 4 Metric Cards Row -->
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article
           v-for="card in cards"
           :key="card.label"
@@ -52,9 +53,12 @@
             {{ card.note }}
           </p>
         </article>
+      </div>
+
       <!-- Admin Database Management & MySQL Demo Seeder -->
       <AdminDatabaseCard v-if="store.isAdmin.value || user.type === 'Admin'" />
 
+      <!-- Recent Workspaces -->
       <article
         class="panel grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80"
       >

@@ -1,5 +1,5 @@
 <template>
-  <div class="premium-shell relative min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col">
+  <div class="premium-shell relative min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
     <!-- Global Command Palette & System Modals -->
     <CommandPalette :open="commandOpen" @close="commandOpen = false" />
     <AppModals :ui="ui" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
