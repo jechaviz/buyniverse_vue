@@ -89,12 +89,12 @@
 
     <!-- 2. INTERACTIVE ROI & SAVINGS CALCULATOR -->
     <section class="panel p-8 sm:p-12 rounded-3xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90 space-y-8">
-      <div class="text-center max-w-2xl mx-auto space-y-2">
+      <div class="text-center max-w-4xl mx-auto space-y-2">
         <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Calculadora de Ahorro y Retorno de Inversión") }}</p>
-        <h2 class="font-head text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
+        <h2 class="font-head text-2xl sm:text-3xl lg:text-4xl font-800 tracking-tight text-slate-900 dark:text-white md:whitespace-nowrap">
           {{ store.t("Calcula tu Ahorro con Subastas Inversas y Escrow") }}
         </h2>
-        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
           {{ store.t("Compara el costo tradicional de intermediarios vs. el modelo directo Buyniverse con 3-way match y BAFO.") }}
         </p>
       </div>
