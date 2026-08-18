@@ -421,8 +421,29 @@
     "Empresa": "Empresa",
     "Términos de Servicio": "Términos de Servicio",
     "Aviso de Privacidad": "Aviso de Privacidad",
-    "Soporte Empresarial": "Soporte Empresarial",
-    "Todos los derechos reservados.": "Todos los derechos reservados."
+    "Todos los derechos reservados.": "Todos los derechos reservados.",
+    "Recuperar Contraseña": "Recuperar Contraseña",
+    "Te enviaremos un código de seguridad para restablecer tu acceso.": "Te enviaremos un código de seguridad para restablecer tu acceso.",
+    "o con tu correo electrónico": "o con tu correo electrónico",
+    "¿Olvidaste tu contraseña?": "¿Olvidaste tu contraseña?",
+    "Freelancer / Proveedor": "Freelancer / Proveedor",
+    "Crear Cuenta por Email": "Crear Cuenta por Email",
+    "Ingresa tu Correo Registrado": "Ingresa tu Correo Registrado",
+    "Enviar Código de Seguridad": "Enviar Código de Seguridad",
+    "Código de Recuperación Generado": "Código de Recuperación Generado",
+    "Se ha enviado una copia a tu correo. Ingrésalo abajo para confirmar tu identidad.": "Se ha enviado una copia a tu correo. Ingrésalo abajo para confirmar tu identidad.",
+    "Código PIN de 6 Dígitos": "Código PIN de 6 Dígitos",
+    "Nueva Contraseña": "Nueva Contraseña",
+    "Confirmar Nueva Contraseña": "Confirmar Nueva Contraseña",
+    "Restablecer Contraseña e Ingresar": "Restablecer Contraseña e Ingresar",
+    "Volver al Inicio de Sesión": "Volver al Inicio de Sesión",
+    "Acceso exitoso con": "Acceso exitoso con",
+    "Por favor ingresa un correo válido": "Por favor ingresa un correo válido",
+    "Código de recuperación generado": "Código de recuperación generado",
+    "El código PIN no coincide": "El código PIN no coincide",
+    "La contraseña debe tener al menos 8 caracteres": "La contraseña debe tener al menos 8 caracteres",
+    "Las contraseñas no coinciden": "Las contraseñas no coinciden",
+    "Contraseña restablecida exitosamente. Iniciando sesión...": "Contraseña restablecida exitosamente. Iniciando sesión..."
   };
 
   if (typeof module !== "undefined" && module.exports) {
