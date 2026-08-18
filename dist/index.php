@@ -153,9 +153,11 @@ if (str_starts_with($uri, '/api/v1/admin/db') || !empty($action)) {
         ], JSON_PRETTY_PRINT);
         exit(0);
     }
+}
+
 // 3. SPA Frontend Route Handling (Vue Router HTML5 History Mode)
 // Non-API routes are frontend SPA pages; serve index.html directly
-if (!str_starts_with($uri, '/api/') && $uri !== '/api') {
+if (strncmp($uri, '/api/', 5) !== 0 && $uri !== '/api') {
     http_response_code(200);
     header('Content-Type: text/html; charset=utf-8');
     header("Strict-Transport-Security: max-age=63072000; includeSubDomains; preload");
