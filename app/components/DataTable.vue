@@ -1,7 +1,7 @@
 <template>
   <section class="premium-card overflow-hidden rounded-2xl border border-slate-200/80 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
-    <div class="flex flex-col gap-3 border-b border-slate-200/70 p-4 dark:border-slate-800 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap">
+      <div class="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
         <div
           class="relative flex h-9 items-center transition-all duration-200"
           :class="searchOpen || query ? 'min-w-52 flex-1 sm:max-w-sm' : 'w-9 flex-none'"
