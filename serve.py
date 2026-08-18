@@ -77,7 +77,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
         if any(raw_path.startswith(prefix) for prefix in spa_prefixes) and not PurePosixPath(raw_path).suffix:
             return True
         if raw_path.startswith("/buyniverse_vue/app/"):
-            return PurePosixPath(raw_path).suffix.lower() in {".js", ".vue"}
+            return PurePosixPath(raw_path).suffix.lower() in {".js", ".vue", ".css"}
         if raw_path.startswith("/buyniverse_vue/assets/"):
             return PurePosixPath(raw_path).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".svg", ".json"}
         return raw_path in {"/lib/web-common/browser.js", "/lib/procurement-common/browser.js"}
