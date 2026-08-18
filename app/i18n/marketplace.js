@@ -262,7 +262,9 @@
     "No tasks have been defined for this milestone.": "No se han definido tareas para este hito.",
     "Close task view": "Cerrar vista de tareas",
     "Project title": "Título del proyecto",
-    "Project or service description": "Descripción del proyecto o servicio"
+    "Project or service description": "Descripción del proyecto o servicio",
+    "Escrow protected": "Protegido por fideicomiso",
+    "Please complete the title and description before proceeding.": "Por favor completa el título y la descripción antes de continuar."
   };
 
   if (typeof module !== "undefined" && module.exports) {
