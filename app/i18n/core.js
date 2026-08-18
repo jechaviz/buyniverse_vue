@@ -316,7 +316,26 @@
     "Experience": "Experiencia",
     "Availability": "Disponibilidad",
     "Headline": "Titular",
-    "Bio": "Biografía"
+    "Bio": "Biografía",
+    "Line": "Partida",
+    "Actor": "Actor",
+    "Search history": "Buscar en el historial",
+    "Source:": "Origen:",
+    "Reinstate": "Restablecer",
+    "Disqualify": "Descalificar",
+    "Opening offer": "Oferta inicial",
+    "Receive now": "Recibir ahora",
+    "Trigger condition": "Condición de activación",
+    "Steps": "Pasos",
+    "(comma-separated)": "(separado por comas)",
+    "Auto-dispatch purchase orders": "Despacho automático de órdenes de compra",
+    "PO signed and amount < $10k": "OC firmada y monto < USD 10k",
+    "Validate terms, Notify supplier, Issue invoice": "Validar términos, Notificar proveedor, Emitir factura",
+    "Amount > 25,000": "Monto > 25,000",
+    "Awarded Supplier": "Proveedor adjudicado",
+    "Order, receipt and invoice agree.": "Orden, recepción y factura concuerdan.",
+    "Receive all items, attach the invoice and resolve open issues.": "Recibe todas las partidas, adjunta la factura y resuelve las incidencias abiertas.",
+    "Wizard progress": "Progreso del asistente"
   };
 
   if (typeof module !== "undefined" && module.exports) {

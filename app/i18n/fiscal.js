@@ -87,7 +87,9 @@
     "Invoice issue follow-up": "Seguimiento de incidencia de factura",
     "Difference detected": "Diferencia detectada",
     "Finance approval": "Aprobación de Finanzas",
-    "Routed to Finance": "Enviada a Finanzas"
+    "Routed to Finance": "Enviada a Finanzas",
+    "Total amount": "Monto total",
+    "Create invoice": "Crear factura"
   };
 
   if (typeof module !== "undefined" && module.exports) {

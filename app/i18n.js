@@ -367,6 +367,66 @@
         return from + "–" + to + " de " + total;
       },
     },
+    {
+      match: /^Export (.+)$/,
+      replace: function (_, format) {
+        return "Exportar " + (es[format] || format);
+      },
+    },
+    {
+      match: /^Version (\d+)$/,
+      replace: function (_, count) {
+        return "Versión " + count;
+      },
+    },
+    {
+      match: /^PR: (.+)$/,
+      replace: function (_, value) {
+        return "SP: " + value;
+      },
+    },
+    {
+      match: /^RFX: (.+)$/,
+      replace: function (_, value) {
+        return "RFX: " + value;
+      },
+    },
+    {
+      match: /^Invoice: (.+)$/,
+      replace: function (_, value) {
+        return "Factura: " + value;
+      },
+    },
+    {
+      match: /^Awarded: (.+)$/,
+      replace: function (_, value) {
+        return "Adjudicado: " + value;
+      },
+    },
+    {
+      match: /^Replying to (.+)$/,
+      replace: function (_, value) {
+        return "Respondiendo a " + value;
+      },
+    },
+    {
+      match: /^Closes (.+)$/,
+      replace: function (_, value) {
+        return "Cierra " + value;
+      },
+    },
+    {
+      match: /^Protected (.+)$/,
+      replace: function (_, value) {
+        return "Protegido " + value;
+      },
+    },
+    {
+      match: /^Score (.+) with (.+), (\d+)-day lead time and risk (.+)\. The buyer makes the final choice\.$/,
+      replace: function (_, score, price, lead, risk) {
+        return "Puntuación " + score + " con " + price + ", plazo de entrega de " + lead + " días y riesgo " + risk + ". El comprador toma la decisión final.";
+      },
+    },
   ];
 
   var service = global.WebCommon.createRuntimeI18n({

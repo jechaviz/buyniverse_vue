@@ -476,7 +476,28 @@
       "Gasto, ahorro y desempeño de proveedores de un vistazo.",
     "Approval cycle": "Ciclo de aprobación",
     "Supplier coverage": "Cobertura de proveedores",
-    "Request approved": "Solicitud aprobada"
+    "Request approved": "Solicitud aprobada",
+    "Item description": "Descripción del artículo",
+    "Business notes & justification": "Notas de negocio y justificación",
+    "Create request": "Crear solicitud",
+    "Server infrastructure refresh": "Renovación de infraestructura de servidores",
+    "Engineering": "Ingeniería",
+    "Cloud enterprise compute nodes": "Nodos de cómputo empresarial en la nube",
+    "Why is this purchase required?": "¿Por qué se requiere esta compra?",
+    "Ask details": "Solicitar detalles",
+    "Why does this supplier represent the best total value?": "¿Por qué este proveedor representa el mejor valor total?",
+    "Remove lot": "Eliminar lote",
+    "Search the qualified supplier network": "Buscar en la red de proveedores calificados",
+    "Describe scope, quantities and expected outcome.": "Describe el alcance, cantidades y resultado esperado.",
+    "Quote rounds": "Rondas de cotización",
+    "Compliant": "Conforme",
+    "Exception": "Excepción",
+    "Track progress through full receipt and reconciliation.": "Rastrea el progreso mediante recepción y conciliación completas.",
+    "Fulfillment": "Cumplimiento",
+    "Quick facts": "Datos rápidos",
+    "Performance": "Rendimiento",
+    "Top Suppliers": "Principales proveedores",
+    "Search suppliers": "Buscar proveedores"
   };
 
   if (typeof module !== "undefined" && module.exports) {
