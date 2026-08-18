@@ -152,16 +152,26 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
 
     def end_headers(self) -> None:
         self.send_header("Content-Security-Policy", CSP)
+        self.send_header("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
-        self.send_header("Referrer-Policy", "no-referrer")
-        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header(
+            "Permissions-Policy",
+            "accelerometer=(), autoplay=(), camera=(), display-capture=(), document-domain=(), "
+            "encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), "
+            "microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), "
+            "screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()",
+        )
         self.send_header("Cross-Origin-Opener-Policy", "same-origin")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header("Origin-Agent-Cluster", "?1")
+        self.send_header("X-DNS-Prefetch-Control", "off")
+        self.send_header("X-Download-Options", "noopen")
         self.send_header("X-Permitted-Cross-Domain-Policies", "none")
-        self.send_header("Cache-Control", "no-store, max-age=0")
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, private, max-age=0")
         self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
         super().end_headers()
 
 

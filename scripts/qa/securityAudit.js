@@ -12,8 +12,14 @@ function runSecurityAudit(root, read, vueFiles) {
   if (/vue@3\/|vue-router@4\/|npm\/@unocss\/runtime["']|npm\/vue3-sfc-loader\/dist/.test(index)) throw new Error("A security-sensitive CDN dependency is not pinned");
 
   const server = read("serve.py");
-  if (!server.includes("X-Content-Type-Options") || !server.includes("frame-ancestors") || !server.includes("def _allowed") || !server.includes("def list_directory") || !server.includes("do_TRACE") || !server.includes("X-Permitted-Cross-Domain-Policies"))
-    throw new Error("Secure static server headers, methods or path allowlist are incomplete");
+  const requiredServerHeaders = [
+    "X-Content-Type-Options", "frame-ancestors", "def _allowed", "def list_directory",
+    "do_TRACE", "X-Permitted-Cross-Domain-Policies", "Strict-Transport-Security",
+    "Cross-Origin-Opener-Policy", "X-Download-Options", "X-DNS-Prefetch-Control", "Cache-Control"
+  ];
+  for (const h of requiredServerHeaders) {
+    if (!server.includes(h)) throw new Error(`Banking grade server header or guard missing: ${h}`);
+  }
   if (server.includes('raw_path.startswith("/buyniverse_vue/"):\n            return True')) throw new Error("Static server exposes the full project directory");
 
   const unsafeSink = /v-html|\.innerHTML\s*=|\.outerHTML\s*=|document\.write\s*\(|javascript:/i;
@@ -40,6 +46,22 @@ function runSecurityAudit(root, read, vueFiles) {
 
   const csvProbe = procurementScope.ProcurementCommon.csv([{ value: '=HYPERLINK("https://example.invalid")' }]);
   if (!csvProbe.includes("\t=HYPERLINK")) throw new Error("CSV formula injection protection failed");
+
+  // Banking Security Service verification (OWASP ASVS Level 3)
+  const securityScope = {};
+  new Function("window", "global", fs.readFileSync(path.resolve(root, "app/services/security.js"), "utf8"))(securityScope, securityScope);
+  const sec = securityScope.BuyniverseSecurity;
+  if (!sec || typeof sec.maskSensitiveText !== "function" || typeof sec.sanitizeCsvValue !== "function")
+    throw new Error("BuyniverseSecurity engine missing required banking methods");
+
+  if (sec.maskSensitiveText("Card 4532 1234 5678 9012") !== "Card ****-****-****-9012")
+    throw new Error("PCI-DSS credit card masking failed");
+  if (!sec.maskSensitiveText("CLABE 123456789012345678").includes("1234**********5678"))
+    throw new Error("Financial CLABE account masking failed");
+  if (sec.sanitizeCsvValue("=cmd|' /C calc'!A0") !== "'=cmd|' /C calc'!A0")
+    throw new Error("OWASP CSV Formula / DDE injection defense failed");
+  if (!sec.generateTransactionHash({ amount: 15000, id: "TXN-999" }))
+    throw new Error("Cryptographic transaction hash generation failed");
 
   const storageValues = {};
   const webScope = {
