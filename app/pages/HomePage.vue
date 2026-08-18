@@ -644,12 +644,12 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap justify-center items-center gap-4">
-        <RouterLink to="/post-job/new" class="rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-brand-600 shadow-md hover:bg-slate-100 transition">
-          <i class="fa-solid fa-plus-circle mr-2"></i>{{ store.t("Crear Cuenta y Publicar") }}
+      <div class="flex flex-wrap justify-center items-center gap-4 pt-2">
+        <RouterLink to="/post-job/new" class="rounded-xl bg-white px-6 py-3.5 text-sm font-800 text-brand-600 shadow-lg hover:bg-slate-100 transition inline-flex items-center">
+          <i class="fa-solid fa-plus-circle mr-2 text-brand-600"></i>{{ store.t("Crear Cuenta y Publicar") }}
         </RouterLink>
-        <RouterLink to="/dashboard" class="rounded-xl border border-white/30 bg-white/10 px-6 py-3.5 text-sm font-bold text-white backdrop-blur-md hover:bg-white/20 transition">
-          <i class="fa-solid fa-gauge mr-2"></i>{{ store.t("Ir al Panel de Control") }}
+        <RouterLink to="/dashboard" class="rounded-xl border-2 border-white bg-black/30 hover:bg-white hover:text-brand-600 px-6 py-3.5 text-sm font-800 text-white transition inline-flex items-center shadow-lg group">
+          <i class="fa-solid fa-gauge mr-2 group-hover:text-brand-600 transition"></i>{{ store.t("Ir al Panel de Control") }}
         </RouterLink>
       </div>
     </section>
