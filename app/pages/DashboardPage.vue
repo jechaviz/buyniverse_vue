@@ -1,35 +1,35 @@
 <template>
   <section class="space-y-6">
-    <header class="flex flex-wrap items-center justify-between gap-4">
-      <div>
+    <header class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
+      <div class="space-y-1">
         <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">
           Dashboard
         </p>
-        <h1 class="font-head mt-1 text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
+        <h1 class="font-head text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
           {{ titles[section] }}
         </h1>
-        <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ copies[section] }}</p>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ copies[section] }}</p>
       </div>
       <RouterLink
         v-if="store.isBuyer.value || store.isAdmin.value || user.type === 'Client'"
-        class="btn-brand text-xs sm:text-sm py-2 px-4"
+        class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
         to="/post-job/new"
         ><i class="fa-solid fa-plus mr-2"></i>Post a job</RouterLink
       >
       <RouterLink
         v-else
-        class="btn-brand text-xs sm:text-sm py-2 px-4"
+        class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
         to="/"
         ><i class="fa-solid fa-briefcase mr-2"></i>Find work</RouterLink
       >
     </header>
-    <nav class="panel flex gap-1.5 overflow-x-auto p-1.5 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl">
+    <nav class="flex gap-1.5 overflow-x-auto p-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl">
       <RouterLink
         v-for="x in tabs"
         :key="x.key"
         :to="x.to"
         class="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all"
-        :class="section === x.key ? 'bg-white text-brand shadow-xs dark:bg-slate-800 dark:text-brand-200' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'"
+        :class="section === x.key ? 'bg-white text-brand shadow-sm dark:bg-slate-900 dark:text-brand-300' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'"
         >{{ x.label }}</RouterLink
       >
     </nav>
