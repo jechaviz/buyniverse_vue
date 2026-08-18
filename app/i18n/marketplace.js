@@ -334,7 +334,13 @@
     "No proposals in this pipeline stage.": "No hay propuestas en esta fase del pipeline.",
     "Quote valid 7 days (Addlance)": "Cotización válida 7 días (Addlance)",
     "Featured Case Studies (Contra style)": "Casos de estudio destacados (estilo Contra)",
-    "Package": "Paquete"
+    "Package": "Paquete",
+    "Spaceship MySQL Database Management": "Gestión de Base de Datos MySQL Spaceship",
+    "Refresh Status": "Actualizar Estado",
+    "Clear Database": "Borrar Base de Datos",
+    "Reset & Seed Demo Data": "Reiniciar y Llenar Datos Demo",
+    "Database cleared successfully": "Base de datos borrada con éxito",
+    "MySQL Database status refreshed": "Estado de base de datos MySQL actualizado"
   };
 
   if (typeof module !== "undefined" && module.exports) {

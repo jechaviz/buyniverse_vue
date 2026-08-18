@@ -52,7 +52,9 @@
             {{ card.note }}
           </p>
         </article>
-      </div>
+      <!-- Admin Database Management & MySQL Demo Seeder -->
+      <AdminDatabaseCard v-if="store.isAdmin.value || user.type === 'Admin'" />
+
       <article
         class="panel grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80"
       >
@@ -217,7 +219,11 @@
 <script>
 const { inject, computed } = Vue;
 const { useRoute } = VueRouter;
+const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const AdminDatabaseCard = load("./app/pages/dashboard/AdminDatabaseCard.vue?v=1");
+
 export default {
+  components: { AdminDatabaseCard },
   setup() {
     const store = inject("store"),
       route = useRoute(),
