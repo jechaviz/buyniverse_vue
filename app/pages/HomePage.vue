@@ -34,26 +34,6 @@
               <i class="fa-solid fa-gavel mr-2 text-amber-400"></i>{{ store.t("Ver Subastas en Vivo") }}
             </RouterLink>
           </div>
-
-          <!-- Trust Badges -->
-          <div class="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-400 border-t border-white/10">
-            <span class="flex items-center gap-2">
-              <i class="fa-solid fa-shield-check text-emerald-400 text-sm"></i>
-              {{ store.t("OWASP Nivel 3") }}
-            </span>
-            <span class="flex items-center gap-2">
-              <i class="fa-solid fa-file-invoice-dollar text-brand-300 text-sm"></i>
-              {{ store.t("CFDI 4.0 SAT") }}
-            </span>
-            <span class="flex items-center gap-2">
-              <i class="fa-solid fa-lock text-amber-400 text-sm"></i>
-              {{ store.t("Fideicomiso Blindado") }}
-            </span>
-            <span class="flex items-center gap-2">
-              <i class="fa-solid fa-bolt text-cyan-400 text-sm"></i>
-              {{ store.t("Linux Vlang Engine") }}
-            </span>
-          </div>
         </div>
 
         <!-- Live Auction Card Preview -->
