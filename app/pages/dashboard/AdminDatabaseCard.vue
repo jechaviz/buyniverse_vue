@@ -92,13 +92,12 @@ export default {
     const checkStatus = async () => {
       loading.value = true;
       try {
-        const res = await fetch("/api/v1/admin/db/status");
+        const res = await fetch("/index.php?action=status");
         if (res.ok) {
           dbStatus.value = await res.json();
           store.notice("MySQL Database status refreshed", "fa-database");
         }
       } catch (e) {
-        // Fallback for standalone frontend simulation
         dbStatus.value.counts = {
           users: store.state.users.length,
           jobs: store.state.jobs.length,
@@ -115,7 +114,7 @@ export default {
     const seedDb = async () => {
       loading.value = true;
       try {
-        const res = await fetch("/api/v1/admin/db/seed", { method: "POST" });
+        const res = await fetch("/index.php?action=seed");
         if (res.ok) {
           const data = await res.json();
           store.notice(data.message || "Database seeded successfully!", "fa-bolt");
@@ -134,7 +133,7 @@ export default {
       if (!confirm("Are you sure you want to clear all MySQL database tables?")) return;
       loading.value = true;
       try {
-        const res = await fetch("/api/v1/admin/db/reset", { method: "POST" });
+        const res = await fetch("/index.php?action=reset");
         if (res.ok) {
           store.notice("Database cleared successfully", "fa-trash-can");
           await checkStatus();
