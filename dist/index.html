@@ -1,4 +1,30 @@
-<!doctype html><html lang="es"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Buyniverse · Plataforma de Compras B2B, Sourcing y Talento Freelance</title><meta
+<!doctype html><html lang="es"><head><script>
+      (function() {
+        try {
+          var t = localStorage.getItem("buyniverse-vue-theme");
+          if (t === "dark" || (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+          var a = localStorage.getItem("buyniverse-vue-accent");
+          var m = {
+            red: ["#e5484d", "#c9363c", "#fff1f1", "#ffe3e3"],
+            violet: ["#7c3aed", "#6d28d9", "#f5f3ff", "#ede9fe"],
+            blue: ["#2563eb", "#1d4ed8", "#eff6ff", "#dbeafe"],
+            teal: ["#0f766e", "#115e59", "#f0fdfa", "#ccfbf1"],
+            orange: ["#ea580c", "#c2410c", "#fff7ed", "#ffedd5"],
+            pink: ["#db2777", "#be185d", "#fdf2f8", "#fce7f3"]
+          };
+          if (a && m[a]) {
+            document.documentElement.style.setProperty("--accent", m[a][0]);
+            document.documentElement.style.setProperty("--accent-deep", m[a][1]);
+            document.documentElement.style.setProperty("--accent-soft", m[a][2]);
+            document.documentElement.style.setProperty("--accent-pale", m[a][3]);
+          }
+        } catch(e) {}
+      })();
+    </script><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Buyniverse · Plataforma de Compras B2B, Sourcing y Talento Freelance</title><meta
       name="title"
       content="Buyniverse · Plataforma de Compras B2B, Sourcing y Talento Freelance"
     /><meta
@@ -86,11 +112,7 @@
       href="https://cdn.jsdelivr.net/npm/@unocss/reset@66.7.5/tailwind.min.css"
       integrity="sha384-Kyepp0O7gX7gJnqUdoJfjxi1yZlDEnS3BBeIZvzaBs6+kZQ5ke7BsH1JOCloLFgX"
       crossorigin="anonymous"
-    /><link rel="stylesheet" href="app/critical.css?v=1" /><script src="app/uno-config.js?v=2"></script><script
-      src="https://cdn.jsdelivr.net/npm/@unocss/runtime@66.7.5"
-      integrity="sha384-KcAiWA0toJ3kO4R0D900KikHkt50hjM59eZVLFaz8suwOuV4logVjpafI5d/4F47"
-      crossorigin="anonymous"
-    ></script><style>
+    /><link rel="stylesheet" href="app/uno.css" /><style>
       html,
       body,
       #app {

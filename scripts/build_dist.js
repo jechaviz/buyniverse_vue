@@ -4,7 +4,7 @@ const path = require("path");
 const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 
-console.log("=== BUILDING OPTIMIZED PRODUCTION DIST BUNDLE ===");
+console.log("=== BUILDING AOT OPTIMIZED PRODUCTION DIST BUNDLE ===");
 console.log(`Source Root: ${rootDir}`);
 console.log(`Target Dist: ${distDir}`);
 
@@ -29,7 +29,6 @@ function minifyJs(code) {
   while (i < len) {
     const ch = code[i];
     const next = i + 1 < len ? code[i + 1] : "";
-    const prev = i > 0 ? code[i - 1] : "";
 
     // Escape handling inside strings/regex
     if ((inSingleQuote || inDoubleQuote || inTemplateString || inRegex) && ch === "\\") {
@@ -139,7 +138,6 @@ function minifyJs(code) {
 
 // 3. Vue SFC Minifier
 function minifyVue(content) {
-  // Extract template, script, and style
   const templateMatch = content.match(/<template>([\s\S]*?)<\/template>/);
   const scriptMatch = content.match(/<script>([\s\S]*?)<\/script>/);
   const styleMatch = content.match(/<style[^>]*>([\s\S]*?)<\/style>/);
@@ -148,9 +146,7 @@ function minifyVue(content) {
 
   if (templateMatch) {
     let tpl = templateMatch[1]
-      // remove HTML comments
       .replace(/<!--[\s\S]*?-->/g, "")
-      // collapse multiple whitespace between tags
       .replace(/>\s+</g, "><")
       .trim();
     result += `<template>${tpl}</template>\n`;
@@ -198,10 +194,11 @@ function minifyJson(content) {
   }
 }
 
-// 7. Recursive directory processor
+// 7. Recursive directory scanner and processor
 let fileCount = 0;
 let rawBytes = 0;
 let minBytes = 0;
+let allSourceText = "";
 
 function processDirectory(srcDir, destDir) {
   if (!fs.existsSync(destDir)) {
@@ -226,6 +223,11 @@ function processDirectory(srcDir, destDir) {
       const stat = fs.statSync(srcPath);
       rawBytes += stat.size;
       fileCount++;
+
+      // Accumulate text for UnoCSS AOT class extraction
+      if (ext === ".vue" || ext === ".js" || ext === ".html") {
+        allSourceText += "\n" + content;
+      }
 
       let minified = content;
 
@@ -252,54 +254,178 @@ function processDirectory(srcDir, destDir) {
   }
 }
 
-// Process app, assets, and root files
-console.log("Minifying and bundling frontend assets...");
-processDirectory(path.join(rootDir, "app"), path.join(distDir, "app"));
+async function build() {
+  console.log("Minifying and bundling frontend assets...");
+  processDirectory(path.join(rootDir, "app"), path.join(distDir, "app"));
 
-if (fs.existsSync(path.join(rootDir, "assets"))) {
-  processDirectory(path.join(rootDir, "assets"), path.join(distDir, "assets"));
-}
-
-// Copy & minify root index.html
-if (fs.existsSync(path.join(rootDir, "index.html"))) {
-  const htmlRaw = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
-  fs.writeFileSync(path.join(distDir, "index.html"), minifyHtml(htmlRaw), "utf8");
-}
-
-// Copy backend and configuration files to dist/
-const backendFiles = [
-  "index.php",
-  "db_schema.sql",
-  "db_seed.sql",
-  "buyniverse.c",
-  "buyniverse.v",
-  ".htaccess",
-  "manifest.json",
-  "favicon.ico"
-];
-
-for (const file of backendFiles) {
-  const filePath = path.join(rootDir, file);
-  if (fs.existsSync(filePath)) {
-    fs.copyFileSync(filePath, path.join(distDir, file));
-    console.log(`[DIST] Included backend file: ${file}`);
+  if (fs.existsSync(path.join(rootDir, "assets"))) {
+    processDirectory(path.join(rootDir, "assets"), path.join(distDir, "assets"));
   }
+
+  // 8. Generate AOT Static CSS (Ahead-of-Time UnoCSS Compilation)
+  console.log("Compiling AOT static CSS from all Vue & JS components...");
+  try {
+    const { createGenerator } = await import("@unocss/core");
+    const presetUno = (await import("@unocss/preset-uno")).default;
+
+    const uno = await createGenerator({
+      presets: [presetUno({ dark: "class" })],
+      theme: {
+        colors: {
+          brand: {
+            DEFAULT: "#e5484d",
+            50: "#fff1f1",
+            100: "#ffe3e3",
+            200: "#ffc9c9",
+            300: "#fca5a5",
+            400: "#f87171",
+            500: "#e5484d",
+            600: "#c9363c",
+            700: "#a52b30",
+            800: "#991b1b",
+            900: "#7f1d1d",
+            950: "#450a0a"
+          },
+          ink: { DEFAULT: "#0f172a", soft: "#64748b" },
+          surface: { DEFAULT: "#f8fafc", dark: "#0b0f19" }
+        },
+        fontFamily: {
+          sans: '"Plus Jakarta Sans", Inter, "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif',
+          head: '"Plus Jakarta Sans", Manrope, "DM Sans", sans-serif'
+        },
+        boxShadow: {
+          card: "0 4px 20px -4px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.02)",
+          soft: "0 4px 12px -2px rgba(15, 23, 42, 0.04)",
+          elevated: "0 14px 30px -10px rgba(15, 23, 42, 0.12)",
+          "2xs": "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+        }
+      },
+      shortcuts: [
+        [
+          "btn",
+          "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+        ],
+        [
+          "btn-brand",
+          "btn bg-brand text-white hover:bg-brand-600 shadow-soft hover:shadow-elevated"
+        ],
+        [
+          "btn-muted",
+          "btn bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-sm"
+        ],
+        [
+          "panel",
+          "rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/80 backdrop-blur-md shadow-card"
+        ],
+        [
+          "field",
+          "w-full rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/15"
+        ],
+        [
+          "badge",
+          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide"
+        ],
+        [
+          "premium-card",
+          "rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-card transition hover:shadow-elevated dark:border-slate-800/80 dark:bg-slate-900/90"
+        ]
+      ]
+    });
+
+    const result = await uno.generate(allSourceText);
+    
+    // Critical CSS
+    let criticalCss = "";
+    if (fs.existsSync(path.join(rootDir, "app", "critical.css"))) {
+      criticalCss = fs.readFileSync(path.join(rootDir, "app", "critical.css"), "utf8");
+    }
+
+    const fullCss = minifyCss(criticalCss + "\n" + result.css);
+    const unoCssPath = path.join(distDir, "app", "uno.css");
+    fs.writeFileSync(unoCssPath, fullCss, "utf8");
+    console.log(`[AOT CSS] Generated pre-compiled stylesheet: dist/app/uno.css (${(Buffer.byteLength(fullCss) / 1024).toFixed(1)} KB)`);
+  } catch (err) {
+    console.error("[AOT CSS Warning]", err.message);
+  }
+
+  // 9. Generate Optimized dist/index.html with Anti-FOUC & Pre-compiled CSS
+  console.log("Optimizing dist/index.html for zero-FOUC instant paint...");
+  if (fs.existsSync(path.join(rootDir, "index.html"))) {
+    let html = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
+
+    // Add immediate anti-FOUC theme script right after <head>
+    const antiFoucScript = `
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem("buyniverse-vue-theme");
+          if (t === "dark" || (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+          var a = localStorage.getItem("buyniverse-vue-accent");
+          var m = {
+            red: ["#e5484d", "#c9363c", "#fff1f1", "#ffe3e3"],
+            violet: ["#7c3aed", "#6d28d9", "#f5f3ff", "#ede9fe"],
+            blue: ["#2563eb", "#1d4ed8", "#eff6ff", "#dbeafe"],
+            teal: ["#0f766e", "#115e59", "#f0fdfa", "#ccfbf1"],
+            orange: ["#ea580c", "#c2410c", "#fff7ed", "#ffedd5"],
+            pink: ["#db2777", "#be185d", "#fdf2f8", "#fce7f3"]
+          };
+          if (a && m[a]) {
+            document.documentElement.style.setProperty("--accent", m[a][0]);
+            document.documentElement.style.setProperty("--accent-deep", m[a][1]);
+            document.documentElement.style.setProperty("--accent-soft", m[a][2]);
+            document.documentElement.style.setProperty("--accent-pale", m[a][3]);
+          }
+        } catch(e) {}
+      })();
+    </script>`;
+
+    // Insert anti-FOUC script
+    html = html.replace("<head>", `<head>${antiFoucScript}`);
+
+    // Link pre-compiled uno.css in dist
+    html = html.replace(
+      `<link rel="stylesheet" href="app/critical.css?v=1" />`,
+      `<link rel="stylesheet" href="app/uno.css" />`
+    );
+
+    // Remove runtime uno scripts in dist/index.html
+    html = html.replace(/<script src="app\/uno-config\.js[^"]*"><\/script>/g, "");
+    html = html.replace(/<script[^>]*@unocss\/runtime[^>]*><\/script>/g, "");
+
+    fs.writeFileSync(path.join(distDir, "index.html"), minifyHtml(html), "utf8");
+  }
+
+  // Copy backend and configuration files to dist/
+  const backendFiles = [
+    "index.php",
+    "db_schema.sql",
+    "db_seed.sql",
+    "buyniverse.c",
+    "buyniverse.v",
+    ".htaccess",
+    "manifest.json",
+    "favicon.ico"
+  ];
+
+  for (const file of backendFiles) {
+    const filePath = path.join(rootDir, file);
+    if (fs.existsSync(filePath)) {
+      fs.copyFileSync(filePath, path.join(distDir, file));
+      console.log(`[DIST] Included backend file: ${file}`);
+    }
+  }
+
+  const savedPct = (((rawBytes - minBytes) / (rawBytes || 1)) * 100).toFixed(1);
+  console.log("\n=== BUILD COMPLETE ===");
+  console.log(`Total Files Processed: ${fileCount}`);
+  console.log(`Original Size: ${(rawBytes / 1024).toFixed(1)} KB`);
+  console.log(`Minified Dist Size: ${(minBytes / 1024).toFixed(1)} KB`);
+  console.log(`Savings: ${savedPct}% compression ratio achieved`);
+  console.log(`Dist Directory Ready at: ${distDir}\n`);
 }
 
-// Check backend c file from v_projects if needed
-const vCPath = "C:\\git\\v_projects\\domains\\web_platform\\websites\\buyniverse\\buyniverse.c";
-const vVPath = "C:\\git\\v_projects\\domains\\web_platform\\websites\\buyniverse\\buyniverse.v";
-if (fs.existsSync(vCPath) && !fs.existsSync(path.join(distDir, "buyniverse.c"))) {
-  fs.copyFileSync(vCPath, path.join(distDir, "buyniverse.c"));
-}
-if (fs.existsSync(vVPath) && !fs.existsSync(path.join(distDir, "buyniverse.v"))) {
-  fs.copyFileSync(vVPath, path.join(distDir, "buyniverse.v"));
-}
-
-const savedPct = (((rawBytes - minBytes) / (rawBytes || 1)) * 100).toFixed(1);
-console.log("\n=== BUILD COMPLETE ===");
-console.log(`Total Files Processed: ${fileCount}`);
-console.log(`Original Size: ${(rawBytes / 1024).toFixed(1)} KB`);
-console.log(`Minified Dist Size: ${(minBytes / 1024).toFixed(1)} KB`);
-console.log(`Savings: ${savedPct}% compression ratio achieved`);
-console.log(`Dist Directory Ready at: ${distDir}\n`);
+build();
