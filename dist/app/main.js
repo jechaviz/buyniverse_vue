@@ -503,21 +503,22 @@ window.BuyniverseI18n.subscribe(() => {
   }
 });
 
-const app = createApp(load("./app/App.vue?v=37"));
+const app = createApp(load("./app/App.vue?v=38"));
 window.__buyniverseErrors = [];
 app.config.errorHandler = (error, instance, info) => {
   const detail = {
     message: clean(error?.message || String(error), 500),
+    stack: clean(error?.stack || "", 1500),
     info: clean(info, 160),
     at: new Date().toISOString(),
     component: clean(
-      instance?.$options?.name || instance?.$?.type?.__file || "anonymous",
+      instance?.$options?.name || instance?.$?.type?.__file || instance?.$?.type?.name || "anonymous",
       160,
     ),
   };
   window.__buyniverseErrors.push(detail);
   if (window.__buyniverseErrors.length > 50) window.__buyniverseErrors.shift();
-  console.error("[Buyniverse]", detail);
+  console.error("[Buyniverse Exception]:", error?.message || error, "\nComponent:", detail.component, "\nInfo:", detail.info, "\nStack:", error?.stack, detail);
 };
 
 window.WebCommon.installFormValidation(document);
