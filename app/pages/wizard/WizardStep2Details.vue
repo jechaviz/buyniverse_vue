@@ -11,9 +11,25 @@
         <input v-model.trim="project.title" class="field mt-2" required placeholder="Customer portal redesign" />
       </label>
       <label class="block text-sm font-semibold md:col-span-2">
-        Description
-        <textarea v-model.trim="project.description" class="field mt-2 min-h-36" required placeholder="Scope, goals, constraints and expected outcomes"></textarea>
+        <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+          <span>Description</span>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-50/70 px-2.5 py-1 text-[11px] font-bold text-brand hover:bg-brand hover:text-white transition dark:bg-brand/20 dark:border-brand/50 shadow-xs cursor-pointer"
+            @click="docEditorOpen = true"
+          >
+            <i class="fa-solid fa-file-invoice text-[10px]"></i>
+            <span>Editor Markdown (Hojas Carta & 1.1)</span>
+          </button>
+        </div>
+        <textarea v-model.trim="project.description" class="field min-h-36 font-mono text-xs" required placeholder="Scope, goals, constraints and expected outcomes"></textarea>
       </label>
+
+      <DocumentEditorModal
+        v-model="docEditorOpen"
+        :initial-markdown="project.description"
+        @apply="project.description = $event"
+      />
       <template v-if="project.sourcingType === 'RFP'">
         <label class="block text-sm font-semibold">
           Category
@@ -76,11 +92,24 @@
   </div>
 </template>
 <script>
+const { ref, defineAsyncComponent } = Vue;
+
+const DocumentEditorModal = defineAsyncComponent(() =>
+  window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue", window.sfcOptions)
+);
+
 export default {
+  components: {
+    DocumentEditorModal
+  },
   props: {
     project: Object,
     skillsText: String,
   },
   emits: ["update:skillsText"],
+  setup() {
+    const docEditorOpen = ref(false);
+    return { docEditorOpen };
+  }
 };
 </script>

@@ -101,18 +101,35 @@
 
       <!-- Scope & Detailed Description -->
       <label class="block text-xs font-bold md:col-span-2">
-        <div class="flex items-center justify-between mb-1.5">
+        <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
           <span>{{ store.t("Description") }} <span class="text-rose-500">*</span></span>
-          <span class="text-[10px] font-normal text-slate-400">{{ (project.description || '').length }} / 4000</span>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-50/70 px-2.5 py-1 text-[11px] font-bold text-brand hover:bg-brand hover:text-white transition dark:bg-brand/20 dark:border-brand/50 shadow-xs cursor-pointer"
+              @click="docEditorOpen = true"
+            >
+              <i class="fa-solid fa-file-invoice text-[10px]"></i>
+              <span>{{ store.t("Editor Markdown (Hojas Carta & 1.1)") }}</span>
+            </button>
+            <span class="text-[10px] font-normal text-slate-400">{{ (project.description || '').length }} / 4000</span>
+          </div>
         </div>
         <textarea
           v-model.trim="project.description"
-          class="field min-h-36 font-sans text-xs leading-relaxed"
+          class="field min-h-36 font-mono text-xs leading-relaxed"
           required
           maxlength="4000"
           :placeholder="store.t('Scope, goals, constraints and expected outcomes')"
         ></textarea>
       </label>
+
+      <!-- Document Editor Modal Instance -->
+      <DocumentEditorModal
+        v-model="docEditorOpen"
+        :initial-markdown="project.description"
+        @apply="project.description = $event"
+      />
 
       <!-- Category & Level -->
       <label class="block text-xs font-bold">
@@ -218,9 +235,16 @@
   </div>
 </template>
 <script>
-const { inject, ref, computed } = Vue;
+const { inject, ref, computed, defineAsyncComponent } = Vue;
+
+const DocumentEditorModal = defineAsyncComponent(() =>
+  window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue", window.sfcOptions)
+);
 
 export default {
+  components: {
+    DocumentEditorModal
+  },
   props: {
     project: Object,
     skillsText: String,
@@ -229,6 +253,7 @@ export default {
   setup(props, { emit }) {
     const store = inject("store");
     const aiPrompt = ref("");
+    const docEditorOpen = ref(false);
 
     const quickSkills = computed(() => {
       const cat = props.project.category;
@@ -277,7 +302,7 @@ export default {
       emit("generated");
     };
 
-    return { store, aiPrompt, quickSkills, appendSkill, applyTemplate, generateFromPrompt };
+    return { store, aiPrompt, docEditorOpen, quickSkills, appendSkill, applyTemplate, generateFromPrompt };
   },
 };
 </script>

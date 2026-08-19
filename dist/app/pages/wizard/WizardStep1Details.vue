@@ -44,13 +44,21 @@
           required
           maxlength="120"
           :placeholder="store.t('Customer portal redesign')"
-        /></label><label class="block text-xs font-bold md:col-span-2"><div class="flex items-center justify-between mb-1.5"><span>{{ store.t("Description") }} <span class="text-rose-500">*</span></span><span class="text-[10px] font-normal text-slate-400">{{ (project.description || '').length }} / 4000</span></div><textarea
+        /></label><label class="block text-xs font-bold md:col-span-2"><div class="flex items-center justify-between mb-1.5 flex-wrap gap-1"><span>{{ store.t("Description") }} <span class="text-rose-500">*</span></span><div class="flex items-center gap-2"><button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-brand-50/70 px-2.5 py-1 text-[11px] font-bold text-brand hover:bg-brand hover:text-white transition dark:bg-brand/20 dark:border-brand/50 shadow-xs cursor-pointer"
+              @click="docEditorOpen = true"
+            ><i class="fa-solid fa-file-invoice text-[10px]"></i><span>{{ store.t("Editor Markdown (Hojas Carta & 1.1)") }}</span></button><span class="text-[10px] font-normal text-slate-400">{{ (project.description || '').length }} / 4000</span></div></div><textarea
           v-model.trim="project.description"
-          class="field min-h-36 font-sans text-xs leading-relaxed"
+          class="field min-h-36 font-mono text-xs leading-relaxed"
           required
           maxlength="4000"
           :placeholder="store.t('Scope, goals, constraints and expected outcomes')"
-        ></textarea></label><label class="block text-xs font-bold"><span class="mb-1.5 block">{{ store.t("Category") }} <span class="text-rose-500">*</span></span><select v-model="project.category" class="field" required><option value="Development">{{ store.t("Development") }}</option><option value="Design">{{ store.t("Design") }}</option><option value="Marketing">{{ store.t("Marketing") }}</option><option value="Operations">{{ store.t("Operations") }}</option></select></label><label class="block text-xs font-bold"><span class="mb-1.5 block">{{ store.t("Project level") }} <span class="text-rose-500">*</span></span><select v-model="project.projectLevel" class="field" required><option value="Basic">{{ store.t("Basic") }}</option><option value="Intermediate">{{ store.t("Intermediate") }}</option><option value="Expert">{{ store.t("Expert") }}</option></select></label><template v-if="project.sourcingType === 'RFP'"><label class="block text-xs font-bold"><div class="flex items-center justify-between mb-1.5"><span>{{ store.t("Budget") }} <span class="text-rose-500">*</span></span><span class="text-[10px] font-normal text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i>{{ store.t("Escrow protected") }}
+        ></textarea></label><DocumentEditorModal
+        v-model="docEditorOpen"
+        :initial-markdown="project.description"
+        @apply="project.description = $event"
+      /><label class="block text-xs font-bold"><span class="mb-1.5 block">{{ store.t("Category") }} <span class="text-rose-500">*</span></span><select v-model="project.category" class="field" required><option value="Development">{{ store.t("Development") }}</option><option value="Design">{{ store.t("Design") }}</option><option value="Marketing">{{ store.t("Marketing") }}</option><option value="Operations">{{ store.t("Operations") }}</option></select></label><label class="block text-xs font-bold"><span class="mb-1.5 block">{{ store.t("Project level") }} <span class="text-rose-500">*</span></span><select v-model="project.projectLevel" class="field" required><option value="Basic">{{ store.t("Basic") }}</option><option value="Intermediate">{{ store.t("Intermediate") }}</option><option value="Expert">{{ store.t("Expert") }}</option></select></label><template v-if="project.sourcingType === 'RFP'"><label class="block text-xs font-bold"><div class="flex items-center justify-between mb-1.5"><span>{{ store.t("Budget") }} <span class="text-rose-500">*</span></span><span class="text-[10px] font-normal text-emerald-600 dark:text-emerald-400"><i class="fa-solid fa-shield-halved mr-1"></i>{{ store.t("Escrow protected") }}
             </span></div><input
             v-model.number="project.budget"
             class="field"
@@ -72,8 +80,14 @@
             @input="$emit('update:skillsText', $event.target.value)"
           /></div></template>
 <script>
-const { inject, ref, computed } = Vue;
+const { inject, ref, computed, defineAsyncComponent } = Vue;
+const DocumentEditorModal = defineAsyncComponent(() =>
+window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue", window.sfcOptions)
+);
 export default {
+components: {
+DocumentEditorModal
+},
 props: {
 project: Object,
 skillsText: String,
@@ -82,6 +96,7 @@ emits: ["update:skillsText", "generated"],
 setup(props, { emit }) {
 const store = inject("store");
 const aiPrompt = ref("");
+const docEditorOpen = ref(false);
 const quickSkills = computed(() => {
 const cat = props.project.category;
 if (cat === "Design") return ["Figma", "Design Systems", "UX Research", "Prototyping"];
@@ -125,7 +140,7 @@ emit("update:skillsText", "Vue 3, REST APIs, Architecture, Testing");
 store.notice("Project brief populated from assistant");
 emit("generated");
 };
-return { store, aiPrompt, quickSkills, appendSkill, applyTemplate, generateFromPrompt };
+return { store, aiPrompt, docEditorOpen, quickSkills, appendSkill, applyTemplate, generateFromPrompt };
 },
 };
 </script>
