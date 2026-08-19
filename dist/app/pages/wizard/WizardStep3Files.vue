@@ -1,10 +1,40 @@
-<template><div class="mx-auto max-w-3xl"><div><p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">Attachments</p><h2 class="font-head mt-1 text-2xl font-800 tracking-tight text-slate-900 dark:text-white">Project files</h2><p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Attach briefs or references and classify them for the project workspace.</p></div><label class="mt-6 grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-slate-300 p-10 text-center transition hover:border-brand hover:bg-brand-50/40 dark:border-slate-600"><i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400"></i><b class="mt-3">Choose a file</b><span class="mt-1 text-sm text-slate-500">PDF, Office, text or image · maximum 2 MB · metadata stays in this demo.</span><input class="hidden" type="file" accept=".pdf,.doc,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg,text/plain,text/markdown,text/csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" @change="$emit('add-file', $event)" /></label><div class="mt-5 space-y-2"><article v-for="file in project.files" :key="file.id" class="flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><i class="fa-solid fa-file text-brand"></i><b class="min-w-0 flex-1 truncate text-sm">{{ file.name }}</b><small class="text-slate-400">{{ formatSize(file.size) }}</small><select v-model="file.category" class="rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs dark:border-slate-600"><option>Brief</option><option>Contract</option><option>Documentation</option><option>Reference</option></select><button class="text-red-500" aria-label="Remove file" @click="$emit('remove-file', file.id)"><i class="fa-solid fa-xmark"></i></button></article></div></div></template>
+<template>
+  <div class="mx-auto max-w-3xl">
+    <div>
+      <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">Attachments</p>
+      <h2 class="font-head mt-1 text-2xl font-800 tracking-tight text-slate-900 dark:text-white">Project files</h2>
+      <p class="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Attach briefs or references and classify them for the project workspace.</p>
+    </div>
+    <label class="mt-6 grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-slate-300 p-10 text-center transition hover:border-brand hover:bg-brand-50/40 dark:border-slate-600">
+      <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400"></i>
+      <b class="mt-3">Choose a file</b>
+      <span class="mt-1 text-sm text-slate-500">PDF, Office, text or image · maximum 2 MB · metadata stays in this demo.</span>
+      <input class="hidden" type="file" accept=".pdf,.doc,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg,text/plain,text/markdown,text/csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" @change="$emit('add-file', $event)" />
+    </label>
+    <div class="mt-5 space-y-2">
+      <article v-for="file in project.files" :key="file.id" class="flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+        <i class="fa-solid fa-file text-brand"></i>
+        <b class="min-w-0 flex-1 truncate text-sm">{{ file.name }}</b>
+        <small class="text-slate-400">{{ formatSize(file.size) }}</small>
+        <select v-model="file.category" class="rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs dark:border-slate-600">
+          <option>Brief</option>
+          <option>Contract</option>
+          <option>Documentation</option>
+          <option>Reference</option>
+        </select>
+        <button class="text-red-500" aria-label="Remove file" @click="$emit('remove-file', file.id)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </article>
+    </div>
+  </div>
+</template>
 <script>
 export default {
-props: {
-project: Object,
-formatSize: Function,
-},
-emits: ["add-file", "remove-file"],
+  props: {
+    project: Object,
+    formatSize: Function,
+  },
+  emits: ["add-file", "remove-file"],
 };
 </script>
