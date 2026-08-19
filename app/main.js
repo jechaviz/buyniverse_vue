@@ -214,6 +214,7 @@ const store = {
         ? "Supplier"
         : "Buyer",
   ),
+  toasts: computed(() => (ui.toast ? [ui.toast] : [])),
   setMarketplaceMode(mode) {
     const allowed = allowedMarketplaceModes(this.currentUser.value);
     if (!allowed.includes(mode)) {

@@ -335,17 +335,15 @@
     </div>
 
     <!-- Toast stack -->
-    <div class="pointer-events-none fixed bottom-4 right-4 z-80 flex flex-col gap-2">
-      <TransitionGroup name="toast">
+    <div v-if="ui.toast" class="pointer-events-none fixed bottom-4 right-4 z-80 flex flex-col gap-2">
+      <Transition name="toast">
         <div
-          v-for="toast in store.toasts.value"
-          :key="toast.id"
           class="pointer-events-auto flex items-center gap-3 rounded-2xl bg-slate-950 px-4 py-3 text-xs font-semibold text-white shadow-elevated"
         >
-          <i class="fa-solid text-brand" :class="toast.icon || 'fa-circle-check'"></i>
-          <span>{{ toast.text }}</span>
+          <i class="fa-solid text-brand" :class="ui.toast.icon || 'fa-circle-check'"></i>
+          <span>{{ ui.toast.message || ui.toast.text }}</span>
         </div>
-      </TransitionGroup>
+      </Transition>
     </div>
   </div>
 </template>
