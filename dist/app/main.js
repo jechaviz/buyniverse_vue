@@ -11,7 +11,8 @@ window.sfcOptions = {
       ? "/buyniverse_vue/"
       : "/";
     const base = new URL(basePath, window.location.origin);
-    const cleanUrl = String(url).replace(/^\.\//, "").replace(/^\//, "");
+    const rawStr = String(url);
+    const cleanUrl = rawStr.startsWith("./") ? rawStr.slice(2) : (rawStr.startsWith("/") ? rawStr.slice(1) : rawStr);
     const resolved = new URL(cleanUrl, base);
     if (resolved.origin !== window.location.origin)
       throw new Error("Cross-origin SFC loading is blocked.");
