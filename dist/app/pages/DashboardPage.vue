@@ -10,7 +10,7 @@
       ><RouterLink
         v-else
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
-        to="/"
+        to="/browse-services"
         ><i class="fa-solid fa-briefcase mr-2"></i>Find work</RouterLink
       ></header><nav class="flex gap-1.5 overflow-x-auto p-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl"><RouterLink
         v-for="x in tabs"

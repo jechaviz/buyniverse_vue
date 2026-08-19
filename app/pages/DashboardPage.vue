@@ -19,7 +19,7 @@
       <RouterLink
         v-else
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
-        to="/"
+        to="/browse-services"
         ><i class="fa-solid fa-briefcase mr-2"></i>Find work</RouterLink
       >
     </header>
