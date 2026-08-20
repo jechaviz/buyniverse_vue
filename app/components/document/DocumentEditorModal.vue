@@ -1,12 +1,12 @@
 <template>
   <div
     v-if="modelValue"
-    class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-md transition-all duration-200"
+    class="fixed inset-0 z-50 flex flex-col w-screen h-screen bg-white dark:bg-slate-900 dark:text-slate-100 overflow-hidden transition-all duration-200"
     role="dialog"
     aria-modal="true"
   >
     <div
-      class="relative flex flex-col w-full max-w-7xl h-[92vh] max-h-[920px] rounded-3xl border border-slate-200/90 bg-white shadow-2xl overflow-hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      class="relative flex flex-col w-full h-full flex-1 overflow-hidden"
     >
       <!-- Top Global Action Bar & Metadata Ribbon -->
       <header
@@ -199,7 +199,7 @@
 </template>
 
 <script>
-const { inject, ref, computed, nextTick, defineAsyncComponent } = Vue;
+const { inject, ref, computed, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=1");
 const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=1");
@@ -228,6 +228,16 @@ export default {
   setup(props, { emit }) {
     const store = inject("store");
     const docTitle = ref("Pliego de Términos y Condiciones Técnicas");
+
+    function handleKeydown(e) {
+      if (e.key === "Escape" && props.modelValue) {
+        emit("update:modelValue", false);
+      }
+    }
+    if (typeof window !== "undefined") {
+      onMounted(() => window.addEventListener("keydown", handleKeydown));
+      onBeforeUnmount(() => window.removeEventListener("keydown", handleKeydown));
+    }
     const headerText = ref("BUY-2026-RFP · Especificación de Compra");
     const footerText = ref("Confidencial · Buyniverse Escrow Protected");
     const pageNumberFormat = ref("Page X of Y");
