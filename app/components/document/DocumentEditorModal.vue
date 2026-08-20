@@ -1,19 +1,21 @@
 <template>
-  <Teleport to="body">
+  <teleport to="body">
     <div
       v-if="modelValue"
-      class="fixed inset-0 z-[9999] flex flex-col w-screen h-screen bg-white dark:bg-slate-900 dark:text-slate-100 overflow-hidden transition-all duration-200"
+      ref="modalRoot"
+      class="fixed inset-0 z-[999999] flex flex-col w-screen h-screen max-w-[100vw] max-h-[100vh] bg-white dark:bg-slate-900 dark:text-slate-100 overflow-hidden m-0 p-0"
+      style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 999999 !important;"
       role="dialog"
       aria-modal="true"
     >
       <!-- Top Global Action Bar & Metadata Ribbon -->
-      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/80 flex-none">
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-slate-50/95 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950/95 flex-none z-10">
         <div class="flex items-center gap-3 min-w-0">
           <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-sm flex-none">
             <i class="fa-solid fa-file-lines text-sm"></i>
           </span>
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="badge bg-brand-50 text-brand text-[10px] font-bold dark:bg-brand/20 dark:text-brand-300">
                 {{ store.t("Editor Markdown Profesional") }}
               </span>
@@ -21,6 +23,12 @@
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ sections.length }} {{ store.t("secciones") }}</span>
               <span class="text-xs text-slate-400">·</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ totalWordCount }} {{ store.t("palabras") }}</span>
+              <!-- Autosave status pill -->
+              <span class="text-xs text-slate-400">·</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <i class="fa-solid fa-circle-check text-[10px]" :class="isSaving ? 'animate-spin fa-spinner text-amber-500' : ''"></i>
+                <span>{{ isSaving ? store.t("Guardando...") : (lastAutosavedAt ? store.t("Autoguardado ") + lastAutosavedAt : store.t("Autosalvado activo")) }}</span>
+              </span>
             </div>
             <input
               v-model.trim="docTitle"
@@ -99,7 +107,7 @@
             <span class="hidden md:inline">{{ store.t("Copiar MD") }}</span>
           </button>
 
-          <!-- Insert in Description Primary Button -->
+          <!-- Apply & Close Primary Button -->
           <button
             type="button"
             class="btn-brand text-xs py-1.5 px-4 font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
@@ -207,11 +215,11 @@
         />
       </div>
     </div>
-  </Teleport>
+  </teleport>
 </template>
 
 <script>
-const { inject, ref, computed, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
+const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=1");
 const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=1");
@@ -220,6 +228,8 @@ const DocumentVariableDrawer = load("./app/components/document/DocumentVariableD
 const documentTemplates = (window.DocumentTemplates && window.DocumentTemplates.documentTemplates) || [];
 const parseMarkdownToBlocks = (window.DocumentParser && window.DocumentParser.parseMarkdownToBlocks) || function () { return []; };
 const compileDocumentToMarkdown = (window.DocumentParser && window.DocumentParser.compileDocumentToMarkdown) || function () { return ""; };
+
+const AUTOSAVE_KEY = "buyniverse_doc_editor_autosave";
 
 export default {
   name: "DocumentEditorModal",
@@ -235,6 +245,7 @@ export default {
   emits: ["update:modelValue", "apply"],
   setup(props, { emit }) {
     const store = inject("store");
+    const modalRoot = ref(null);
     const docTitle = ref("Pliego de Términos y Condiciones Técnicas");
     const headerText = ref("BUY-2026-RFP · Especificación de Compra");
     const footerText = ref("Confidencial · Buyniverse Escrow Protected");
@@ -245,16 +256,8 @@ export default {
     const variableDrawerOpen = ref(false);
     const leftViewTab = ref("thumbnails");
     const markdownTextarea = ref(null);
-
-    function handleKeydown(e) {
-      if (e.key === "Escape" && props.modelValue) {
-        emit("update:modelValue", false);
-      }
-    }
-    if (typeof window !== "undefined") {
-      onMounted(() => window.addEventListener("keydown", handleKeydown));
-      onBeforeUnmount(() => window.removeEventListener("keydown", handleKeydown));
-    }
+    const isSaving = ref(false);
+    const lastAutosavedAt = ref("");
 
     const sections = ref([
       { id: "sec-1", title: "Objetivo y Alcance del Proyecto", level: 1, pageBreakBefore: false, content: "El presente documento establece los términos técnicos y comerciales para la adjudicación mediante subasta inversa BAFO.\n\n- **Objetivo Principal:** Implementación de solución escalable para {{NOMBRE_PROYECTO:Portal B2B}}.\n- **Modalidad de Pago:** Custodia en fideicomiso (Escrow) liberada contra hitos aprobados.\n\n> [!NOTE]\n> Todos los postores deben cumplir con los requisitos de homologación y scoring SRM mínimo de 80 puntos." },
@@ -262,6 +265,83 @@ export default {
       { id: "sec-3", title: "Criterios de Seguridad y Cumplimiento", level: 3, pageBreakBefore: false, content: "- Cumplimiento con estándares ISO-27001 y cifrado en tránsito TLS 1.3.\n- Validación fiscal automática mediante conciliación 3-Way Match.\n\n> [!IMPORTANT]\n> Cualquier desviación no autorizada en los plazos pactados aplicará penalización del {{PORCENTAJE_PENALIZACION:2%}} semanal sobre el monto del hito." },
       { id: "sec-4", title: "Mecanismo de Subasta Inversa BAFO y Ganancia Compartida", level: 1, pageBreakBefore: true, content: "La adjudicación se definirá en subasta inversa en tiempo real.\n\n1. El postor presentará su cotización inicial de referencia.\n2. Se abrirá una ventana de 60 minutos para colocación de contraofertas dinámicas.\n3. La comisión de éxito Gain-Share (40% base o 25% por gran volumen) se liquidará exclusivamente sobre el ahorro neto comprobado." }
     ]);
+
+    // Force appending directly to document.body on open to guarantee full-viewport escape
+    watch(
+      () => props.modelValue,
+      (open) => {
+        if (open) {
+          document.body.style.overflow = "hidden";
+          nextTick(() => {
+            if (modalRoot.value && modalRoot.value.parentNode !== document.body) {
+              document.body.appendChild(modalRoot.value);
+            }
+          });
+        } else {
+          document.body.style.overflow = "";
+        }
+      },
+      { immediate: true }
+    );
+
+    function handleKeydown(e) {
+      if (e.key === "Escape" && props.modelValue) {
+        emit("update:modelValue", false);
+      }
+    }
+
+    onMounted(() => {
+      window.addEventListener("keydown", handleKeydown);
+      // Restore autosaved draft if exists and matches
+      try {
+        const raw = localStorage.getItem(AUTOSAVE_KEY);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          if (draft && draft.sections && draft.sections.length > 0) {
+            sections.value = draft.sections;
+            if (draft.docTitle) docTitle.value = draft.docTitle;
+            if (draft.headerText) headerText.value = draft.headerText;
+            if (draft.footerText) footerText.value = draft.footerText;
+            lastAutosavedAt.value = draft.savedAt || "";
+          }
+        }
+      } catch (e) {}
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener("keydown", handleKeydown);
+      document.body.style.overflow = "";
+      if (modalRoot.value && modalRoot.value.parentNode === document.body) {
+        document.body.removeChild(modalRoot.value);
+      }
+    });
+
+    // Auto-save logic with debounce
+    let autosaveTimer = null;
+    function triggerAutosave() {
+      isSaving.value = true;
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        try {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          const payload = {
+            docTitle: docTitle.value,
+            headerText: headerText.value,
+            footerText: footerText.value,
+            sections: sections.value,
+            savedAt: timeStr,
+          };
+          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+          lastAutosavedAt.value = timeStr;
+          // Synchronously emit compiled markdown to project
+          emit("apply", compileToMarkdown());
+        } catch (e) {}
+        isSaving.value = false;
+      }, 400);
+    }
+
+    watch([docTitle, headerText, footerText, sections], () => triggerAutosave(), { deep: true });
 
     const activeSectionId = ref("sec-1");
     const activeSection = computed(() => sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null);
@@ -417,6 +497,7 @@ export default {
 
     return {
       store,
+      modalRoot,
       docTitle,
       headerText,
       footerText,
@@ -427,6 +508,8 @@ export default {
       variableDrawerOpen,
       leftViewTab,
       markdownTextarea,
+      isSaving,
+      lastAutosavedAt,
       sections,
       activeSectionId,
       activeSection,
