@@ -12,7 +12,11 @@ window.sfcOptions = {
       : "/";
     const base = new URL(basePath, window.location.origin);
     const rawStr = String(url);
-    const cleanUrl = rawStr.startsWith("./") ? rawStr.slice(2) : (rawStr.startsWith("/") ? rawStr.slice(1) : rawStr);
+    let cleanUrl = rawStr.startsWith("./") ? rawStr.slice(2) : (rawStr.startsWith("/") ? rawStr.slice(1) : rawStr);
+    const appIndex = cleanUrl.lastIndexOf("app/");
+    if (appIndex > 0) {
+      cleanUrl = cleanUrl.slice(appIndex);
+    }
     const resolved = new URL(cleanUrl, base);
     if (resolved.origin !== window.location.origin)
       throw new Error("Cross-origin SFC loading is blocked.");
@@ -524,4 +528,6 @@ app.config.errorHandler = (error, instance, info) => {
 
 window.WebCommon.installFormValidation(document);
 app.config.globalProperties.$t = window.BuyniverseI18n.t;
+const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=2");
+app.component("DocumentEditorModal", DocumentEditorModal);
 app.provide("store", store).use(router).mount("#app");

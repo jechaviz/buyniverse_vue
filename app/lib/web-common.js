@@ -249,7 +249,6 @@
         observer = null;
       };
     }
-
     return {
       getLocale: function () {
         return locale;
@@ -564,25 +563,20 @@
         firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     };
-    document.addEventListener("invalid", invalid, true);
-    document.addEventListener("input", changed, true);
-    document.addEventListener("change", changed, true);
-    document.addEventListener("submit", submitted, true);
+    ["invalid", "input", "change", "submit"].forEach(function (ev, idx) {
+      document.addEventListener(ev, [invalid, changed, changed, submitted][idx], true);
+    });
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         mutation.addedNodes.forEach(scan);
       });
     });
-    observer.observe(scope.documentElement || scope, {
-      childList: true,
-      subtree: true,
-    });
+    observer.observe(scope.documentElement || scope, { childList: true, subtree: true });
     return function () {
       observer.disconnect();
-      document.removeEventListener("invalid", invalid, true);
-      document.removeEventListener("input", changed, true);
-      document.removeEventListener("change", changed, true);
-      document.removeEventListener("submit", submitted, true);
+      ["invalid", "input", "change", "submit"].forEach(function (ev, idx) {
+        document.removeEventListener(ev, [invalid, changed, changed, submitted][idx], true);
+      });
       delete document.documentElement.dataset.formUxInstalled;
     };
   }
