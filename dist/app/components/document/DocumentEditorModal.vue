@@ -23,7 +23,6 @@
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ sections.length }} {{ store.t("secciones") }}</span>
               <span class="text-xs text-slate-400">·</span>
               <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ totalWordCount }} {{ store.t("palabras") }}</span>
-              <!-- Autosave status pill -->
               <span class="text-xs text-slate-400">·</span>
               <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                 <i class="fa-solid fa-circle-check text-[10px]" :class="isSaving ? 'animate-spin fa-spinner text-amber-500' : ''"></i>
@@ -86,11 +85,11 @@
             <span>{{ store.t("Docs & Machote") }}</span>
           </button>
 
-          <!-- Running Headers & Footers Settings Trigger -->
+          <!-- Running Headers & Footers Modal Trigger -->
           <button
             type="button"
             class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
-            @click="headerFooterSettingsOpen = !headerFooterSettingsOpen"
+            @click="headerFooterSettingsOpen = true"
           >
             <i class="fa-solid fa-heading text-slate-500 text-xs"></i>
             <span class="hidden sm:inline">{{ store.t("Encabezado / Pie") }}</span>
@@ -129,40 +128,24 @@
         </div>
       </header>
 
-      <!-- Running Header / Footer Configuration Drawer -->
-      <div
+      <!-- Running Header / Footer Configuration Modal Dialog -->
+      <DocumentHeaderFooterModal
         v-if="headerFooterSettingsOpen"
-        class="border-b border-slate-200/90 bg-brand-50/40 p-4 dark:border-slate-800 dark:bg-slate-900/80 transition flex-none grid gap-4 grid-cols-1 sm:grid-cols-3 text-xs"
-      >
-        <div>
-          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-            <i class="fa-solid fa-heading mr-1 text-brand"></i>{{ store.t("Encabezado Superior Repetible") }}
-          </label>
-          <input v-model="headerText" class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800" :placeholder="store.t('Ej. RFC / ID de Proyecto / Confidencial')" />
-        </div>
-        <div>
-          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-            <i class="fa-solid fa-shoe-prints mr-1 text-brand"></i>{{ store.t("Pie de Página Repetible") }}
-          </label>
-          <input v-model="footerText" class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800" :placeholder="store.t('Ej. Confidencial · Buyniverse Escrow Protected')" />
-        </div>
-        <div class="flex items-end gap-3">
-          <div class="flex-1">
-            <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-              <i class="fa-solid fa-list-ol mr-1 text-brand"></i>{{ store.t("Numeración de Hoja Carta") }}
-            </label>
-            <select v-model="pageNumberFormat" class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800">
-              <option value="Page X of Y">Página X de Y (Estándar)</option>
-              <option value="X / Y">X / Y (Compacto)</option>
-              <option value="Page X">Página X</option>
-              <option value="none">Sin numeración</option>
-            </select>
-          </div>
-          <button type="button" class="btn-muted text-xs py-1.5 px-3 h-[34px] cursor-pointer" @click="headerFooterSettingsOpen = false">
-            {{ store.t("Listo") }}
-          </button>
-        </div>
-      </div>
+        :store="store"
+        :header-text="headerText"
+        :footer-text="footerText"
+        :page-number-format="pageNumberFormat"
+        :show-running-header="showRunningHeader"
+        :watermark-text="watermarkText"
+        :suppress-on-cover="suppressOnCover"
+        @close="headerFooterSettingsOpen = false"
+        @update:header-text="headerText = $event"
+        @update:footer-text="footerText = $event"
+        @update:page-number-format="pageNumberFormat = $event"
+        @update:show-running-header="showRunningHeader = $event"
+        @update:watermark-text="watermarkText = $event"
+        @update:suppress-on-cover="suppressOnCover = $event"
+      />
 
       <!-- Main Tri-Pane Workspace Body -->
       <div class="flex flex-1 min-h-0 overflow-hidden relative">
@@ -178,15 +161,18 @@
           :footer-text="footerText"
           :page-number-format="pageNumberFormat"
           :show-running-header="showRunningHeader"
+          :suppress-on-cover="suppressOnCover"
           @update:left-view-tab="leftViewTab = $event"
           @update:active-section-id="activeSectionId = $event"
           @add-root-section="addRootSection"
           @add-sub-section="addSubSection"
+          @add-cover="addCover"
+          @add-section-end="addSectionEnd"
           @delete-section="deleteSection"
           @select-section="selectSection"
         />
 
-        <!-- CENTER PANEL: Focused Section Markdown & Inline Style Editor -->
+        <!-- CENTER PANEL: Focused Section Markdown & Cover/End Editor -->
         <DocumentContentEditor
           :store="store"
           :active-section="activeSection"
@@ -199,7 +185,9 @@
           @insert-callout="insertCallout"
           @insert-variable="insertVariablePrompt"
           @toggle-variable-drawer="variableDrawerOpen = !variableDrawerOpen"
+          @open-header-footer-modal="headerFooterSettingsOpen = true"
           @add-root-section="addRootSection"
+          @add-cover="addCover"
         />
 
         <!-- RIGHT PANEL: Configurable Variables Drawer & Docs Menu -->
@@ -221,78 +209,47 @@
 <script>
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=1");
-const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=1");
-const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=1");
+const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=2");
+const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=2");
+const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=2");
+const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=1");
 
 const documentTemplates = (window.DocumentTemplates && window.DocumentTemplates.documentTemplates) || [];
 const parseMarkdownToBlocks = (window.DocumentParser && window.DocumentParser.parseMarkdownToBlocks) || function () { return []; };
 const compileDocumentToMarkdown = (window.DocumentParser && window.DocumentParser.compileDocumentToMarkdown) || function () { return ""; };
-
 const AUTOSAVE_KEY = "buyniverse_doc_editor_autosave";
 
 export default {
   name: "DocumentEditorModal",
-  components: {
-    DocumentSidebarPanel,
-    DocumentContentEditor,
-    DocumentVariableDrawer,
-  },
-  props: {
-    modelValue: { type: Boolean, default: false },
-    initialMarkdown: { type: String, default: "" },
-  },
+  components: { DocumentSidebarPanel, DocumentContentEditor, DocumentVariableDrawer, DocumentHeaderFooterModal },
+  props: { modelValue: { type: Boolean, default: false }, initialMarkdown: { type: String, default: "" } },
   emits: ["update:modelValue", "apply"],
   setup(props, { emit }) {
     const store = inject("store");
-    const modalRoot = ref(null);
-    const docTitle = ref("Pliego de Términos y Condiciones Técnicas");
-    const headerText = ref("BUY-2026-RFP · Especificación de Compra");
-    const footerText = ref("Confidencial · Buyniverse Escrow Protected");
-    const pageNumberFormat = ref("Page X of Y");
-    const showRunningHeader = ref(true);
-    const headerFooterSettingsOpen = ref(false);
-    const templatesOpen = ref(false);
-    const variableDrawerOpen = ref(false);
-    const leftViewTab = ref("thumbnails");
-    const markdownTextarea = ref(null);
-    const isSaving = ref(false);
-    const lastAutosavedAt = ref("");
+    const modalRoot = ref(null), docTitle = ref("Pliego de Términos y Condiciones Técnicas");
+    const headerText = ref("BUY-2026-RFP · Especificación de Compra"), footerText = ref("Confidencial · Buyniverse Escrow Protected");
+    const pageNumberFormat = ref("Page X of Y"), watermarkText = ref(""), suppressOnCover = ref(true), showRunningHeader = ref(true);
+    const headerFooterSettingsOpen = ref(false), templatesOpen = ref(false), variableDrawerOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
 
     const sections = ref([
-      { id: "sec-1", title: "Objetivo y Alcance del Proyecto", level: 1, pageBreakBefore: false, content: "El presente documento establece los términos técnicos y comerciales para la adjudicación mediante subasta inversa BAFO.\n\n- **Objetivo Principal:** Implementación de solución escalable para {{NOMBRE_PROYECTO:Portal B2B}}.\n- **Modalidad de Pago:** Custodia en fideicomiso (Escrow) liberada contra hitos aprobados.\n\n> [!NOTE]\n> Todos los postores deben cumplir con los requisitos de homologación y scoring SRM mínimo de 80 puntos." },
-      { id: "sec-2", title: "Requerimientos Técnicos y Entregables", level: 2, pageBreakBefore: false, content: "Los entregables deberán satisfacer la siguiente matriz de aceptación:\n\n| Hito | Entregable Clave | Plazo | % Fondo Escrow |\n| :--- | :--- | :--- | :--- |\n| Hito 1 | Diseño de Arquitectura & Prototipo UX | {{PLAZO_HITO_1:15 días}} | 30% |\n| Hito 2 | Implementación Core & APIs | {{PLAZO_HITO_2:30 días}} | 40% |\n| Hito 3 | Pruebas de Calidad, QA & Despliegue | {{PLAZO_HITO_3:15 días}} | 30% |" },
-      { id: "sec-3", title: "Criterios de Seguridad y Cumplimiento", level: 3, pageBreakBefore: false, content: "- Cumplimiento con estándares ISO-27001 y cifrado en tránsito TLS 1.3.\n- Validación fiscal automática mediante conciliación 3-Way Match.\n\n> [!IMPORTANT]\n> Cualquier desviación no autorizada en los plazos pactados aplicará penalización del {{PORCENTAJE_PENALIZACION:2%}} semanal sobre el monto del hito." },
-      { id: "sec-4", title: "Mecanismo de Subasta Inversa BAFO y Ganancia Compartida", level: 1, pageBreakBefore: true, content: "La adjudicación se definirá en subasta inversa en tiempo real.\n\n1. El postor presentará su cotización inicial de referencia.\n2. Se abrirá una ventana de 60 minutos para colocación de contraofertas dinámicas.\n3. La comisión de éxito Gain-Share (40% base o 25% por gran volumen) se liquidará exclusivamente sobre el ahorro neto comprobado." }
+      { id: "sec-cov", type: "cover", alignVertical: "center", title: "PLIEGO DE ESPECIFICACIONES TÉCNICAS", subtitle: "Adquisición Tecnológica · Buyniverse Escrow", content: "Documento oficial para la convocatoria de postores en subasta BAFO.", legalDisclaimer: "Información confidencial protegida por secretos industriales y convenios NDA.", versionText: "Versión 2.0 · Emisión 2026 · Buyniverse" },
+      { id: "sec-1", type: "standard", title: "Objetivo y Alcance", level: 1, pageBreakBefore: true, content: "Términos comerciales y técnicos para adjudicación por subasta inversa.\n\n- **Objetivo:** {{NOMBRE_PROYECTO:Portal B2B}}.\n- **Modalidad:** Escrow liberado contra hitos aprobados." },
+      { id: "sec-2", type: "standard", title: "Requerimientos Técnicos y Entregables", level: 2, pageBreakBefore: false, content: "| Hito | Entregable Clave | Plazo | % Fondo Escrow |\n| :--- | :--- | :--- | :--- |\n| Hito 1 | Diseño UX | {{PLAZO_HITO_1:15 días}} | 30% |\n| Hito 2 | APIs Core | {{PLAZO_HITO_2:30 días}} | 40% |\n| Hito 3 | QA y Despliegue | {{PLAZO_HITO_3:15 días}} | 30% |" },
+      { id: "sec-3", type: "standard", title: "Criterios de Seguridad y SLA", level: 2, pageBreakBefore: false, content: "- Estándar ISO-27001 y TLS 1.3.\n> [!IMPORTANT]\n> Penalización de {{PORCENTAJE_PENALIZACION:2%}} semanal por desviación injustificada." },
+      { id: "sec-end", type: "section_end", alignVertical: "bottom", title: "CONFORMIDAD Y SUSCRIPCIÓN", content: "Las partes manifiestan su conformidad con los acuerdos técnicos.", showSignatures: true }
     ]);
 
-    // Force appending directly to document.body on open to guarantee full-viewport escape
-    watch(
-      () => props.modelValue,
-      (open) => {
-        if (open) {
-          document.body.style.overflow = "hidden";
-          nextTick(() => {
-            if (modalRoot.value && modalRoot.value.parentNode !== document.body) {
-              document.body.appendChild(modalRoot.value);
-            }
-          });
-        } else {
-          document.body.style.overflow = "";
-        }
-      },
-      { immediate: true }
-    );
+    watch(() => props.modelValue, (open) => {
+      if (open) {
+        document.body.style.overflow = "hidden";
+        nextTick(() => { if (modalRoot.value && modalRoot.value.parentNode !== document.body) document.body.appendChild(modalRoot.value); });
+      } else { document.body.style.overflow = ""; }
+    }, { immediate: true });
 
-    function handleKeydown(e) {
-      if (e.key === "Escape" && props.modelValue) {
-        emit("update:modelValue", false);
-      }
-    }
+    function handleKeydown(e) { if (e.key === "Escape" && props.modelValue) emit("update:modelValue", false); }
 
     onMounted(() => {
       window.addEventListener("keydown", handleKeydown);
-      // Restore autosaved draft if exists and matches
       try {
         const raw = localStorage.getItem(AUTOSAVE_KEY);
         if (raw) {
@@ -311,30 +268,18 @@ export default {
     onBeforeUnmount(() => {
       window.removeEventListener("keydown", handleKeydown);
       document.body.style.overflow = "";
-      if (modalRoot.value && modalRoot.value.parentNode === document.body) {
-        document.body.removeChild(modalRoot.value);
-      }
+      if (modalRoot.value && modalRoot.value.parentNode === document.body) document.body.removeChild(modalRoot.value);
     });
 
-    // Auto-save logic with debounce
     let autosaveTimer = null;
     function triggerAutosave() {
       isSaving.value = true;
       if (autosaveTimer) clearTimeout(autosaveTimer);
       autosaveTimer = setTimeout(() => {
         try {
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-          const payload = {
-            docTitle: docTitle.value,
-            headerText: headerText.value,
-            footerText: footerText.value,
-            sections: sections.value,
-            savedAt: timeStr,
-          };
-          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+          const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ docTitle: docTitle.value, headerText: headerText.value, footerText: footerText.value, sections: sections.value, savedAt: timeStr }));
           lastAutosavedAt.value = timeStr;
-          // Synchronously emit compiled markdown to project
           emit("apply", compileToMarkdown());
         } catch (e) {}
         isSaving.value = false;
@@ -343,12 +288,13 @@ export default {
 
     watch([docTitle, headerText, footerText, sections], () => triggerAutosave(), { deep: true });
 
-    const activeSectionId = ref("sec-1");
+    const activeSectionId = ref("sec-cov");
     const activeSection = computed(() => sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null);
 
     const flatNumberedSections = computed(() => {
       let l1 = 0, l2 = 0, l3 = 0;
       return sections.value.map((sec) => {
+        if (sec.type === "cover" || sec.type === "section_end") return { ...sec, numberStr: "" };
         if (sec.level === 1) { l1++; l2 = 0; l3 = 0; return { ...sec, numberStr: `${l1}.` }; }
         if (sec.level === 2) { l2++; l3 = 0; return { ...sec, numberStr: `${l1}.${l2}` }; }
         l3++; return { ...sec, numberStr: `${l1}.${l2}.${l3}` };
@@ -361,13 +307,13 @@ export default {
       return match ? match.numberStr : "1.";
     });
 
-    const totalWordCount = computed(() => sections.value.reduce((sum, sec) => sum + (sec.content || "").trim().split(/\s+/).filter(Boolean).length, 0));
+    const totalWordCount = computed(() => sections.value.reduce((sum, sec) => sum + ((sec.content || "") + " " + (sec.title || "")).trim().split(/\s+/).filter(Boolean).length, 0));
 
     const estimatedPages = computed(() => {
       const pages = [];
       let currentPage = { sections: [] };
       sections.value.forEach((sec, idx) => {
-        if (sec.pageBreakBefore && currentPage.sections.length > 0) {
+        if ((sec.pageBreakBefore || sec.type === "cover" || sec.type === "section_end") && currentPage.sections.length > 0) {
           pages.push(currentPage);
           currentPage = { sections: [sec] };
         } else {
@@ -386,13 +332,22 @@ export default {
     function selectSection(sec) { if (sec) activeSectionId.value = sec.id; }
     function addRootSection() {
       const newId = "sec-" + Date.now();
-      sections.value.push({ id: newId, title: "Nueva Sección", level: 1, pageBreakBefore: false, content: "Descripción de los requerimientos y condiciones." });
+      sections.value.push({ id: newId, type: "standard", title: "Nueva Sección", level: 1, pageBreakBefore: false, content: "Descripción de los requerimientos y condiciones." });
+      activeSectionId.value = newId;
+    }
+    function addCover() {
+      const newId = "sec-cov-" + Date.now();
+      sections.value.unshift({ id: newId, type: "cover", alignVertical: "center", title: "PORTADA DE SECCIÓN / PLIEGO", subtitle: "Documento Protegido · Buyniverse", content: "Resumen y objetivo formal del documento.", legalDisclaimer: "Información confidencial sujeta a secreto industrial.", versionText: `v1.0 · ${new Date().toLocaleDateString()}` });
+      activeSectionId.value = newId;
+    }
+    function addSectionEnd() {
+      const newId = "sec-end-" + Date.now();
+      sections.value.push({ id: newId, type: "section_end", alignVertical: "bottom", title: "FIN DE SECCIÓN & CONSTANCIA DE FIRMAS", content: "Las partes manifiestan su conformidad con los acuerdos técnicos.", showSignatures: true });
       activeSectionId.value = newId;
     }
     function addSubSection(parentSec) {
-      const newId = "sec-" + Date.now();
-      const parentIdx = sections.value.findIndex((s) => s.id === parentSec.id);
-      sections.value.splice(parentIdx + 1, 0, { id: newId, title: "Nueva Subsección", level: Math.min(parentSec.level + 1, 3), pageBreakBefore: false, content: "" });
+      const newId = "sec-" + Date.now(), parentIdx = sections.value.findIndex((s) => s.id === parentSec.id);
+      sections.value.splice(parentIdx + 1, 0, { id: newId, type: "standard", title: "Nueva Subsección", level: Math.min((parentSec.level || 1) + 1, 3), pageBreakBefore: false, content: "" });
       activeSectionId.value = newId;
     }
     function deleteSection(id) {
@@ -410,7 +365,6 @@ export default {
       activeSection.value.content = val.substring(0, start) + prefix + selected + suffix + val.substring(end);
       nextTick(() => { textarea.focus(); textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length); });
     }
-
     function insertMarkdownPrefix(prefix) {
       const textarea = markdownTextarea.value;
       if (!textarea || !activeSection.value) return;
@@ -418,30 +372,28 @@ export default {
       activeSection.value.content = val.substring(0, start) + "\n" + prefix + val.substring(start);
       nextTick(() => { textarea.focus(); textarea.setSelectionRange(start + prefix.length + 1, start + prefix.length + 1); });
     }
-
     function insertCallout(type) { insertMarkdownPrefix(`> [!${type}]\n> `); }
-    function insertTableSnippet() { insertMarkdownPrefix(`\n| Columna 1 | Columna 2 | Criterio |\n| :--- | :--- | :--- |\n| Valor A | Valor B | Cumple |\n| Valor C | Valor D | En revisión |\n`); }
-
+    function insertTableSnippet() { insertMarkdownPrefix(`\n| Columna 1 | Columna 2 | Criterio |\n| :--- | :--- | :--- |\n| Valor A | Valor B | Cumple |\n`); }
     function insertVariablePrompt() {
       const textarea = markdownTextarea.value;
       if (!textarea || !activeSection.value) return;
       const start = textarea.selectionStart, end = textarea.selectionEnd, val = activeSection.value.content || "";
       const selected = val.substring(start, end);
-      const varName = prompt("Ingresa el identificador del campo configurable (ej. RAZON_SOCIAL, FECHA_ENTREGA):", selected ? selected.toUpperCase().replace(/\s+/g, "_") : "CAMPO_NUEVO");
+      const varName = prompt("Identificador del campo configurable:", selected ? selected.toUpperCase().replace(/\s+/g, "_") : "CAMPO_NUEVO");
       if (!varName) return;
       const cleanKey = varName.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "_");
-      const defaultVal = selected || "Valor";
-      activeSection.value.content = val.substring(0, start) + `{{${cleanKey}:${defaultVal}}}` + val.substring(end);
+      activeSection.value.content = val.substring(0, start) + `{{${cleanKey}:${selected || 'Valor'}}}` + val.substring(end);
       store.notice(`Campo '{{${cleanKey}}}' marcado como configurable`, "fa-tag");
       variableDrawerOpen.value = true;
     }
-
     function applyVariablesToSections(valuesMap) {
       const parser = window.DocumentParser;
       if (!parser || !parser.replaceVariablesInText) return;
       sections.value.forEach((sec) => {
         sec.title = parser.replaceVariablesInText(sec.title, valuesMap);
         sec.content = parser.replaceVariablesInText(sec.content, valuesMap);
+        if (sec.subtitle) sec.subtitle = parser.replaceVariablesInText(sec.subtitle, valuesMap);
+        if (sec.legalDisclaimer) sec.legalDisclaimer = parser.replaceVariablesInText(sec.legalDisclaimer, valuesMap);
       });
       store.notice("Variables sustituidas por sus valores definitivos", "fa-check-double");
     }
@@ -459,12 +411,10 @@ export default {
       if (tpl.isFormTemplate) variableDrawerOpen.value = true;
       store.notice(`Plantilla '${tpl.name}' cargada`, "fa-wand-magic-sparkles");
     }
-
     function loadTemplateById(id) {
       const found = documentTemplates.find((t) => t.id === id);
       if (found) loadTemplate(found);
     }
-
     function loadSavedDoc(doc) {
       if (!doc) return;
       docTitle.value = doc.title || doc.name;
@@ -472,70 +422,23 @@ export default {
       activeSectionId.value = sections.value[0]?.id;
       store.notice(`Plantilla '${doc.name}' cargada desde Mis Documentos`, "fa-folder-open");
     }
-
     function compileToMarkdown() {
-      return compileDocumentToMarkdown({
-        docTitle: docTitle.value,
-        headerText: headerText.value,
-        footerText: footerText.value,
-        showRunningHeader: showRunningHeader.value,
-        flatSections: flatNumberedSections.value,
-      });
+      return compileDocumentToMarkdown({ docTitle: docTitle.value, headerText: headerText.value, footerText: footerText.value, showRunningHeader: showRunningHeader.value, flatSections: flatNumberedSections.value });
     }
-
-    function copyCompiledMarkdown() {
-      const compiled = compileToMarkdown();
-      navigator.clipboard.writeText(compiled).then(() => store.notice("Markdown compilado copiado al portapapeles", "fa-clipboard-check"));
-    }
-
+    function copyCompiledMarkdown() { navigator.clipboard.writeText(compileToMarkdown()).then(() => store.notice("Markdown copiado al portapapeles", "fa-clipboard-check")); }
     function applyDocumentToDescription() {
-      const compiled = compileToMarkdown();
-      emit("apply", compiled);
+      emit("apply", compileToMarkdown());
       emit("update:modelValue", false);
       store.notice("Documento Markdown insertado en la descripción", "fa-circle-check");
     }
 
     return {
-      store,
-      modalRoot,
-      docTitle,
-      headerText,
-      footerText,
-      pageNumberFormat,
-      showRunningHeader,
-      headerFooterSettingsOpen,
-      templatesOpen,
-      variableDrawerOpen,
-      leftViewTab,
-      markdownTextarea,
-      isSaving,
-      lastAutosavedAt,
-      sections,
-      activeSectionId,
-      activeSection,
-      flatNumberedSections,
-      activeSectionNumber,
-      totalWordCount,
-      estimatedPages,
-      documentTemplates,
-      selectSection,
-      addRootSection,
-      addSubSection,
-      deleteSection,
-      setSectionLevel,
-      insertMarkdownWrapper,
-      insertMarkdownPrefix,
-      insertCallout,
-      insertTableSnippet,
-      insertVariablePrompt,
-      applyVariablesToSections,
-      renderedBlocks,
-      loadTemplate,
-      loadTemplateById,
-      loadSavedDoc,
-      compileToMarkdown,
-      copyCompiledMarkdown,
-      applyDocumentToDescription,
+      store, modalRoot, docTitle, headerText, footerText, pageNumberFormat, watermarkText, suppressOnCover, showRunningHeader,
+      headerFooterSettingsOpen, templatesOpen, variableDrawerOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
+      sections, activeSectionId, activeSection, flatNumberedSections, activeSectionNumber, totalWordCount, estimatedPages,
+      documentTemplates, selectSection, addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel,
+      insertMarkdownWrapper, insertMarkdownPrefix, insertCallout, insertTableSnippet, insertVariablePrompt, applyVariablesToSections,
+      renderedBlocks, loadTemplate, loadTemplateById, loadSavedDoc, compileToMarkdown, copyCompiledMarkdown, applyDocumentToDescription,
     };
   },
 };

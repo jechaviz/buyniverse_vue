@@ -41,7 +41,8 @@
     var all = [];
     var seen = {};
     (sections || []).forEach(function (sec) {
-      var vars = extractVariablesFromText((sec.title || "") + "\n" + (sec.content || ""));
+      var textToScan = (sec.title || "") + "\n" + (sec.content || "") + "\n" + (sec.subtitle || "") + "\n" + (sec.legalDisclaimer || "") + "\n" + (sec.versionText || "");
+      var vars = extractVariablesFromText(textToScan);
       vars.forEach(function (v) {
         if (!seen[v.key]) {
           seen[v.key] = true;
@@ -133,13 +134,34 @@
     }
 
     config.flatSections.forEach(function (sec) {
-      if (sec.pageBreakBefore) {
+      if (sec.pageBreakBefore || sec.type === "cover" || sec.type === "section_end") {
         md += "\n<!-- PAGEBREAK -->\n\n";
       }
-      var hashes = "#".repeat(sec.level || 1);
-      md += hashes + " " + sec.numberStr + " " + sec.title + "\n\n";
-      if (sec.content && sec.content.trim()) {
-        md += sec.content.trim() + "\n\n";
+
+      if (sec.type === "cover") {
+        var align = sec.alignVertical || "center";
+        md += "<!-- COVER align:" + align + " -->\n";
+        md += "## " + (sec.title || "PORTADA") + "\n\n";
+        if (sec.subtitle) md += "**" + sec.subtitle + "**\n\n";
+        if (sec.content && sec.content.trim()) md += sec.content.trim() + "\n\n";
+        if (sec.legalDisclaimer) md += "> [!NOTE]\n> " + sec.legalDisclaimer + "\n\n";
+        if (sec.versionText) md += "**Control de Versiones:** " + sec.versionText + "\n\n";
+        md += "<!-- /COVER -->\n\n";
+      } else if (sec.type === "section_end") {
+        var endAlign = sec.alignVertical || "bottom";
+        md += "<!-- SECTION_END align:" + endAlign + " -->\n";
+        md += "## " + (sec.title || "FIN DE SECCIÓN / CIERRE") + "\n\n";
+        if (sec.content && sec.content.trim()) md += sec.content.trim() + "\n\n";
+        if (sec.showSignatures) {
+          md += "| Firma Comprador | Firma Proveedor | Firma Testigo |\n| :--- | :--- | :--- |\n| Nombre: ________________ | Nombre: ________________ | Nombre: ________________ |\n| Fecha: ________________ | Fecha: ________________ | Fecha: ________________ |\n\n";
+        }
+        md += "<!-- /SECTION_END -->\n\n";
+      } else {
+        var hashes = "#".repeat(sec.level || 1);
+        md += hashes + " " + (sec.numberStr || "") + " " + sec.title + "\n\n";
+        if (sec.content && sec.content.trim()) {
+          md += sec.content.trim() + "\n\n";
+        }
       }
     });
 
