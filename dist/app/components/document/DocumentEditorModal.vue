@@ -1,17 +1,13 @@
 <template>
-  <div
-    v-if="modelValue"
-    class="fixed inset-0 z-50 flex flex-col w-screen h-screen bg-white dark:bg-slate-900 dark:text-slate-100 overflow-hidden transition-all duration-200"
-    role="dialog"
-    aria-modal="true"
-  >
+  <Teleport to="body">
     <div
-      class="relative flex flex-col w-full h-full flex-1 overflow-hidden"
+      v-if="modelValue"
+      class="fixed inset-0 z-[9999] flex flex-col w-screen h-screen bg-white dark:bg-slate-900 dark:text-slate-100 overflow-hidden transition-all duration-200"
+      role="dialog"
+      aria-modal="true"
     >
       <!-- Top Global Action Bar & Metadata Ribbon -->
-      <header
-        class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/80 flex-none"
-      >
+      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-slate-50/90 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/80 flex-none">
         <div class="flex items-center gap-3 min-w-0">
           <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-sm flex-none">
             <i class="fa-solid fa-file-lines text-sm"></i>
@@ -39,7 +35,7 @@
           <div class="relative">
             <button
               type="button"
-              class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5"
+              class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
               @click="templatesOpen = !templatesOpen"
             >
               <i class="fa-solid fa-wand-magic-sparkles text-brand text-xs"></i>
@@ -50,28 +46,42 @@
             <!-- Floating templates dropdown -->
             <div
               v-if="templatesOpen"
-              class="absolute right-0 top-full mt-1 w-64 z-50 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900 space-y-1"
+              class="absolute right-0 top-full mt-1 w-72 z-50 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900 space-y-1"
             >
               <button
                 v-for="tpl in documentTemplates"
                 :key="tpl.id"
                 type="button"
-                class="flex w-full items-start gap-2.5 rounded-xl p-2.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                class="flex w-full items-start gap-2.5 rounded-xl p-2.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 @click="loadTemplate(tpl)"
               >
                 <i :class="tpl.icon" class="text-brand text-sm mt-0.5"></i>
                 <div>
-                  <b class="block text-slate-900 dark:text-white">{{ tpl.name }}</b>
+                  <div class="flex items-center gap-1.5">
+                    <b class="text-slate-900 dark:text-white">{{ tpl.name }}</b>
+                    <span v-if="tpl.isFormTemplate" class="badge bg-amber-100 text-amber-800 text-[9px] px-1 py-0 dark:bg-amber-900/50 dark:text-amber-300">Machote</span>
+                  </div>
                   <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{{ tpl.desc }}</p>
                 </div>
               </button>
             </div>
           </div>
 
-          <!-- Running Headers & Footers Settings Modal Trigger -->
+          <!-- Docs / Templates Repository Drawer Trigger -->
           <button
             type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5"
+            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+            :class="variableDrawerOpen ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30' : ''"
+            @click="variableDrawerOpen = !variableDrawerOpen"
+          >
+            <i class="fa-solid fa-sliders text-amber-600 text-xs"></i>
+            <span>{{ store.t("Docs & Machote") }}</span>
+          </button>
+
+          <!-- Running Headers & Footers Settings Trigger -->
+          <button
+            type="button"
+            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
             @click="headerFooterSettingsOpen = !headerFooterSettingsOpen"
           >
             <i class="fa-solid fa-heading text-slate-500 text-xs"></i>
@@ -81,7 +91,7 @@
           <!-- Copy Markdown Button -->
           <button
             type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5"
+            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
             @click="copyCompiledMarkdown"
             :title="store.t('Copiar documento completo a portapapeles')"
           >
@@ -92,7 +102,7 @@
           <!-- Insert in Description Primary Button -->
           <button
             type="button"
-            class="btn-brand text-xs py-1.5 px-4 font-bold shadow-md flex items-center gap-1.5"
+            class="btn-brand text-xs py-1.5 px-4 font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
             @click="applyDocumentToDescription"
           >
             <i class="fa-solid fa-check text-xs"></i>
@@ -102,7 +112,7 @@
           <!-- Close Modal Cross -->
           <button
             type="button"
-            class="grid h-8 w-8 place-items-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
+            class="grid h-8 w-8 place-items-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
             @click="$emit('update:modelValue', false)"
             aria-label="Cerrar"
           >
@@ -120,21 +130,13 @@
           <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">
             <i class="fa-solid fa-heading mr-1 text-brand"></i>{{ store.t("Encabezado Superior Repetible") }}
           </label>
-          <input
-            v-model="headerText"
-            class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800"
-            :placeholder="store.t('Ej. RFC / ID de Proyecto / Confidencial')"
-          />
+          <input v-model="headerText" class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800" :placeholder="store.t('Ej. RFC / ID de Proyecto / Confidencial')" />
         </div>
         <div>
           <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">
             <i class="fa-solid fa-shoe-prints mr-1 text-brand"></i>{{ store.t("Pie de Página Repetible") }}
           </label>
-          <input
-            v-model="footerText"
-            class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800"
-            :placeholder="store.t('Ej. Confidencial · Buyniverse Escrow Protected')"
-          />
+          <input v-model="footerText" class="input text-xs py-1.5 px-2.5 w-full bg-white dark:bg-slate-800" :placeholder="store.t('Ej. Confidencial · Buyniverse Escrow Protected')" />
         </div>
         <div class="flex items-end gap-3">
           <div class="flex-1">
@@ -148,18 +150,14 @@
               <option value="none">Sin numeración</option>
             </select>
           </div>
-          <button
-            type="button"
-            class="btn-muted text-xs py-1.5 px-3 h-[34px]"
-            @click="headerFooterSettingsOpen = false"
-          >
+          <button type="button" class="btn-muted text-xs py-1.5 px-3 h-[34px] cursor-pointer" @click="headerFooterSettingsOpen = false">
             {{ store.t("Listo") }}
           </button>
         </div>
       </div>
 
-      <!-- Main Dual-Pane Workspace Body -->
-      <div class="flex flex-1 min-h-0 overflow-hidden">
+      <!-- Main Tri-Pane Workspace Body -->
+      <div class="flex flex-1 min-h-0 overflow-hidden relative">
         <!-- LEFT PANEL: Sidebar Thumbnails & Tree -->
         <DocumentSidebarPanel
           :store="store"
@@ -180,7 +178,7 @@
           @select-section="selectSection"
         />
 
-        <!-- RIGHT PANEL: Focused Section Markdown & Inline Style Editor -->
+        <!-- CENTER PANEL: Focused Section Markdown & Inline Style Editor -->
         <DocumentContentEditor
           :store="store"
           :active-section="activeSection"
@@ -191,11 +189,25 @@
           @insert-table="insertTableSnippet"
           @insert-prefix="insertMarkdownPrefix"
           @insert-callout="insertCallout"
+          @insert-variable="insertVariablePrompt"
+          @toggle-variable-drawer="variableDrawerOpen = !variableDrawerOpen"
           @add-root-section="addRootSection"
+        />
+
+        <!-- RIGHT PANEL: Configurable Variables Drawer & Docs Menu -->
+        <DocumentVariableDrawer
+          v-if="variableDrawerOpen"
+          :store="store"
+          :sections="sections"
+          :doc-title="docTitle"
+          @close="variableDrawerOpen = false"
+          @apply-variables="applyVariablesToSections"
+          @load-saved-doc="loadSavedDoc"
+          @load-template-nda="loadTemplateById('nda_b2b')"
         />
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -203,6 +215,7 @@ const { inject, ref, computed, nextTick, onMounted, onBeforeUnmount, defineAsync
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=1");
 const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=1");
+const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=1");
 
 const documentTemplates = (window.DocumentTemplates && window.DocumentTemplates.documentTemplates) || [];
 const parseMarkdownToBlocks = (window.DocumentParser && window.DocumentParser.parseMarkdownToBlocks) || function () { return []; };
@@ -213,21 +226,25 @@ export default {
   components: {
     DocumentSidebarPanel,
     DocumentContentEditor,
+    DocumentVariableDrawer,
   },
   props: {
-    modelValue: {
-      type: Boolean,
-      default: false,
-    },
-    initialMarkdown: {
-      type: String,
-      default: "",
-    },
+    modelValue: { type: Boolean, default: false },
+    initialMarkdown: { type: String, default: "" },
   },
   emits: ["update:modelValue", "apply"],
   setup(props, { emit }) {
     const store = inject("store");
     const docTitle = ref("Pliego de Términos y Condiciones Técnicas");
+    const headerText = ref("BUY-2026-RFP · Especificación de Compra");
+    const footerText = ref("Confidencial · Buyniverse Escrow Protected");
+    const pageNumberFormat = ref("Page X of Y");
+    const showRunningHeader = ref(true);
+    const headerFooterSettingsOpen = ref(false);
+    const templatesOpen = ref(false);
+    const variableDrawerOpen = ref(false);
+    const leftViewTab = ref("thumbnails");
+    const markdownTextarea = ref(null);
 
     function handleKeydown(e) {
       if (e.key === "Escape" && props.modelValue) {
@@ -238,203 +255,115 @@ export default {
       onMounted(() => window.addEventListener("keydown", handleKeydown));
       onBeforeUnmount(() => window.removeEventListener("keydown", handleKeydown));
     }
-    const headerText = ref("BUY-2026-RFP · Especificación de Compra");
-    const footerText = ref("Confidencial · Buyniverse Escrow Protected");
-    const pageNumberFormat = ref("Page X of Y");
-    const showRunningHeader = ref(true);
-    const headerFooterSettingsOpen = ref(false);
-    const templatesOpen = ref(false);
-    const leftViewTab = ref("thumbnails");
-    const markdownTextarea = ref(null);
 
     const sections = ref([
-      {
-        id: "sec-1",
-        title: "Objetivo y Alcance del Proyecto",
-        level: 1,
-        pageBreakBefore: false,
-        content: "El presente documento establece los términos técnicos y comerciales para la adjudicación mediante subasta inversa BAFO.\n\n- **Objetivo Principal:** Implementación de solución escalable con arquitectura segura.\n- **Modalidad de Pago:** Custodia en fideicomiso (Escrow) liberada contra hitos aprobados.\n\n> [!NOTE]\n> Todos los postores deben cumplir con los requisitos de homologación y scoring SRM mínimo de 80 puntos."
-      },
-      {
-        id: "sec-2",
-        title: "Requerimientos Técnicos y Entregables",
-        level: 2,
-        pageBreakBefore: false,
-        content: "Los entregables deberán satisfacer la siguiente matriz de aceptación:\n\n| Hito | Entregable Clave | Plazo | % Fondo Escrow |\n| :--- | :--- | :--- | :--- |\n| Hito 1 | Diseño de Arquitectura & Prototipo UX | 15 días | 30% |\n| Hito 2 | Implementación Core & APIs | 30 días | 40% |\n| Hito 3 | Pruebas de Calidad, QA & Despliegue | 15 días | 30% |"
-      },
-      {
-        id: "sec-3",
-        title: "Criterios de Seguridad y Cumplimiento",
-        level: 3,
-        pageBreakBefore: false,
-        content: "- Cumplimiento con estándares ISO-27001 y cifrado en tránsito TLS 1.3.\n- Validación fiscal automática mediante conciliación 3-Way Match.\n\n> [!IMPORTANT]\n> Cualquier desviación no autorizada en los plazos pactados aplicará penalización del 2% semanal sobre el monto del hito."
-      },
-      {
-        id: "sec-4",
-        title: "Mecanismo de Subasta Inversa BAFO y Ganancia Compartida",
-        level: 1,
-        pageBreakBefore: true,
-        content: "La adjudicación se definirá en subasta inversa en tiempo real.\n\n1. El postor presentará su cotización inicial de referencia.\n2. Se abrirá una ventana de 60 minutos para colocación de contraofertas dinámicas.\n3. La comisión de éxito Gain-Share (40% base o 25% por gran volumen) se liquidará exclusivamente sobre el ahorro neto comprobado."
-      }
+      { id: "sec-1", title: "Objetivo y Alcance del Proyecto", level: 1, pageBreakBefore: false, content: "El presente documento establece los términos técnicos y comerciales para la adjudicación mediante subasta inversa BAFO.\n\n- **Objetivo Principal:** Implementación de solución escalable para {{NOMBRE_PROYECTO:Portal B2B}}.\n- **Modalidad de Pago:** Custodia en fideicomiso (Escrow) liberada contra hitos aprobados.\n\n> [!NOTE]\n> Todos los postores deben cumplir con los requisitos de homologación y scoring SRM mínimo de 80 puntos." },
+      { id: "sec-2", title: "Requerimientos Técnicos y Entregables", level: 2, pageBreakBefore: false, content: "Los entregables deberán satisfacer la siguiente matriz de aceptación:\n\n| Hito | Entregable Clave | Plazo | % Fondo Escrow |\n| :--- | :--- | :--- | :--- |\n| Hito 1 | Diseño de Arquitectura & Prototipo UX | {{PLAZO_HITO_1:15 días}} | 30% |\n| Hito 2 | Implementación Core & APIs | {{PLAZO_HITO_2:30 días}} | 40% |\n| Hito 3 | Pruebas de Calidad, QA & Despliegue | {{PLAZO_HITO_3:15 días}} | 30% |" },
+      { id: "sec-3", title: "Criterios de Seguridad y Cumplimiento", level: 3, pageBreakBefore: false, content: "- Cumplimiento con estándares ISO-27001 y cifrado en tránsito TLS 1.3.\n- Validación fiscal automática mediante conciliación 3-Way Match.\n\n> [!IMPORTANT]\n> Cualquier desviación no autorizada en los plazos pactados aplicará penalización del {{PORCENTAJE_PENALIZACION:2%}} semanal sobre el monto del hito." },
+      { id: "sec-4", title: "Mecanismo de Subasta Inversa BAFO y Ganancia Compartida", level: 1, pageBreakBefore: true, content: "La adjudicación se definirá en subasta inversa en tiempo real.\n\n1. El postor presentará su cotización inicial de referencia.\n2. Se abrirá una ventana de 60 minutos para colocación de contraofertas dinámicas.\n3. La comisión de éxito Gain-Share (40% base o 25% por gran volumen) se liquidará exclusivamente sobre el ahorro neto comprobado." }
     ]);
 
     const activeSectionId = ref("sec-1");
-
-    const activeSection = computed(() => {
-      return sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null;
-    });
+    const activeSection = computed(() => sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null);
 
     const flatNumberedSections = computed(() => {
-      let l1 = 0;
-      let l2 = 0;
-      let l3 = 0;
-
+      let l1 = 0, l2 = 0, l3 = 0;
       return sections.value.map((sec) => {
-        if (sec.level === 1) {
-          l1++;
-          l2 = 0;
-          l3 = 0;
-          return { ...sec, numberStr: `${l1}.` };
-        } else if (sec.level === 2) {
-          l2++;
-          l3 = 0;
-          return { ...sec, numberStr: `${l1}.${l2}` };
-        } else {
-          l3++;
-          return { ...sec, numberStr: `${l1}.${l2}.${l3}` };
-        }
+        if (sec.level === 1) { l1++; l2 = 0; l3 = 0; return { ...sec, numberStr: `${l1}.` }; }
+        if (sec.level === 2) { l2++; l3 = 0; return { ...sec, numberStr: `${l1}.${l2}` }; }
+        l3++; return { ...sec, numberStr: `${l1}.${l2}.${l3}` };
       });
     });
 
-    function getSectionNumber(sec) {
-      const match = flatNumberedSections.value.find((s) => s.id === sec.id);
-      return match ? match.numberStr : "1.";
-    }
-
     const activeSectionNumber = computed(() => {
       if (!activeSection.value) return "1.";
-      return getSectionNumber(activeSection.value);
+      const match = flatNumberedSections.value.find((s) => s.id === activeSection.value.id);
+      return match ? match.numberStr : "1.";
     });
 
-    const totalWordCount = computed(() => {
-      return sections.value.reduce((sum, sec) => {
-        const words = (sec.content || "").trim().split(/\s+/).filter(Boolean).length;
-        return sum + words;
-      }, 0);
-    });
+    const totalWordCount = computed(() => sections.value.reduce((sum, sec) => sum + (sec.content || "").trim().split(/\s+/).filter(Boolean).length, 0));
 
     const estimatedPages = computed(() => {
       const pages = [];
       let currentPage = { sections: [] };
-
       sections.value.forEach((sec, idx) => {
         if (sec.pageBreakBefore && currentPage.sections.length > 0) {
           pages.push(currentPage);
           currentPage = { sections: [sec] };
         } else {
           currentPage.sections.push(sec);
-          const wordsOnPage = currentPage.sections.reduce((w, s) => w + (s.content || "").split(/\s+/).length, 0);
-          if (wordsOnPage > 280 && idx < sections.value.length - 1) {
+          const words = currentPage.sections.reduce((w, s) => w + (s.content || "").split(/\s+/).length, 0);
+          if (words > 280 && idx < sections.value.length - 1) {
             pages.push(currentPage);
             currentPage = { sections: [] };
           }
         }
       });
-
-      if (currentPage.sections.length > 0) {
-        pages.push(currentPage);
-      }
-
+      if (currentPage.sections.length > 0) pages.push(currentPage);
       return pages.length ? pages : [{ sections: sections.value }];
     });
 
-    function selectSection(sec) {
-      if (sec) {
-        activeSectionId.value = sec.id;
-      }
-    }
-
+    function selectSection(sec) { if (sec) activeSectionId.value = sec.id; }
     function addRootSection() {
       const newId = "sec-" + Date.now();
-      sections.value.push({
-        id: newId,
-        title: "Nueva Sección",
-        level: 1,
-        pageBreakBefore: false,
-        content: "Descripción de los requerimientos y condiciones."
-      });
+      sections.value.push({ id: newId, title: "Nueva Sección", level: 1, pageBreakBefore: false, content: "Descripción de los requerimientos y condiciones." });
       activeSectionId.value = newId;
     }
-
     function addSubSection(parentSec) {
       const newId = "sec-" + Date.now();
       const parentIdx = sections.value.findIndex((s) => s.id === parentSec.id);
-      const newLevel = Math.min(parentSec.level + 1, 3);
-
-      sections.value.splice(parentIdx + 1, 0, {
-        id: newId,
-        title: "Nueva Subsección",
-        level: newLevel,
-        pageBreakBefore: false,
-        content: ""
-      });
+      sections.value.splice(parentIdx + 1, 0, { id: newId, title: "Nueva Subsección", level: Math.min(parentSec.level + 1, 3), pageBreakBefore: false, content: "" });
       activeSectionId.value = newId;
     }
-
     function deleteSection(id) {
-      if (sections.value.length <= 1) {
-        store.notice("El documento debe tener al menos una sección", "fa-triangle-exclamation");
-        return;
-      }
+      if (sections.value.length <= 1) { store.notice("El documento debe tener al menos una sección", "fa-triangle-exclamation"); return; }
       sections.value = sections.value.filter((s) => s.id !== id);
-      if (activeSectionId.value === id) {
-        activeSectionId.value = sections.value[0]?.id;
-      }
+      if (activeSectionId.value === id) activeSectionId.value = sections.value[0]?.id;
     }
-
-    function setSectionLevel(level) {
-      if (activeSection.value) {
-        activeSection.value.level = level;
-      }
-    }
+    function setSectionLevel(level) { if (activeSection.value) activeSection.value.level = level; }
 
     function insertMarkdownWrapper(prefix, suffix, placeholder) {
       const textarea = markdownTextarea.value;
       if (!textarea || !activeSection.value) return;
-
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const val = activeSection.value.content || "";
+      const start = textarea.selectionStart, end = textarea.selectionEnd, val = activeSection.value.content || "";
       const selected = val.substring(start, end) || placeholder;
-
       activeSection.value.content = val.substring(0, start) + prefix + selected + suffix + val.substring(end);
-      nextTick(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
-      });
+      nextTick(() => { textarea.focus(); textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length); });
     }
 
     function insertMarkdownPrefix(prefix) {
       const textarea = markdownTextarea.value;
       if (!textarea || !activeSection.value) return;
-
-      const start = textarea.selectionStart;
-      const val = activeSection.value.content || "";
-
+      const start = textarea.selectionStart, val = activeSection.value.content || "";
       activeSection.value.content = val.substring(0, start) + "\n" + prefix + val.substring(start);
-      nextTick(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + prefix.length + 1, start + prefix.length + 1);
+      nextTick(() => { textarea.focus(); textarea.setSelectionRange(start + prefix.length + 1, start + prefix.length + 1); });
+    }
+
+    function insertCallout(type) { insertMarkdownPrefix(`> [!${type}]\n> `); }
+    function insertTableSnippet() { insertMarkdownPrefix(`\n| Columna 1 | Columna 2 | Criterio |\n| :--- | :--- | :--- |\n| Valor A | Valor B | Cumple |\n| Valor C | Valor D | En revisión |\n`); }
+
+    function insertVariablePrompt() {
+      const textarea = markdownTextarea.value;
+      if (!textarea || !activeSection.value) return;
+      const start = textarea.selectionStart, end = textarea.selectionEnd, val = activeSection.value.content || "";
+      const selected = val.substring(start, end);
+      const varName = prompt("Ingresa el identificador del campo configurable (ej. RAZON_SOCIAL, FECHA_ENTREGA):", selected ? selected.toUpperCase().replace(/\s+/g, "_") : "CAMPO_NUEVO");
+      if (!varName) return;
+      const cleanKey = varName.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "_");
+      const defaultVal = selected || "Valor";
+      activeSection.value.content = val.substring(0, start) + `{{${cleanKey}:${defaultVal}}}` + val.substring(end);
+      store.notice(`Campo '{{${cleanKey}}}' marcado como configurable`, "fa-tag");
+      variableDrawerOpen.value = true;
+    }
+
+    function applyVariablesToSections(valuesMap) {
+      const parser = window.DocumentParser;
+      if (!parser || !parser.replaceVariablesInText) return;
+      sections.value.forEach((sec) => {
+        sec.title = parser.replaceVariablesInText(sec.title, valuesMap);
+        sec.content = parser.replaceVariablesInText(sec.content, valuesMap);
       });
-    }
-
-    function insertCallout(type) {
-      insertMarkdownPrefix(`> [!${type}]\n> `);
-    }
-
-    function insertTableSnippet() {
-      const tableSnippet = `\n| Columna 1 | Columna 2 | Criterio |\n| :--- | :--- | :--- |\n| Valor A | Valor B | Cumple |\n| Valor C | Valor D | En revisión |\n`;
-      insertMarkdownPrefix(tableSnippet);
+      store.notice("Variables sustituidas por sus valores definitivos", "fa-check-double");
     }
 
     const renderedBlocks = computed(() => {
@@ -447,7 +376,21 @@ export default {
       sections.value = tpl.build();
       activeSectionId.value = sections.value[0]?.id;
       templatesOpen.value = false;
+      if (tpl.isFormTemplate) variableDrawerOpen.value = true;
       store.notice(`Plantilla '${tpl.name}' cargada`, "fa-wand-magic-sparkles");
+    }
+
+    function loadTemplateById(id) {
+      const found = documentTemplates.find((t) => t.id === id);
+      if (found) loadTemplate(found);
+    }
+
+    function loadSavedDoc(doc) {
+      if (!doc) return;
+      docTitle.value = doc.title || doc.name;
+      sections.value = JSON.parse(JSON.stringify(doc.sections || []));
+      activeSectionId.value = sections.value[0]?.id;
+      store.notice(`Plantilla '${doc.name}' cargada desde Mis Documentos`, "fa-folder-open");
     }
 
     function compileToMarkdown() {
@@ -462,9 +405,7 @@ export default {
 
     function copyCompiledMarkdown() {
       const compiled = compileToMarkdown();
-      navigator.clipboard.writeText(compiled).then(() => {
-        store.notice("Markdown compilado copiado al portapapeles", "fa-clipboard-check");
-      });
+      navigator.clipboard.writeText(compiled).then(() => store.notice("Markdown compilado copiado al portapapeles", "fa-clipboard-check"));
     }
 
     function applyDocumentToDescription() {
@@ -483,6 +424,7 @@ export default {
       showRunningHeader,
       headerFooterSettingsOpen,
       templatesOpen,
+      variableDrawerOpen,
       leftViewTab,
       markdownTextarea,
       sections,
@@ -502,25 +444,22 @@ export default {
       insertMarkdownPrefix,
       insertCallout,
       insertTableSnippet,
+      insertVariablePrompt,
+      applyVariablesToSections,
       renderedBlocks,
       loadTemplate,
+      loadTemplateById,
+      loadSavedDoc,
       compileToMarkdown,
       copyCompiledMarkdown,
-      applyDocumentToDescription
+      applyDocumentToDescription,
     };
-  }
+  },
 };
 </script>
 
 <style scoped>
-.scrollbar-thin::-webkit-scrollbar {
-  width: 5px;
-}
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 9999px;
-}
+.scrollbar-thin::-webkit-scrollbar { width: 5px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
 </style>

@@ -2,148 +2,171 @@
   <main class="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 overflow-hidden">
     <template v-if="activeSection">
       <!-- Inline Markdown Styling Toolbar -->
-      <div class="flex flex-wrap items-center gap-1 border-b border-slate-200/90 bg-slate-50/90 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900/90 flex-none overflow-x-auto">
-        <!-- Level Selector -->
-        <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
+      <div class="flex flex-wrap items-center justify-between gap-1 border-b border-slate-200/90 bg-slate-50/90 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900/90 flex-none overflow-x-auto">
+        <div class="flex items-center gap-1 flex-wrap">
+          <!-- Level Selector -->
+          <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
+            <button
+              type="button"
+              class="rounded-lg px-2 py-1 text-xs font-bold transition"
+              :class="activeSection.level === 1 ? 'bg-brand text-white' : 'btn-muted'"
+              @click="$emit('set-level', 1)"
+            >
+              1. H1
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-2 py-1 text-xs font-bold transition"
+              :class="activeSection.level === 2 ? 'bg-brand text-white' : 'btn-muted'"
+              @click="$emit('set-level', 2)"
+            >
+              1.1 H2
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-2 py-1 text-xs font-bold transition"
+              :class="activeSection.level === 3 ? 'bg-brand text-white' : 'btn-muted'"
+              @click="$emit('set-level', 3)"
+            >
+              1.1.1 H3
+            </button>
+          </div>
+
+          <!-- Inline Style Buttons -->
+          <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 font-bold"
+              @click="$emit('insert-wrapper', '**', '**', 'texto en negrita')"
+              :title="store.t('Negrita (**)')"
+            >
+              <b>B</b>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 italic"
+              @click="$emit('insert-wrapper', '*', '*', 'texto en cursiva')"
+              :title="store.t('Cursiva (*)')"
+            >
+              <i>I</i>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 line-through"
+              @click="$emit('insert-wrapper', '~~', '~~', 'texto tachado')"
+              :title="store.t('Tachado (~~)')"
+            >
+              S
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 font-mono"
+              @click="$emit('insert-wrapper', '`', '`', 'codigo')"
+              :title="store.t('Código en línea (` `)')"
+            >
+              &lt;/&gt;
+            </button>
+          </div>
+
+          <!-- Markdown Elements Insert Tools -->
+          <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
+              @click="$emit('insert-table')"
+              :title="store.t('Insertar Tabla')"
+            >
+              <i class="fa-solid fa-table"></i>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
+              @click="$emit('insert-prefix', '- ')"
+              :title="store.t('Lista con viñetas')"
+            >
+              <i class="fa-solid fa-list-ul"></i>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
+              @click="$emit('insert-prefix', '1. ')"
+              :title="store.t('Lista numerada')"
+            >
+              <i class="fa-solid fa-list-ol"></i>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
+              @click="$emit('insert-prefix', '- [ ] ')"
+              :title="store.t('Checklist de Tareas')"
+            >
+              <i class="fa-solid fa-square-check"></i>
+            </button>
+            <button
+              type="button"
+              class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
+              @click="$emit('insert-prefix', '> ')"
+              :title="store.t('Cita en bloque')"
+            >
+              <i class="fa-solid fa-quote-left"></i>
+            </button>
+          </div>
+
+          <!-- Callouts / Risk Badges -->
+          <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
+            <button
+              type="button"
+              class="rounded-lg bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 text-[10px] font-bold text-sky-600 dark:text-sky-300 hover:bg-sky-100 transition"
+              @click="$emit('insert-callout', 'NOTE')"
+            >
+              [!NOTE]
+            </button>
+            <button
+              type="button"
+              class="rounded-lg bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300 hover:bg-amber-100 transition"
+              @click="$emit('insert-callout', 'IMPORTANT')"
+            >
+              [!IMPORTANT]
+            </button>
+            <button
+              type="button"
+              class="rounded-lg bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-300 hover:bg-rose-100 transition"
+              @click="$emit('insert-callout', 'WARNING')"
+            >
+              [!WARNING]
+            </button>
+          </div>
+
+          <!-- Configurable Variable Mark Button -->
           <button
             type="button"
-            class="rounded-lg px-2 py-1 text-xs font-bold transition"
-            :class="activeSection.level === 1 ? 'bg-brand text-white' : 'btn-muted'"
-            @click="$emit('set-level', 1)"
+            class="rounded-lg bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-500/25 transition flex items-center gap-1 cursor-pointer"
+            @click="$emit('insert-variable')"
+            :title="store.t('Convertir texto seleccionado en campo configurable {{CAMPO:Valor}}')"
           >
-            1. H1
+            <i class="fa-solid fa-tag text-[9px]"></i>
+            <span>{{ store.t("Marcar Campo Configurable") }}</span>
           </button>
+
+          <!-- Page Break Insert -->
           <button
             type="button"
-            class="rounded-lg px-2 py-1 text-xs font-bold transition"
-            :class="activeSection.level === 2 ? 'bg-brand text-white' : 'btn-muted'"
-            @click="$emit('set-level', 2)"
+            class="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-[10px] font-bold transition ml-1"
+            :class="activeSection.pageBreakBefore ? 'bg-brand text-white border-brand' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'"
+            @click="activeSection.pageBreakBefore = !activeSection.pageBreakBefore"
           >
-            1.1 H2
-          </button>
-          <button
-            type="button"
-            class="rounded-lg px-2 py-1 text-xs font-bold transition"
-            :class="activeSection.level === 3 ? 'bg-brand text-white' : 'btn-muted'"
-            @click="$emit('set-level', 3)"
-          >
-            1.1.1 H3
+            <i class="fa-solid fa-file-export mr-1"></i>{{ store.t("Salto de Hoja") }}
           </button>
         </div>
 
-        <!-- Inline Style Buttons -->
-        <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 font-bold"
-            @click="$emit('insert-wrapper', '**', '**', 'texto en negrita')"
-            :title="store.t('Negrita (**)')"
-          >
-            <b>B</b>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 italic"
-            @click="$emit('insert-wrapper', '*', '*', 'texto en cursiva')"
-            :title="store.t('Cursiva (*)')"
-          >
-            <i>I</i>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 line-through"
-            @click="$emit('insert-wrapper', '~~', '~~', 'texto tachado')"
-            :title="store.t('Tachado (~~)')"
-          >
-            S
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 font-mono"
-            @click="$emit('insert-wrapper', '`', '`', 'codigo')"
-            :title="store.t('Código en línea (` `)')"
-          >
-            &lt;/&gt;
-          </button>
-        </div>
-
-        <!-- Markdown Elements Insert Tools -->
-        <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
-            @click="$emit('insert-table')"
-            :title="store.t('Insertar Tabla')"
-          >
-            <i class="fa-solid fa-table"></i>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
-            @click="$emit('insert-prefix', '- ')"
-            :title="store.t('Lista con viñetas')"
-          >
-            <i class="fa-solid fa-list-ul"></i>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
-            @click="$emit('insert-prefix', '1. ')"
-            :title="store.t('Lista numerada')"
-          >
-            <i class="fa-solid fa-list-ol"></i>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
-            @click="$emit('insert-prefix', '- [ ] ')"
-            :title="store.t('Checklist de Tareas')"
-          >
-            <i class="fa-solid fa-square-check"></i>
-          </button>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200"
-            @click="$emit('insert-prefix', '> ')"
-            :title="store.t('Cita en bloque')"
-          >
-            <i class="fa-solid fa-quote-left"></i>
-          </button>
-        </div>
-
-        <!-- Callouts / Risk Badges -->
-        <div class="flex items-center gap-1 mr-2 border-r border-slate-200 dark:border-slate-700 pr-2">
-          <button
-            type="button"
-            class="rounded-lg bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 text-[10px] font-bold text-sky-600 dark:text-sky-300 hover:bg-sky-100 transition"
-            @click="$emit('insert-callout', 'NOTE')"
-          >
-            [!NOTE]
-          </button>
-          <button
-            type="button"
-            class="rounded-lg bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300 hover:bg-amber-100 transition"
-            @click="$emit('insert-callout', 'IMPORTANT')"
-          >
-            [!IMPORTANT]
-          </button>
-          <button
-            type="button"
-            class="rounded-lg bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-300 hover:bg-rose-100 transition"
-            @click="$emit('insert-callout', 'WARNING')"
-          >
-            [!WARNING]
-          </button>
-        </div>
-
-        <!-- Page Break Insert -->
+        <!-- Right Side: Open Variables Drawer Action Button -->
         <button
           type="button"
-          class="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-0.5 text-[10px] font-bold transition"
-          :class="activeSection.pageBreakBefore ? 'bg-brand text-white border-brand' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'"
-          @click="activeSection.pageBreakBefore = !activeSection.pageBreakBefore"
+          class="rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1 text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-105 cursor-pointer ml-auto"
+          @click="$emit('toggle-variable-drawer')"
         >
-          <i class="fa-solid fa-file-export mr-1"></i>{{ store.t("Salto de Hoja Carta") }}
+          <i class="fa-solid fa-sliders text-amber-400 dark:text-amber-600 text-xs"></i>
+          <span>{{ store.t("Llenar Machote") }}</span>
         </button>
       </div>
 
@@ -167,7 +190,7 @@
             ref="textareaEl"
             v-model="activeSection.content"
             class="w-full h-full min-h-[340px] rounded-2xl border border-slate-200/90 bg-white p-4 font-mono text-xs sm:text-sm text-slate-800 leading-relaxed dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 transition resize-y"
-            :placeholder="store.t('Escribe aquí el contenido en Markdown para esta sección... Puedes incluir tablas, listas de entregables, fórmulas y reglas de negocio.')"
+            :placeholder="store.t('Escribe aquí el contenido en Markdown para esta sección... Puedes incluir {{CAMPOS_CONFIGURABLES}}, tablas, listas y reglas de negocio.')"
           ></textarea>
         </div>
 
@@ -249,6 +272,8 @@ export default {
     "insert-table",
     "insert-prefix",
     "insert-callout",
+    "insert-variable",
+    "toggle-variable-drawer",
     "add-root-section",
   ],
   setup() {
