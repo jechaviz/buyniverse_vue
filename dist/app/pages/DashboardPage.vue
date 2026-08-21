@@ -11,15 +11,15 @@
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ copies[section] }}</p>
       </div>
       <RouterLink
-        v-if="store.isBuyer.value || store.isAdmin.value || user.type === 'Client'"
+        v-if="store.isBuyer.value"
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
         to="/post-job/new"
         ><i class="fa-solid fa-plus mr-2"></i>Post a job</RouterLink
       >
       <RouterLink
-        v-else
+        v-else-if="store.isSupplier.value"
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
-        to="/browse-services"
+        to="/find-work"
         ><i class="fa-solid fa-briefcase mr-2"></i>Find work</RouterLink
       >
     </header>
@@ -56,7 +56,7 @@
       </div>
 
       <!-- Admin Database Management & MySQL Demo Seeder -->
-      <AdminDatabaseCard v-if="store.isAdmin.value || user.type === 'Admin'" />
+      <AdminDatabaseCard v-if="store.isAdmin.value" />
 
       <!-- Recent Workspaces -->
       <article
@@ -107,7 +107,7 @@
       <div class="grid gap-6 lg:grid-cols-2">
         <article class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">Active contracts</h2>
+            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.isBuyer.value ? "Active projects" : "Active contracts" }}</h2>
             <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">{{ contracts.length }} active</span>
           </div>
           <div class="mt-4 space-y-2.5">
@@ -124,7 +124,7 @@
                 </span></span
               ><b class="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{{ store.money(x.amount) }}</b></RouterLink
             >
-            <p v-if="!contracts.length" class="p-6 text-center text-xs text-slate-400">No active contracts.</p>
+            <p v-if="!contracts.length" class="p-6 text-center text-xs text-slate-400">{{ store.isBuyer.value ? "No active projects." : "No active contracts." }}</p>
           </div>
         </article>
         <article class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
@@ -149,7 +149,7 @@
         </article>
       </div></template
     >
-    <article v-else-if="section === 'timesheets'" class="panel overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+    <article v-else-if="section === 'timesheets' && store.isSupplier.value" class="panel overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
       <div
         class="grid grid-cols-[8rem_1fr_9rem_5rem] gap-3 bg-slate-50/80 p-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-800"
       >
@@ -193,7 +193,7 @@
         No transactions.
       </p>
     </article>
-    <article v-else-if="section === 'my-agency'" class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+    <article v-else-if="section === 'my-agency' && store.isSupplier.value" class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
       <template v-if="agency"
         ><div class="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -232,32 +232,41 @@ export default {
     const store = inject("store"),
       route = useRoute(),
       user = store.currentUser;
+    const tabs = computed(() => {
+      const base = [
+        { key: "overview", label: "Overview", to: "/dashboard" },
+        { key: "transactions", label: "Transactions", to: "/dashboard/transactions" },
+      ];
+      return store.isSupplier.value
+        ? [
+            base[0],
+            { key: "timesheets", label: "Timesheets", to: "/dashboard/timesheets" },
+            base[1],
+            { key: "my-agency", label: "My agency", to: "/dashboard/my-agency" },
+          ]
+        : base;
+    });
     const section = computed(() =>
-      ["timesheets", "transactions", "my-agency"].includes(route.params.section)
+      tabs.value.some((tab) => tab.key === route.params.section)
         ? route.params.section
         : "overview",
     );
-    const tabs = [
-      { key: "overview", label: "Overview", to: "/dashboard" },
-      { key: "timesheets", label: "Timesheets", to: "/dashboard/timesheets" },
-      {
-        key: "transactions",
-        label: "Transactions",
-        to: "/dashboard/transactions",
-      },
-      { key: "my-agency", label: "My agency", to: "/dashboard/my-agency" },
-    ];
-    const contracts = computed(() =>
-      store.state.contracts.filter(
-        (x) => x.clientId === user.value.id || x.providerId === user.value.id,
-      ),
-    );
+    const contracts = computed(() => {
+      if (store.isAdmin.value) return store.state.contracts;
+      return store.state.contracts.filter((x) =>
+        store.isSupplier.value
+          ? x.providerId === user.value.id
+          : x.clientId === user.value.id,
+      );
+    });
     const times = computed(() =>
-      store.state.timeEntries.filter(
-        (x) =>
-          x.userId === user.value.id ||
-          contracts.value.some((c) => c.id === x.contractId),
-      ),
+      store.isSupplier.value
+        ? store.state.timeEntries.filter(
+            (x) =>
+              x.userId === user.value.id ||
+              contracts.value.some((c) => c.id === x.contractId),
+          )
+        : [],
     );
     const transactions = computed(() =>
       store.state.transactions.filter((x) => x.userId === user.value.id),
@@ -265,28 +274,29 @@ export default {
     const agency = computed(() =>
       store.state.agencies.find((x) => x.id === user.value.agencyId),
     );
-    const cards = computed(() => [
-      {
-        label: "Active contracts",
-        value: contracts.value.length,
-        note: "Current engagements",
-      },
-      {
-        label: "Total value",
-        value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)),
-        note: "Contracted volume",
-      },
-      {
-        label: "Hours logged",
-        value: times.value.reduce((n, x) => n + x.hours, 0),
-        note: "Across all projects",
-      },
-      {
-        label: "Unread updates",
-        value: store.unreadNotifications(user.value.id).length,
-        note: "Notifications",
-      },
-    ]);
+    const cards = computed(() => {
+      const unread = store.unreadNotifications(user.value.id).length;
+      if (store.isSupplier.value)
+        return [
+          { label: "Active contracts", value: contracts.value.length, note: "Current engagements", icon: "fa-briefcase" },
+          { label: "Contracted value", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Supplier volume", icon: "fa-chart-line" },
+          { label: "Hours logged", value: times.value.reduce((n, x) => n + x.hours, 0), note: "Across deliveries", icon: "fa-clock" },
+          { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
+        ];
+      if (store.isBuyer.value)
+        return [
+          { label: "Active projects", value: contracts.value.length, note: "Current engagements", icon: "fa-folder-open" },
+          { label: "Committed spend", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Buyer commitments", icon: "fa-wallet" },
+          { label: "Open requests", value: store.state.purchaseRequests.filter((x) => x.ownerId === user.value.id || x.requesterId === user.value.id).length, note: "Procurement queue", icon: "fa-cart-plus" },
+          { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
+        ];
+      return [
+        { label: "Active contracts", value: contracts.value.length, note: "Across workspaces", icon: "fa-briefcase" },
+        { label: "Platform value", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Demo portfolio", icon: "fa-chart-line" },
+        { label: "Open requests", value: store.state.purchaseRequests.filter((x) => !["Closed", "Rejected"].includes(x.status)).length, note: "Needs attention", icon: "fa-cart-plus" },
+        { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
+      ];
+    });
     const recent = computed(() => {
       const seen = new Set();
       return (store.state.recentViews || [])
@@ -314,7 +324,7 @@ export default {
     const quickActions = computed(() =>
       store.isSupplier.value
         ? [
-            { to: "/", label: "Find work", icon: "fa-briefcase" },
+            { to: "/find-work", label: "Find work", icon: "fa-briefcase" },
             {
               to: "/procurement/auction",
               label: "Live offers",
@@ -326,7 +336,8 @@ export default {
               icon: "fa-file-circle-plus",
             },
           ]
-        : [
+        : store.isBuyer.value
+        ? [
             { to: "/post-job/new", label: "New project", icon: "fa-plus" },
             {
               to: "/procurement/queue?new=1",
@@ -338,6 +349,11 @@ export default {
               label: "New quote round",
               icon: "fa-file-signature",
             },
+          ]
+        : [
+            { to: "/procurement", label: "Procurement", icon: "fa-cart-shopping" },
+            { to: "/projects", label: "Projects", icon: "fa-folder" },
+            { to: "/admin/issuers", label: "Issuers", icon: "fa-building-columns" },
           ],
     );
     return {

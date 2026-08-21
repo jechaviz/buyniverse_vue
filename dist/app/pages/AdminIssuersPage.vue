@@ -22,7 +22,7 @@ const { inject, computed, ref } = Vue;
 export default {
   setup() {
     const store = inject('store');
-    const allowed = computed(() => store.currentUser.value.type === 'Admin');
+    const allowed = computed(() => store.isAdmin.value);
     const draft = ref(null);
     const branches = ref('');
     function start(issuer) {

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-16 lg:space-y-24">
     <!-- 2. EXPLORE POPULAR CATEGORIES (Rich Visual Grid) -->
-    <section class="space-y-6">
+    <section v-if="!supplierMode" class="space-y-6">
       <div class="text-center max-w-2xl mx-auto space-y-2">
         <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Explora por Categorías") }}</p>
         <h2 class="font-head text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
@@ -38,7 +38,7 @@
     </section>
 
     <!-- 3. MERCANIS PROCUREMENT INTELLIGENCE: AUTONOMOUS AGENTS -->
-    <section class="space-y-8">
+    <section v-if="!supplierMode" class="space-y-8">
       <div class="text-center max-w-3xl mx-auto space-y-2">
         <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
           <i class="fa-solid fa-brain"></i>
@@ -212,13 +212,13 @@
     </section>
 
     <!-- 4. TRENDING SERVICES & GIGS -->
-    <section class="space-y-6">
+    <section v-if="!supplierMode" class="space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Servicios Más Vendidos") }}</p>
           <h2 class="font-head text-2xl font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t("Paquetes de Servicios Destacados") }}</h2>
         </div>
-        <RouterLink to="/browse-services" class="btn-muted text-xs py-2 px-4">
+        <RouterLink :to="supplierMode ? '/find-work' : '/browse-services'" class="btn-muted text-xs py-2 px-4">
           {{ store.t("Explorar Todo el Catálogo") }} <i class="fa-solid fa-arrow-right ml-1"></i>
         </RouterLink>
       </div>
@@ -271,7 +271,7 @@
           <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Oportunidades Abiertas") }}</p>
           <h2 class="font-head text-2xl font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t("Últimos Proyectos y Licitaciones RFX") }}</h2>
         </div>
-        <RouterLink to="/browse-services" class="btn-muted text-xs py-2 px-4">
+        <RouterLink :to="supplierMode ? '/find-work' : '/browse-services'" class="btn-muted text-xs py-2 px-4">
           {{ store.t("Ver Todas las Solicitudes") }} <i class="fa-solid fa-arrow-right ml-1"></i>
         </RouterLink>
       </div>
@@ -333,7 +333,7 @@
               <RouterLink
                 v-for="skill in popularSkills"
                 :key="skill"
-                to="/browse-services"
+                :to="supplierMode ? '/find-work' : '/browse-services'"
                 class="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-brand hover:text-brand dark:border-slate-700/80 dark:bg-slate-800/60 dark:text-slate-300 transition shadow-2xs"
               >
                 {{ skill }}
@@ -355,7 +355,7 @@
     </section>
 
     <!-- 6. MOST HIRED FREELANCERS & DIRECTORY CARDS -->
-    <section class="space-y-6">
+    <section v-if="!supplierMode" class="space-y-6">
       <div class="text-center max-w-2xl mx-auto space-y-2">
         <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Talento Más Contratado") }}</p>
         <h2 class="font-head text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
@@ -410,6 +410,7 @@ export default {
     featuredJobs: Array,
     popularSkills: Array,
     topFreelancers: Array,
+    supplierMode: Boolean,
   }
 };
 </script>

@@ -185,7 +185,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=21");
+const DataTable = load("./app/components/DataTable.vue?v=24");
 const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=1");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
@@ -236,7 +236,7 @@ export default {
 
     const accessibleEvents = computed(() => {
       const list = store.state.sourcingEvents.filter((item) => {
-        if (store.currentUser.value.type === "Admin" || store.isAdmin.value) return true;
+        if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
           if (supplierId) return item.invitedSupplierIds.includes(supplierId) || (item.quotes || []).some((q) => q.supplierId === supplierId);
@@ -247,7 +247,7 @@ export default {
       return list.length ? list : store.state.sourcingEvents;
     });
 
-    const canManage = (item) => Boolean(item) && (store.currentUser.value.type === "Admin" || store.isAdmin.value || store.isBuyer.value || item.ownerId === store.currentUser.value.id);
+    const canManage = (item) => Boolean(item) && (store.isAdmin.value || store.isBuyer.value || item.ownerId === store.currentUser.value.id);
     const event = computed(() => accessibleEvents.value.find((item) => item.id === route.query.event) || accessibleEvents.value[0]);
 
     const tabs = computed(() => event.value ? [
@@ -309,7 +309,12 @@ export default {
     const updateCell = ({ id, key, value }) => {
       const item = accessibleEvents.value.find((entry) => entry.id === id);
       if (!canManage(item)) return store.notice("Quote round update denied", "fa-shield-halved");
-      if (["budget", "round", "savingsTarget"].includes(key)) { value = Number(value); if (!Number.isFinite(value) || value < 0) return; }
+      if (["budget", "round", "savingsTarget"].includes(key)) {
+        const max = key === "savingsTarget" ? 100 : key === "round" ? 1000 : undefined;
+        value = Number(value);
+        if (!window.WebCommon.isSafeAmount(value, 0, max) || (key === "round" && !Number.isInteger(value)))
+          return store.notice("Enter a value within the permitted range", "fa-triangle-exclamation");
+      }
       if (key === "deadline") { const d = new Date(value + "T17:00:00Z"); if (Number.isNaN(d.getTime())) return; value = d.toISOString(); }
       if (typeof value === "string" && key !== "deadline") value = window.WebCommon.sanitizeText(value, 500).trim();
       item[key] = value;
@@ -442,7 +447,7 @@ export default {
       event.value.awardReason = reason;
       store.procurementTransition(event.value, "Awarded", `${selectedAwardSupplier.value.name} · ${reason}`);
       const request = store.purchaseRequest(event.value.requestId);
-      if (request && (store.currentUser.value.type === "Admin" || request.ownerId === store.currentUser.value.id || request.requesterId === store.currentUser.value.id)) {
+      if (request && (store.isAdmin.value || request.ownerId === store.currentUser.value.id || request.requesterId === store.currentUser.value.id)) {
         request.status = "Approved"; request.nextAction = "Purchase order issued";
       }
       let order = store.state.purchaseOrders.find((item) => item.eventId === event.value.id);
@@ -468,7 +473,7 @@ export default {
     };
 
     const saveWizard = () => {
-      if (!(store.isBuyer.value || store.isAdmin.value || ["Client", "Admin"].includes(store.currentUser.value.type))) return store.notice("Quote round creation denied", "fa-shield-halved");
+      if (!(store.isBuyer.value || store.isAdmin.value)) return store.notice("Quote round creation denied", "fa-shield-halved");
       if (wizard.value.suppliers.length < 2) { wizardStep.value = 1; wizardError.value = "Select at least two suppliers."; return; }
       const data = wizard.value, request = store.purchaseRequest(data.requestId);
       const title = window.WebCommon.sanitizeText(data.title, 160).trim(), description = window.WebCommon.sanitizeText(data.description, 2000).trim(), budget = Number(data.budget), deadline = new Date(data.deadline + "T17:00:00Z");

@@ -89,6 +89,16 @@
       auction.participants ||= [];
       auction.bids ||= [];
       auction.audit ||= [];
+      auction.participants.forEach((participant) => {
+        const profile = state.suppliers.find((supplier) => supplier.id === participant.supplierId);
+        if (profile?.name) participant.name = profile.name;
+      });
+      auction.closingAt ||= auction.endAt;
+      auction.endAt ||= auction.closingAt;
+      if (auction.status === "Running" && (!Number.isFinite(Date.parse(auction.closingAt)) || Date.parse(auction.closingAt) <= Date.now())) {
+        auction.closingAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+        auction.endAt = auction.closingAt;
+      }
       auction.extensionCount = Number(auction.extensionCount || 0);
       auction.maxExtensions = Number(auction.maxExtensions || 5);
       auction.minStep = Math.max(1, Number(auction.minStep || 1));

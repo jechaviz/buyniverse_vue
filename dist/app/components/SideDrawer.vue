@@ -7,7 +7,7 @@
         role="dialog"
         aria-modal="true"
         :aria-labelledby="`${drawerId}-title`"
-        @keydown.esc="$emit('close')"
+        @keydown="onKeydown"
       >
         <button
           type="button"
@@ -16,6 +16,8 @@
           @click="$emit('close')"
         ></button>
         <aside
+          ref="panel"
+          tabindex="-1"
           class="glass absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-slate-200/70 shadow-2xl dark:border-slate-700"
         >
           <header
@@ -70,7 +72,26 @@ export default {
   data() {
     return {
       drawerId: `drawer-${Math.random().toString(36).slice(2, 9)}`,
+      overlayId: `drawer-overlay-${Math.random().toString(36).slice(2, 9)}`,
     };
+  },
+  watch: {
+    open: {
+      immediate: true,
+      handler(open) {
+        if (!open) return window.BuyniverseOverlay?.release(this.overlayId);
+        this.$nextTick(() => window.BuyniverseOverlay?.activate(this.overlayId, () => this.$refs.panel));
+      },
+    },
+  },
+  beforeUnmount() {
+    window.BuyniverseOverlay?.release(this.overlayId);
+  },
+  methods: {
+    onKeydown(event) {
+      if (event.key === "Escape") this.$emit("close");
+      else window.BuyniverseOverlay?.trap(event, this.overlayId);
+    },
   },
 };
 </script>

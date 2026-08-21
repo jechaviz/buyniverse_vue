@@ -7,8 +7,9 @@
       role="dialog"
       aria-modal="true"
       aria-label="Session locked"
+      @keydown="handleLockKeydown"
     >
-      <section class="glass w-full max-w-md rounded-3xl p-8 text-center shadow-elevated">
+      <section ref="lockPanel" tabindex="-1" class="glass w-full max-w-md rounded-3xl p-8 text-center shadow-elevated">
         <span class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-brand-50 text-2xl text-brand dark:bg-brand/20 shadow-soft">
           <i class="fa-solid fa-shield-halved"></i>
         </span>
@@ -31,9 +32,10 @@
         role="dialog"
         aria-modal="true"
         :aria-label="ui.modal.title"
+        @keydown="handleConfirmKeydown"
       >
         <button class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" aria-label="Cancel confirmation" @click="$emit('resolve-confirm', false)"></button>
-        <section class="glass relative w-full max-w-md rounded-3xl p-6 shadow-elevated">
+        <section ref="confirmPanel" tabindex="-1" class="glass relative w-full max-w-md rounded-3xl p-6 shadow-elevated">
           <div
             class="grid h-12 w-12 place-items-center rounded-2xl"
             :class="ui.modal.danger ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400' : 'bg-brand-50 text-brand dark:bg-brand/20'"
@@ -73,5 +75,39 @@ export default {
     ui: Object,
   },
   emits: ["resume-session", "resolve-confirm"],
+  data() {
+    return {
+      lockOverlayId: `session-lock-${Math.random().toString(36).slice(2, 9)}`,
+      confirmOverlayId: `confirm-modal-${Math.random().toString(36).slice(2, 9)}`,
+    };
+  },
+  watch: {
+    "ui.locked": {
+      immediate: true,
+      handler(open) { this.syncOverlay(this.lockOverlayId, "lockPanel", open); },
+    },
+    "ui.modal": {
+      immediate: true,
+      handler(modal) { this.syncOverlay(this.confirmOverlayId, "confirmPanel", Boolean(modal)); },
+    },
+  },
+  beforeUnmount() {
+    window.BuyniverseOverlay?.release(this.lockOverlayId);
+    window.BuyniverseOverlay?.release(this.confirmOverlayId);
+  },
+  methods: {
+    syncOverlay(id, refName, open) {
+      if (!open) return window.BuyniverseOverlay?.release(id);
+      this.$nextTick(() => window.BuyniverseOverlay?.activate(id, () => this.$refs[refName]));
+    },
+    handleLockKeydown(event) {
+      if (event.key === "Escape") return event.preventDefault();
+      window.BuyniverseOverlay?.trap(event, this.lockOverlayId);
+    },
+    handleConfirmKeydown(event) {
+      if (event.key === "Escape") this.$emit("resolve-confirm", false);
+      else window.BuyniverseOverlay?.trap(event, this.confirmOverlayId);
+    },
+  },
 };
 </script>

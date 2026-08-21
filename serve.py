@@ -11,7 +11,7 @@ from urllib.parse import unquote, urlsplit
 
 
 CSP = (
-    "default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; "
+    "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; "
     "frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'none'; "
     "script-src 'self' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
@@ -69,6 +69,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "/buyniverse_vue/agency",
             "/buyniverse_vue/contract",
             "/buyniverse_vue/find-talent",
+            "/buyniverse_vue/find-work",
             "/buyniverse_vue/saved-jobs",
             "/buyniverse_vue/browse-services",
             "/buyniverse_vue/gig",
@@ -116,6 +117,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "/buyniverse_vue/agency",
             "/buyniverse_vue/contract",
             "/buyniverse_vue/find-talent",
+            "/buyniverse_vue/find-work",
             "/buyniverse_vue/saved-jobs",
             "/buyniverse_vue/browse-services",
             "/buyniverse_vue/gig",
@@ -155,7 +157,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
         self.send_header("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
-        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("Referrer-Policy", "no-referrer")
         self.send_header(
             "Permissions-Policy",
             "accelerometer=(), autoplay=(), camera=(), display-capture=(), document-domain=(), "

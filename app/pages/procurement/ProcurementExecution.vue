@@ -151,7 +151,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=21");
+const DataTable = load("./app/components/DataTable.vue?v=24");
 const OrderReceiptModal = load("./app/pages/procurement/execution/OrderReceiptModal.vue?v=1");
 const OrderLinesTab = load("./app/pages/procurement/execution/OrderLinesTab.vue?v=1");
 const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=1");
@@ -181,7 +181,7 @@ export default {
 
     const accessibleOrders = computed(() => {
       const list = store.state.purchaseOrders.filter((item) => {
-        if (store.currentUser.value.type === "Admin" || store.isAdmin.value) return true;
+        if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
           if (supplierId) return item.supplierId === supplierId;
@@ -191,7 +191,7 @@ export default {
       return list.length ? list : store.state.purchaseOrders;
     });
 
-    const canManage = (item) => Boolean(item) && (store.currentUser.value.type === "Admin" || store.isAdmin.value || (store.isBuyer.value && item.buyerId === store.currentUser.value.id) || store.isBuyer.value);
+    const canManage = (item) => Boolean(item) && (store.isAdmin.value || (store.isBuyer.value && item.buyerId === store.currentUser.value.id) || store.isBuyer.value);
     const order = computed(() => accessibleOrders.value.find((item) => item.id === route.query.order) || accessibleOrders.value[0]);
     const supplier = computed(() => store.supplier(order.value?.supplierId));
     const openExceptions = computed(() => order.value?.exceptions.filter((item) => item.status !== "Resolved") || []);
@@ -255,7 +255,11 @@ export default {
     const updateCell = ({ id, key, value }) => {
       const item = accessibleOrders.value.find((entry) => entry.id === id);
       if (!canManage(item)) return store.notice("Order update denied", "fa-shield-halved");
-      if (key === "total") { value = Number(value); if (!Number.isFinite(value) || value <= 0) return; }
+      if (key === "total") {
+        value = Number(value);
+        if (!window.WebCommon.isSafeAmount(value, 0) || value <= 0)
+          return store.notice("Enter a valid order total", "fa-triangle-exclamation");
+      }
       if (key === "eta") { const d = new Date(value + "T18:00:00Z"); if (Number.isNaN(d.getTime())) return; value = d.toISOString(); }
       if (key === "supplierId" && !store.supplier(value)) return;
       if (typeof value === "string" && !["eta", "supplierId"].includes(key)) value = window.WebCommon.sanitizeText(value, 500).trim();

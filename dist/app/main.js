@@ -78,6 +78,10 @@ const storage = window.WebCommon.createVersionedStorage(
 );
 const cached = storage.read();
 const cachedValue = cached?.legacy ? null : cached?.value;
+const isSafeId = (value, max = 120) =>
+  typeof value === "string" && value.length > 0 && value.length <= max && !/[\u0000-\u001f\u007f]/.test(value);
+const isSafeText = (value, max = 500) =>
+  typeof value === "string" && value.length <= max && !/[\u0000-\u001f\u007f]/.test(value);
 const isSafeCachedState = (value) => {
   if (
     !value ||
@@ -90,21 +94,37 @@ const isSafeCachedState = (value) => {
   const bounded = Object.values(value)
     .filter(Array.isArray)
     .every((collection) => collection.length <= 10000);
+  const allowedMode = !value.activeMarketplaceMode || ["buyer", "supplier", "admin"].includes(value.activeMarketplaceMode);
+  const safeNotifications = !Array.isArray(value.notifications) || (
+    value.notifications.length <= 500 && value.notifications.every((item) =>
+      item && isSafeId(item.id) && isSafeId(item.userId) && isSafeText(item.title, 120) && isSafeText(item.text, 500)
+    )
+  );
+  const safeAudit = !Array.isArray(value.securityAudit) || (
+    value.securityAudit.length <= 500 && value.securityAudit.every((item) =>
+      item && isSafeId(item.id) && isSafeText(item.action, 120) && isSafeText(item.detail || "", 500)
+    )
+  );
+  const safeSavedJobs = !Array.isArray(value.savedJobIds) || (
+    value.savedJobIds.length <= 500 && value.savedJobIds.every((jobId) => isSafeId(jobId))
+  );
   return (
     bounded &&
+    allowedMode &&
+    safeNotifications &&
+    safeAudit &&
+    safeSavedJobs &&
     value.users.every(
       (user) =>
         user &&
-        typeof user.id === "string" &&
-        user.id.length <= 120 &&
+        isSafeId(user.id) &&
         ["Client", "Freelancer", "Admin"].includes(user.type),
     ) &&
     value.jobs.every(
       (job) =>
         job &&
-        typeof job.id === "string" &&
-        job.id.length <= 120 &&
-        typeof job.clientId === "string",
+        isSafeId(job.id) &&
+        isSafeId(job.clientId),
     ) &&
     value.users.some((user) => user.id === value.currentUserId)
   );
@@ -144,7 +164,8 @@ const date = (value) =>
 
 const id = (prefix) => window.ProcurementCommon.uid(prefix);
 const clean = (value, limit = 4000) => window.WebCommon.sanitizeText(value, limit).trim();
-const positive = (value) => Number.isFinite(Number(value)) && Number(value) > 0;
+const MAX_TRANSACTION_AMOUNT = window.WebCommon.MAX_FINANCIAL_AMOUNT;
+const positive = (value) => window.WebCommon.isSafeAmount(value, 0) && Number(value) > 0;
 
 const helpers = { id, clean, positive, allowedMarketplaceModes };
 const domainActions = window.BuyniverseDomainActions
@@ -269,22 +290,22 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // Component Loaders
-const Dashboard = load("./app/pages/DashboardPage.vue?v=27");
-const Home = load("./app/pages/HomePage.vue?v=26");
-const Workspace = load("./app/pages/WorkspacePage.vue?v=52");
+const Dashboard = load("./app/pages/DashboardPage.vue?v=30");
+const Home = load("./app/pages/HomePage.vue?v=29");
+const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=28");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
-const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=29");
-const JobDetails = load("./app/pages/JobDetailsPage.vue?v=33");
-const Fiscal = load("./app/pages/FiscalPage.vue?v=31");
-const ContractPage = load("./app/pages/ContractPage.vue?v=32");
+const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=30");
+const JobDetails = load("./app/pages/JobDetailsPage.vue?v=34");
+const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
+const ContractPage = load("./app/pages/ContractPage.vue?v=33");
 const Identity = load("./app/pages/IdentityPage.vue?v=33");
 const AdminIssuers = load("./app/pages/AdminIssuersPage.vue?v=30");
 const Billing = load("./app/pages/BillingPage.vue?v=31");
-const Contest = load("./app/pages/ContestPage.vue?v=32");
-const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=35");
-const Directory = load("./app/pages/DirectoryPage.vue?v=37");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=21");
+const Contest = load("./app/pages/ContestPage.vue?v=33");
+const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
+const Directory = load("./app/pages/DirectoryPage.vue?v=38");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=22");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe en esta réplica.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
@@ -293,44 +314,45 @@ const NotFound = {
 const r = (path, component, meta = {}) => ({ path, component, meta });
 const routes = [
   r("/", Home),
+  r("/find-work", Home, { modes: ["supplier"] }),
   r("/dashboard/:section?", Dashboard, { view: "dashboard", to: "/dashboard/timesheets" }),
-  r("/clients", Workspace, { kind: "clients" }),
-  r("/suppliers", Workspace, { kind: "suppliers", roles: ["Client", "Admin"] }),
-  r("/leads", Workspace, { kind: "leads" }),
+  r("/clients", Workspace, { kind: "clients", modes: ["supplier", "admin"] }),
+  r("/suppliers", Workspace, { kind: "suppliers", modes: ["buyer", "admin"] }),
+  r("/leads", Workspace, { kind: "leads", modes: ["supplier", "admin"] }),
   r("/projects", Workspace, { kind: "projects" }),
   r("/project/:id", Project, { projectAccess: true }),
   r("/project/:id/contest", Contest, { projectAccess: true }),
   r("/invoices", Workspace, { kind: "invoices" }),
   r("/invoices/new", Fiscal, {
     fiscal: "invoice",
-    roles: ["Freelancer", "Admin"],
+    modes: ["supplier", "admin"],
   }),
   r("/invoices/:invoiceId", InvoiceView, { invoiceAccess: true }),
   r("/invoices/:invoiceId/edit", Fiscal, {
     fiscal: "invoice",
-    roles: ["Freelancer", "Admin"],
+    modes: ["supplier", "admin"],
     invoiceAccess: true,
   }),
   r("/estimates", Workspace, { kind: "estimates" }),
   r("/payments", Workspace, { kind: "payments" }),
   r("/payments/new", Fiscal, {
     fiscal: "payment",
-    roles: ["Freelancer", "Admin"],
+    modes: ["supplier", "admin"],
   }),
   r("/payments/:paymentId/edit", Fiscal, {
     fiscal: "payment",
-    roles: ["Freelancer", "Admin"],
+    modes: ["supplier", "admin"],
     paymentAccess: true,
   }),
-  r("/products", Workspace, { kind: "products", roles: ["Client", "Admin"] }),
-  r("/expenses", Workspace, { kind: "expenses", roles: ["Client", "Admin"] }),
+  r("/products", Workspace, { kind: "products", modes: ["buyer", "admin"] }),
+  r("/expenses", Workspace, { kind: "expenses", modes: ["buyer", "admin"] }),
   r("/messages", Workspace, { kind: "messages" }),
-  r("/post-job/:id?", PostJobWizard, { roles: ["Client", "Admin"] }),
+  r("/post-job/:id?", PostJobWizard, { modes: ["buyer", "admin"] }),
   r("/job/:jobId", JobDetails, { jobAccess: true }),
   r("/job/:jobId/:slug", JobDetails, { jobAccess: true }),
   r("/client/job/:jobId", JobDetails, {
     clientView: true,
-    roles: ["Client", "Admin"],
+    modes: ["buyer", "admin"],
   }),
   r("/profile/billing", Billing),
   r("/profile/:userId", Identity, { identity: "profile" }),
@@ -338,9 +360,9 @@ const routes = [
   r("/agency/:agencyId", Identity, { identity: "agency" }),
   r("/agency/:agencyId/:slug", Identity, { identity: "agency" }),
   r("/contract/:contractId", ContractPage, { contractAccess: true }),
-  r("/find-talent", Directory, { directory: "talent" }),
-  r("/saved-jobs", Workspace, { kind: "saved" }),
-  r("/browse-services", Directory, { directory: "gigs" }),
+  r("/find-talent", Directory, { directory: "talent", modes: ["buyer", "admin"] }),
+  r("/saved-jobs", Workspace, { kind: "saved", modes: ["supplier"] }),
+  r("/browse-services", Directory, { directory: "gigs", modes: ["buyer", "admin"] }),
   r("/gig/:gigId", Detail, { kind: "gig" }),
   r("/gig/:gigId/:slug", Detail, { kind: "gig" }),
   r("/admin/issuers", AdminIssuers, { admin: true, roles: ["Admin"] }),
@@ -381,13 +403,29 @@ router.beforeEach((to) => {
     store.notice("You do not have access to that view", "fa-shield-halved");
     return "/dashboard";
   }
+  const modes = Array.isArray(to.meta.modes) ? to.meta.modes : null;
+  if (modes && !modes.includes(store.marketplaceMode.value)) {
+    store.securityEvent("Workspace route denied", `${store.marketplaceMode.value}:${to.path}`, "warning");
+    store.notice("Switch to the required company workspace to open this view", "fa-shield-halved");
+    return store.isSupplier.value ? "/find-work" : "/dashboard";
+  }
+  if (to.meta.admin && !store.isAdmin.value) {
+    store.securityEvent("Administration route denied", to.path, "warning");
+    store.notice("Administration workspace required", "fa-shield-halved");
+    return "/dashboard";
+  }
+  if (to.params.section && ["timesheets", "my-agency"].includes(to.params.section) && !store.isSupplier.value) {
+    store.securityEvent("Supplier dashboard route denied", to.path, "warning");
+    store.notice("Supplier workspace required", "fa-shield-halved");
+    return "/dashboard";
+  }
   if (to.meta.projectAccess) {
     const job = store.job(to.params.id),
       user = store.currentUser.value,
       contract = store.contract(job?.contractId);
     const allowed =
       job &&
-      (user.type === "Admin" ||
+      (store.isAdmin.value ||
         job.clientId === user.id ||
         contract?.providerId === user.id ||
         job.proposals?.some((proposal) => proposal.freelancerId === user.id));
@@ -402,7 +440,7 @@ router.beforeEach((to) => {
       user = store.currentUser.value;
     if (
       !invoice ||
-      (user.type !== "Admin" && ![invoice.clientId, invoice.providerId].includes(user.id))
+      (!store.isAdmin.value && ![invoice.clientId, invoice.providerId].includes(user.id))
     ) {
       store.securityEvent("Invoice access denied", clean(to.params.invoiceId, 120), "warning");
       store.notice("Invoice access denied", "fa-shield-halved");
@@ -416,7 +454,7 @@ router.beforeEach((to) => {
     if (
       !payment ||
       !invoice ||
-      (user.type !== "Admin" && invoice.providerId !== user.id)
+      (!store.isAdmin.value && invoice.providerId !== user.id)
     ) {
       store.securityEvent("Payment access denied", clean(to.params.paymentId, 120), "warning");
       store.notice("Payment access denied", "fa-shield-halved");
@@ -428,7 +466,7 @@ router.beforeEach((to) => {
       user = store.currentUser.value;
     if (
       !contract ||
-      (user.type !== "Admin" && ![contract.clientId, contract.providerId].includes(user.id))
+      (!store.isAdmin.value && ![contract.clientId, contract.providerId].includes(user.id))
     ) {
       store.securityEvent("Contract access denied", clean(to.params.contractId, 120), "warning");
       store.notice("Contract access denied", "fa-shield-halved");
@@ -439,7 +477,7 @@ router.beforeEach((to) => {
     const job = store.job(to.params.jobId);
     if (
       !job ||
-      (store.currentUser.value.type !== "Admin" && job.clientId !== store.currentUser.value.id)
+      (!store.isAdmin.value && job.clientId !== store.currentUser.value.id)
     ) {
       store.securityEvent("Proposal access denied", clean(to.params.jobId, 120), "warning");
       store.notice("Project proposal access denied", "fa-shield-halved");
@@ -454,7 +492,7 @@ router.beforeEach((to) => {
       (job.clientId === user.id ||
         job.proposals?.some((proposal) => proposal.freelancerId === user.id) ||
         store.contract(job.contractId)?.providerId === user.id);
-    if (!job || (job.status !== "OPEN" && user.type !== "Admin" && !participant)) {
+    if (!job || (job.status !== "OPEN" && !store.isAdmin.value && !participant)) {
       store.securityEvent("Job access denied", clean(to.params.jobId, 120), "warning");
       store.notice("Project access denied", "fa-shield-halved");
       return "/dashboard";
@@ -508,7 +546,27 @@ window.BuyniverseI18n.subscribe(() => {
   }
 });
 
-const app = createApp(load("./app/App.vue?v=38"));
+let appRevealed = false;
+const revealApp = () => {
+  if (appRevealed) return;
+  appRevealed = true;
+  const reveal = () => window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+    document.documentElement.dataset.appReady = "true";
+    document.getElementById("app")?.setAttribute("data-ready", "true");
+    document.getElementById("app-boot")?.setAttribute("aria-hidden", "true");
+  }));
+  const fontReady = document.fonts?.ready;
+  if (fontReady?.then) {
+    Promise.race([fontReady, new Promise((resolve) => window.setTimeout(resolve, 350))]).then(reveal, reveal);
+  } else {
+    reveal();
+  }
+};
+window.addEventListener("buyniverse:app-shell-ready", revealApp, { once: true });
+// Fail open rather than leaving a blank application if an external CDN fails.
+window.setTimeout(revealApp, 5000);
+
+const app = createApp(load("./app/App.vue?v=42"));
 window.__buyniverseErrors = [];
 app.config.errorHandler = (error, instance, info) => {
   const detail = {

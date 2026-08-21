@@ -279,8 +279,8 @@ export default {
     let timer = null;
 
     const accessibleAuctions = computed(() => {
-      const list = store.state.liveAuctions.filter((item) => {
-        if (store.currentUser.value.type === "Admin" || store.isAdmin.value) return true;
+      const list = store.state.auctions.filter((item) => {
+        if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
           if (supplierId) return item.participants.some((p) => p.supplierId === supplierId);
@@ -288,11 +288,13 @@ export default {
         const event = store.sourcingEvent(item.eventId);
         return item.hostId === store.currentUser.value.id || event?.ownerId === store.currentUser.value.id || store.isBuyer.value;
       });
-      return list.length ? list : store.state.liveAuctions;
+      return store.marketplaceMode.value === "supplier"
+        ? list
+        : (list.length ? list : store.state.auctions);
     });
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
-    const isOrganizer = computed(() => store.currentUser.value.type === "Admin" || store.isAdmin.value || store.isBuyer.value || auction.value?.hostId === store.currentUser.value.id);
+    const isOrganizer = computed(() => store.isAdmin.value || store.isBuyer.value || auction.value?.hostId === store.currentUser.value.id);
     const isSupplier = computed(() => store.marketplaceMode.value === "supplier" || (!isOrganizer.value && Boolean(bidder.value)));
 
     const currentSupplierId = computed(() => {
@@ -401,7 +403,7 @@ export default {
     });
 
     const chartSupplierSeries = computed(() => {
-      if (!auction.value) return [];
+      if (!auction.value || (isOrganizer.value && allSuppliersSelected.value)) return [];
       return visibleSupplierSeries.value.map((s) => {
         const points = auction.value.bids.map((b, i) => ({ ...b, idx: i })).filter((b) => b.supplierId === s.supplierId).map((b) => ({ id: b.id, amount: b.amount, at: b.at, x: pointX(b.idx), y: valueY(b.amount) }));
         return { ...s, points, polyline: points.map((p) => `${p.x},${p.y}`).join(" ") };

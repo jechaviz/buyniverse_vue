@@ -43,22 +43,137 @@ h1, h2, h3, h4, .font-head {
   letter-spacing: -0.025em;
 }
 
-/* Anti-FOUC App Cloak & Entrance */
+.skip-link {
+  position: fixed;
+  z-index: 120;
+  top: 0.75rem;
+  left: 0.75rem;
+  transform: translateY(-160%);
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  color: #fff;
+  background: var(--accent-deep);
+  box-shadow: 0 10px 24px -10px rgba(15, 23, 42, 0.5);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: transform 0.16s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid color-mix(in srgb, var(--accent) 35%, white);
+  outline-offset: 2px;
+}
+
+/* Anti-FOUC boot layer. The SFC tree is revealed only after its shell has
+   mounted and UnoCSS has had two rendering frames to scan the new DOM. */
 [v-cloak] {
   display: none !important;
 }
 
 #app {
   opacity: 1;
+  transition: opacity 0.16s ease;
 }
 
-#app:not([v-cloak]) {
+html[data-app-ready="false"] #app {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html[data-app-ready="true"] #app:not([v-cloak]) {
   animation: appEntrance 0.2s ease-out forwards;
 }
 
 @keyframes appEntrance {
   from { opacity: 0.3; }
   to { opacity: 1; }
+}
+
+#app-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 28rem),
+    radial-gradient(circle at 88% 92%, #1e1b4b, transparent 36rem),
+    #0b0f19;
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+html:not(.dark) #app-boot {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 28rem),
+    radial-gradient(circle at 88% 92%, #e0e7ff, transparent 36rem),
+    #f8fafc;
+}
+
+#app-boot .boot-card {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  min-width: min(20rem, 100%);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.72);
+  box-shadow: 0 20px 50px -22px rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html:not(.dark) #app-boot .boot-card {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 50px -22px rgba(15, 23, 42, 0.18);
+}
+
+#app-boot .boot-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.8rem;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 78%, transparent);
+}
+
+#app-boot .boot-spinner {
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-top-color: var(--accent);
+  border-radius: 999px;
+  animation: bootSpin 0.72s linear infinite;
+}
+
+#app-boot .boot-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: inherit;
+}
+
+html[data-app-ready="true"] #app-boot {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes bootSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app, #app-boot { transition: none; }
+  #app-boot .boot-spinner { animation: none; }
 }
 
 /* Core Layout Utilities (Instant CSS without waiting for runtime UnoCSS scan) */
@@ -223,4 +338,3 @@ h1, h2, h3, h4, .font-head {
   .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
-

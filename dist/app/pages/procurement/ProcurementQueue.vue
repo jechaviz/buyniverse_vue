@@ -50,7 +50,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=20");
+const DataTable = load("./app/components/DataTable.vue?v=24");
 const QueueDetailPanel = load("./app/pages/procurement/queue/QueueDetailPanel.vue?v=1");
 const QueueCreateModal = load("./app/pages/procurement/queue/QueueCreateModal.vue?v=1");
 
@@ -69,8 +69,8 @@ export default {
     ];
 
     const selected = computed(() => store.purchaseRequest(route.query.request) || store.state.purchaseRequests[0]);
-    const canOwn = computed(() => Boolean(selected.value) && (store.currentUser.value.type === "Admin" || selected.value.ownerId === store.currentUser.value.id));
-    const canApprove = computed(() => Boolean(selected.value) && (store.currentUser.value.type === "Admin" || selected.value.approverId === store.currentUser.value.id));
+    const canOwn = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.ownerId === store.currentUser.value.id));
+    const canApprove = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.approverId === store.currentUser.value.id));
 
     const metrics = computed(() => [
       { label: "New request", value: "+", note: "Create purchase request", icon: "fa-plus", tone: "bg-brand text-white", action: () => { formOpen.value = true; } },
@@ -94,8 +94,12 @@ export default {
 
     const updateCell = ({ id, key, value }) => {
       const item = store.purchaseRequest(id);
-      if (!item || (store.currentUser.value.type !== "Admin" && item.ownerId !== store.currentUser.value.id)) return store.notice("Request update denied", "fa-shield-halved");
-      if (key === "amount") { value = Number(value); if (!Number.isFinite(value) || value <= 0) return; }
+      if (!item || (!store.isAdmin.value && item.ownerId !== store.currentUser.value.id)) return store.notice("Request update denied", "fa-shield-halved");
+      if (key === "amount") {
+        value = Number(value);
+        if (!window.WebCommon.isSafeAmount(value, 0) || value <= 0)
+          return store.notice("Enter a valid request amount", "fa-triangle-exclamation");
+      }
       item[key] = typeof value === "string" ? window.WebCommon.sanitizeText(value, 500) : value;
       store.procurementEvent(item, "Field updated", key, "info");
     };
@@ -126,12 +130,19 @@ export default {
       const title = window.WebCommon.sanitizeText(d.title, 160).trim();
       const dept = window.WebCommon.sanitizeText(d.department, 80).trim();
       const desc = window.WebCommon.sanitizeText(d.itemDescription, 300).trim();
-      if (!title || !dept || !desc || !Number.isFinite(amt) || amt <= 0) return store.notice("Complete required fields", "fa-triangle-exclamation");
+      const dueDate = new Date(`${d.dueDate}T18:00:00Z`);
+      if (
+        !title || !dept || !desc ||
+        !window.WebCommon.isSafeAmount(amt, 0) || amt <= 0 ||
+        !window.WebCommon.isSafeAmount(qty, 1, 1000000) || !Number.isInteger(qty) ||
+        !window.WebCommon.isSafeAmount(up, 0) || up <= 0 || Number.isNaN(dueDate.getTime())
+      ) return store.notice("Complete required fields with valid values", "fa-triangle-exclamation");
       const id = "PR-" + String(2410 + store.state.purchaseRequests.length);
       const req = {
         id, title, requesterId: store.currentUser.value.id, department: dept, amount: amt, currency: "USD",
         status: "Draft", approverId: "user-admin-admin", ownerId: store.currentUser.value.id,
-        priority: d.priority, category: d.category, dueDate: new Date(d.dueDate + "T18:00:00Z").toISOString(),
+        priority: ["Low", "Medium", "High"].includes(d.priority) ? d.priority : "Medium",
+        category: window.WebCommon.sanitizeText(d.category, 80).trim(), dueDate: dueDate.toISOString(),
         budgetCode: window.WebCommon.sanitizeText(d.budgetCode, 30).trim(), notes: window.WebCommon.sanitizeText(d.notes, 2000).trim(),
         nextAction: "Submit for approval",
         items: [{ id: window.ProcurementCommon.uid("pr-line"), description: desc, quantity: qty, unitPrice: up }],
@@ -196,7 +207,7 @@ export default {
     };
 
     const removeRequest = async (item) => {
-      if (item.ownerId !== store.currentUser.value.id && store.currentUser.value.type !== "Admin") return store.notice("Request deletion denied", "fa-shield-halved");
+      if (item.ownerId !== store.currentUser.value.id && !store.isAdmin.value) return store.notice("Request deletion denied", "fa-shield-halved");
       if (await store.confirm({ title: "Remove request?", message: "The request will be archived.", confirmText: "Remove", danger: true })) {
         item.archived = true; store.notice("Request removed");
       }
@@ -206,7 +217,7 @@ export default {
       let count = 0;
       ids.slice(0, 50).forEach((id) => {
         const item = store.purchaseRequest(id);
-        if (item && (item.ownerId === store.currentUser.value.id || store.currentUser.value.type === "Admin")) { item.archived = true; count++; }
+        if (item && (item.ownerId === store.currentUser.value.id || store.isAdmin.value)) { item.archived = true; count++; }
       });
       store.notice(`${count} requests archived`);
     };

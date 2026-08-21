@@ -92,7 +92,7 @@ const configs = {
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=50");
+const DataTable = load("./app/components/DataTable.vue?v=53");
 const WorkspaceMessagesView = load("./app/pages/workspace/WorkspaceMessagesView.vue?v=1");
 const WorkspaceNewInvoiceModal = load("./app/pages/workspace/WorkspaceNewInvoiceModal.vue?v=1");
 
@@ -216,7 +216,10 @@ export default {
       const item = items.value.find((e) => e.id === id);
       if (!canMutate(item)) return store.notice("Field modification denied", "fa-shield-halved");
       if (["budget", "total", "amount", "value", "price", "stock", "score", "risk", "progress", "totalSpend"].includes(key)) {
-        value = Number(value); if (!Number.isFinite(value) || value < 0) return;
+        const max = ["score", "risk", "progress"].includes(key) ? 100 : undefined;
+        value = Number(value);
+        if (!window.WebCommon.isSafeAmount(value, 0, max))
+          return store.notice("Enter a value within the permitted range", "fa-triangle-exclamation");
       }
       if (key === "assignedTo" && typeof value === "string") value = value.split(",").map((s) => s.trim()).filter(Boolean);
       if (key === "branches" && typeof value === "string") value = value.split(",").map((s) => s.trim()).filter(Boolean);

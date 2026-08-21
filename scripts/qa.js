@@ -30,6 +30,15 @@ for (const file of vueFiles) {
 new Function(read("app/main.js"));
 new Function(read("app/i18n.js"));
 
+const index = read("index.html");
+const criticalCss = read("app/critical.css");
+if (!index.includes('src="app/boot.js') || !fs.existsSync(path.join(root, "app", "boot.js")))
+  throw new Error("Missing synchronous visual-preference bootstrap");
+if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot"))
+  throw new Error("Missing anti-FOUC boot layer");
+if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready"))
+  throw new Error("App reveal is not coordinated with the mounted shell");
+
 const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 
 const main = read("app/main.js");
@@ -37,13 +46,26 @@ const liveAuctionSource = read("app/pages/procurement/LiveAuctionWorkspace.vue")
 for (const token of [
   "supplierSeries", "visibleSupplierSeries", "chartSupplierSeries", "toggleSupplier",
   "showAllSuppliers", "clearSupplierFilters", 'v-for="series in chartSupplierSeries"',
+  'v-for="(bid, index) in auction.bids"',
   'class="premium-card flex min-h-11 items-center',
 ]) {
   if (!liveAuctionSource.includes(token)) throw new Error(`Live offer supplier chart is missing ${token}`);
 }
 
+for (const token of [
+  "activeMarketplaceMode",
+  "marketplaceModes",
+  "setMarketplaceMode",
+  'modes: ["buyer", "admin"]',
+  'modes: ["supplier", "admin"]',
+  "to.meta.modes",
+  "Workspace route denied",
+]) {
+  if (!main.includes(token)) throw new Error(`Company workspace context is missing ${token}`);
+}
+
 const requiredRoutes = [
-  "/", "/dashboard/:section?", "/clients", "/suppliers", "/leads", "/projects", "/project/:id",
+  "/", "/find-work", "/dashboard/:section?", "/clients", "/suppliers", "/leads", "/projects", "/project/:id",
   "/project/:id/contest", "/invoices", "/invoices/new", "/invoices/:invoiceId/edit",
   "/invoices/:invoiceId", "/estimates", "/payments", "/payments/new", "/payments/:paymentId/edit",
   "/products", "/expenses", "/messages", "/post-job/:id?", "/job/:jobId", "/client/job/:jobId",

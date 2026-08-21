@@ -98,7 +98,7 @@ export default {
   components: { WizardStep0Strategy, WizardStep1Details, WizardStep3Files, WizardStep4Team, WizardStep5Approvers },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
-    const allowed = computed(() => store.isBuyer.value || store.isAdmin.value || ["Client", "Admin"].includes(store.currentUser.value.type));
+    const allowed = computed(() => store.isBuyer.value || store.isAdmin.value);
     const existing = computed(() => route.params.id !== "new" ? store.job(route.params.id) : null);
 
     const initialStep = Number(route.query.step);
@@ -121,8 +121,16 @@ export default {
     const addFile = (event) => {
       const f = event.target.files?.[0];
       if (!f) return;
-      if (f.size > 2 * 1024 * 1024) return store.notice("File size exceeds 2 MB", "fa-triangle-exclamation");
-      project.value.files.push({ id: window.WebCommon.uid("file"), name: f.name, size: f.size, category: "Brief" });
+      const verification = window.BuyniverseSecurity?.validateFileUpload
+        ? window.BuyniverseSecurity.validateFileUpload(f)
+        : { ok: f.size <= 2 * 1024 * 1024, name: String(f.name || "").slice(0, 120), size: f.size, type: f.type || "" };
+      if (!verification.ok) {
+        store.securityEvent("Project attachment rejected", verification.reason || "Invalid attachment", "warning");
+        store.notice(verification.reason || "This attachment is not allowed.", "fa-triangle-exclamation");
+        event.target.value = "";
+        return;
+      }
+      project.value.files.push({ id: window.WebCommon.uid("file"), name: verification.name, size: verification.size, type: verification.type, category: "Brief" });
       event.target.value = "";
     };
     const removeFile = (id) => { project.value.files = project.value.files.filter((i) => i.id !== id); };

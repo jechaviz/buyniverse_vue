@@ -51,13 +51,13 @@ export default {
     const store = inject('store');
     const route = useRoute();
     const contract = computed(() => store.contract(route.params.contractId));
-    const allowed = computed(() => Boolean(contract.value) && (store.currentUser.value.type === 'Admin' || [contract.value.clientId, contract.value.providerId].includes(store.currentUser.value.id)));
+    const allowed = computed(() => Boolean(contract.value) && (store.isAdmin.value || [contract.value.clientId, contract.value.providerId].includes(store.currentUser.value.id)));
     const job = computed(() => store.job(contract.value?.sourceId));
     const entries = computed(() => allowed.value ? store.state.timeEntries.filter(entry => entry.contractId === contract.value?.id) : []);
     const totalHours = computed(() => entries.value.reduce((sum, entry) => sum + Number(entry.hours || 0), 0));
     const released = computed(() => contract.value?.milestones.filter(item => item.status === 'Released').reduce((sum, item) => sum + item.amount, 0) || 0);
     const funded = computed(() => contract.value?.milestones.filter(item => item.status === 'Funded').reduce((sum, item) => sum + item.amount, 0) || 0);
-    const isClient = computed(() => contract.value?.clientId === store.currentUser.value.id);
+    const isClient = computed(() => contract.value?.clientId === store.currentUser.value.id && (store.isBuyer.value || store.isAdmin.value));
     const isProvider = computed(() => contract.value?.providerId === store.currentUser.value.id);
     const time = reactive({ hours: 1, memo: '' });
 

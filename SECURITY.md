@@ -1,17 +1,17 @@
 # Seguridad de Buyniverse Vue
 
-Revisión actualizada el 15 de agosto de 2026 contra OWASP Top 10 para el alcance real de esta aplicación: una demostración estática, sin backend ni autenticación de producción.
+Revisión actualizada el 21 de agosto de 2026 contra OWASP Top 10 para el alcance real de esta aplicación: una demostración estática, sin backend ni autenticación de producción.
 
 ## Controles implementados
 
 - A01 — acceso: guardas por rol, propietario y participante en rutas y acciones; facturas, pagos, proyectos, contratos, conversaciones, administración, compras y subastas filtran también por objeto y registran denegaciones.
 - A02/A08 — secretos e integridad: no se recopilan claves fiscales; cualquier clave sensible se elimina al serializar; las dependencias CDN están fijadas y protegidas con SRI.
-- A03 — inyección: Vue escapa el contenido, no hay sinks HTML dinámicos, todo texto mutable se limita y normaliza, y las exportaciones neutralizan fórmulas CSV.
-- A04 — diseño: las transiciones críticas vuelven a comprobar rol, estado, pertenencia, rangos e identidad aunque el botón ya esté oculto.
-- A05 — configuración: CSP, `nosniff`, anti-framing, política de permisos, aislamiento de origen y no-cache. El servidor permite sólo HTML, SFC/JS y activos explícitos; ZIP, código del servidor, documentación y métodos distintos de GET/HEAD quedan bloqueados. También valida `Host` para reducir DNS rebinding local.
+- A03 — inyección: Vue escapa el contenido, no hay sinks HTML dinámicos, todo texto mutable se limita y normaliza, los enlaces de tablas sólo aceptan rutas internas y las exportaciones neutralizan fórmulas CSV.
+- A04 — diseño: las transiciones críticas vuelven a comprobar rol, estado, pertenencia, rangos e identidad aunque el botón ya esté oculto. Creación y edición en línea usan una regla compartida de valores finitos, con máximos de importe, cantidades, porcentajes y rondas.
+- A05 — configuración: CSP, `nosniff`, anti-framing, política de permisos, aislamiento de origen y no-cache. El servidor permite sólo HTML, SFC/JS y activos explícitos; ZIP, código del servidor, documentación y métodos distintos de GET/HEAD quedan bloqueados. El artefacto `dist` no publica dumps, semillas ni código fuente de backend; el shim PHP falla cerrado y no expone despliegue ni administración de BD por HTTP.
 - A06 — componentes: Vue 3.5.40, Vue Router 4.6.4, UnoCSS 66.7.5, vue3-sfc-loader 0.9.5 y Font Awesome 6.5.1 están fijados. La consulta a GitHub Advisory Database no devolvió avisos aplicables a esas versiones.
-- A07 — identidad: el cambio de cuenta está etiquetado como función demo y siempre vuelve al dashboard para invalidar la vista del rol anterior.
-- A09 — trazabilidad: los flujos de compras y subastas generan eventos de auditoría; los errores de componentes se capturan sin exponer secretos.
+- A07 — identidad: el cambio de cuenta está etiquetado como función demo y siempre vuelve al dashboard para invalidar la vista del rol anterior. Los diálogos, drawers y bloqueo de privacidad mantienen el foco dentro de la capa activa y restauran el foco al cerrarse.
+- A09 — trazabilidad: los flujos de compras y subastas generan eventos de auditoría; los errores de componentes se capturan sin exponer secretos. El shell muestra con precisión el guardado local, sin afirmar una sincronización de base de datos inexistente.
 - A10 — solicitudes: el cargador SFC sólo acepta mismo origen, no sigue redirecciones y CSP limita conexiones a `self`.
 
 ## Endurecimiento operacional

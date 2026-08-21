@@ -1,6 +1,6 @@
 <template>
   <section class="premium-card overflow-hidden rounded-2xl border border-slate-200/80 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap" role="toolbar" :aria-label="`${title} controls`">
       <div class="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
         <div
           class="relative flex h-9 items-center transition-all duration-200"
@@ -13,7 +13,7 @@
           </button>
           <template v-else>
             <i class="fa-solid fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input ref="searchInput" v-model="query" class="field h-9 pl-9 pr-9" :placeholder="`Search ${title.toLowerCase()}…`" @blur="closeSearchIfIdle" @keydown.esc="closeSearch" />
+            <input ref="searchInput" v-model="query" class="field h-9 pl-9 pr-9" type="search" inputmode="search" maxlength="160" autocomplete="off" :placeholder="`Search ${title.toLowerCase()}…`" :aria-controls="tableElementId" @input="sanitizeQuery" @blur="closeSearchIfIdle" @keydown.esc="closeSearch" />
             <button type="button" class="absolute right-1 grid h-7 w-7 place-items-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-white" aria-label="Close search" title="Close search" @click="closeSearch">
               <i class="fa-solid fa-xmark text-xs"></i>
             </button>
@@ -59,6 +59,9 @@
             <i class="fa-solid fa-plus text-[10px]"></i>
           </button>
         </div>
+        <span class="hidden whitespace-nowrap text-[10px] font-semibold text-slate-400 xl:inline" aria-live="polite">
+          <i v-if="remote.loading" class="fa-solid fa-circle-notch mr-1 animate-spin text-brand"></i>{{ resultSummary }}
+        </span>
         <button class="btn-muted h-9 px-3" :class="activeFilterCount ? 'border-brand text-brand font-bold' : ''" @click="openFilters('')">
           <i class="fa-solid fa-filter text-xs"></i>
           <span class="hidden sm:inline">Filters</span>
@@ -75,7 +78,6 @@
         <div class="relative">
           <button class="btn-muted h-9 px-3" aria-label="Columns" :aria-expanded="columnsOpen" title="Visible columns" @click="columnsOpen = !columnsOpen; viewsOpen = false;">
             <i class="fa-solid fa-sliders text-xs"></i>
-            <span class="hidden sm:inline">Columns</span>
           </button>
           <div v-if="columnsOpen" class="glass absolute right-0 top-11 z-40 w-64 rounded-xl p-3 shadow-xl">
             <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">Visible columns</p>
@@ -112,16 +114,16 @@
 
     <!-- Table View -->
     <div v-if="mode === 'table'" class="overflow-x-auto">
-      <table class="w-full min-w-200 table-fixed text-left text-sm">
+      <table :id="tableElementId" class="w-full min-w-200 table-fixed text-left text-sm">
         <thead class="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/50">
           <tr>
             <th class="w-12 px-4 py-3"><input :checked="allPageSelected" type="checkbox" aria-label="Select page" @change="togglePage" /></th>
-            <th v-for="column in visibleTableColumns" :key="column.key" :style="{ width: `${widths[column.key] || column.width || 160}px` }" class="table-column-header relative whitespace-nowrap px-4 py-3 font-semibold" @dragover.prevent @drop="dropColumn(column.key)">
+            <th v-for="column in visibleTableColumns" :key="column.key" scope="col" :aria-sort="ariaSort(column)" :style="{ width: `${widths[column.key] || column.width || 160}px` }" class="table-column-header relative whitespace-nowrap px-4 py-3 font-semibold" @dragover.prevent @drop="dropColumn(column.key)">
               <div class="flex min-w-0 items-center gap-1">
                 <button class="column-control column-drag-handle grid h-5 flex-none cursor-grab place-items-center rounded text-slate-300 hover:bg-slate-200 hover:text-slate-500 dark:hover:bg-slate-700" :title="`Drag ${column.label}`" :aria-label="`Drag ${column.label}`" draggable="true" @dragstart.stop="startColumnDrag($event, column.key)" @dragend="dragColumn = ''">
                   <i class="fa-solid fa-grip-vertical text-[10px]"></i>
                 </button>
-                <button v-if="!column.isActions" class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-left hover:text-brand" @click="sort(column.key)">
+                <button v-if="!column.isActions" type="button" class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-left hover:text-brand" :aria-label="`Sort by ${column.label}`" @click="sort(column.key)">
                   <span class="truncate">{{ column.label }}</span>
                   <i class="fa-solid column-control flex-none text-[10px]" :class="sortState.key === column.key ? sortState.desc ? 'is-active fa-sort-down text-brand' : 'is-active fa-sort-up text-brand' : 'fa-sort text-slate-300'"></i>
                 </button>
@@ -140,14 +142,17 @@
             <td v-for="column in visibleTableColumns" :key="column.key" class="relative px-4 py-3" @dblclick="!column.isActions && openEditor(item, column)">
               <RowActionMenu v-if="column.isActions" :actions="actionsFor(item)" :item-label="String(item.title || item.name || item.id)" :align="actionMenuAlign" @action="handleRowAction(item, $event)" />
               <InlineCellEditor v-else-if="editing?.id === item.id && editing?.key === column.key" :value="item[column.key]" :type="column.edit?.type || 'text'" :options="column.edit?.options || []" :users="users" @save="saveEdit(item, column, $event)" @cancel="editing = null" />
-              <RouterLink v-else-if="linkFor && linkFor(item, column.key)" :to="linkFor(item, column.key)" class="font-medium text-sky-600 hover:underline">{{ display(item, column.key) }}</RouterLink>
+              <RouterLink v-else-if="safeLinkFor(item, column.key)" :to="safeLinkFor(item, column.key)" class="font-medium text-sky-600 hover:underline">{{ display(item, column.key) }}</RouterLink>
               <span v-else :class="isStatus(column.key) ? 'rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200' : ''">
                 {{ display(item, column.key) }}
                 <i v-if="column.edit" class="fa-solid fa-pen ml-2 inline-edit-affordance text-[9px] text-slate-300" aria-hidden="true"></i>
               </span>
             </td>
           </tr>
-          <tr v-if="!paged.length">
+          <tr v-if="remoteMode && remote.loading && !paged.length">
+            <td :colspan="visibleTableColumns.length + 1" class="px-5 py-14 text-center text-slate-500"><i class="fa-solid fa-circle-notch animate-spin text-brand"></i><p class="mt-3 font-semibold">Searching records…</p></td>
+          </tr>
+          <tr v-else-if="!paged.length">
             <td :colspan="visibleTableColumns.length + 1" class="px-5 py-14 text-center text-slate-500">
               <i class="fa-solid fa-magnifying-glass text-2xl"></i>
               <p class="mt-3 font-semibold">No matching records</p>
@@ -165,7 +170,8 @@
       <article class="rounded-xl bg-slate-100 p-5 dark:bg-slate-700"><p class="text-xs font-bold uppercase text-slate-500">Groups</p><p class="mt-2 text-3xl font-800">{{ groups.length }}</p></article>
     </div>
 
-    <DataTablePagination :page="page" :page-count="pageCount" :page-size="pageSize" :range-label="rangeLabel" @update:page="page = $event" @update:page-size="pageSize = $event" />
+    <p v-if="remoteMode && remote.error" class="border-t border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300" role="alert"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ remote.error }}</p>
+    <DataTablePagination :page="page" :page-count="pageCount" :page-size="pageSize" :range-label="rangeLabel" :cursor-mode="remoteMode" :has-next="Boolean(remote.nextCursor)" :loading="remote.loading" @update:page="setPage" @update:page-size="pageSize = $event" />
 
     <TextInputDialog :open="saveDialogOpen" :title="activeSavedView ? 'Save as new view' : 'Save current view'" description="Save the current search, filters, sorting, columns and display mode for quick access later." label="View name" placeholder="e.g. Open projects by budget" hint="Use a short, recognizable name." :confirm-label="activeSavedView ? 'Save as new' : 'Save view'" icon="fa-bookmark" :max-length="40" :error="saveViewError" @input="saveViewError = ''" @close="closeSaveViewDialog" @submit="saveView" />
     <DataTableFilterDrawer :open="filterDrawerOpen" :columns="columns" :filters="filters" :rules="filterRules" :mode="filterMode" :active-count="activeFilterCount" :focus-key="filterFocusKey" :dirty="isViewDirty" :view-name="activeSavedView?.name || ''" @update:filters="filters = $event" @update:rules="filterRules = $event" @update:mode="filterMode = $event" @clear="clearDrawerFilters" @close="closeFilters" />
@@ -176,22 +182,23 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const VIEW_MODES = ["table", "cards", "kanban", "dashboard"];
 const FILTER_OPERATORS = ["contains", "equals", "not_equals", "gt", "lt"];
 const ACTION_COLUMN_KEY = "__actions";
+const cleanText = (value, limit = 160) => String(window.WebCommon?.sanitizeText?.(value, limit) ?? "").trim();
 const layoutKeys = (columns, editable) => [...columns.map((c) => c.key), ...(editable ? [ACTION_COLUMN_KEY] : [])];
 const normalizeView = (raw, columns, editable = true) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const dataKeys = columns.map((c) => c.key), keys = layoutKeys(columns, editable), id = String(raw.id || "").trim(), name = String(raw.name || "").trim();
+  const dataKeys = columns.map((c) => c.key), keys = layoutKeys(columns, editable), id = cleanText(raw.id, 120), name = cleanText(raw.name, 40);
   if (!id || !name) return null;
   const order = Array.isArray(raw.order) ? [...new Set(raw.order.filter((k) => keys.includes(k)))] : [];
-  const filters = raw.filters && typeof raw.filters === "object" ? Object.fromEntries(Object.entries(raw.filters).filter(([k]) => dataKeys.includes(k)).map(([k, v]) => [k, String(v)])) : {};
+  const filters = raw.filters && typeof raw.filters === "object" ? Object.fromEntries(Object.entries(raw.filters).filter(([k]) => dataKeys.includes(k)).map(([k, v]) => [k, cleanText(v, 160)])) : {};
   return {
-    id, name, query: String(raw.query || "").trim(), filters,
-    filterRules: Array.isArray(raw.filterRules) ? raw.filterRules.filter((r) => r && dataKeys.includes(r.key) && FILTER_OPERATORS.includes(r.operator)).map((r, i) => ({ id: r.id || `${id}-rule-${i}`, key: r.key, operator: r.operator, value: String(r.value || "") })) : [],
-    filterMode: raw.filterMode === "any" ? "any" : "all", activeGroup: String(raw.activeGroup || "all"),
+    id, name, query: cleanText(raw.query, 160), filters,
+    filterRules: Array.isArray(raw.filterRules) ? raw.filterRules.filter((r) => r && dataKeys.includes(r.key) && FILTER_OPERATORS.includes(r.operator)).map((r, i) => ({ id: cleanText(r.id || `${id}-rule-${i}`, 120), key: r.key, operator: r.operator, value: cleanText(r.value, 160) })) : [],
+    filterMode: raw.filterMode === "any" ? "any" : "all", activeGroup: cleanText(raw.activeGroup || "all", 120) || "all",
     sortState: raw.sortState && dataKeys.includes(raw.sortState.key) ? { key: raw.sortState.key, desc: Boolean(raw.sortState.desc) } : { key: "", desc: false },
     visibility: Object.fromEntries(keys.map((k) => [k, raw.visibility?.[k] !== false])),
     order: [...order, ...keys.filter((k) => !order.includes(k))],
     widths: raw.widths && typeof raw.widths === "object" ? Object.fromEntries(Object.entries(raw.widths).filter(([k, v]) => keys.includes(k) && Number.isFinite(Number(v))).map(([k, v]) => [k, Math.max(80, Math.min(800, Number(v)))])) : {},
-    mode: VIEW_MODES.includes(raw.mode) ? raw.mode : "table", pageSize: [5, 10, 20, 50].includes(Number(raw.pageSize)) ? Number(raw.pageSize) : 10,
+    mode: VIEW_MODES.includes(raw.mode) ? raw.mode : "table", pageSize: [5, 10, 20, 50, 100, 200].includes(Number(raw.pageSize)) ? Number(raw.pageSize) : 10,
     demo: Boolean(raw.demo), default: Boolean(raw.default),
   };
 };
@@ -199,12 +206,12 @@ const mergeViews = (seeded, stored) => [...seeded.map((s) => stored.find((v) => 
 
 export default {
   components: {
-    InlineCellEditor: load("./app/components/InlineCellEditor.vue?v=20"),
-    TextInputDialog: load("./app/components/TextInputDialog.vue?v=1"),
+    InlineCellEditor: load("./app/components/InlineCellEditor.vue?v=21"),
+    TextInputDialog: load("./app/components/TextInputDialog.vue?v=2"),
     RowActionMenu: load("./app/components/RowActionMenu.vue?v=2"),
     BulkActionBar: load("./app/components/BulkActionBar.vue?v=1"),
-    DataTableFilterDrawer: load("./app/components/DataTableFilterDrawer.vue?v=2"),
-    DataTablePagination: load("./app/components/DataTablePagination.vue?v=1"),
+    DataTableFilterDrawer: load("./app/components/DataTableFilterDrawer.vue?v=3"),
+    DataTablePagination: load("./app/components/DataTablePagination.vue?v=2"),
     DataTableCardView: load("./app/components/DataTableCardView.vue?v=1"),
     DataTableKanbanView: load("./app/components/DataTableKanbanView.vue?v=1"),
   },
@@ -222,6 +229,7 @@ export default {
     initialViews: { type: Array, default: () => [] },
     rowActions: { type: Array, default: () => [{ key: "delete", label: "Delete record", icon: "fa-trash-can", tone: "danger" }, { key: "edit", label: "Edit record", icon: "fa-pen" }] },
     bulkActions: { type: Array, default: () => [{ key: "archive", label: "Archive selected", icon: "fa-box-archive" }, { key: "export", label: "Export selected", icon: "fa-file-csv" }] },
+    dataSource: { type: Object, default: null },
   },
   emits: ["update-cell", "edit", "delete", "archive", "row-action", "bulk-action"],
   data() {
@@ -237,6 +245,8 @@ export default {
       order: saved?.order || layoutKeys(this.columns, this.editable), widths: saved?.widths || {},
       page: 1, pageSize: saved?.pageSize || 10, selection: {}, mode: saved?.mode || "table", editing: null, dragColumn: "", activeGroup: "all",
       savedViews, activeView,
+      remote: { items: [], total: null, totalRelation: "eq", nextCursor: null, facets: {}, tookMs: 0, loading: false, error: "", cursors: [null], controller: null, timer: null, requestId: 0 },
+      tableElementId: `table-${cleanText(this.tableId, 80).replace(/[^a-zA-Z0-9_-]/g, "-") || "records"}`,
     };
   },
   mounted() { if (this.activeView) this.applyView(); else this.persist(); },
@@ -259,7 +269,9 @@ export default {
     },
     visibleTableColumns() { return this.configurableColumns.filter((col) => this.visibility[col.key] !== false); },
     actionMenuAlign() { const i = this.visibleTableColumns.findIndex((c) => c.key === ACTION_COLUMN_KEY); return i >= 0 && i < this.visibleTableColumns.length / 2 ? "left" : "right"; },
+    remoteMode() { return Boolean(this.dataSource && typeof this.dataSource.search === "function"); },
     baseFiltered() {
+      if (this.remoteMode) return this.remote.items;
       const q = this.query.trim().toLowerCase();
       return this.items.filter((item) => {
         const global = !q || this.columns.some((c) => String(this.display(item, c.key)).toLowerCase().includes(q));
@@ -278,6 +290,11 @@ export default {
       });
     },
     groups() {
+      if (this.remoteMode) {
+        const total = this.remote.total == null ? this.remote.items.length : this.remote.total;
+        const facets = Array.isArray(this.remote.facets?.[this.groupBy]) ? this.remote.facets[this.groupBy] : [];
+        return [{ value: "all", label: "All", count: total }, ...facets.map((facet) => ({ value: String(facet.value ?? facet.key ?? ""), label: this.groupLabel(String(facet.value ?? facet.key ?? "")), count: Number(facet.count) || 0 }))];
+      }
       if (!this.groupBy) return [{ value: "all", label: "All", count: this.baseFiltered.length }];
       const vals = [...new Set(this.baseFiltered.map((i) => String(i[this.groupBy] ?? "Unassigned")))];
       return [{ value: "all", label: "All", count: this.baseFiltered.length }, ...vals.map((v) => ({ value: v, label: this.groupLabel(v), count: this.baseFiltered.filter((i) => String(i[this.groupBy] ?? "Unassigned") === v).length }))];
@@ -288,17 +305,31 @@ export default {
       if (!key) return this.filtered;
       return [...this.filtered].sort((a, b) => String(this.display(a, key)).localeCompare(String(this.display(b, key)), undefined, { numeric: true }) * (desc ? -1 : 1));
     },
-    pageCount() { return Math.max(1, Math.ceil(this.sorted.length / this.pageSize)); },
+    pageCount() { return this.remoteMode ? Math.max(1, this.remote.total == null ? this.page + (this.remote.nextCursor ? 1 : 0) : Math.ceil(this.remote.total / this.pageSize)) : Math.max(1, Math.ceil(this.sorted.length / this.pageSize)); },
     paged() { const s = Math.min(this.page, this.pageCount); return this.sorted.slice((s - 1) * this.pageSize, s * this.pageSize); },
     selectedCount() { return Object.values(this.selection).filter(Boolean).length; },
     selectedIds() { return Object.entries(this.selection).filter(([, v]) => v).map(([id]) => id); },
-    selectedItems() { const ids = new Set(this.selectedIds.map(String)); return this.items.filter((i) => ids.has(String(i.id))); },
-    bulkTotalCount() { return new Set([...this.selectedIds.map(String), ...this.filtered.map((i) => String(i.id))]).size; },
+    selectedItems() { const ids = new Set(this.selectedIds.map(String)); return (this.remoteMode ? this.remote.items : this.items).filter((i) => ids.has(String(i.id))); },
+    bulkTotalCount() { return this.remoteMode ? this.paged.length : new Set([...this.selectedIds.map(String), ...this.filtered.map((i) => String(i.id))]).size; },
     resolvedBulkActions() {
       return this.bulkActions.filter((a) => !a.when || a.when(this.selectedItems, this.selectedIds)).map((a) => ({ ...a, disabled: typeof a.disabled === "function" ? a.disabled(this.selectedItems, this.selectedIds) : Boolean(a.disabled) }));
     },
     allPageSelected() { return this.paged.length > 0 && this.paged.every((i) => this.selection[i.id]); },
+    resultSummary() {
+      if (this.remoteMode) {
+        const total = this.remote.total == null ? "many" : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
+        return this.remote.loading ? "Searching…" : `${total} records${this.remote.tookMs ? ` · ${this.remote.tookMs} ms` : ""}`;
+      }
+      const total = this.items.length, visible = this.sorted.length;
+      return visible === total ? `${visible} records` : `${visible} of ${total} records`;
+    },
     rangeLabel() {
+      if (this.remoteMode) {
+        if (!this.paged.length) return this.remote.loading ? "Searching…" : "0 records";
+        const first = (this.page - 1) * this.pageSize + 1, last = first + this.paged.length - 1;
+        const total = this.remote.total == null ? "many" : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
+        return `${first}–${last} of ${total}`;
+      }
       if (!this.sorted.length) return "0 records";
       const s = (Math.min(this.page, this.pageCount) - 1) * this.pageSize + 1;
       return `${s}–${Math.min(s + this.pageSize - 1, this.sorted.length)} of ${this.sorted.length}`;
@@ -306,17 +337,20 @@ export default {
   },
   watch: {
     tableId() { this.resetForTable(); },
-    pageSize() { this.page = 1; this.persist(); },
-    query(v) { this.page = 1; if (v) this.searchOpen = true; },
-    filters: { deep: true, handler() { this.page = 1; } },
-    filterRules: { deep: true, handler() { this.page = 1; } },
-    page() { if (this.page > this.pageCount) this.page = this.pageCount; },
-    sortState: { deep: true, handler() { this.persist(); } },
+    dataSource: { immediate: true, handler() { this.resetRemote(); } },
+    pageSize() { this.page = 1; this.persist(); this.resetRemote(); },
+    query(v) { this.page = 1; if (v) this.searchOpen = true; this.resetRemote(); },
+    filters: { deep: true, handler() { this.page = 1; this.resetRemote(); } },
+    filterRules: { deep: true, handler() { this.page = 1; this.resetRemote(); } },
+    activeGroup() { this.page = 1; this.resetRemote(); },
+    page() { if (!this.remoteMode && this.page > this.pageCount) this.page = this.pageCount; },
+    sortState: { deep: true, handler() { this.persist(); this.resetRemote(); } },
     visibility: { deep: true, handler() { this.persist(); } },
     order: { deep: true, handler() { this.persist(); } },
     widths: { deep: true, handler() { this.persist(); } },
     mode() { this.persist(); },
   },
+  beforeUnmount() { if (this.remote.timer) clearTimeout(this.remote.timer); this.remote.controller?.abort(); },
   methods: {
     resetForTable() {
       const saved = this.readStore(), keys = layoutKeys(this.columns, this.editable), stored = (saved?.order || []).filter((k) => keys.includes(k)), order = [...stored, ...keys.filter((k) => !stored.includes(k))];
@@ -329,13 +363,58 @@ export default {
       if (this.activeView) this.$nextTick(() => this.applyView()); else this.$nextTick(() => this.persist());
     },
     display(item, key) { return this.format(item, key); },
+    resetRemote() {
+      if (!this.remoteMode) return;
+      if (this.remote.timer) clearTimeout(this.remote.timer);
+      this.remote.controller?.abort(); this.remote.cursors = [null]; this.remote.nextCursor = null; this.remote.error = "";
+      this.remote.timer = setTimeout(() => this.loadRemote(null), Math.max(80, Math.min(500, Number(this.dataSource.debounceMs) || 150)));
+    },
+    remoteRequest(cursor) {
+      const rules = [
+        ...Object.entries(this.filters).filter(([, value]) => String(value ?? "").trim()).map(([field, value]) => ({ field, operator: "contains", value })),
+        ...this.filterRules,
+      ];
+      if (this.groupBy && this.activeGroup !== "all") rules.push({ field: this.groupBy, operator: "equals", value: this.activeGroup });
+      return { query: this.query, filters: rules, logic: this.filterMode, sort: this.sortState.key ? [{ field: this.sortState.key, direction: this.sortState.desc ? "desc" : "asc" }] : [], page: { size: this.pageSize, cursor }, fields: this.columns.map((column) => column.key), facets: this.groupBy ? [this.groupBy] : [] };
+    },
+    async loadRemote(cursor) {
+      if (!this.remoteMode) return;
+      this.remote.controller?.abort(); const controller = new AbortController(), requestId = ++this.remote.requestId;
+      this.remote.controller = controller; this.remote.loading = true; this.remote.error = "";
+      try {
+        const result = await this.dataSource.search(this.remoteRequest(cursor), controller.signal);
+        if (requestId !== this.remote.requestId) return;
+        this.remote.items = Array.isArray(result?.items) ? result.items : []; this.remote.total = Number.isFinite(Number(result?.total)) ? Number(result.total) : null;
+        this.remote.totalRelation = result?.totalRelation === "gte" ? "gte" : "eq"; this.remote.nextCursor = result?.nextCursor || null;
+        this.remote.facets = result?.facets && typeof result.facets === "object" ? result.facets : {}; this.remote.tookMs = Number(result?.tookMs) || 0;
+        this.remote.cursors[this.page] = this.remote.nextCursor;
+      } catch (error) { if (error?.name !== "AbortError" && requestId === this.remote.requestId) this.remote.error = "Search is temporarily unavailable. Try again."; }
+      finally { if (requestId === this.remote.requestId) this.remote.loading = false; }
+    },
+    setPage(next) {
+      const target = Math.max(1, Number(next) || 1);
+      if (!this.remoteMode) { this.page = target; return; }
+      if (target === this.page || target < 1 || (target > this.page && !this.remote.cursors[target - 1])) return;
+      this.page = target; this.loadRemote(this.remote.cursors[target - 1]);
+    },
+    sanitizeQuery(event) { this.query = cleanText(event.target.value, 160); },
+    safeLinkFor(item, key) {
+      if (!this.linkFor) return "";
+      const candidate = this.linkFor(item, key);
+      if (typeof candidate !== "string") return "";
+      return window.WebCommon?.safeInternalPath(candidate, "") || "";
+    },
+    ariaSort(column) {
+      if (column.isActions || this.sortState.key !== column.key) return "none";
+      return this.sortState.desc ? "descending" : "ascending";
+    },
     openSearch(focus = true) { this.searchOpen = true; this.viewsOpen = false; this.columnsOpen = false; if (focus) this.$nextTick(() => this.$refs.searchInput?.focus()); },
     closeSearchIfIdle() { this.$nextTick(() => { if (!this.query && document.activeElement !== this.$refs.searchInput) this.searchOpen = false; }); },
     closeSearch() { this.query = ""; this.searchOpen = false; },
     isStatus(key) { return ["status", "paymentStatus"].includes(key); },
     sort(key) { this.sortState = this.sortState.key === key ? { key, desc: !this.sortState.desc } : { key, desc: false }; },
     togglePage() { const n = !this.allPageSelected; this.paged.forEach((i) => (this.selection[i.id] = n)); },
-    selectAllFiltered() { this.filtered.forEach((i) => (this.selection[i.id] = true)); },
+    selectAllFiltered() { (this.remoteMode ? this.paged : this.filtered).forEach((i) => (this.selection[i.id] = true)); },
     clearFilters() { this.query = ""; this.searchOpen = false; this.clearDrawerFilters(); },
     clearDrawerFilters() { this.filters = {}; this.filterRules = []; this.activeGroup = "all"; },
     openFilters(focusKey = "") { this.filterFocusKey = focusKey; this.filterDrawerOpen = true; this.viewsOpen = false; this.columnsOpen = false; },
@@ -398,7 +477,7 @@ export default {
       return (typeof window !== "undefined" && window.DataTableStorage) ? window.DataTableStorage.computeSignature(view, this.columns, this.editable, layoutKeys) : JSON.stringify(view);
     },
     saveView(input) {
-      const name = String(input || "").trim();
+      const name = cleanText(input, 40);
       if (!name) return;
       if (this.savedViews.some((v) => v.name.toLocaleLowerCase() === name.toLocaleLowerCase())) { this.saveViewError = "A saved view with this name already exists."; return; }
       const view = { id: window.ProcurementCommon ? window.ProcurementCommon.uid("view") : `view-${Date.now()}`, name, ...this.currentViewState() };

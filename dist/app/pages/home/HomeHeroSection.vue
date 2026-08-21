@@ -14,14 +14,15 @@
           </div>
 
           <h1 class="font-head text-3xl sm:text-4xl lg:text-5xl font-800 tracking-tight leading-[1.15] text-slate-900 dark:text-white">
-            {{ store.t("Contrata Expertos y Optimiza tus Adquisiciones al") }}
-            <span class="bg-gradient-to-r from-brand-600 via-rose-500 to-amber-500 bg-clip-text text-transparent dark:from-brand-300 dark:via-rose-300 dark:to-amber-200">
-              {{ store.t("Mejor Postor") }}
+            <template v-if="supplierMode">{{ store.t("Encuentra proyectos y oportunidades para tu empresa") }}</template>
+            <template v-else>{{ store.t("Contrata Expertos y Optimiza tus Adquisiciones al") }}</template>
+            <span class="ml-2 inline-block bg-gradient-to-r from-brand-600 via-rose-500 to-amber-500 bg-clip-text text-transparent dark:from-brand-300 dark:via-rose-300 dark:to-amber-200">
+              {{ supplierMode ? store.t("con ofertas competitivas") : store.t("Mejor Postor") }}
             </span>
           </h1>
 
           <p class="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300 max-w-2xl">
-            {{ store.t("Conecta con los mejores freelancers del mundo y proveedores corporativos. Subastas inversas BAFO, cotizaciones RFX, custodia en fideicomiso (Escrow) y pagos 100% seguros.") }}
+            {{ supplierMode ? store.t("Presenta ofertas, participa en subastas BAFO y convierte la capacidad de tu empresa en contratos trazables.") : store.t("Conecta con los mejores freelancers del mundo y proveedores corporativos. Subastas inversas BAFO, cotizaciones RFX, custodia en fideicomiso (Escrow) y pagos 100% seguros.") }}
           </p>
 
           <!-- Interactive Universal Search Bar -->
@@ -34,7 +35,7 @@
                   type="text"
                   data-optional="true"
                   data-no-validate="true"
-                  :placeholder="store.t('¿Qué proyecto o servicio necesitas hoy?')"
+                  :placeholder="store.t(supplierMode ? 'Busca proyectos, categorías u oportunidades' : '¿Qué proyecto o servicio necesitas hoy?')"
                   class="w-full bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none"
                 />
               </div>
@@ -171,6 +172,7 @@ const { useRouter } = VueRouter;
 export default {
   props: {
     store: Object,
+    supplierMode: Boolean,
   },
   setup(props) {
     const router = useRouter();
@@ -217,7 +219,7 @@ export default {
       categoryDropdownOpen.value = false;
       const q = searchQuery.value.trim();
       router.push({
-        path: "/browse-services",
+        path: props.supplierMode ? "/find-work" : "/browse-services",
         query: q ? { q, category: selectedCategory.value || undefined } : (selectedCategory.value ? { category: selectedCategory.value } : undefined)
       });
     };

@@ -206,69 +206,47 @@ async function build() {
   if (fs.existsSync(path.join(rootDir, "index.html"))) {
     let html = fs.readFileSync(path.join(rootDir, "index.html"), "utf8");
 
-    // Add immediate anti-FOUC theme script right after <head>
-    const antiFoucScript = `
-    <script>
-      (function() {
-        try {
-          var t = localStorage.getItem("buyniverse-vue-theme");
-          if (t === "dark" || (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-          } else {
-            document.documentElement.classList.remove("dark");
-          }
-          var a = localStorage.getItem("buyniverse-vue-accent");
-          var m = {
-            red: ["#e5484d", "#c9363c", "#fff1f1", "#ffe3e3"],
-            violet: ["#7c3aed", "#6d28d9", "#f5f3ff", "#ede9fe"],
-            blue: ["#2563eb", "#1d4ed8", "#eff6ff", "#dbeafe"],
-            teal: ["#0f766e", "#115e59", "#f0fdfa", "#ccfbf1"],
-            orange: ["#ea580c", "#c2410c", "#fff7ed", "#ffedd5"],
-            pink: ["#db2777", "#be185d", "#fdf2f8", "#fce7f3"]
-          };
-          if (a && m[a]) {
-            document.documentElement.style.setProperty("--accent", m[a][0]);
-            document.documentElement.style.setProperty("--accent-deep", m[a][1]);
-            document.documentElement.style.setProperty("--accent-soft", m[a][2]);
-            document.documentElement.style.setProperty("--accent-pale", m[a][3]);
-          }
-        } catch(e) {}
-      })();
-    </script>`;
+    // app/boot.js is an external, CSP-compatible first-paint bootstrap. Keep
+    // it intact: production headers deliberately reject inline scripts.
+    if (!html.includes('src="app/boot.js')) {
+      throw new Error("Missing CSP-safe visual bootstrap in index.html");
+    }
 
-    // Insert anti-FOUC script
-    html = html.replace("<head>", `<head>${antiFoucScript}`);
-
-    // Link pre-compiled uno.css in dist
-    html = html.replace(
-      `<link rel="stylesheet" href="app/critical.css?v=1" />`,
-      `<link rel="stylesheet" href="app/uno.css" />`
-    );
+    // Replace whichever cache-busted critical stylesheet is current. This
+    // makes the precompiled AOT file authoritative in dist and avoids a late
+    // Uno runtime style pass (the original source remains CDN/SFC by design).
+    const criticalLink = /<link\s+rel="stylesheet"\s+href="app\/critical\.css(?:\?v=[^"]*)?"\s*\/>/;
+    if (!criticalLink.test(html)) {
+      throw new Error("Missing critical stylesheet link in index.html");
+    }
+    html = html.replace(criticalLink, `<link rel="stylesheet" href="app/uno.css" />`);
 
     // Remove runtime uno scripts in dist/index.html
     html = html.replace(/<script src="app\/uno-config\.js[^"]*"><\/script>/g, "");
     html = html.replace(/<script[^>]*@unocss\/runtime[^>]*><\/script>/g, "");
 
+    if (!html.includes('href="app/uno.css"') || /@unocss\/runtime|app\/uno-config\.js/.test(html)) {
+      throw new Error("Dist CSS pipeline was not reduced to the precompiled artifact");
+    }
+
     fs.writeFileSync(path.join(distDir, "index.html"), minifyHtml(html), "utf8");
   }
 
-  // Copy backend and configuration files to dist/
-  const backendFiles = [
+  // Only the web runtime configuration belongs in a published frontend artifact.
+  // Database dumps, deployment automation and generated backend source remain
+  // outside the document root and are handled by controlled operations tooling.
+  const runtimeFiles = [
     "index.php",
-    "db_schema.sql",
-    "db_seed.sql",
-    "buyniverse.c",
-    "buyniverse.v",
     ".htaccess",
     "manifest.json",
     "favicon.ico"
   ];
 
-  for (const file of backendFiles) {
+  for (const file of runtimeFiles) {
     const filePath = path.join(rootDir, file);
     if (fs.existsSync(filePath)) {
       fs.copyFileSync(filePath, path.join(distDir, file));
-      console.log(`[DIST] Included backend file: ${file}`);
+      console.log(`[DIST] Included runtime file: ${file}`);
     }
   }
 

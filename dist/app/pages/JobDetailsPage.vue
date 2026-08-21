@@ -173,8 +173,8 @@ export default {
 
     const client = computed(() => store.user(job.value?.clientId));
     const clientView = computed(() => Boolean(route.meta.clientView));
-    const isOwner = computed(() => job.value?.clientId === store.currentUser.value.id);
-    const isFreelancer = computed(() => store.currentUser.value.type === "Freelancer");
+    const isOwner = computed(() => job.value?.clientId === store.currentUser.value.id && (store.isBuyer.value || store.isAdmin.value));
+    const isFreelancer = computed(() => store.isSupplier.value);
     const saved = computed(() => store.state.savedJobIds?.includes(job.value?.id));
     const myProposal = computed(() => job.value?.proposals.find((p) => p.freelancerId === store.currentUser.value.id));
 

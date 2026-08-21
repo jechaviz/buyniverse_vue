@@ -12,7 +12,7 @@
         <option :value="5">5</option>
         <option :value="10">10</option>
         <option :value="20">20</option>
-        <option :value="50">50</option>
+        <option :value="50">50</option><option :value="100">100</option><option :value="200">200</option>
       </select></label
     >
     <div class="flex items-center justify-between gap-3 sm:justify-end">
@@ -20,7 +20,7 @@
       <div class="flex items-center gap-1">
         <button
           class="btn-muted h-8 w-8 p-0"
-          :disabled="page === 1"
+          v-if="!cursorMode" :disabled="page === 1"
           @click="$emit('update:page', 1)"
         >
           «</button
@@ -34,13 +34,13 @@
           >{{ page }} / {{ pageCount }}</span
         ><button
           class="btn-muted h-8 w-8 p-0"
-          :disabled="page === pageCount"
+          :disabled="loading || (cursorMode ? !hasNext : page === pageCount)"
           @click="$emit('update:page', page + 1)"
         >
           ›</button
         ><button
           class="btn-muted h-8 w-8 p-0"
-          :disabled="page === pageCount"
+          v-if="!cursorMode" :disabled="page === pageCount"
           @click="$emit('update:page', pageCount)"
         >
           »
@@ -56,6 +56,9 @@ export default {
     pageCount: { type: Number, required: true },
     pageSize: { type: Number, required: true },
     rangeLabel: { type: String, required: true },
+    cursorMode: Boolean,
+    hasNext: Boolean,
+    loading: Boolean,
   },
   emits: ["update:page", "update:pageSize"],
 };

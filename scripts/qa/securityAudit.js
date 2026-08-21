@@ -7,6 +7,16 @@ function runSecurityAudit(root, read, vueFiles) {
     if (!index.toLowerCase().includes(dep)) throw new Error(`Missing CDN dependency: ${dep}`);
   }
   if (!index.includes("app/lib/procurement-common.js")) throw new Error("Missing shared procurement browser library");
+  if (!index.includes("app/lib/overlayGuard.js") || !fs.existsSync(path.join(root, "app", "lib", "overlayGuard.js")))
+    throw new Error("Reusable overlay focus guard is missing");
+  const overlaySource = read("app/lib/overlayGuard.js");
+  for (const token of ["BuyniverseOverlay", "activate", "release", "trap", "focusableSelector"]) {
+    if (!overlaySource.includes(token)) throw new Error(`Overlay focus guard is missing ${token}`);
+  }
+  for (const component of ["app/components/SideDrawer.vue", "app/components/TextInputDialog.vue", "app/components/CommandPalette.vue", "app/components/layout/AppModals.vue"]) {
+    if (!read(component).includes("BuyniverseOverlay"))
+      throw new Error(`Focusable overlay is not protected in ${component}`);
+  }
   if (/node_modules|\/dist\/assets\//i.test(index)) throw new Error("Production HTML depends on a Node build artifact");
   if (!index.includes("Content-Security-Policy") || !index.includes('integrity="sha384-')) throw new Error("CSP or subresource integrity is missing");
   if (/vue@3\/|vue-router@4\/|npm\/@unocss\/runtime["']|npm\/vue3-sfc-loader\/dist/.test(index)) throw new Error("A security-sensitive CDN dependency is not pinned");
@@ -15,12 +25,26 @@ function runSecurityAudit(root, read, vueFiles) {
   const requiredServerHeaders = [
     "X-Content-Type-Options", "frame-ancestors", "def _allowed", "def list_directory",
     "do_TRACE", "X-Permitted-Cross-Domain-Policies", "Strict-Transport-Security",
-    "Cross-Origin-Opener-Policy", "X-Download-Options", "X-DNS-Prefetch-Control", "Cache-Control"
+    "Cross-Origin-Opener-Policy", "X-Download-Options", "X-DNS-Prefetch-Control", "Cache-Control", "Referrer-Policy"
   ];
   for (const h of requiredServerHeaders) {
     if (!server.includes(h)) throw new Error(`Banking grade server header or guard missing: ${h}`);
   }
   if (server.includes('raw_path.startswith("/buyniverse_vue/"):\n            return True')) throw new Error("Static server exposes the full project directory");
+
+  const phpShim = read("index.php");
+  const buildScript = read("scripts/build_dist.js");
+  const htaccess = read(".htaccess");
+  for (const token of ["BUYNIVERSE_ENABLE_BACKEND_PROXY", "static_file", "fail_response", "127.0.0.1"]) {
+    if (!phpShim.includes(token)) throw new Error(`Fail-closed PHP deployment shim is missing ${token}`);
+  }
+  if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
+    throw new Error("Deployment shim retains privileged database or deploy surface");
+  if (/db_schema\.sql|db_seed\.sql|buyniverse\.c|buyniverse\.v/.test(buildScript))
+    throw new Error("Published dist artifact includes internal database or backend source files");
+  for (const token of ["Options -Indexes", "Require all denied", "Content-Security-Policy"]) {
+    if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
+  }
 
   const unsafeSink = /v-html|\.innerHTML\s*=|\.outerHTML\s*=|document\.write\s*\(|javascript:/i;
   for (const file of [...vueFiles, "app/main.js"]) {
@@ -62,6 +86,18 @@ function runSecurityAudit(root, read, vueFiles) {
     throw new Error("OWASP CSV Formula / DDE injection defense failed");
   if (!sec.generateTransactionHash({ amount: 15000, id: "TXN-999" }))
     throw new Error("Cryptographic transaction hash generation failed");
+  if (typeof sec.validateFileUpload !== "function" || typeof sec.sanitizeFilename !== "function" || typeof sec.sha256Hex !== "function")
+    throw new Error("Secure attachment or SHA-256 API is missing");
+  if (!sec.validateFileUpload({ name: "brief.pdf", type: "application/pdf", size: 1024 }).ok)
+    throw new Error("Allowed attachment was rejected");
+  if (sec.validateFileUpload({ name: "payload.html", type: "text/html", size: 1024 }).ok)
+    throw new Error("Executable attachment type was accepted");
+  if (sec.validateFileUpload({ name: "brief.pdf", type: "text/html", size: 1024 }).ok)
+    throw new Error("Mismatched attachment media type was accepted");
+  if (sec.validateFileUpload({ name: "large.pdf", type: "application/pdf", size: 2 * 1024 * 1024 + 1 }).ok)
+    throw new Error("Oversized attachment was accepted");
+  if (sec.sanitizeFilename("../private/brief.pdf") !== "brief.pdf")
+    throw new Error("Attachment filename traversal was not removed");
 
   const storageValues = {};
   const webScope = {
@@ -77,6 +113,8 @@ function runSecurityAudit(root, read, vueFiles) {
   if (/remove-me|password|apiKey|myAccessToken/.test(storageValues.qa) || secureStorage.read().value.safe !== "kept")
     throw new Error("Sensitive storage redaction failed");
   if (webScope.WebCommon.sanitizeText("safe\u202Etxt", 40) !== "safetxt") throw new Error("Bidi control sanitization failed");
+  if (!webScope.WebCommon.isSafeAmount(1, 0) || webScope.WebCommon.isSafeAmount(1000000001, 0) || webScope.WebCommon.isSafeAmount("NaN", 0))
+    throw new Error("Financial range validation failed");
 
   storageValues.poisoned = '{"version":1,"data":{"safe":true,"__proto__":{"polluted":true}}}';
   const poisoned = webScope.WebCommon.createVersionedStorage("poisoned", 1).read().value;

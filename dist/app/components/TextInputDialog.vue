@@ -8,7 +8,7 @@
         aria-modal="true"
         :aria-labelledby="`${dialogId}-title`"
         :aria-describedby="description ? `${dialogId}-description` : null"
-        @keydown.esc="close"
+        @keydown="onKeydown"
       >
         <button
           class="absolute inset-0 bg-slate-950/65 backdrop-blur-sm"
@@ -17,6 +17,8 @@
           @click="close"
         ></button>
         <form
+          ref="panel"
+          tabindex="-1"
           class="glass relative w-full max-w-md overflow-hidden rounded-2xl shadow-2xl"
           @submit.prevent="submit"
         >
@@ -139,6 +141,7 @@ export default {
       draft: "",
       touched: false,
       dialogId: `text-dialog-${Math.random().toString(36).slice(2, 9)}`,
+      overlayId: `text-overlay-${Math.random().toString(36).slice(2, 9)}`,
     };
   },
   computed: {
@@ -156,15 +159,21 @@ export default {
     open: {
       immediate: true,
       handler(open) {
-        if (!open) return;
+        if (!open) {
+          window.BuyniverseOverlay?.release(this.overlayId);
+          return;
+        }
         this.draft = this.initialValue;
         this.touched = false;
         nextTick(() => {
-          this.$refs.input?.focus();
+          window.BuyniverseOverlay?.activate(this.overlayId, () => this.$refs.panel, () => this.$refs.input);
           this.$refs.input?.select();
         });
       },
     },
+  },
+  beforeUnmount() {
+    window.BuyniverseOverlay?.release(this.overlayId);
   },
   methods: {
     close() {
@@ -174,6 +183,10 @@ export default {
       this.touched = true;
       if (!this.canSubmit) return;
       this.$emit("submit", this.draft.trim());
+    },
+    onKeydown(event) {
+      if (event.key === "Escape") this.close();
+      else window.BuyniverseOverlay?.trap(event, this.overlayId);
     },
   },
 };

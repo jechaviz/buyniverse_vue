@@ -9,14 +9,15 @@ function runRelationsAudit(root, read, seed, main) {
   )(procurementScope);
 
   for (const token of [
-    'roles: ["Client", "Admin"]',
-    'roles: ["Freelancer", "Admin"]',
+    'modes: ["buyer", "admin"]',
+    'modes: ["supplier", "admin"]',
     "jobAccess: true",
     "projectAccess: true",
     "invoiceAccess: true",
     "contractAccess: true",
     "paymentAccess: true",
     "to.meta.roles",
+    "to.meta.modes",
     "to.meta.jobAccess",
     "to.meta.projectAccess",
     "to.meta.invoiceAccess",

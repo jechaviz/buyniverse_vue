@@ -9,6 +9,19 @@ function runDataTableAudit(root, read, vueFiles) {
     defineAsyncComponent: (value) => value,
   });
   const dataTableFile = read("app/components/DataTable.vue");
+  const paginationSource = read("app/components/DataTablePagination.vue");
+  const tableQuerySource = read("app/services/tableQuery.js");
+  const tableQueryScope = { WebCommon: { sanitizeText: (value, limit) => String(value == null ? "" : value).slice(0, limit), safeInternalPath: (value) => value } };
+  new Function("window", tableQuerySource)(tableQueryScope);
+  const normalizedRemoteQuery = tableQueryScope.BuyniverseTableQuery.normalize({ query: "x".repeat(300), page: { size: 100000, cursor: "cursor" }, filters: [{ field: "status", operator: "equals", value: "OPEN" }] });
+  if (normalizedRemoteQuery.query.length !== 160 || normalizedRemoteQuery.page.size !== 200 || normalizedRemoteQuery.filters.length !== 1)
+    throw new Error("Remote cursor query normalization failed");
+  for (const token of ["AbortController", "dataSource", "remoteMode", "nextCursor", "loadRemote", "cursorMode", "maxPageSize"]) {
+    if (!dataTableFile.includes(token) && !tableQuerySource.includes(token) && !paginationSource.includes(token))
+      throw new Error(`Scalable remote-table behavior is missing ${token}`);
+  }
+  if (!read("SCALABLE_TABLES.md").includes("search_after") || !read("SCALABLE_TABLES.md").includes("point in time"))
+    throw new Error("Search backend contract documentation is incomplete");
   for (const token of [
     "initialViews",
     "normalizeView",
@@ -48,6 +61,11 @@ function runDataTableAudit(root, read, vueFiles) {
     "openSaveViewDialog",
     'aria-label="Columns"',
     "column-drag-handle",
+    "safeLinkFor",
+    "sanitizeQuery",
+    "aria-sort",
+    "resultSummary",
+    'maxlength="160"',
     'class="truncate">{{ column.label }}',
   ]) {
     if (!dataTableFile.includes(token))
@@ -56,6 +74,8 @@ function runDataTableAudit(root, read, vueFiles) {
 
   if (dataTableFile.includes("saveViewFromMenu"))
     throw new Error("New saved views must use the adjacent split-button action");
+  if (dataTableFile.includes('<span class="hidden sm:inline">Columns</span>'))
+    throw new Error("The dense column manager must rely on its icon and tooltip");
 
   const filterDrawerSource = read("app/components/DataTableFilterDrawer.vue");
   const sideDrawerSource = read("app/components/SideDrawer.vue");

@@ -7,7 +7,7 @@
         role="dialog"
         aria-modal="true"
         aria-label="Quick access"
-        @keydown.esc="$emit('close')"
+        @keydown="onKeydown"
       >
         <button
           class="absolute inset-0"
@@ -15,6 +15,8 @@
           @click="$emit('close')"
         ></button>
         <section
+          ref="panel"
+          tabindex="-1"
           class="glass relative h-fit w-full max-w-2xl overflow-hidden rounded-3xl shadow-elevated border border-slate-200/90 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95"
         >
           <div
@@ -97,7 +99,7 @@
   </Teleport>
 </template>
 <script>
-const { inject, ref, computed, watch, nextTick } = Vue;
+const { inject, ref, computed, watch, nextTick, onBeforeUnmount } = Vue;
 const { useRouter } = VueRouter;
 export default {
   props: { open: Boolean },
@@ -108,6 +110,8 @@ export default {
       query = ref(""),
       selected = ref(0),
       searchInput = ref(null),
+      panel = ref(null),
+      overlayId = `command-palette-${Math.random().toString(36).slice(2, 9)}`,
       user = store.currentUser;
     const allowedJob = (job) =>
       user.value.type === "Admin" ||
@@ -274,9 +278,10 @@ export default {
         if (open) {
           query.value = "";
           selected.value = 0;
-          nextTick(() => searchInput.value?.focus());
-        }
+          nextTick(() => window.BuyniverseOverlay?.activate(overlayId, () => panel.value, () => searchInput.value));
+        } else window.BuyniverseOverlay?.release(overlayId);
       },
+      { immediate: true },
     );
     watch(results, () => {
       selected.value = 0;
@@ -293,7 +298,12 @@ export default {
       router.push(item.path);
     };
     const activate = () => go(results.value[selected.value]);
-    return { store, query, selected, searchInput, results, move, go, activate };
+    const onKeydown = (event) => {
+      if (event.key === "Escape") emit("close");
+      else window.BuyniverseOverlay?.trap(event, overlayId);
+    };
+    onBeforeUnmount(() => window.BuyniverseOverlay?.release(overlayId));
+    return { store, query, selected, searchInput, panel, results, move, go, activate, onKeydown };
   },
 };
 </script>

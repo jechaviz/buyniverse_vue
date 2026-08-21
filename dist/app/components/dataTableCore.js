@@ -40,7 +40,7 @@
         raw.sort && dataKeys.includes(raw.sort.key)
           ? { key: raw.sort.key, desc: Boolean(raw.sort.desc) }
           : null,
-      pageSize: [5, 10, 20, 50].includes(Number(raw.pageSize))
+      pageSize: [5, 10, 20, 50, 100, 200].includes(Number(raw.pageSize))
         ? Number(raw.pageSize)
         : 10,
       visible:

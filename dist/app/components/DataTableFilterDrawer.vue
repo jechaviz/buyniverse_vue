@@ -109,6 +109,7 @@
               class="field mt-2 py-1.5 text-xs"
               :value="rule.value"
               :placeholder="`Value for ${columnLabel(rule.key)}`"
+              maxlength="160"
               aria-label="Filter value"
               @input="updateRule(index, 'value', $event.target.value)"
             />
@@ -148,6 +149,7 @@
                 class="field py-1.5 pr-8 text-xs"
                 :value="filters[column.key] || ''"
                 :placeholder="`Filter ${column.label}`"
+                maxlength="160"
                 @input="updateColumn(column.key, $event.target.value)"
               />
               <button
@@ -192,7 +194,7 @@ const load = (path) =>
 
 export default {
   components: {
-    SideDrawer: load("./app/components/SideDrawer.vue?v=1"),
+    SideDrawer: load("./app/components/SideDrawer.vue?v=2"),
     CollapsibleSection: load("./app/components/CollapsibleSection.vue?v=1"),
   },
   props: {
@@ -273,11 +275,14 @@ export default {
       );
     },
     updateColumn(key, value) {
-      this.$emit("update:filters", { ...this.filters, [key]: value });
+      const safe = String(window.WebCommon?.sanitizeText?.(value, 160) ?? "").trim();
+      this.$emit("update:filters", { ...this.filters, [key]: safe });
     },
     updateRule(index, field, value) {
       const next = this.rules.map((rule, ruleIndex) =>
-        ruleIndex === index ? { ...rule, [field]: value } : { ...rule },
+        ruleIndex === index
+          ? { ...rule, [field]: field === "value" ? String(window.WebCommon?.sanitizeText?.(value, 160) ?? "").trim() : value }
+          : { ...rule },
       );
       this.$emit("update:rules", next);
     },

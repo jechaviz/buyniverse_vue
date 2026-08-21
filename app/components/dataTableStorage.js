@@ -1,11 +1,17 @@
 (function (global) {
   "use strict";
 
+  function storageKey(tableId) {
+    var safe = String(tableId || "data-table")
+      .replace(/[^a-zA-Z0-9_-]/g, "-")
+      .slice(0, 96);
+    return `buyniverse-table:${safe || "data-table"}`;
+  }
+
   function readStore(tableId, columns, editable, normalizeView, layoutKeys, VIEW_MODES) {
-    const data = window.WebCommon.safeJsonParse(
-      localStorage.getItem(`buyniverse-table:${tableId}`) || "",
-      null,
-    );
+    let raw = "";
+    try { raw = localStorage.getItem(storageKey(tableId)) || ""; } catch (_) { return null; }
+    const data = window.WebCommon.safeJsonParse(raw, null);
     if (!data || typeof data !== "object" || Array.isArray(data)) return null;
     const dataKeys = columns.map((c) => c.key),
       keys = layoutKeys(columns, editable),
@@ -39,7 +45,7 @@
             )
           : {},
       mode: VIEW_MODES.includes(data.mode) ? data.mode : "table",
-      pageSize: [5, 10, 20, 50].includes(Number(data.pageSize))
+      pageSize: [5, 10, 20, 50, 100, 200].includes(Number(data.pageSize))
         ? Number(data.pageSize)
         : 10,
       views,
@@ -50,7 +56,7 @@
   function persistStore(tableId, data) {
     try {
       localStorage.setItem(
-        `buyniverse-table:${tableId}`,
+        storageKey(tableId),
         window.WebCommon.storageJson(data),
       );
     } catch (_) {}

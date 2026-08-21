@@ -237,8 +237,8 @@ export default {
     );
     const allowed = computed(() => {
       const user = store.currentUser.value;
-      if (user.type === "Admin") return true;
-      if (user.type !== "Freelancer") return false;
+      if (store.isAdmin.value) return true;
+      if (!store.isSupplier.value) return false;
       if (!editing.value) return true;
       return paymentMode.value
         ? relatedInvoice.value?.providerId === user.id
@@ -307,7 +307,7 @@ export default {
       store.state.invoices.filter(
         (item) =>
           item.paymentStatus !== "Paid" &&
-          (store.currentUser.value.type === "Admin" ||
+          (store.isAdmin.value ||
             item.providerId === store.currentUser.value.id),
       ),
     );
@@ -399,7 +399,7 @@ export default {
         if (existing.value) {
           if (
             relatedInvoice.value?.providerId !== store.currentUser.value.id &&
-            store.currentUser.value.type !== "Admin"
+            !store.isAdmin.value
           )
             return store.notice("Payment update denied", "fa-shield-halved");
           Object.assign(existing.value, payload);
@@ -424,7 +424,7 @@ export default {
         const payload = {
           ...form,
           providerId:
-            store.currentUser.value.type === "Freelancer"
+            store.isSupplier.value
               ? store.currentUser.value.id
               : existing.value?.providerId,
           receiverId: receiver.id,

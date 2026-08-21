@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-16 lg:space-y-24">
     <!-- 1. Hero Section with Search & Live Auction Widget -->
-    <HomeHeroSection :store="store" />
+    <HomeHeroSection :store="store" :supplier-mode="store.isSupplier.value" />
 
     <!-- 2-6. Marketplace Intelligence, Categories, SRM Agents & Opportunities -->
     <HomeIntelligenceSection
@@ -11,10 +11,11 @@
       :featured-jobs="featuredJobs"
       :popular-skills="popularSkills"
       :top-freelancers="topFreelancers"
+      :supplier-mode="store.isSupplier.value"
     />
 
     <!-- 7-10. Success Model Gain-Share, ROI Simulator, App Download & CTA -->
-    <HomeGainShareSection :store="store" />
+    <HomeGainShareSection v-if="!store.isSupplier.value" :store="store" />
   </div>
 </template>
 
@@ -23,8 +24,8 @@ const { inject, ref, computed, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 
-const HomeHeroSection = load("./app/pages/home/HomeHeroSection.vue?v=1");
-const HomeIntelligenceSection = load("./app/pages/home/HomeIntelligenceSection.vue?v=1");
+const HomeHeroSection = load("./app/pages/home/HomeHeroSection.vue?v=4");
+const HomeIntelligenceSection = load("./app/pages/home/HomeIntelligenceSection.vue?v=3");
 const HomeGainShareSection = load("./app/pages/home/HomeGainShareSection.vue?v=1");
 
 export default {

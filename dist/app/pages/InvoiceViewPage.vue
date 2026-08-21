@@ -225,7 +225,7 @@ export default {
         user = store.currentUser.value;
       return (
         !!item &&
-        (user.type === "Admin" ||
+        (store.isAdmin.value ||
           item.clientId === user.id ||
           item.providerId === user.id)
       );
@@ -233,7 +233,7 @@ export default {
     const canManage = computed(() => {
       const item = invoice.value,
         user = store.currentUser.value;
-      return !!item && (user.type === "Admin" || item.providerId === user.id);
+      return !!item && (store.isAdmin.value || (store.isSupplier.value && item.providerId === user.id));
     });
     const lines = computed(() =>
       invoice.value?.lineItems?.length
@@ -289,7 +289,7 @@ export default {
       Object.assign(copy, {
         id: window.ProcurementCommon.uid("inv"),
         providerId:
-          store.currentUser.value.type === "Freelancer"
+          store.isSupplier.value
             ? store.currentUser.value.id
             : copy.providerId,
         folio: String(300 + store.state.invoices.length),

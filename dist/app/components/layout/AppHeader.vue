@@ -26,7 +26,7 @@
       <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
         <i class="fa-solid fa-plus text-xs mr-1.5"></i>Post a Job
       </RouterLink>
-      <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
+      <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/find-work" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
         <i class="fa-solid fa-briefcase text-xs mr-1.5"></i>Find Work
       </RouterLink>
 

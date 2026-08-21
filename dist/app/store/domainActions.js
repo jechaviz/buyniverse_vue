@@ -211,19 +211,31 @@
           this.notice("Complete the required project fields", "fa-triangle-exclamation");
           return null;
         }
+        const rejectedFiles = [];
         const files = (Array.isArray(draft.files) ? draft.files : [])
           .slice(0, 20)
-          .map((file) => ({
-            id: id("file"),
-            name: clean(file?.name, 120),
-            size: Math.max(0, Math.min(2 * 1024 * 1024, Number(file?.size) || 0)),
-            type: clean(file?.type, 100),
-            category: clean(file?.category, 80),
-            uploadedAt: new Date().toISOString(),
-            uploadedById: this.currentUser.value.id,
-            status: "Modified",
-            content: clean(file?.content, 100000),
-          }));
+          .map((file) => {
+            const verified = window.BuyniverseSecurity?.validateFileUpload
+              ? window.BuyniverseSecurity.validateFileUpload(file)
+              : { ok: Boolean(clean(file?.name, 120)), name: clean(file?.name, 120), size: Number(file?.size) || 0, type: clean(file?.type, 100) };
+            if (!verified.ok) {
+              rejectedFiles.push(verified.reason || "Invalid attachment");
+              return null;
+            }
+            return {
+              id: id("file"),
+              name: verified.name,
+              size: verified.size,
+              type: verified.type,
+              category: clean(file?.category, 80),
+              uploadedAt: new Date().toISOString(),
+              uploadedById: this.currentUser.value.id,
+              status: "Modified",
+              content: clean(file?.content, 100000),
+            };
+          })
+          .filter(Boolean);
+        if (rejectedFiles.length) this.securityEvent("Project attachments rejected", `${rejectedFiles.length} rejected`, "warning");
         const job = {
           ...draft,
           id: id("job"),
@@ -266,10 +278,10 @@
           this.notice("Invoice creation denied", "fa-shield-halved");
           return null;
         }
-        const clientId = draft.receiverId || state.users.find((user) => user.type === "Client")?.id;
+        const clientId = draft.receiverId || state.users.find((user) => allowedMarketplaceModes(user).includes("buyer"))?.id;
         const providerId = this.isSupplier.value
           ? current.id
-          : draft.providerId || state.users.find((user) => user.type === "Freelancer")?.id;
+          : draft.providerId || state.users.find((user) => allowedMarketplaceModes(user).includes("supplier"))?.id;
         if (
           !allowedMarketplaceModes(this.user(clientId)).includes("buyer") ||
           !allowedMarketplaceModes(this.user(providerId)).includes("supplier")

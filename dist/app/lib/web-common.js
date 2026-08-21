@@ -4,6 +4,9 @@
   var DANGEROUS_KEYS = { __proto__: true, prototype: true, constructor: true };
   var SECRET_KEY =
     /(?:password|passphrase|secret|api[_-]?key|access[_-]?token|refresh[_-]?token|auth[_-]?token|bearer|private[_-]?key|certificate|csd(?:Key|Cert|Password)|pac(?:ApiKey|Password|User))/i;
+  // A deliberately conservative ceiling for client-side demo values. Server-side
+  // policy remains authoritative in a production integration.
+  var MAX_FINANCIAL_AMOUNT = 1000000000;
 
   function safeJsonParse(raw, fallback) {
     if (typeof raw !== "string" || !raw)
@@ -31,6 +34,15 @@
       .replace(/[\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/gi, "")
       .normalize("NFKC")
       .slice(0, limit);
+  }
+
+  function isSafeAmount(value, minimum, maximum) {
+    var amount = Number(value);
+    var min = Number.isFinite(Number(minimum)) ? Number(minimum) : 0;
+    var max = Number.isFinite(Number(maximum))
+      ? Number(maximum)
+      : MAX_FINANCIAL_AMOUNT;
+    return Number.isFinite(amount) && amount >= min && amount <= max;
   }
 
   function safeInternalPath(value, fallback) {
@@ -590,6 +602,8 @@
     safeJsonParse: safeJsonParse,
     storageJson: storageJson,
     sanitizeText: sanitizeText,
+    MAX_FINANCIAL_AMOUNT: MAX_FINANCIAL_AMOUNT,
+    isSafeAmount: isSafeAmount,
     safeInternalPath: safeInternalPath,
     mergeRouteQuery: mergeRouteQuery,
     installFormValidation: installFormValidation,

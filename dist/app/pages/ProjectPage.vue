@@ -74,7 +74,7 @@
       :job="job"
       :contest="contest"
       :is-owner="store.currentUser.value.id === job.clientId"
-      :is-freelancer="store.currentUser.value.type === 'Freelancer'"
+      :is-freelancer="store.isSupplier.value"
       :provider-tab="providerTab"
       :provider-search="providerSearch"
       :provider-rows="providerRows"
@@ -200,10 +200,10 @@ export default {
     const allowed = computed(() => {
       const item = job.value, user = store.currentUser.value;
       if (!item) return false;
-      return user.type === "Admin" || item.clientId === user.id || contract.value?.providerId === user.id || item.proposals?.some((p) => p.freelancerId === user.id);
+      return store.isAdmin.value || item.clientId === user.id || contract.value?.providerId === user.id || item.proposals?.some((p) => p.freelancerId === user.id);
     });
 
-    const canManage = computed(() => Boolean(job.value) && (store.currentUser.value.type === "Admin" || job.value.clientId === store.currentUser.value.id));
+    const canManage = computed(() => Boolean(job.value) && (store.isAdmin.value || (store.isBuyer.value && job.value.clientId === store.currentUser.value.id)));
     const proposals = computed(() => canManage.value ? job.value?.proposals || [] : (job.value?.proposals || []).filter((p) => p.freelancerId === store.currentUser.value.id));
     const milestones = computed(() => allowed.value ? contract.value?.milestones || [] : []);
     const files = computed(() => allowed.value ? job.value?.files || [] : []);

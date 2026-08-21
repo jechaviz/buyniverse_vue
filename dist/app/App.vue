@@ -1,5 +1,6 @@
 <template>
   <div class="premium-shell relative min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+    <a href="#main-content" class="skip-link">{{ store.t("Skip to workspace content") }}</a>
     <!-- Global Command Palette & System Modals -->
     <CommandPalette :open="commandOpen" @close="commandOpen = false" />
     <AppModals :ui="ui" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
@@ -93,7 +94,7 @@
       </nav>
 
       <!-- Public Content Area -->
-      <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" tabindex="-1">
         <RouterView :key="route.path" />
       </main>
 
@@ -180,15 +181,15 @@
           </div>
 
           <div class="flex items-center gap-3 sm:gap-4">
-            <span class="hidden items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 lg:flex" title="Sincronizado en tiempo real con MySQL InnoDB">
-              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              {{ store.t("Base de Datos Conectada") }}
+            <span class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="store.t('Demo data is stored only in this browser.')" role="status" aria-live="polite">
+              <i class="fa-solid text-[10px]" :class="saveStatus.icon"></i>
+              {{ saveStatus.label }}
             </span>
 
             <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
               <i class="fa-solid fa-plus text-xs mr-1.5"></i>{{ store.t("Post a Job") }}
             </RouterLink>
-            <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/browse-services" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
+            <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/find-work" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
               <i class="fa-solid fa-briefcase text-xs mr-1.5"></i>{{ store.t("Find Work") }}
             </RouterLink>
 
@@ -309,6 +310,36 @@
                       {{ dark ? "Dark mode" : "Light mode" }}
                     </button>
                   </div>
+                  <div class="mt-3 rounded-xl border border-brand/15 bg-gradient-to-br from-brand-50/70 via-white to-slate-50 p-2.5 dark:from-brand/10 dark:via-slate-900 dark:to-slate-800/70">
+                    <div class="flex items-center gap-2.5">
+                      <span class="grid h-8 w-8 place-items-center rounded-lg text-white shadow-sm" :style="{ backgroundColor: currentAccent.accent }">
+                        <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
+                      </span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ store.t("Accent color") }}</span>
+                        <span class="block truncate text-xs font-bold text-slate-800 dark:text-slate-100">{{ store.t(currentAccent.label) }}</span>
+                      </span>
+                      <span class="rounded-md bg-white/80 px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide text-brand shadow-xs dark:bg-slate-800/90">{{ store.t("Appearance") }}</span>
+                    </div>
+                    <div class="mt-2.5 grid grid-cols-6 gap-1.5" role="radiogroup" :aria-label="store.t('Accent color')">
+                      <button
+                        v-for="option in accents"
+                        :key="option.key"
+                        type="button"
+                        role="radio"
+                        class="grid h-7 w-full place-items-center rounded-lg border-2 border-transparent transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        :class="accent === option.key ? 'border-slate-900/80 shadow-sm dark:border-white' : 'hover:border-slate-400/60 dark:hover:border-slate-500'"
+                        :style="{ backgroundColor: option.accent }"
+                        :aria-checked="accent === option.key"
+                        :aria-label="`${store.t('Change accent color')}: ${store.t(option.label)}`"
+                        :title="store.t(option.label)"
+                        @click="setAccent(option)"
+                      >
+                        <i v-if="accent === option.key" class="fa-solid fa-check text-[10px] text-white"></i>
+                      </button>
+                    </div>
+                    <p class="mt-2 text-[10px] leading-4 text-slate-500 dark:text-slate-400">{{ store.t("Accent applies throughout this workspace.") }}</p>
+                  </div>
                 </section>
 
                 <!-- Demo Account Selector -->
@@ -325,7 +356,7 @@
           </div>
         </header>
 
-        <main class="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main id="main-content" class="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" tabindex="-1">
           <div class="mx-auto" :class="fullWidth ? 'max-w-none' : 'max-w-7xl'">
             <Breadcrumbs />
             <RouterView :key="route.path" />
@@ -349,12 +380,12 @@
 </template>
 
 <script>
-const { inject, computed, ref, onMounted, onBeforeUnmount } = Vue;
+const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const CommandPalette = load("./app/components/CommandPalette.vue?v=3");
+const CommandPalette = load("./app/components/CommandPalette.vue?v=4");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
-const AppModals = load("./app/components/layout/AppModals.vue?v=2");
+const AppModals = load("./app/components/layout/AppModals.vue?v=3");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
 const AuthModal = load("./app/components/AuthModal.vue?v=2");
 
@@ -363,11 +394,27 @@ export default {
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const collapsed = ref(false), mobileOpen = ref(false);
-    const dark = ref(localStorage.getItem("buyniverse-vue-theme") !== "light");
+    const preference = {
+      read(key, fallback = "") {
+        try { return localStorage.getItem(key) || fallback; } catch (_) { return fallback; }
+      },
+      write(key, value) {
+        try { localStorage.setItem(key, value); } catch (_) { /* Storage can be disabled by privacy controls. */ }
+      },
+    };
+    const dark = ref(preference.read("buyniverse-vue-theme") !== "light");
     const notificationsOpen = ref(false), accountOpen = ref(false), commandOpen = ref(false);
     const authOpen = ref(false), authMode = ref("login");
     const locale = store.locale;
     let stopTranslator = () => {};
+
+    watch(() => store.ui.locked, (locked) => {
+      if (!locked) return;
+      notificationsOpen.value = false;
+      accountOpen.value = false;
+      commandOpen.value = false;
+      authOpen.value = false;
+    });
 
     const isLanding = computed(() => route.path === "/");
 
@@ -397,9 +444,10 @@ export default {
       document.documentElement.style.setProperty("--accent-pale", opt.pale);
     };
 
-    const savedAccent = localStorage.getItem("buyniverse-vue-accent") || "red";
+    const savedAccent = preference.read("buyniverse-vue-accent", "red");
     const accent = ref(accents.some((x) => x.key === savedAccent) ? savedAccent : "red");
     applyAccent(accents.find((x) => x.key === accent.value));
+    const currentAccent = computed(() => accents.find((x) => x.key === accent.value) || accents[0]);
 
     const user = store.currentUser, marketplaceMode = store.marketplaceMode;
     const marketplaceModeOptions = computed(() => {
@@ -410,8 +458,18 @@ export default {
 
     const visibleNotifications = computed(() => store.userNotifications(user.value.id));
     const unreadNotifications = computed(() => store.unreadNotifications(user.value.id));
+    const saveStatus = computed(() => {
+      if (store.ui.saveState === "saving") return { label: store.t("Saving…"), icon: "fa-arrows-rotate fa-spin", tone: "text-amber-600 dark:text-amber-400" };
+      if (store.ui.saveState === "error") return { label: store.t("Save failed"), icon: "fa-triangle-exclamation", tone: "text-rose-600 dark:text-rose-400" };
+      return { label: store.t("Saved locally"), icon: "fa-circle-check", tone: "text-emerald-600 dark:text-emerald-400" };
+    });
 
-    const setAccent = (opt) => { accent.value = opt.key; applyAccent(opt); localStorage.setItem("buyniverse-vue-accent", opt.key); };
+    const setAccent = (opt) => {
+      if (!opt || !accents.some((item) => item.key === opt.key)) return;
+      accent.value = opt.key;
+      applyAccent(opt);
+      preference.write("buyniverse-vue-accent", opt.key);
+    };
     const closeOverlays = (kind) => {
       notificationsOpen.value = kind === "notifications" ? !notificationsOpen.value : false;
       accountOpen.value = kind === "account" ? !accountOpen.value : false;
@@ -421,7 +479,7 @@ export default {
     const switchMarketplaceMode = (mode) => {
       if (!store.setMarketplaceMode(mode)) return;
       accountOpen.value = false;
-      router.replace(mode === "supplier" ? "/browse-services" : "/dashboard");
+      router.replace(mode === "supplier" ? "/find-work" : "/dashboard");
       store.notice(mode === "buyer" ? "Buyer workspace active" : mode === "supplier" ? "Supplier workspace active" : "Administration workspace active");
     };
 
@@ -429,7 +487,7 @@ export default {
     const toggleTheme = () => {
       dark.value = !dark.value;
       document.documentElement.classList.toggle("dark", dark.value);
-      localStorage.setItem("buyniverse-vue-theme", dark.value ? "dark" : "light");
+      preference.write("buyniverse-vue-theme", dark.value ? "dark" : "light");
     };
 
     let lastActivity = Date.now(), sessionTimer = 0;
@@ -450,6 +508,7 @@ export default {
       sessionTimer = window.setInterval(() => {
         if (!store.ui.locked && Date.now() - lastActivity >= 15 * 60 * 1000) store.lockSession("15 minutes of inactivity");
       }, 30000);
+      nextTick(() => window.requestAnimationFrame(() => window.dispatchEvent(new Event("buyniverse:app-shell-ready"))));
     });
 
     onBeforeUnmount(() => {
@@ -478,7 +537,7 @@ export default {
       return [
         core,
         { title: "Delivery", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, { to: "/procurement/auction", icon: "fa-solid fa-gavel", label: "Live Offers" }] },
-        { title: "Find work", items: [{ to: "/find-talent", icon: "fa-solid fa-briefcase", label: "Find Work" }, { to: "/saved-jobs", icon: "fa-solid fa-bookmark", label: "Saved Jobs" }] },
+        { title: "Find work", items: [{ to: "/find-work", icon: "fa-solid fa-briefcase", label: "Find Work" }, { to: "/saved-jobs", icon: "fa-solid fa-bookmark", label: "Saved Jobs" }] },
         { title: "Sales", items: [{ to: "/leads", icon: "fa-solid fa-bullseye", label: "Leads" }, { to: "/clients", icon: "fa-solid fa-user-tie", label: "Clients" }, { to: "/estimates", icon: "fa-solid fa-file-invoice", label: "Estimates" }, { to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
       ];
     });
@@ -486,9 +545,9 @@ export default {
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, switchMarketplaceMode,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, setAccent, closeOverlays, visibleNotifications,
+      accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
-      fullWidth: computed(() => isLanding.value || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
+      fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };
   },
 };
