@@ -30,6 +30,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const h of requiredServerHeaders) {
     if (!server.includes(h)) throw new Error(`Banking grade server header or guard missing: ${h}`);
   }
+  if (server.includes("document-domain")) throw new Error("Permissions-Policy contains an unsupported document-domain directive");
   if (server.includes('raw_path.startswith("/buyniverse_vue/"):\n            return True')) throw new Error("Static server exposes the full project directory");
 
   const phpShim = read("index.php");

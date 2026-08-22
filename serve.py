@@ -160,7 +160,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header(
             "Permissions-Policy",
-            "accelerometer=(), autoplay=(), camera=(), display-capture=(), document-domain=(), "
+            "accelerometer=(), autoplay=(), camera=(), display-capture=(), "
             "encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), "
             "microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), "
             "screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()",
