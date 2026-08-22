@@ -1,8 +1,12 @@
 <template>
   <section class="rounded-2xl border border-brand/20 bg-brand-50/35 p-4 dark:bg-brand/8">
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div><p class="text-xs font-800 text-brand"><i class="fa-solid fa-file-shield mr-1.5"></i>{{ store.t('Candidate documents') }}</p><p class="mt-1 text-[11px] text-slate-500">{{ store.t('Attach a reusable brief, NDA or policy. You can require acknowledgment before a proposal.') }}</p></div>
-      <div class="flex gap-2"><select v-model="sourceKey" class="field h-8 min-w-52 text-xs"><option value="">{{ store.t('Choose a document') }}</option><optgroup :label="store.t('Templates')"><option v-for="item in templates" :key="`template-${item.id}`" :value="`template:${item.id}`">{{ item.name }}</option></optgroup><optgroup v-if="libraryDocuments.length" :label="store.t('Library')"><option v-for="item in libraryDocuments" :key="`library-${item.id}`" :value="`library:${item.id}`">{{ item.name }}</option></optgroup></select><button type="button" class="btn-brand h-8 px-3 text-xs" :disabled="!sourceKey" @click="addDocument"><i class="fa-solid fa-plus mr-1"></i>{{ store.t('Add') }}</button></div>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div class="min-w-0"><p class="text-xs font-800 text-brand"><i class="fa-solid fa-file-shield mr-1.5"></i>{{ store.t('Candidate documents') }}</p><p class="mt-1 text-[11px] text-slate-500">{{ store.t('Attach a reusable brief, NDA or policy. You can require acknowledgment before a proposal.') }}</p></div>
+      <div class="flex w-full min-w-0 gap-2 sm:w-auto sm:flex-none">
+        <label class="sr-only" for="candidate-document-source">{{ store.t('Choose a document') }}</label>
+        <select id="candidate-document-source" v-model="sourceKey" class="field h-10 min-w-0 flex-1 py-2 text-xs leading-5 sm:w-72 sm:flex-none" :aria-label="store.t('Choose a document')"><option value="">{{ store.t('Choose a document') }}</option><optgroup :label="store.t('Templates')"><option v-for="item in templates" :key="`template-${item.id}`" :value="`template:${item.id}`">{{ item.name }}</option></optgroup><optgroup v-if="libraryDocuments.length" :label="store.t('Library')"><option v-for="item in libraryDocuments" :key="`library-${item.id}`" :value="`library:${item.id}`">{{ item.name }}</option></optgroup></select>
+        <button type="button" class="btn-brand h-10 flex-none px-3 text-xs" :disabled="!sourceKey" @click="addDocument"><i class="fa-solid fa-plus mr-1"></i>{{ store.t('Add') }}</button>
+      </div>
     </div>
     <div v-if="!documents.length" class="mt-3 rounded-xl border border-dashed border-brand/25 bg-white/60 px-3 py-3 text-xs text-slate-500 dark:bg-slate-900/35"><i class="fa-solid fa-circle-info mr-1 text-brand"></i>{{ store.t('No candidate document is required yet. Add the NDA template to try the signing flow.') }}</div>
     <div v-else class="mt-3 space-y-2">
