@@ -38,15 +38,17 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <!-- Template selector -->
+          <!-- Fast template selector -->
           <div class="relative">
             <button
               type="button"
               class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+              :title="store.t('Quick template')"
+              :aria-expanded="templatesOpen"
               @click="templatesOpen = !templatesOpen"
             >
               <i class="fa-solid fa-wand-magic-sparkles text-brand text-xs"></i>
-              <span>{{ store.t("Plantillas") }}</span>
+              <span class="hidden sm:inline">{{ store.t("Quick template") }}</span>
               <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
             </button>
 
@@ -74,28 +76,42 @@
             </div>
           </div>
 
-          <!-- Docs / Templates Repository Drawer Trigger -->
+          <button
+            type="button"
+            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+            :class="libraryOpen ? 'bg-brand-50 text-brand border-brand/35 dark:bg-brand/15' : ''"
+            :title="store.t('Document library')"
+            :aria-expanded="libraryOpen"
+            @click="libraryOpen = !libraryOpen; if (libraryOpen) variableDrawerOpen = false"
+          >
+            <i class="fa-solid fa-books text-brand text-xs"></i>
+            <span>{{ store.t("Library") }}</span>
+            <span v-if="libraryDocuments.length" class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] dark:bg-slate-700">{{ libraryDocuments.length }}</span>
+          </button>
+
           <button
             type="button"
             class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
             :class="variableDrawerOpen ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30' : ''"
-            @click="variableDrawerOpen = !variableDrawerOpen"
+            :title="store.t('Fields')"
+            :aria-expanded="variableDrawerOpen"
+            @click="variableDrawerOpen = !variableDrawerOpen; if (variableDrawerOpen) libraryOpen = false"
           >
-            <i class="fa-solid fa-sliders text-amber-600 text-xs"></i>
-            <span>{{ store.t("Docs & Machote") }}</span>
+            <i class="fa-solid fa-tags text-amber-600 text-xs"></i>
+            <span class="hidden sm:inline">{{ store.t("Fields") }}</span>
           </button>
 
-          <!-- Running Headers & Footers Modal Trigger -->
           <button
             type="button"
             class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+            :title="store.t('Section header and footer')"
+            :aria-label="store.t('Section header and footer')"
             @click="headerFooterSettingsOpen = true"
           >
             <i class="fa-solid fa-heading text-slate-500 text-xs"></i>
             <span class="hidden sm:inline">{{ store.t("Encabezado / Pie") }}</span>
           </button>
 
-          <!-- Copy Markdown Button -->
           <button
             type="button"
             class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
@@ -106,7 +122,6 @@
             <span class="hidden md:inline">{{ store.t("Copiar MD") }}</span>
           </button>
 
-          <!-- Apply & Close Primary Button -->
           <button
             type="button"
             class="btn-brand text-xs py-1.5 px-4 font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
@@ -116,7 +131,6 @@
             <span>{{ store.t("Aplicar al Proyecto") }}</span>
           </button>
 
-          <!-- Close Modal Cross -->
           <button
             type="button"
             class="grid h-8 w-8 place-items-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
@@ -132,19 +146,36 @@
       <DocumentHeaderFooterModal
         v-if="headerFooterSettingsOpen"
         :store="store"
-        :header-text="headerText"
-        :footer-text="footerText"
+        :active-section="activeSection"
+        :doc-title="docTitle"
+        :default-header-text="headerText"
+        :default-footer-text="footerText"
         :page-number-format="pageNumberFormat"
         :show-running-header="showRunningHeader"
         :watermark-text="watermarkText"
         :suppress-on-cover="suppressOnCover"
         @close="headerFooterSettingsOpen = false"
-        @update:header-text="headerText = $event"
-        @update:footer-text="footerText = $event"
+        @update:section-chrome="updateActiveSectionChrome"
+        @apply-to-all="applyChromeToAll"
         @update:page-number-format="pageNumberFormat = $event"
-        @update:show-running-header="showRunningHeader = $event"
         @update:watermark-text="watermarkText = $event"
         @update:suppress-on-cover="suppressOnCover = $event"
+      />
+
+      <TextInputDialog
+        :open="variableDialogOpen"
+        :title="store.t('Create variable field')"
+        :description="store.t('The selected text becomes a reusable field in this document.')"
+        :label="store.t('Field identifier')"
+        :initial-value="variableDialogValue"
+        :placeholder="store.t('e.g. DELIVERY_DATE')"
+        :hint="store.t('Use letters, numbers, dashes or underscores.')"
+        :confirm-label="store.t('Create field')"
+        icon="fa-tag"
+        :max-length="64"
+        :z-index="1000001"
+        @close="variableDialogOpen = false"
+        @submit="insertVariableByName"
       />
 
       <!-- Main Tri-Pane Workspace Body -->
@@ -160,8 +191,10 @@
           :header-text="headerText"
           :footer-text="footerText"
           :page-number-format="pageNumberFormat"
+          :doc-title="docTitle"
           :show-running-header="showRunningHeader"
           :suppress-on-cover="suppressOnCover"
+          :resolve-section-chrome="sectionChrome"
           @update:left-view-tab="leftViewTab = $event"
           @update:active-section-id="activeSectionId = $event"
           @add-root-section="addRootSection"
@@ -178,28 +211,45 @@
           :active-section="activeSection"
           :active-section-number="activeSectionNumber"
           :rendered-blocks="renderedBlocks"
+          :section-chrome="sectionChrome(activeSection)"
+          :suppress-page-chrome="shouldSuppressChrome(activeSection)"
           @set-level="setSectionLevel"
           @insert-wrapper="insertMarkdownWrapper"
           @insert-table="insertTableSnippet"
           @insert-prefix="insertMarkdownPrefix"
           @insert-callout="insertCallout"
           @insert-variable="insertVariablePrompt"
-          @toggle-variable-drawer="variableDrawerOpen = !variableDrawerOpen"
+          @toggle-variable-drawer="variableDrawerOpen = !variableDrawerOpen; if (variableDrawerOpen) libraryOpen = false"
           @open-header-footer-modal="headerFooterSettingsOpen = true"
           @add-root-section="addRootSection"
           @add-cover="addCover"
+          @textarea-ready="markdownTextarea = $event"
         />
 
-        <!-- RIGHT PANEL: Configurable Variables Drawer & Docs Menu -->
+        <!-- RIGHT PANEL: one compact contextual drawer at a time. -->
         <DocumentVariableDrawer
-          v-if="variableDrawerOpen"
+          v-if="variableDrawerOpen && !libraryOpen"
           :store="store"
           :sections="sections"
           :doc-title="docTitle"
           @close="variableDrawerOpen = false"
           @apply-variables="applyVariablesToSections"
-          @load-saved-doc="loadSavedDoc"
           @load-template-nda="loadTemplateById('nda_b2b')"
+        />
+        <DocumentLibraryDrawer
+          v-else-if="libraryOpen"
+          :store="store"
+          :documents="libraryDocuments"
+          :templates="documentTemplates"
+          :doc-title="docTitle"
+          :sections="sections"
+          @close="libraryOpen = false"
+          @load-template="loadTemplate"
+          @load-document="loadLibraryDocument"
+          @save-current="saveLibraryDocument"
+          @save-template-copy="saveTemplateCopy"
+          @delete-document="deleteLibraryDocument"
+          @new-document="newBlankDocument"
         />
       </div>
     </div>
@@ -209,64 +259,84 @@
 <script>
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=2");
-const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=2");
-const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=2");
-const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=1");
+const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=4");
+const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=7");
+const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=3");
+const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=2");
+const DocumentLibraryDrawer = load("./app/components/document/DocumentLibraryDrawer.vue?v=4");
+const TextInputDialog = load("./app/components/TextInputDialog.vue?v=3");
 
 const documentTemplates = (window.DocumentTemplates && window.DocumentTemplates.documentTemplates) || [];
 const parseMarkdownToBlocks = (window.DocumentParser && window.DocumentParser.parseMarkdownToBlocks) || function () { return []; };
+const parseMarkdownToDocument = (window.DocumentParser && window.DocumentParser.parseMarkdownToDocument) || function () { return null; };
 const compileDocumentToMarkdown = (window.DocumentParser && window.DocumentParser.compileDocumentToMarkdown) || function () { return ""; };
-const AUTOSAVE_KEY = "buyniverse_doc_editor_autosave";
+const documentLibrary = window.DocumentLibrary || null;
 
 export default {
   name: "DocumentEditorModal",
-  components: { DocumentSidebarPanel, DocumentContentEditor, DocumentVariableDrawer, DocumentHeaderFooterModal },
+  components: { DocumentSidebarPanel, DocumentContentEditor, DocumentVariableDrawer, DocumentHeaderFooterModal, DocumentLibraryDrawer, TextInputDialog },
   props: { modelValue: { type: Boolean, default: false }, initialMarkdown: { type: String, default: "" } },
   emits: ["update:modelValue", "apply"],
   setup(props, { emit }) {
     const store = inject("store");
-    const modalRoot = ref(null), docTitle = ref("Pliego de Términos y Condiciones Técnicas");
-    const headerText = ref("BUY-2026-RFP · Especificación de Compra"), footerText = ref("Confidencial · Buyniverse Escrow Protected");
+    const blankSection = () => ({ id: "sec-" + Date.now(), type: "standard", title: store.t("Overview"), level: 1, pageBreakBefore: false, content: "" });
+    const modalRoot = ref(null), docTitle = ref(store.t("Untitled document")), headerText = ref(""), footerText = ref("");
     const pageNumberFormat = ref("Page X of Y"), watermarkText = ref(""), suppressOnCover = ref(true), showRunningHeader = ref(true);
-    const headerFooterSettingsOpen = ref(false), templatesOpen = ref(false), variableDrawerOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
+    const headerFooterSettingsOpen = ref(false), templatesOpen = ref(false), variableDrawerOpen = ref(false), libraryOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
+    const variableDialogOpen = ref(false), variableDialogValue = ref(""), pendingVariable = ref(null), libraryDocuments = ref([]), loadedIdentity = ref("");
+    const sections = ref([blankSection()]), activeSectionId = ref(sections.value[0].id);
 
-    const sections = ref([
-      { id: "sec-cov", type: "cover", alignVertical: "center", title: "PLIEGO DE ESPECIFICACIONES TÉCNICAS", subtitle: "Adquisición Tecnológica · Buyniverse Escrow", content: "Documento oficial para la convocatoria de postores en subasta BAFO.", legalDisclaimer: "Información confidencial protegida por secretos industriales y convenios NDA.", versionText: "Versión 2.0 · Emisión 2026 · Buyniverse" },
-      { id: "sec-1", type: "standard", title: "Objetivo y Alcance", level: 1, pageBreakBefore: true, content: "Términos comerciales y técnicos para adjudicación por subasta inversa.\n\n- **Objetivo:** {{NOMBRE_PROYECTO:Portal B2B}}.\n- **Modalidad:** Escrow liberado contra hitos aprobados." },
-      { id: "sec-2", type: "standard", title: "Requerimientos Técnicos y Entregables", level: 2, pageBreakBefore: false, content: "| Hito | Entregable Clave | Plazo | % Fondo Escrow |\n| :--- | :--- | :--- | :--- |\n| Hito 1 | Diseño UX | {{PLAZO_HITO_1:15 días}} | 30% |\n| Hito 2 | APIs Core | {{PLAZO_HITO_2:30 días}} | 40% |\n| Hito 3 | QA y Despliegue | {{PLAZO_HITO_3:15 días}} | 30% |" },
-      { id: "sec-3", type: "standard", title: "Criterios de Seguridad y SLA", level: 2, pageBreakBefore: false, content: "- Estándar ISO-27001 y TLS 1.3.\n> [!IMPORTANT]\n> Penalización de {{PORCENTAJE_PENALIZACION:2%}} semanal por desviación injustificada." },
-      { id: "sec-end", type: "section_end", alignVertical: "bottom", title: "CONFORMIDAD Y SUSCRIPCIÓN", content: "Las partes manifiestan su conformidad con los acuerdos técnicos.", showSignatures: true }
-    ]);
+    const currentUserId = () => store.currentUser?.value?.id || "anonymous";
+    const draftIdentity = () => documentLibrary?.fingerprint(props.initialMarkdown || "new-document") || String((props.initialMarkdown || "").length);
+    const snapshot = (name) => ({
+      name: name || docTitle.value || "Untitled document", title: docTitle.value || "Untitled document",
+      headerText: headerText.value, footerText: footerText.value, pageNumberFormat: pageNumberFormat.value,
+      watermarkText: watermarkText.value, suppressOnCover: suppressOnCover.value, showRunningHeader: showRunningHeader.value,
+      sections: JSON.parse(JSON.stringify(sections.value)),
+    });
+    const refreshLibrary = () => { libraryDocuments.value = documentLibrary ? documentLibrary.list(currentUserId()) : []; };
+
+    function restoreDocument(doc) {
+      if (!doc?.sections?.length) return false;
+      docTitle.value = doc.title || doc.name || "Untitled document";
+      headerText.value = doc.headerText || "";
+      footerText.value = doc.footerText || "";
+      pageNumberFormat.value = doc.pageNumberFormat || "Page X of Y";
+      watermarkText.value = doc.watermarkText || "";
+      suppressOnCover.value = doc.suppressOnCover !== false;
+      showRunningHeader.value = doc.showRunningHeader !== false;
+      sections.value = JSON.parse(JSON.stringify(doc.sections));
+      activeSectionId.value = sections.value[0]?.id || "";
+      return true;
+    }
+
+    function loadIncomingDocument() {
+      const identity = draftIdentity();
+      if (identity === loadedIdentity.value) return;
+      const draft = documentLibrary?.loadDraft(currentUserId(), identity);
+      if (draft && restoreDocument(draft)) {
+        lastAutosavedAt.value = store.date ? store.date(draft.updatedAt) : draft.updatedAt;
+      } else if (String(props.initialMarkdown || "").trim()) {
+        const parsed = parseMarkdownToDocument(props.initialMarkdown, docTitle.value);
+        if (parsed?.sections?.length) restoreDocument({ ...snapshot(parsed.title), title: parsed.title, sections: parsed.sections });
+      }
+      loadedIdentity.value = identity;
+    }
 
     watch(() => props.modelValue, (open) => {
       if (open) {
         document.body.style.overflow = "hidden";
         nextTick(() => { if (modalRoot.value && modalRoot.value.parentNode !== document.body) document.body.appendChild(modalRoot.value); });
+        refreshLibrary();
+        loadIncomingDocument();
       } else { document.body.style.overflow = ""; }
     }, { immediate: true });
 
     function handleKeydown(e) { if (e.key === "Escape" && props.modelValue) emit("update:modelValue", false); }
-
-    onMounted(() => {
-      window.addEventListener("keydown", handleKeydown);
-      try {
-        const raw = localStorage.getItem(AUTOSAVE_KEY);
-        if (raw) {
-          const draft = JSON.parse(raw);
-          if (draft && draft.sections && draft.sections.length > 0) {
-            sections.value = draft.sections;
-            if (draft.docTitle) docTitle.value = draft.docTitle;
-            if (draft.headerText) headerText.value = draft.headerText;
-            if (draft.footerText) footerText.value = draft.footerText;
-            lastAutosavedAt.value = draft.savedAt || "";
-          }
-        }
-      } catch (e) {}
-    });
-
+    onMounted(() => window.addEventListener("keydown", handleKeydown));
     onBeforeUnmount(() => {
       window.removeEventListener("keydown", handleKeydown);
+      if (autosaveTimer) clearTimeout(autosaveTimer);
       document.body.style.overflow = "";
       if (modalRoot.value && modalRoot.value.parentNode === document.body) document.body.removeChild(modalRoot.value);
     });
@@ -278,9 +348,8 @@ export default {
       autosaveTimer = setTimeout(() => {
         try {
           const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ docTitle: docTitle.value, headerText: headerText.value, footerText: footerText.value, sections: sections.value, savedAt: timeStr }));
+          documentLibrary?.saveDraft(currentUserId(), draftIdentity(), snapshot());
           lastAutosavedAt.value = timeStr;
-          emit("apply", compileToMarkdown());
         } catch (e) {}
         isSaving.value = false;
       }, 400);
@@ -288,8 +357,34 @@ export default {
 
     watch([docTitle, headerText, footerText, sections], () => triggerAutosave(), { deep: true });
 
-    const activeSectionId = ref("sec-cov");
     const activeSection = computed(() => sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null);
+    function interpolateChrome(text, section) {
+      const sectionTitle = section?.title || docTitle.value || store.t("Untitled section");
+      return String(text || "").replace(/\{\{sectionTitle\}\}/g, sectionTitle).replace(/\{\{documentTitle\}\}/g, docTitle.value || store.t("Untitled document"));
+    }
+    function sectionChrome(section) {
+      const local = section?.headerFooter || {};
+      const headerMode = ["section_title", "document_title", "custom"].includes(local.headerMode) ? local.headerMode : "section_title";
+      const footerMode = ["section_title", "document_title", "custom"].includes(local.footerMode) ? local.footerMode : "custom";
+      const line = (mode, custom, fallback) => {
+        if (mode === "section_title") return section?.title || docTitle.value || store.t("Untitled section");
+        if (mode === "document_title") return docTitle.value || store.t("Untitled document");
+        return interpolateChrome(custom || fallback, section);
+      };
+      return {
+        headerEnabled: local.headerEnabled !== false && showRunningHeader.value !== false,
+        headerText: line(headerMode, local.headerText, headerText.value || docTitle.value),
+        footerEnabled: local.footerEnabled !== false,
+        footerText: line(footerMode, local.footerText, footerText.value || store.t("Confidential")),
+      };
+    }
+    const shouldSuppressChrome = (section) => Boolean(suppressOnCover.value && section?.type === "cover");
+    function updateActiveSectionChrome(chrome) { if (activeSection.value) activeSection.value.headerFooter = { ...chrome }; }
+    function applyChromeToAll(chrome) {
+      const copy = JSON.parse(JSON.stringify(chrome || {}));
+      sections.value.forEach((section) => { section.headerFooter = { ...copy }; });
+      store.notice(store.t("Section header and footer format applied to all sections"), "fa-arrows-rotate");
+    }
 
     const flatNumberedSections = computed(() => {
       let l1 = 0, l2 = 0, l3 = 0;
@@ -379,12 +474,21 @@ export default {
       if (!textarea || !activeSection.value) return;
       const start = textarea.selectionStart, end = textarea.selectionEnd, val = activeSection.value.content || "";
       const selected = val.substring(start, end);
-      const varName = prompt("Identificador del campo configurable:", selected ? selected.toUpperCase().replace(/\s+/g, "_") : "CAMPO_NUEVO");
-      if (!varName) return;
-      const cleanKey = varName.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "_");
-      activeSection.value.content = val.substring(0, start) + `{{${cleanKey}:${selected || 'Valor'}}}` + val.substring(end);
-      store.notice(`Campo '{{${cleanKey}}}' marcado como configurable`, "fa-tag");
+      pendingVariable.value = { start, end, selected, value: val };
+      variableDialogValue.value = selected ? selected.toUpperCase().replace(/\s+/g, "_") : "FIELD_NAME";
+      variableDialogOpen.value = true;
+    }
+    function insertVariableByName(name) {
+      const pending = pendingVariable.value;
+      if (!pending || !activeSection.value) return;
+      const cleanKey = String(name || "").trim().toUpperCase().replace(/[^A-Z0-9_-]/g, "_").slice(0, 64);
+      if (!cleanKey) return;
+      activeSection.value.content = pending.value.substring(0, pending.start) + `{{${cleanKey}:${pending.selected || "Value"}}}` + pending.value.substring(pending.end);
+      variableDialogOpen.value = false;
+      pendingVariable.value = null;
       variableDrawerOpen.value = true;
+      libraryOpen.value = false;
+      store.notice(store.t(`Field '{{${cleanKey}}}' is ready to fill`), "fa-tag");
     }
     function applyVariablesToSections(valuesMap) {
       const parser = window.DocumentParser;
@@ -398,16 +502,15 @@ export default {
       store.notice("Variables sustituidas por sus valores definitivos", "fa-check-double");
     }
 
-    const renderedBlocks = computed(() => {
-      if (!activeSection.value || !activeSection.value.content) return [];
-      return parseMarkdownToBlocks(activeSection.value.content);
-    });
+    const renderedBlocks = computed(() => (!activeSection.value || !activeSection.value.content) ? [] : parseMarkdownToBlocks(activeSection.value.content));
 
     function loadTemplate(tpl) {
+      if (!tpl?.build) return;
       docTitle.value = tpl.name;
       sections.value = tpl.build();
       activeSectionId.value = sections.value[0]?.id;
       templatesOpen.value = false;
+      libraryOpen.value = false;
       if (tpl.isFormTemplate) variableDrawerOpen.value = true;
       store.notice(`Plantilla '${tpl.name}' cargada`, "fa-wand-magic-sparkles");
     }
@@ -415,30 +518,66 @@ export default {
       const found = documentTemplates.find((t) => t.id === id);
       if (found) loadTemplate(found);
     }
-    function loadSavedDoc(doc) {
-      if (!doc) return;
-      docTitle.value = doc.title || doc.name;
-      sections.value = JSON.parse(JSON.stringify(doc.sections || []));
-      activeSectionId.value = sections.value[0]?.id;
-      store.notice(`Plantilla '${doc.name}' cargada desde Mis Documentos`, "fa-folder-open");
+    function loadLibraryDocument(doc) {
+      if (!restoreDocument(doc)) return;
+      libraryOpen.value = false;
+      store.notice(store.t(`Reusable copy '${doc.name}' loaded`), "fa-folder-open");
+    }
+    function saveLibraryDocument(meta) {
+      const saved = documentLibrary?.save(currentUserId(), { ...snapshot(meta?.name), name: meta?.name, tags: meta?.tags || [] });
+      if (!saved) return store.notice(store.t("Document could not be saved locally"), "fa-triangle-exclamation");
+      refreshLibrary();
+      store.notice(store.t("Reusable document saved to your local library"), "fa-bookmark");
+    }
+    function saveTemplateCopy(template) {
+      if (!template?.build) return;
+      const saved = documentLibrary?.save(currentUserId(), {
+        name: `${template.name} · copy`, title: template.name, tags: ["starter"], sections: template.build(), source: "template",
+      });
+      if (!saved) return store.notice(store.t("Template copy could not be saved"), "fa-triangle-exclamation");
+      refreshLibrary();
+      store.notice(store.t("Reusable template copy saved"), "fa-bookmark");
+    }
+    async function deleteLibraryDocument(id) {
+      const allowed = await store.confirm({
+        title: "Delete reusable document?", message: "This removes only your local library copy. Project descriptions are not changed.",
+        confirmText: "Delete", danger: true,
+      });
+      if (!allowed || !documentLibrary?.remove(currentUserId(), id)) return;
+      refreshLibrary();
+      store.notice(store.t("Reusable document deleted"), "fa-trash-can");
+    }
+    function newBlankDocument() {
+      docTitle.value = store.t("Untitled document");
+      sections.value = [blankSection()];
+      activeSectionId.value = sections.value[0].id;
+      libraryOpen.value = false;
+      store.notice(store.t("New blank document created"), "fa-file-circle-plus");
     }
     function compileToMarkdown() {
       return compileDocumentToMarkdown({ docTitle: docTitle.value, headerText: headerText.value, footerText: footerText.value, showRunningHeader: showRunningHeader.value, flatSections: flatNumberedSections.value });
     }
-    function copyCompiledMarkdown() { navigator.clipboard.writeText(compileToMarkdown()).then(() => store.notice("Markdown copiado al portapapeles", "fa-clipboard-check")); }
+    function copyCompiledMarkdown() {
+      navigator.clipboard?.writeText(compileToMarkdown())
+        .then(() => store.notice(store.t("Markdown copied to clipboard"), "fa-clipboard-check"))
+        .catch(() => store.notice(store.t("Clipboard permission was unavailable"), "fa-triangle-exclamation"));
+    }
     function applyDocumentToDescription() {
       emit("apply", compileToMarkdown());
+      documentLibrary?.clearDraft(currentUserId(), draftIdentity());
       emit("update:modelValue", false);
-      store.notice("Documento Markdown insertado en la descripción", "fa-circle-check");
+      store.notice(store.t("Markdown document applied to the description"), "fa-circle-check");
     }
 
     return {
       store, modalRoot, docTitle, headerText, footerText, pageNumberFormat, watermarkText, suppressOnCover, showRunningHeader,
-      headerFooterSettingsOpen, templatesOpen, variableDrawerOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
-      sections, activeSectionId, activeSection, flatNumberedSections, activeSectionNumber, totalWordCount, estimatedPages,
-      documentTemplates, selectSection, addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel,
-      insertMarkdownWrapper, insertMarkdownPrefix, insertCallout, insertTableSnippet, insertVariablePrompt, applyVariablesToSections,
-      renderedBlocks, loadTemplate, loadTemplateById, loadSavedDoc, compileToMarkdown, copyCompiledMarkdown, applyDocumentToDescription,
+      headerFooterSettingsOpen, templatesOpen, variableDrawerOpen, libraryOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
+      variableDialogOpen, variableDialogValue, libraryDocuments, sections, activeSectionId, activeSection, flatNumberedSections,
+      activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, documentTemplates, selectSection,
+      addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel, insertMarkdownWrapper, insertMarkdownPrefix,
+      insertCallout, insertTableSnippet, insertVariablePrompt, insertVariableByName, applyVariablesToSections, renderedBlocks,
+      loadTemplate, loadTemplateById, loadLibraryDocument, saveLibraryDocument, saveTemplateCopy, deleteLibraryDocument, newBlankDocument,
+      compileToMarkdown, copyCompiledMarkdown, applyDocumentToDescription, updateActiveSectionChrome, applyChromeToAll,
     };
   },
 };

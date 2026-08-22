@@ -124,6 +124,98 @@
     return blocks;
   }
 
+  // Converts incoming Markdown into the editor's section model. This keeps the
+  // editor faithful to a project description instead of opening a generic mock.
+  // It intentionally treats all content as text; Vue renders previews via text
+  // bindings, never through raw HTML.
+  function parseMarkdownToDocument(markdown, fallbackTitle) {
+    var lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
+    var title = String(fallbackTitle || "Untitled document").trim();
+    var sections = [];
+    var current = null;
+    var mode = "standard";
+    var sawDocumentTitle = false;
+    var counter = 0;
+
+    function newSection(type, heading, level) {
+      counter += 1;
+      return {
+        id: "import-sec-" + counter,
+        type: type || "standard",
+        title: String(heading || "Untitled section").replace(/^\d+(?:\.\d+)*\.?\s+/, "").trim(),
+        subtitle: "",
+        content: "",
+        legalDisclaimer: "",
+        versionText: "",
+        level: Math.min(3, Math.max(1, Number(level) || 1)),
+        pageBreakBefore: sections.length > 0,
+        alignVertical: type === "section_end" ? "bottom" : "center",
+        showSignatures: type === "section_end",
+      };
+    }
+
+    function flush() {
+      if (!current) return;
+      current.content = current.content.replace(/^\n+|\n+$/g, "");
+      if (current.title || current.content || current.type !== "standard") sections.push(current);
+      current = null;
+    }
+
+    for (var i = 0; i < lines.length; i += 1) {
+      var line = lines[i];
+      var marker = line.match(/^<!--\s*(COVER|\/COVER|SECTION_END|\/SECTION_END|PAGEBREAK|HEADER:|FOOTER:)(.*?)-->\s*$/i);
+      if (marker) {
+        var token = marker[1].toUpperCase();
+        if (token === "COVER" || token === "SECTION_END") {
+          flush();
+          mode = token === "COVER" ? "cover" : "section_end";
+          current = newSection(mode, "", mode === "cover" ? 1 : 1);
+        } else if (token === "/COVER" || token === "/SECTION_END") {
+          flush();
+          mode = "standard";
+        } else if (token === "PAGEBREAK" && current) {
+          current.pageBreakBefore = true;
+        }
+        continue;
+      }
+
+      var heading = line.match(/^(#{1,3})\s+(.+)$/);
+      if (heading) {
+        var level = heading[1].length;
+        var headingTitle = heading[2].trim();
+        if (!sawDocumentTitle && level === 1 && !current && sections.length === 0) {
+          title = headingTitle.replace(/^\d+(?:\.\d+)*\.?\s+/, "");
+          sawDocumentTitle = true;
+          continue;
+        }
+        if (mode === "cover" || mode === "section_end") {
+          if (!current) current = newSection(mode, headingTitle, level);
+          else current.title = headingTitle;
+          continue;
+        }
+        flush();
+        current = newSection("standard", headingTitle, level);
+        continue;
+      }
+
+      if (!current && line.trim()) current = newSection(mode, "Overview", 1);
+      if (!current) continue;
+      if (mode === "cover" && /^\*\*Control de Versiones:\*\*/i.test(line)) {
+        current.versionText = line.replace(/^\*\*Control de Versiones:\*\*\s*/i, "").trim();
+      } else if (mode === "cover" && line === "> [!NOTE]" && lines[i + 1]) {
+        current.legalDisclaimer = String(lines[i + 1]).replace(/^>\s*/, "").trim();
+        i += 1;
+      } else if (mode === "cover" && /^\*\*.+\*\*$/.test(line) && !current.subtitle) {
+        current.subtitle = line.replace(/^\*\*|\*\*$/g, "").trim();
+      } else {
+        current.content += (current.content ? "\n" : "") + line;
+      }
+    }
+    flush();
+    if (!sections.length) sections.push(newSection("standard", "Overview", 1));
+    return { title: title || "Untitled document", sections: sections };
+  }
+
   function compileDocumentToMarkdown(config) {
     var md = "";
     if (config.showRunningHeader && config.headerText) {
@@ -178,6 +270,7 @@
     replaceVariablesInText: replaceVariablesInText,
     formatInlineVariables: formatInlineVariables,
     parseMarkdownToBlocks: parseMarkdownToBlocks,
+    parseMarkdownToDocument: parseMarkdownToDocument,
     compileDocumentToMarkdown: compileDocumentToMarkdown,
   };
 

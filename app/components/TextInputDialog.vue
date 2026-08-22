@@ -4,6 +4,7 @@
       <div
         v-if="open"
         class="fixed inset-0 z-90 grid place-items-center overflow-y-auto p-4"
+        :style="{ zIndex }"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="`${dialogId}-title`"
@@ -134,6 +135,7 @@ export default {
     error: { type: String, default: "" },
     required: { type: Boolean, default: true },
     maxLength: { type: Number, default: 80 },
+    zIndex: { type: [Number, String], default: 90 },
   },
   emits: ["close", "submit", "input"],
   data() {

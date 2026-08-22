@@ -5,9 +5,9 @@
     <div class="absolute -left-20 -bottom-20 h-96 w-96 rounded-full bg-rose-500/10 blur-3xl pointer-events-none dark:bg-indigo-500/15"></div>
 
     <div class="relative z-10 space-y-8">
-      <div class="flex flex-col lg:flex-row items-center gap-10">
+      <div class="grid items-center gap-10 lg:grid-cols-5">
         <!-- Hero Text -->
-        <div class="flex-1 w-full space-y-5">
+        <div class="min-w-0 space-y-5 lg:col-span-3">
           <div class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50/90 px-3.5 py-1.5 text-xs font-bold text-brand-700 backdrop-blur-md dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-300">
             <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             {{ store.t("Ecosistema B2B & Marketplace de Subastas en Vivo") }}
@@ -99,7 +99,7 @@
         </div>
 
         <!-- Hero Right: Live Auction Widget -->
-        <div class="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0">
+        <div class="min-w-0 lg:col-span-2">
           <div class="rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-xl dark:border-white/15 dark:bg-slate-800/90 space-y-4">
             <div class="flex items-center justify-between">
               <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30">

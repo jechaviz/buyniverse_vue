@@ -156,6 +156,14 @@
         @award="award"
       />
 
+      <CommunicationThread
+        v-else-if="tab === 'communications'"
+        context-type="sourcing"
+        :context-id="event.id"
+        :title="event.title"
+        :can-announce="store.isAdmin.value || event.ownerId === store.currentUser.value.id"
+      />
+
       <SourcingTimelineTab
         v-else
         :audit="event.audit"
@@ -193,6 +201,7 @@ const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSh
 const SourcingComparisonTab = load("./app/pages/procurement/sourcing/SourcingComparisonTab.vue?v=1");
 const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=1");
 const SourcingTimelineTab = load("./app/pages/procurement/sourcing/SourcingTimelineTab.vue?v=1");
+const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 const freshWizard = () => ({
   title: "", type: "RFQ", requestId: "", budget: 10000, deadline: "2026-07-31",
@@ -209,11 +218,12 @@ export default {
     SourcingComparisonTab,
     SourcingAwardTab,
     SourcingTimelineTab,
+    CommunicationThread,
   },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
-      get: () => ["overview", "suppliers", "bidsheet", "comparison", "award", "timeline"].includes(route.query.tab) ? route.query.tab : "overview",
+      get: () => ["overview", "suppliers", "bidsheet", "comparison", "award", "communications", "timeline"].includes(route.query.tab) ? route.query.tab : "overview",
       set: (key) => router.push({ path: "/procurement/sourcing", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
     });
     const supplierSearch = ref(""), awardSupplierId = ref(""), awardReason = ref("");
@@ -256,6 +266,7 @@ export default {
       { key: "bidsheet", label: "Offers", icon: "fa-table-cells", count: event.value.quotes.length },
       { key: "comparison", label: "Compare", icon: "fa-scale-balanced" },
       { key: "award", label: "Choose", icon: "fa-trophy" },
+      { key: "communications", label: "Messages", icon: "fa-comments" },
       { key: "timeline", label: "History", icon: "fa-clock-rotate-left", count: event.value.audit.length },
     ] : []);
 
@@ -375,8 +386,12 @@ export default {
       if (!canManage(event.value)) return store.notice("Invitation action denied", "fa-shield-halved");
       if (event.value.invitedSupplierIds.length < 2) return store.notice("Select at least two suppliers", "fa-triangle-exclamation");
       if (event.value.status === "Draft") event.value.status = "Sent";
-      record("Invitations sent", event.value.invitedSupplierIds.length + " suppliers", "success");
-      store.notice("Supplier invitations sent", "fa-paper-plane");
+      const template = store.renderMessageTemplate("tpl-rfx-invitation", "sourcing", event.value.id);
+      if (template) {
+        store.sendMessage({ contextType: "sourcing", contextId: event.value.id, kind: "announcement", subject: template.subject, text: template.body });
+        store.createMailDraft({ contextType: "sourcing", contextId: event.value.id, templateId: "tpl-rfx-invitation", subject: template.subject, body: template.body });
+      }
+      store.notice("Invitations posted; email draft saved locally", "fa-paper-plane");
     };
 
     const publish = () => {
@@ -506,7 +521,7 @@ export default {
       window, store, router, event, accessibleEvents, columns, tabs, tab, criteria, typeLabel, statusLabel,
       deadlineDate, readiness, nextAction, filteredSuppliers, supplierSearch, rankedQuotes, awardSupplierId,
       awardReason, selectedAwardQuote, selectedAwardSupplier, wizardOpen, wizardStep, wizardSteps: ["Setup", "Suppliers", "Send"],
-      wizard, wizardForm, wizardError, format, linkFor, openEvent, updateCell, statusClass, saveDeadline, record,
+      wizard, wizardForm, wizardError, format, linkFor, openEvent, canManage, updateCell, statusClass, saveDeadline, record,
       addLot, removeLot, goNext, initials, toggleSupplier, sendInvites, publish, cloneEvent, archiveEvent,
       archiveEvents, exportBidSheet, simulateQuote, applyScenario, award, closeWizard, toggleWizardSupplier,
       nextWizard, saveWizard,

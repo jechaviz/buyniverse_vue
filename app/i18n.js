@@ -4,12 +4,14 @@
   var dicts = [];
   if (global.__buyniverseI18n_core) dicts.push(global.__buyniverseI18n_core);
   if (global.__buyniverseI18n_marketplace) dicts.push(global.__buyniverseI18n_marketplace);
+  if (global.__buyniverseI18n_workspace) dicts.push(global.__buyniverseI18n_workspace);
   if (global.__buyniverseI18n_fiscal) dicts.push(global.__buyniverseI18n_fiscal);
   if (global.__buyniverseI18n_procurement) dicts.push(global.__buyniverseI18n_procurement);
 
   if (typeof globalThis !== "undefined") {
     if (globalThis.__buyniverseI18n_core) dicts.push(globalThis.__buyniverseI18n_core);
     if (globalThis.__buyniverseI18n_marketplace) dicts.push(globalThis.__buyniverseI18n_marketplace);
+    if (globalThis.__buyniverseI18n_workspace) dicts.push(globalThis.__buyniverseI18n_workspace);
     if (globalThis.__buyniverseI18n_fiscal) dicts.push(globalThis.__buyniverseI18n_fiscal);
     if (globalThis.__buyniverseI18n_procurement) dicts.push(globalThis.__buyniverseI18n_procurement);
   }
@@ -24,13 +26,14 @@
       }
       if (fs && path) {
         var baseDir = path.resolve("app/i18n");
-        var files = ["core.js", "marketplace.js", "fiscal.js", "procurement.js"];
+        var files = ["core.js", "marketplace.js", "workspace.js", "fiscal.js", "procurement.js"];
         for (var f = 0; f < files.length; f++) {
           var content = fs.readFileSync(path.join(baseDir, files[f]), "utf8");
           var subScope = {};
           new Function("global", "window", "module", "exports", content)(subScope, subScope, {}, {});
           if (subScope.__buyniverseI18n_core) dicts.push(subScope.__buyniverseI18n_core);
           if (subScope.__buyniverseI18n_marketplace) dicts.push(subScope.__buyniverseI18n_marketplace);
+          if (subScope.__buyniverseI18n_workspace) dicts.push(subScope.__buyniverseI18n_workspace);
           if (subScope.__buyniverseI18n_fiscal) dicts.push(subScope.__buyniverseI18n_fiscal);
           if (subScope.__buyniverseI18n_procurement) dicts.push(subScope.__buyniverseI18n_procurement);
         }

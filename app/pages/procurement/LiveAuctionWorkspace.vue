@@ -237,6 +237,14 @@
         @toggle-disqualified="toggleDisqualified"
       />
 
+      <CommunicationThread
+        v-else-if="tab === 'communications'"
+        context-type="auction"
+        :context-id="auction.id"
+        :title="auction.title"
+        :can-announce="canAnnounce"
+      />
+
       <!-- Audit Tab -->
       <AuctionAuditTab
         v-else
@@ -259,16 +267,17 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.vue?v=1");
 const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=1");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
+const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
 export default {
-  components: { AuctionRankTable, AuctionHistoryTab, AuctionAuditTab },
+  components: { AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
       get: () => {
-        const allowed = store.marketplaceMode.value === "supplier" ? ["live", "rank", "history"] : ["live", "history", "rank", "audit"];
+        const allowed = store.marketplaceMode.value === "supplier" ? ["live", "rank", "history", "communications"] : ["live", "history", "rank", "communications", "audit"];
         return allowed.includes(route.query.tab) ? route.query.tab : "live";
       },
       set: (key) => router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
@@ -295,6 +304,13 @@ export default {
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
     const isOrganizer = computed(() => store.isAdmin.value || store.isBuyer.value || auction.value?.hostId === store.currentUser.value.id);
+    // Announcements are a privileged outward-facing action. Keep this narrower than
+    // the dashboard's organizer presentation mode; domainActions enforces it too.
+    const canAnnounce = computed(() => {
+      const currentUserId = store.currentUser.value?.id;
+      const eventOwnerId = auction.value?.eventId ? store.sourcingEvent(auction.value.eventId)?.ownerId : null;
+      return Boolean(currentUserId && (store.isAdmin.value || auction.value?.hostId === currentUserId || eventOwnerId === currentUserId));
+    });
     const isSupplier = computed(() => store.marketplaceMode.value === "supplier" || (!isOrganizer.value && Boolean(bidder.value)));
 
     const currentSupplierId = computed(() => {
@@ -307,6 +323,7 @@ export default {
       { key: "live", label: "Live Room", icon: "fa-tower-broadcast" },
       { key: "rank", label: "Supplier Standings", icon: "fa-users-gear" },
       { key: "history", label: "Bid Stream", icon: "fa-list-ol" },
+      { key: "communications", label: "Messages", icon: "fa-comments" },
       ...(isOrganizer.value ? [{ key: "audit", label: "Audit & Anti-Sniping", icon: "fa-shield-halved" }] : []),
     ]);
 
@@ -435,7 +452,7 @@ export default {
         store.procurementEvent(auction.value, "Time extended", "+60s manual extension");
       }
     };
-    const sendAlert = () => { store.notice("Market broadcast alert dispatched to all active bidders", "fa-bullhorn"); };
+    const sendAlert = () => { tab.value = "communications"; };
     const cancel = async () => {
       if (await store.confirm({ title: "Cancel live auction?", message: "This stops bidding and closes the room.", confirmText: "Cancel auction", danger: true })) {
         auction.value.status = "Closed";
@@ -495,7 +512,7 @@ export default {
     onBeforeUnmount(() => { if (timer) clearInterval(timer); });
 
     return {
-      store, router, auction, selectedAuctionId, accessibleAuctions, isOrganizer, isSupplier, bidder,
+      store, router, auction, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
       tabs, tab, rankedParticipants, leader, nextValidBid, kpis, statusClass, statusLabel, timeLeft,
       health, supplierSeries, allSuppliersSelected, visibleSupplierSeries, isSupplierVisible, showAllSuppliers,
       clearSupplierFilters, toggleSupplier, shortName, supplierColor, valueY, pointX, overallPoints,

@@ -4,6 +4,9 @@ const { runBilingualAudit } = require("./qa/bilingualAudit");
 const { runSecurityAudit } = require("./qa/securityAudit");
 const { runRelationsAudit } = require("./qa/relationsAudit");
 const { runDataTableAudit } = require("./qa/dataTableAudit");
+const { runSeoAudit } = require("./qa/seoAudit");
+const { runCommunicationsAudit } = require("./qa/communicationsAudit");
+const { runDocumentLibraryAudit } = require("./qa/documentLibraryAudit");
 
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -43,6 +46,8 @@ const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 
 const main = read("app/main.js");
 const liveAuctionSource = read("app/pages/procurement/LiveAuctionWorkspace.vue");
+const homeHeroSource = read("app/pages/home/HomeHeroSection.vue");
+const homeIntelligenceSource = read("app/pages/home/HomeIntelligenceSection.vue");
 for (const token of [
   "supplierSeries", "visibleSupplierSeries", "chartSupplierSeries", "toggleSupplier",
   "showAllSuppliers", "clearSupplierFilters", 'v-for="series in chartSupplierSeries"',
@@ -51,6 +56,15 @@ for (const token of [
 ]) {
   if (!liveAuctionSource.includes(token)) throw new Error(`Live offer supplier chart is missing ${token}`);
 }
+
+for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {
+  if (!homeHeroSource.includes(token)) throw new Error(`Home hero responsive grid is missing ${token}`);
+}
+for (const token of ["lg:grid-cols-4", "lg:col-span-3", "lg:col-span-1"]) {
+  if (!homeIntelligenceSource.includes(token)) throw new Error(`Opportunity layout responsive grid is missing ${token}`);
+}
+if (/lg:w-\[420px\]|lg:w-80/.test(homeHeroSource + homeIntelligenceSource))
+  throw new Error("Home still relies on broken fixed-width responsive utilities");
 
 for (const token of [
   "activeMarketplaceMode",
@@ -84,6 +98,9 @@ const seed = browserScope.BuyniverseDemo.seed;
 
 runRelationsAudit(root, read, seed, main);
 runDataTableAudit(root, read, vueFiles);
+const seoResult = runSeoAudit(read);
+const communicationsResult = runCommunicationsAudit(root, read);
+const documentLibraryResult = runDocumentLibraryAudit(root, read);
 
 console.log(
   JSON.stringify(
@@ -98,6 +115,9 @@ console.log(
       procurementFlow: "ranking + reverse bid/audit pass",
       nestedNavigation: "breadcrumbs + route-backed views pass",
       bilingual: `EN/ES runtime + ${bilingualSummary}`,
+      seo: `${seoResult.origin} (${seoResult.files} canonical sources checked)`,
+      communications: `${communicationsResult.threads} threads / ${communicationsResult.templates} templates / ${communicationsResult.localDrafts} local drafts`,
+      documentLibrary: `${documentLibraryResult.reusableDocuments} reusable document / ${documentLibraryResult.sectionLimit} section safety cap`,
       canonicalImages: secResult.assetCount,
     },
     null,

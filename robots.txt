@@ -1,5 +1,5 @@
 # Robots.txt for Buyniverse Platform
-# https://buyniverse.example.com/
+# https://buyniverse.com/
 
 User-agent: *
 Allow: /
@@ -39,5 +39,5 @@ Allow: /assets/
 Allow: /app/
 
 # Host and Sitemap
-Host: https://buyniverse.example.com
-Sitemap: https://buyniverse.example.com/sitemap.xml
+Host: https://buyniverse.com
+Sitemap: https://buyniverse.com/sitemap.xml

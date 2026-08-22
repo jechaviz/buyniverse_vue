@@ -45,6 +45,11 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["Options -Indexes", "Require all denied", "Content-Security-Policy"]) {
     if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
   }
+  const demoAdminSource = read("app/pages/dashboard/AdminDatabaseCard.vue");
+  if (/\/index\.php\?action=|MySQL Database|server2\.shared\.spaceship\.host/.test(demoAdminSource))
+    throw new Error("Demo administration still presents or calls a production database surface");
+  if (/Spaceship MySQL Database Management|MySQL Database status refreshed/.test(read("app/i18n/marketplace.js")))
+    throw new Error("Unused production-database copy remains in the demo runtime");
 
   const unsafeSink = /v-html|\.innerHTML\s*=|\.outerHTML\s*=|document\.write\s*\(|javascript:/i;
   for (const file of [...vueFiles, "app/main.js"]) {

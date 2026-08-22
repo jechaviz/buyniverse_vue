@@ -31,9 +31,15 @@ function runRelationsAudit(root, read, seed, main) {
   const byId = (collection) => new Set(collection.map((item) => item.id));
   const users = byId(seed.users),
     jobs = byId(seed.jobs),
-    contracts = byId(seed.contracts);
-  const agencies = byId(seed.agencies),
-    invoices = byId(seed.invoices);
+    contracts = byId(seed.contracts),
+    agencies = byId(seed.agencies),
+    invoices = byId(seed.invoices),
+    suppliers = byId(seed.suppliers),
+    products = byId(seed.products),
+    requests = byId(seed.purchaseRequests),
+    events = byId(seed.sourcingEvents),
+    auctions = byId(seed.auctions),
+    orders = byId(seed.purchaseOrders);
 
   for (const [name, collection] of Object.entries(seed).filter(([, value]) =>
     Array.isArray(value),
@@ -67,9 +73,14 @@ function runRelationsAudit(root, read, seed, main) {
   }
 
   for (const conversation of seed.conversations) {
+    const contextType = conversation.contextType || "project";
+    const contextIds = { project: jobs, sourcing: events, auction: auctions }[
+      contextType
+    ];
     if (
-      !jobs.has(conversation.jobId) ||
-      conversation.participants.some((id) => !users.has(id))
+      !contextIds?.has(conversation.contextId || conversation.jobId) ||
+      conversation.participants.some((id) => !users.has(id)) ||
+      (conversation.messages || []).some((message) => !users.has(message.senderId))
     )
       throw new Error(`Broken conversation relation: ${conversation.id}`);
   }
@@ -87,13 +98,6 @@ function runRelationsAudit(root, read, seed, main) {
     if (!creators.has(gig.creatorId))
       throw new Error(`Broken gig creator: ${gig.id}`);
   }
-
-  const suppliers = byId(seed.suppliers),
-    products = byId(seed.products);
-  const requests = byId(seed.purchaseRequests),
-    events = byId(seed.sourcingEvents);
-  const auctions = byId(seed.auctions),
-    orders = byId(seed.purchaseOrders);
 
   for (const request of seed.purchaseRequests) {
     if (
@@ -170,6 +174,27 @@ function runRelationsAudit(root, read, seed, main) {
       order.lines.some((line) => line.productId && !products.has(line.productId))
     )
       throw new Error(`Broken order product: ${order.id}`);
+  }
+
+  const templates = byId(seed.messageTemplates || []);
+  for (const template of seed.messageTemplates || []) {
+    if (!template.name || !template.subject || !template.body)
+      throw new Error(`Broken message template: ${template.id}`);
+  }
+  for (const mailing of seed.mailings || []) {
+    const contextIds = {
+      project: jobs,
+      sourcing: events,
+      auction: auctions,
+    }[mailing.contextType];
+    if (
+      !contextIds?.has(mailing.contextId) ||
+      (mailing.templateId && !templates.has(mailing.templateId)) ||
+      (mailing.recipientSupplierIds || []).some((id) => !suppliers.has(id)) ||
+      (mailing.recipientUserIds || []).some((id) => !users.has(id)) ||
+      !users.has(mailing.createdById)
+    )
+      throw new Error(`Broken mailing relation: ${mailing.id}`);
   }
 
   const ranked = procurementScope.ProcurementCommon.rankQuotes(

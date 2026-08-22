@@ -1,5 +1,5 @@
 <template>
-  <nav v-if="items.length > 1" class="mb-4 min-w-0" aria-label="Breadcrumb">
+  <nav v-if="items.length > 1" class="mb-4 min-w-0" :aria-label="store.t('Breadcrumb')">
     <ol
       class="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-semibold text-slate-400"
     >
@@ -17,13 +17,13 @@
           v-if="item.to && index < items.length - 1"
           :to="item.to"
           class="max-w-52 truncate transition hover:text-brand"
-          >{{ item.label }}</RouterLink
+          >{{ store.t(item.label) }}</RouterLink
         >
         <span
           v-else
           class="max-w-64 truncate rounded-md bg-brand-50 px-2 py-1 text-brand dark:bg-brand/10"
           :aria-current="index === items.length - 1 ? 'page' : undefined"
-          >{{ item.label }}</span
+          >{{ store.t(item.label) }}</span
         >
       </li>
     </ol>
@@ -39,6 +39,7 @@ const PROJECT_TABS = {
   providers: "Providers",
   milestones: "Milestones",
   files: "Files",
+  communications: "Messages",
   comments: "Comments",
 };
 const PROCUREMENT = {
@@ -53,6 +54,7 @@ const PROCUREMENT = {
       bidsheet: "Offers",
       comparison: "Compare",
       award: "Choose",
+      communications: "Messages",
       timeline: "History",
     },
     fallbackTab: "overview",
@@ -65,6 +67,7 @@ const PROCUREMENT = {
       history: "History",
       rank: "Ranking",
       audit: "Activity",
+      communications: "Messages",
     },
     fallbackTab: "live",
   },
@@ -321,10 +324,21 @@ export default {
           const other = conversation.participants.find(
             (id) => id !== store.currentUser.value.id,
           );
+          const contextTitle =
+            conversation.contextType === "sourcing"
+              ? store.state.sourcingEvents.find(
+                  (entry) => entry.id === conversation.contextId,
+                )?.title
+              : conversation.contextType === "auction"
+                ? store.state.auctions.find(
+                    (entry) => entry.id === conversation.contextId,
+                  )?.title
+                : project(conversation.contextId || conversation.jobId)?.title;
           crumbs.push(
             item(
-              store.user(other)?.name ||
-                project(conversation.jobId)?.title ||
+              conversation.subject ||
+                contextTitle ||
+                store.user(other)?.name ||
                 "Conversation",
             ),
           );
@@ -383,7 +397,7 @@ export default {
         return [item("Find work", "/"), item("Saved jobs")];
       return crumbs;
     });
-    return { items };
+    return { store, items };
   },
 };
 </script>

@@ -8,6 +8,7 @@
       "suppliers", "leads", "products", "expenses", "estimates", "purchaseRequests",
       "sourcingEvents", "auctions", "purchaseOrders", "procurementRules",
       "procurementWorkflows", "procurementAudit", "securityAudit", "recentViews",
+      "messageTemplates", "mailings",
     ].forEach((key) => {
       if (!Array.isArray(state[key])) state[key] = [];
     });
@@ -84,6 +85,171 @@
       event.files ||= [];
       event.audit ||= [];
     });
+
+    const seededCommunication = window.BuyniverseDemo?.clone?.() || {};
+    const knownUsers = new Set(state.users.map((user) => user.id));
+    const validContextTypes = new Set(["project", "sourcing", "auction"]);
+    state.conversations = state.conversations
+      .map((conversation) => {
+        const contextType = validContextTypes.has(conversation?.contextType)
+          ? conversation.contextType
+          : conversation?.jobId
+            ? "project"
+            : null;
+        const contextId = window.WebCommon.sanitizeText(
+          conversation?.contextId || conversation?.jobId,
+          120,
+        ).trim();
+        if (!contextType || !contextId) return null;
+        const participants = [
+          ...new Set(
+            (Array.isArray(conversation?.participants)
+              ? conversation.participants
+              : []
+            ).filter((userId) => knownUsers.has(userId)),
+          ),
+        ].slice(0, 50);
+        const messages = (Array.isArray(conversation?.messages)
+          ? conversation.messages
+          : []
+        )
+          .map((message, index) => {
+            if (!knownUsers.has(message?.senderId)) return null;
+            const text = window.WebCommon.sanitizeText(message?.text, 3000).trim();
+            if (!text) return null;
+            const at = new Date(message?.at);
+            return {
+              id: window.WebCommon.sanitizeText(message?.id, 120).trim() || `msg-seed-${index}`,
+              senderId: message.senderId,
+              text,
+              subject: window.WebCommon.sanitizeText(message?.subject, 180).trim(),
+              kind: message?.kind === "announcement" ? "announcement" : "message",
+              channel: "internal",
+              at: Number.isNaN(at.getTime()) ? new Date().toISOString() : at.toISOString(),
+            };
+          })
+          .filter(Boolean)
+          .slice(-500);
+        return {
+          id: window.WebCommon.sanitizeText(conversation?.id, 120).trim() || `convo-${contextType}-${contextId}`,
+          contextType,
+          contextId,
+          jobId: contextType === "project" ? contextId : null,
+          subject: window.WebCommon.sanitizeText(conversation?.subject, 180).trim(),
+          participants,
+          messages,
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 200);
+
+    for (const seeded of seededCommunication.conversations || []) {
+      const contextType = validContextTypes.has(seeded?.contextType)
+        ? seeded.contextType
+        : seeded?.jobId
+          ? "project"
+          : null;
+      const contextId = window.WebCommon.sanitizeText(
+        seeded?.contextId || seeded?.jobId,
+        120,
+      ).trim();
+      if (
+        !contextType ||
+        !contextId ||
+        state.conversations.some(
+          (conversation) =>
+            conversation.contextType === contextType &&
+            conversation.contextId === contextId,
+        )
+      )
+        continue;
+      const participants = [
+        ...new Set(
+          (Array.isArray(seeded.participants) ? seeded.participants : []).filter(
+            (userId) => knownUsers.has(userId),
+          ),
+        ),
+      ].slice(0, 50);
+      if (!participants.length) continue;
+      const messages = (Array.isArray(seeded.messages) ? seeded.messages : [])
+        .map((message, index) => {
+          if (!knownUsers.has(message?.senderId)) return null;
+          const text = window.WebCommon.sanitizeText(message?.text, 3000).trim();
+          if (!text) return null;
+          const at = new Date(message?.at);
+          return {
+            id: window.WebCommon.sanitizeText(message?.id, 120).trim() || `msg-demo-${index}`,
+            senderId: message.senderId,
+            text,
+            subject: window.WebCommon.sanitizeText(message?.subject, 180).trim(),
+            kind: message?.kind === "announcement" ? "announcement" : "message",
+            channel: "internal",
+            at: Number.isNaN(at.getTime()) ? new Date().toISOString() : at.toISOString(),
+          };
+        })
+        .filter(Boolean)
+        .slice(-500);
+      state.conversations.push({
+        id: window.WebCommon.sanitizeText(seeded.id, 120).trim() || `convo-demo-${contextType}-${contextId}`,
+        contextType,
+        contextId,
+        jobId: contextType === "project" ? contextId : null,
+        subject: window.WebCommon.sanitizeText(seeded.subject, 180).trim(),
+        participants,
+        messages,
+      });
+    }
+    state.conversations = state.conversations.slice(0, 200);
+
+    if (!state.messageTemplates.length)
+      state.messageTemplates = seededCommunication.messageTemplates || [];
+    state.messageTemplates = state.messageTemplates
+      .map((template) => {
+        const id = window.WebCommon.sanitizeText(template?.id, 120).trim();
+        const name = window.WebCommon.sanitizeText(template?.name, 120).trim();
+        const subject = window.WebCommon.sanitizeText(template?.subject, 180).trim();
+        const body = window.WebCommon.sanitizeText(template?.body, 3000).trim();
+        if (!id || !name || !subject || !body) return null;
+        return {
+          id,
+          name,
+          scope: validContextTypes.has(template.scope) ? template.scope : "all",
+          subject,
+          body,
+          subjectEs: window.WebCommon.sanitizeText(template.subjectEs, 180).trim(),
+          bodyEs: window.WebCommon.sanitizeText(template.bodyEs, 3000).trim(),
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 50);
+
+    state.mailings = state.mailings
+      .map((mailing, index) => {
+        const contextType = validContextTypes.has(mailing?.contextType)
+          ? mailing.contextType
+          : null;
+        const contextId = window.WebCommon.sanitizeText(mailing?.contextId, 120).trim();
+        const subject = window.WebCommon.sanitizeText(mailing?.subject, 180).trim();
+        const body = window.WebCommon.sanitizeText(mailing?.body, 3000).trim();
+        if (!contextType || !contextId || !subject || !body) return null;
+        return {
+          id: window.WebCommon.sanitizeText(mailing?.id, 120).trim() || `mail-seed-${index}`,
+          contextType,
+          contextId,
+          templateId: window.WebCommon.sanitizeText(mailing?.templateId, 120).trim() || null,
+          subject,
+          body,
+          recipientSupplierIds: [...new Set(Array.isArray(mailing?.recipientSupplierIds) ? mailing.recipientSupplierIds : [])].slice(0, 50),
+          recipientUserIds: [...new Set((Array.isArray(mailing?.recipientUserIds) ? mailing.recipientUserIds : []).filter((userId) => knownUsers.has(userId)))].slice(0, 50),
+          status: "Draft",
+          channel: "email",
+          localOnly: true,
+          createdById: knownUsers.has(mailing?.createdById) ? mailing.createdById : state.currentUserId,
+          createdAt: Number.isNaN(new Date(mailing?.createdAt).getTime()) ? new Date().toISOString() : new Date(mailing.createdAt).toISOString(),
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 200);
 
     state.auctions.forEach((auction) => {
       auction.participants ||= [];

@@ -3,146 +3,146 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- Homepage / Marketplace Discovery -->
   <url>
-    <loc>https://buyniverse.example.com/</loc>
+    <loc>https://buyniverse.com/</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/?lang=en" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://buyniverse.example.com/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://buyniverse.com/" />
   </url>
 
   <!-- Find Talent & Freelancer Directory -->
   <url>
-    <loc>https://buyniverse.example.com/find-talent</loc>
+    <loc>https://buyniverse.com/find-talent</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/find-talent?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/find-talent?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/find-talent?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/find-talent?lang=en" />
   </url>
 
   <!-- Browse Services & Professional Gigs -->
   <url>
-    <loc>https://buyniverse.example.com/browse-services</loc>
+    <loc>https://buyniverse.com/browse-services</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/browse-services?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/browse-services?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/browse-services?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/browse-services?lang=en" />
   </url>
 
   <!-- B2B Procurement Cockpit -->
   <url>
-    <loc>https://buyniverse.example.com/procurement</loc>
+    <loc>https://buyniverse.com/procurement</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement?lang=en" />
   </url>
 
   <!-- Live Reverse Auctions Workspace -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/auction</loc>
+    <loc>https://buyniverse.com/procurement/auction</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/auction?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/auction?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/auction?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/auction?lang=en" />
   </url>
 
   <!-- RFX Sourcing & Quotes Comparison -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/sourcing</loc>
+    <loc>https://buyniverse.com/procurement/sourcing</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/sourcing?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/sourcing?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/sourcing?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/sourcing?lang=en" />
   </url>
 
   <!-- Purchase Requests & Intake Queue -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/queue</loc>
+    <loc>https://buyniverse.com/procurement/queue</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/queue?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/queue?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/queue?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/queue?lang=en" />
   </url>
 
   <!-- Purchase Orders, Receipts & 3-Way Match -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/execution</loc>
+    <loc>https://buyniverse.com/procurement/execution</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/execution?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/execution?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/execution?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/execution?lang=en" />
   </url>
 
   <!-- Spend Intelligence & ESG Analytics -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/intelligence</loc>
+    <loc>https://buyniverse.com/procurement/intelligence</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/intelligence?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/intelligence?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/intelligence?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/intelligence?lang=en" />
   </url>
 
   <!-- Procurement Governance & Rules -->
   <url>
-    <loc>https://buyniverse.example.com/procurement/governance</loc>
+    <loc>https://buyniverse.com/procurement/governance</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/procurement/governance?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/procurement/governance?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/procurement/governance?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/procurement/governance?lang=en" />
   </url>
 
   <!-- Qualified Suppliers Directory -->
   <url>
-    <loc>https://buyniverse.example.com/suppliers</loc>
+    <loc>https://buyniverse.com/suppliers</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/suppliers?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/suppliers?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/suppliers?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/suppliers?lang=en" />
   </url>
 
   <!-- Project Catalog -->
   <url>
-    <loc>https://buyniverse.example.com/projects</loc>
+    <loc>https://buyniverse.com/projects</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.example.com/projects?lang=es" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.example.com/projects?lang=en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://buyniverse.com/projects?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://buyniverse.com/projects?lang=en" />
   </url>
 
   <!-- Canonical Job Opportunities -->
   <url>
-    <loc>https://buyniverse.example.com/job/job-1</loc>
+    <loc>https://buyniverse.com/job/job-1</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://buyniverse.example.com/job/job-2</loc>
+    <loc>https://buyniverse.com/job/job-2</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://buyniverse.example.com/job/job-4</loc>
+    <loc>https://buyniverse.com/job/job-4</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://buyniverse.example.com/job/job-5</loc>
+    <loc>https://buyniverse.com/job/job-5</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -150,13 +150,13 @@
 
   <!-- Canonical Service Gigs -->
   <url>
-    <loc>https://buyniverse.example.com/gig/gig-react-audit</loc>
+    <loc>https://buyniverse.com/gig/gig-react-audit</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://buyniverse.example.com/gig/gig-design-sprint</loc>
+    <loc>https://buyniverse.com/gig/gig-design-sprint</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -164,7 +164,7 @@
 
   <!-- Canonical Agency Profiles -->
   <url>
-    <loc>https://buyniverse.example.com/agency/agency-pixel</loc>
+    <loc>https://buyniverse.com/agency/agency-pixel</loc>
     <lastmod>2026-08-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

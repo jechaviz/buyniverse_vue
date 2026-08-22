@@ -114,52 +114,39 @@
     </section>
 
     <section>
-      <article class="panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div class="flex items-center gap-3">
-            <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white text-sm shadow-soft">
-              <i class="fa-solid fa-brain"></i>
+      <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
+        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+          <div class="flex min-w-0 items-center gap-3">
+            <span class="grid h-8 w-8 flex-none place-items-center rounded-xl bg-brand text-xs text-white shadow-soft">
+              <i class="fa-solid fa-shield-halved"></i>
             </span>
-            <div>
-              <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">{{ store.t("55+ Autonomous AI Procurement Agents Engine") }}</h2>
-              <p class="mt-0.5 text-xs text-slate-400">{{ store.t("Autonomous orchestration across Intake, Sourcing, SRM, Contracts and Gain-Share.") }}</p>
+            <div class="min-w-0">
+              <h2 class="font-head text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t("Automation coverage") }}</h2>
+              <p class="mt-0.5 truncate text-[11px] text-slate-400">{{ store.t("Rules, checks and follow-up that help the team act consistently.") }}</p>
             </div>
           </div>
-          <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-300 flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> ALL AGENTS OPERATIONAL
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+            <i class="fa-solid fa-circle-info text-[9px]"></i>{{ store.t("LOCAL DEMO") }}
           </span>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div
-            v-for="agent in autonomousAgents"
-            :key="agent.name"
-            class="rounded-2xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-800/40 flex flex-col justify-between space-y-3 hover:border-brand/40 transition group"
+        </header>
+        <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+          <RouterLink
+            v-for="control in automationCoverage"
+            :key="control.name"
+            :to="control.to"
+            class="group flex items-center gap-3 px-4 py-3.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/40"
           >
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="grid h-8 w-8 place-items-center rounded-xl text-xs font-bold" :class="agent.iconTone">
-                  <i class="fa-solid" :class="agent.icon"></i>
-                </span>
-                <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md">
-                  {{ agent.status }}
-                </span>
-              </div>
-              <b class="font-head text-xs font-bold text-slate-800 dark:text-slate-200 block">{{ agent.name }}</b>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{{ agent.desc }}</p>
-            </div>
-            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-              <span class="text-[10px] font-mono text-slate-400">{{ agent.metric }}</span>
-              <button
-                type="button"
-                @click="triggerAgentAction(agent)"
-                class="text-[10px] font-bold text-brand hover:underline cursor-pointer flex items-center gap-1"
-              >
-                {{ agent.action }} <i class="fa-solid fa-play text-[8px]"></i>
-              </button>
-            </div>
-          </div>
+            <span class="grid h-8 w-8 flex-none place-items-center rounded-lg text-xs" :class="control.iconTone">
+              <i class="fa-solid" :class="control.icon"></i>
+            </span>
+            <span class="min-w-0 flex-1">
+              <b class="block truncate text-xs font-bold text-slate-800 transition group-hover:text-brand dark:text-slate-200">{{ store.t(control.name) }}</b>
+              <span class="mt-0.5 block truncate text-[10px] text-slate-400">{{ store.t(control.detail) }}</span>
+            </span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand dark:text-slate-600"></i>
+          </RouterLink>
         </div>
+        <p class="border-t border-slate-100 px-5 py-2 text-[10px] text-slate-400 dark:border-slate-800">{{ store.t("Every control remains reviewable before execution.") }}</p>
       </article>
     </section>
 
@@ -220,25 +207,12 @@ export default {setup(){const store=inject('store'),analytics=store.state.procur
   ].slice(0,5));
   const topSuppliers=computed(()=>[...store.state.suppliers].sort((a,b)=>b.score-a.score).slice(0,4));
 
-  const autonomousAgents = computed(() => [
-    { name: 'Intake & Triage Agent', desc: 'Automatic PR validation, budget checking, and category routing.', status: 'Online', metric: '100% automated routing', action: 'Run Triage', icon: 'fa-file-signature', iconTone: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' },
-    { name: 'Sourcing & RFx Agent', desc: 'Supplier discovery, quote normalization, and comparison matrix.', status: 'Online', metric: '4.2 quotes / RFQ', action: 'Scan Sourcing', icon: 'fa-compass-drafting', iconTone: 'bg-brand-50 text-brand dark:bg-brand/20' },
-    { name: 'BAFO Reverse Auction Agent', desc: 'Live auction orchestration, dynamic counter-bids, and savings discovery.', status: 'Online', metric: '20% avg. savings', action: 'Trigger BAFO', icon: 'fa-gavel', iconTone: 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400' },
-    { name: 'SRM & Risk Scoring Agent', desc: 'Continuous compliance tracking, financial solvency, and SLA monitoring.', status: 'Online', metric: 'Zero compliance gaps', action: 'Scan Risk', icon: 'fa-shield-halved', iconTone: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400' },
-    { name: 'Smart CLM & Escrow Agent', desc: 'Milestone escrow locks, clause extraction, and dispute prevention.', status: 'Online', metric: '100% funds secured', action: 'Audit Contracts', icon: 'fa-file-contract', iconTone: 'bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400' },
-    { name: 'Spend Analytics & 3-Way Match', desc: 'Real-time PO vs Receipt vs Invoice audit and Gain-Share settlement.', status: 'Online', metric: 'Real-time settlement', action: 'Verify 3-Way', icon: 'fa-chart-line', iconTone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400' }
+  const automationCoverage = computed(() => [
+    { name: 'Request intake', detail: 'Budget and routing rules', to: '/procurement/queue', icon: 'fa-file-signature', iconTone: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' },
+    { name: 'Sourcing readiness', detail: 'Quote coverage and comparison', to: '/procurement/sourcing', icon: 'fa-compass-drafting', iconTone: 'bg-brand-50 text-brand dark:bg-brand/20' },
+    { name: 'Supplier risk', detail: 'Continuous compliance checks', to: '/procurement/intelligence', icon: 'fa-shield-halved', iconTone: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400' },
+    { name: 'Invoice matching', detail: '3-way control status', to: '/procurement/execution', icon: 'fa-file-contract', iconTone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400' }
   ]);
-
-  function triggerAgentAction(agent) {
-    store.addAuditRecord({
-      objectId: 'AGENT-' + Date.now().toString().slice(-4),
-      action: `${agent.name} executed`,
-      actor: 'Autonomous Agent Orchestrator',
-      level: 'success',
-      detail: `Autonomous execution completed for ${agent.name}. Verified metrics and updated live pipeline.`
-    });
-    store.notice(`${agent.name} triggered successfully`, 'fa-brain');
-  }
 
   const bar=(value,max)=>`${Math.max(6,Math.round(Number(value||0)/max*100))}%`;
   const auditLink=(id)=>{
@@ -250,5 +224,5 @@ export default {setup(){const store=inject('store'),analytics=store.state.procur
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,kpis,pipeline,workQueue,topSuppliers,autonomousAgents,triggerAgentAction,bar,auditLink};}}
+  return{store,analytics,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink};}}
 </script>

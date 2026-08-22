@@ -36,6 +36,8 @@
           <button
             type="button"
             class="btn-muted text-xs py-1 px-2.5 font-semibold flex items-center gap-1 cursor-pointer"
+            :title="store.t('Section header and footer')"
+            :aria-label="store.t('Section header and footer')"
             @click="$emit('open-header-footer-modal')"
           >
             <i class="fa-solid fa-heading text-slate-500 text-[10px]"></i>
@@ -48,8 +50,8 @@
             class="rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-1 text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-105 cursor-pointer"
             @click="$emit('toggle-variable-drawer')"
           >
-            <i class="fa-solid fa-sliders text-amber-400 dark:text-amber-600 text-xs"></i>
-            <span>{{ store.t("Llenar Machote") }}</span>
+            <i class="fa-solid fa-tags text-amber-400 dark:text-amber-600 text-xs"></i>
+            <span>{{ store.t("Fields") }}</span>
           </button>
         </div>
       </div>
@@ -59,6 +61,8 @@
         v-if="activeSection.type === 'cover' || activeSection.type === 'section_end'"
         :store="store"
         :active-section="activeSection"
+        :section-chrome="sectionChrome"
+        :suppress-page-chrome="suppressPageChrome"
       />
 
       <!-- VIEW B: STANDARD 1.1 MARKDOWN SECTION EDITOR -->
@@ -292,9 +296,9 @@
 </template>
 
 <script>
-const { ref, defineAsyncComponent } = Vue;
+const { ref, defineAsyncComponent, nextTick, onMounted, watch } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentCoverEditor = load("./app/components/document/DocumentCoverEditor.vue?v=1");
+const DocumentCoverEditor = load("./app/components/document/DocumentCoverEditor.vue?v=3");
 
 export default {
   components: { DocumentCoverEditor },
@@ -303,6 +307,8 @@ export default {
     activeSection: Object,
     activeSectionNumber: String,
     renderedBlocks: Array,
+    sectionChrome: Object,
+    suppressPageChrome: Boolean,
   },
   emits: [
     "set-level",
@@ -315,9 +321,13 @@ export default {
     "open-header-footer-modal",
     "add-root-section",
     "add-cover",
+    "textarea-ready",
   ],
-  setup() {
+  setup(props, { emit }) {
     const textareaEl = ref(null);
+    const registerTextarea = () => nextTick(() => emit("textarea-ready", textareaEl.value || null));
+    onMounted(registerTextarea);
+    watch(() => props.activeSection?.type, registerTextarea);
     return { textareaEl };
   }
 };

@@ -68,10 +68,10 @@
         >
           <!-- Thumbnail Running Header (unless cover suppressed) -->
           <div
-            v-if="!shouldSuppressHeaderFooter(page)"
+            v-if="!shouldSuppressHeaderFooter(page) && chromeForPage(page).headerEnabled"
             class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1 text-[8px] font-mono text-slate-400 flex-none"
           >
-            <span class="truncate max-w-[130px] font-bold text-slate-600 dark:text-slate-300 uppercase">{{ headerText || docTitle }}</span>
+            <span class="truncate max-w-[130px] font-bold text-slate-600 dark:text-slate-300 uppercase">{{ chromeForPage(page).headerText }}</span>
             <span>{{ new Date().toLocaleDateString() }}</span>
           </div>
 
@@ -122,10 +122,10 @@
 
           <!-- Thumbnail Running Footer -->
           <div
-            v-if="!shouldSuppressHeaderFooter(page)"
+            v-if="!shouldSuppressHeaderFooter(page) && chromeForPage(page).footerEnabled"
             class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-1 text-[8px] font-mono text-slate-400 flex-none"
           >
-            <span class="truncate max-w-[120px]">{{ footerText || 'CONFIDENTIAL' }}</span>
+            <span class="truncate max-w-[120px]">{{ chromeForPage(page).footerText }}</span>
             <b class="text-slate-700 dark:text-slate-200 font-bold">
               {{ formatPageNumber(pageIdx + 1, estimatedPages.length) }}
             </b>
@@ -210,8 +210,10 @@ export default {
     headerText: String,
     footerText: String,
     pageNumberFormat: String,
+    docTitle: String,
     showRunningHeader: Boolean,
     suppressOnCover: { type: Boolean, default: true },
+    resolveSectionChrome: Function,
   },
   emits: [
     "update:leftViewTab",
@@ -238,6 +240,17 @@ export default {
       return page.sections.some((s) => s.type === "cover");
     }
 
+    function chromeForPage(page) {
+      const firstSection = page?.sections?.[0];
+      if (typeof props.resolveSectionChrome === "function") return props.resolveSectionChrome(firstSection);
+      return {
+        headerEnabled: props.showRunningHeader !== false,
+        headerText: props.headerText || props.docTitle,
+        footerEnabled: true,
+        footerText: props.footerText || props.store.t("Confidential"),
+      };
+    }
+
     function formatPageNumber(num, total) {
       if (props.pageNumberFormat === "none") return "";
       if (props.pageNumberFormat === "X / Y") return `${num} / ${total}`;
@@ -249,6 +262,7 @@ export default {
       isPageActive,
       getSectionNumber,
       shouldSuppressHeaderFooter,
+      chromeForPage,
       formatPageNumber,
     };
   },

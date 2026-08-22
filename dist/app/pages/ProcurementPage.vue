@@ -5,41 +5,41 @@
     >
       <div class="max-w-3xl">
         <p class="mb-1 text-[10px] font-800 uppercase tracking-wider text-brand">
-          {{ contextLabel }}
+          {{ store.t(contextLabel) }}
         </p>
         <div class="flex items-center gap-2">
           <h1
             class="premium-title text-3xl font-800 text-slate-900 dark:text-white"
           >
-            {{ current.title }}
+            {{ store.t(current.title) }}
           </h1>
           <span
             v-if="attentionCount"
             class="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:bg-rose-500/10 dark:text-rose-300"
-            >{{ attentionCount }} need attention</span
+            >{{ attentionCount }} {{ store.t("need attention") }}</span
           >
         </div>
         <p
           class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-300"
         >
-          {{ current.description }}
+          {{ store.t(current.description) }}
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
         <button v-if="canBuy" class="btn-muted" @click="exportWorkspace">
-          <i class="fa-solid fa-download"></i>Export
+          <i class="fa-solid fa-download"></i>{{ store.t("Export") }}
         </button>
         <RouterLink
           v-if="canBuy && (section === 'cockpit' || section === 'queue')"
           to="/procurement/queue?new=1"
           class="btn-brand"
-          ><i class="fa-solid fa-plus"></i>New request</RouterLink
+          ><i class="fa-solid fa-plus"></i>{{ store.t("New request") }}</RouterLink
         >
         <RouterLink
           v-else-if="canBuy && section === 'sourcing'"
           to="/procurement/sourcing?new=1"
           class="btn-brand"
-          ><i class="fa-solid fa-plus"></i>New quote round</RouterLink
+          ><i class="fa-solid fa-plus"></i>{{ store.t("New quote round") }}</RouterLink
         >
       </div>
     </header>
@@ -55,7 +55,7 @@
         :to="`/procurement/${item.key}`"
         class="min-w-max border-b-2 border-transparent px-3 py-3 text-xs font-bold text-slate-500 transition hover:text-slate-800 dark:hover:text-white"
         :class="section === item.key ? '!border-brand !text-brand' : ''"
-        >{{ item.short }}</RouterLink
+        >{{ store.t(item.short) }}</RouterLink
       >
     </nav>
 

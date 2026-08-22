@@ -188,8 +188,9 @@ function runDataTableAudit(root, read, vueFiles) {
   const breadcrumbSource = read("app/components/Breadcrumbs.vue");
   const appShellSource = read("app/App.vue");
   const sharedBrowserSource = read("../lib/web-common/browser.js");
+  const breadcrumbMarker = ':aria-label="store.t(\'Breadcrumb\')"';
   const breadcrumbHosts = vueFiles.filter((file) =>
-    read(file).includes('aria-label="Breadcrumb"'),
+    read(file).includes(breadcrumbMarker),
   );
   if (
     breadcrumbHosts.length !== 1 ||
@@ -198,7 +199,7 @@ function runDataTableAudit(root, read, vueFiles) {
     throw new Error(`Breadcrumb must have one global owner: ${breadcrumbHosts}`);
 
   for (const token of [
-    'aria-label="Breadcrumb"',
+    breadcrumbMarker,
     "PROJECT_TABS",
     "PROCUREMENT",
     "Contract",
@@ -244,7 +245,7 @@ function runDataTableAudit(root, read, vueFiles) {
     ],
     "app/pages/procurement/LiveAuctionWorkspace.vue": [
       'path: "/procurement/auction"',
-      '["live", "history", "rank", "audit"]',
+      '["live", "history", "rank", "communications", "audit"]',
     ],
     "app/pages/procurement/ProcurementExecution.vue": [
       'path: "/procurement/execution"',

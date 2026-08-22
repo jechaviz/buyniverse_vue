@@ -3,24 +3,24 @@
     <header class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
       <div class="space-y-1">
         <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">
-          Dashboard
+          {{ store.t("Dashboard") }}
         </p>
         <h1 class="font-head text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">
-          {{ titles[section] }}
+          {{ store.t(titles[section]) }}
         </h1>
-        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ copies[section] }}</p>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{{ store.t(copies[section]) }}</p>
       </div>
       <RouterLink
         v-if="store.isBuyer.value"
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
         to="/post-job/new"
-        ><i class="fa-solid fa-plus mr-2"></i>Post a job</RouterLink
+        ><i class="fa-solid fa-plus mr-2"></i>{{ store.t("Post a job") }}</RouterLink
       >
       <RouterLink
         v-else-if="store.isSupplier.value"
         class="btn-brand text-xs sm:text-sm py-2.5 px-5 font-bold shadow-sm inline-flex items-center"
         to="/find-work"
-        ><i class="fa-solid fa-briefcase mr-2"></i>Find work</RouterLink
+        ><i class="fa-solid fa-briefcase mr-2"></i>{{ store.t("Find work") }}</RouterLink
       >
     </header>
     <nav class="flex gap-1.5 overflow-x-auto p-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl">
@@ -30,7 +30,7 @@
         :to="x.to"
         class="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-bold transition-all"
         :class="section === x.key ? 'bg-white text-brand shadow-sm dark:bg-slate-900 dark:text-brand-300' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'"
-        >{{ x.label }}</RouterLink
+        >{{ store.t(x.label) }}</RouterLink
       >
     </nav>
     <template v-if="section === 'overview'">
@@ -42,7 +42,7 @@
           class="premium-card rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/80"
         >
           <div class="flex items-center justify-between">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ card.label }}</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t(card.label) }}</p>
             <span class="grid h-8 w-8 place-items-center rounded-xl bg-brand-50 text-brand dark:bg-brand/15 text-xs">
               <i class="fa-solid" :class="card.icon || 'fa-chart-simple'"></i>
             </span>
@@ -50,12 +50,12 @@
           <p class="font-head mt-3 text-2xl sm:text-3xl font-800 tracking-tight text-slate-900 dark:text-white">{{ card.value }}</p>
           <p class="mt-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-400 flex items-center gap-1.5">
             <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-            {{ card.note }}
+            {{ store.t(card.note) }}
           </p>
         </article>
       </div>
 
-      <!-- Admin Database Management & MySQL Demo Seeder -->
+      <!-- Local demo-state summary and reset controls -->
       <AdminDatabaseCard v-if="store.isAdmin.value" />
 
       <!-- Recent Workspaces -->
@@ -68,13 +68,13 @@
               <p
                 class="premium-kicker text-[10px] font-800 uppercase tracking-wider text-brand"
               >
-                Continue working
+                {{ store.t("Continue working") }}
               </p>
-              <h2 class="font-head mt-0.5 font-800 text-base text-slate-900 dark:text-white">Recent workspaces</h2>
+              <h2 class="font-head mt-0.5 font-800 text-base text-slate-900 dark:text-white">{{ store.t("Recent workspaces") }}</h2>
             </div>
             <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full"
               ><i class="fa-solid fa-shield-halved mr-1 text-emerald-500"></i>15
-              min privacy lock</span
+              {{ store.t("min privacy lock") }}</span
             >
           </div>
           <div v-if="recent.length" class="mt-3.5 flex flex-wrap gap-2">
@@ -86,11 +86,11 @@
               ><i
                 class="fa-solid fa-clock-rotate-left mr-2 text-[10px] text-slate-400"
               ></i
-              >{{ item.label }}</RouterLink
+              >{{ store.t(item.label) }}</RouterLink
             >
           </div>
           <p v-else class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Open a project, invoice or request and it will appear here.
+            {{ store.t("Open a project, invoice or request and it will appear here.") }}
           </p>
         </div>
         <div class="flex flex-wrap gap-2 lg:justify-end">
@@ -100,15 +100,15 @@
             :to="action.to"
             class="btn-muted whitespace-nowrap text-xs py-2 px-3.5"
             ><i class="fa-solid mr-1.5 text-xs" :class="action.icon"></i
-            >{{ action.label }}</RouterLink
+            >{{ store.t(action.label) }}</RouterLink
           >
         </div>
       </article>
       <div class="grid gap-6 lg:grid-cols-2">
         <article class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.isBuyer.value ? "Active projects" : "Active contracts" }}</h2>
-            <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">{{ contracts.length }} active</span>
+            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t(store.isBuyer.value ? "Active projects" : "Active contracts") }}</h2>
+            <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">{{ contracts.length }} {{ store.t("active") }}</span>
           </div>
           <div class="mt-4 space-y-2.5">
             <RouterLink
@@ -120,17 +120,17 @@
                 ><b class="block truncate text-xs font-bold text-slate-900 dark:text-white">{{ store.job(x.sourceId)?.title }}</b
                 ><span class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-slate-400">
                   <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  {{ x.status }}
+                  {{ store.t(x.status) }}
                 </span></span
               ><b class="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{{ store.money(x.amount) }}</b></RouterLink
             >
-            <p v-if="!contracts.length" class="p-6 text-center text-xs text-slate-400">{{ store.isBuyer.value ? "No active projects." : "No active contracts." }}</p>
+            <p v-if="!contracts.length" class="p-6 text-center text-xs text-slate-400">{{ store.t(store.isBuyer.value ? "No active projects." : "No active contracts.") }}</p>
           </div>
         </article>
         <article class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">Recent activity</h2>
-            <RouterLink to="/dashboard/transactions" class="text-xs font-semibold text-brand hover:underline">View all</RouterLink>
+            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t("Recent activity") }}</h2>
+            <RouterLink to="/dashboard/transactions" class="text-xs font-semibold text-brand hover:underline">{{ store.t("View all") }}</RouterLink>
           </div>
           <div class="mt-4 space-y-2.5">
             <div
@@ -144,7 +144,7 @@
               </div>
               <b class="font-mono font-bold" :class="x.amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'">{{ store.money(x.amount) }}</b>
             </div>
-            <p v-if="!transactions.length" class="p-6 text-center text-xs text-slate-400">No recent activity.</p>
+            <p v-if="!transactions.length" class="p-6 text-center text-xs text-slate-400">{{ store.t("No recent activity.") }}</p>
           </div>
         </article>
       </div></template
@@ -153,7 +153,7 @@
       <div
         class="grid grid-cols-[8rem_1fr_9rem_5rem] gap-3 bg-slate-50/80 p-4 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-800"
       >
-        <span>Date</span><span>Work</span><span>Project</span><span class="text-right">Hours</span>
+        <span>{{ store.t("Date") }}</span><span>{{ store.t("Work") }}</span><span>{{ store.t("Project") }}</span><span class="text-right">{{ store.t("Hours") }}</span>
       </div>
       <div
         v-for="x in times"
@@ -163,11 +163,11 @@
         <span class="text-slate-500 font-medium">{{ store.date(x.date) }}</span
         ><span class="font-semibold text-slate-800 dark:text-slate-200">{{ x.memo }}</span
         ><RouterLink class="text-brand font-semibold hover:underline" :to="`/contract/${x.contractId}`"
-          >Contract</RouterLink
+          >{{ store.t("Contract") }}</RouterLink
         ><b class="text-right font-mono font-bold">{{ x.hours }}</b>
       </div>
       <p v-if="!times.length" class="p-8 text-center text-xs text-slate-400">
-        No time entries.
+        {{ store.t("No time entries.") }}
       </p>
     </article>
     <article
@@ -190,19 +190,19 @@
         }}</b>
       </div>
       <p v-if="!transactions.length" class="p-8 text-center text-xs text-slate-400">
-        No transactions.
+        {{ store.t("No transactions.") }}
       </p>
     </article>
     <article v-else-if="section === 'my-agency' && store.isSupplier.value" class="panel p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
       <template v-if="agency"
         ><div class="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-brand">Agency workspace</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-brand">{{ store.t("Agency workspace") }}</p>
             <h2 class="font-head mt-1 text-2xl font-800 tracking-tight text-slate-900 dark:text-white">{{ agency.name }}</h2>
             <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ agency.tagline }}</p>
           </div>
           <RouterLink class="btn-brand text-xs py-2 px-4" :to="`/agency/${agency.id}`"
-            >Manage agency</RouterLink
+            >{{ store.t("Manage agency") }}</RouterLink
           >
         </div>
         <div class="mt-6 flex flex-wrap gap-2">
@@ -210,12 +210,12 @@
             v-for="m in agency.members"
             :key="m.userId"
             class="badge rounded-xl border border-slate-200/80 bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-            >{{ store.user(m.userId)?.name }} · {{ m.role }}</span
+            >{{ store.user(m.userId)?.name }} · {{ store.t(m.role) }}</span
           >
         </div></template
       >
       <p v-else class="text-slate-400 text-xs">
-        This account does not belong to an agency.
+        {{ store.t("This account does not belong to an agency.") }}
       </p>
     </article>
   </section>
@@ -297,6 +297,25 @@ export default {
         { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
       ];
     });
+    const recentLabel = (path, label) => {
+      if (label && label !== "Workspace") return label;
+      const labels = [
+        ["/procurement/cockpit", "Purchases"],
+        ["/procurement/queue", "Purchase requests"],
+        ["/procurement/sourcing", "Quote rounds"],
+        ["/procurement/auction", "Live auctions"],
+        ["/procurement/governance", "Settings & history"],
+        ["/projects", "Projects"],
+        ["/invoices", "Invoices"],
+        ["/payments", "Payments"],
+        ["/contracts", "Contracts"],
+        ["/suppliers", "Suppliers"],
+        ["/find-work", "Find work"],
+        ["/post-job", "Post a job"],
+        ["/dashboard", "Dashboard"],
+      ];
+      return labels.find(([prefix]) => path.startsWith(prefix))?.[1] || "Dashboard";
+    };
     const recent = computed(() => {
       const seen = new Set();
       return (store.state.recentViews || [])
@@ -304,14 +323,8 @@ export default {
           (item) => item.userId === user.value.id && item.path !== "/dashboard",
         )
         .map((item) => {
-          const path = item.path.includes("?new=1")
-            ? item.path.split("?")[0]
-            : item.path;
-          const label = path.startsWith("/procurement/queue")
-            ? "Purchase requests"
-            : path.startsWith("/procurement/sourcing")
-              ? "Quote rounds"
-              : item.label;
+          const path = String(item.path || "/dashboard").split("?")[0];
+          const label = recentLabel(path, item.label);
           return { ...item, path, label };
         })
         .filter((item) => {

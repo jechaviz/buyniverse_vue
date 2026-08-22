@@ -19,14 +19,10 @@
       :conversations="conversations"
       :active-conversation="activeConversation"
       :selected="selected"
-      :current-user-id="store.currentUser.value.id"
-      :message="message"
-      :other-participant="otherParticipant"
-      :job-name="jobName"
+      :conversation-title="conversationTitle"
+      :context-label="conversationContextLabel"
       :format-date="store.date"
       @select-conversation="selectConversation"
-      @update:message="message = $event"
-      @send-message="sendMessage"
     />
 
     <!-- Generic Data Workspace -->
@@ -111,7 +107,7 @@ export default {
       return canUseAction ? base : { ...base, action: null };
     });
 
-    const selected = ref(store.state.conversations[0]?.id), message = ref(""), newInvoiceOpen = ref(false);
+    const selected = ref(store.state.conversations[0]?.id), newInvoiceOpen = ref(false);
     const invoiceDraft = ref({ projectTitle: "", total: null, currency: "USD", dueDate: "" });
 
     const accessibleJobs = computed(() => {
@@ -189,7 +185,18 @@ export default {
     }, { immediate: true });
 
     const jobName = (id) => store.job(id)?.title || "Conversation";
-    const otherParticipant = (conv) => store.user(conv?.participants.find((id) => id !== user.value.id));
+    const conversationTitle = (conversation) => {
+      if (conversation?.contextType === "project") return jobName(conversation.contextId);
+      if (conversation?.contextType === "sourcing")
+        return store.sourcingEvent(conversation.contextId)?.title || conversation.contextId;
+      if (conversation?.contextType === "auction")
+        return store.state.auctions.find((item) => item.id === conversation.contextId)?.title || conversation.contextId;
+      return conversation?.subject || "Conversation";
+    };
+    const conversationContextLabel = (conversation) =>
+      ({ project: "Project", sourcing: "RFX", auction: "Auction" })[
+        conversation?.contextType
+      ] || "Messages";
 
     const display = (item, key) => {
       const v = item?.[key];
@@ -250,12 +257,6 @@ export default {
       store.notice(`${c} items archived`);
     };
 
-    const sendMessage = () => {
-      if (!message.value.trim() || !activeConversation.value) return;
-      store.sendMessage({ conversationId: activeConversation.value.id, senderId: user.value.id, text: window.WebCommon.sanitizeText(message.value, 1000).trim(), at: new Date().toISOString() });
-      message.value = "";
-    };
-
     const openNew = () => {
       if (config.value.action?.mode === "invoice") {
         newInvoiceOpen.value = true;
@@ -292,8 +293,8 @@ export default {
 
     return {
       store, kind, config, items, tableColumns, display, linkFor, updateCell, openItem, deleteItem, archiveItems,
-      conversations, activeConversation, selected, selectConversation, jobName, otherParticipant,
-      message, sendMessage, newInvoiceOpen, invoiceDraft, openNew, createInvoice, freelancers,
+      conversations, activeConversation, selected, selectConversation, jobName, conversationTitle, conversationContextLabel,
+      newInvoiceOpen, invoiceDraft, openNew, createInvoice, freelancers,
     };
   },
 };

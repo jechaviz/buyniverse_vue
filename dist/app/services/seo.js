@@ -1,6 +1,8 @@
 (function (global) {
   "use strict";
 
+  var PUBLIC_ORIGIN = "https://buyniverse.com";
+
   function updateSeoMetadata(to, store, currentLang) {
     if (!to || typeof document === "undefined") return;
 
@@ -132,7 +134,7 @@
     const twitterDesc = document.querySelector('meta[name="twitter:description"]');
     if (twitterDesc) twitterDesc.setAttribute("content", customDesc);
 
-    const canonicalUrl = `https://buyniverse.example.com${to.path === "/" ? "" : to.path}`;
+    const canonicalUrl = `${PUBLIC_ORIGIN}${to.path === "/" ? "" : to.path}`;
     const canonicalLink = document.querySelector('link[rel="canonical"]');
     if (canonicalLink) canonicalLink.setAttribute("href", canonicalUrl);
 
@@ -154,7 +156,7 @@
           "@type": "ListItem",
           position: 1,
           name: currentLang === "es" ? "Inicio" : "Home",
-          item: "https://buyniverse.example.com/"
+          item: `${PUBLIC_ORIGIN}/`
         }
       ];
 
@@ -167,7 +169,7 @@
           "@type": "ListItem",
           position: index + 2,
           name: window.BuyniverseI18n?.t(label) || label,
-          item: `https://buyniverse.example.com${cumulative}`
+          item: `${PUBLIC_ORIGIN}${cumulative}`
         });
       });
 

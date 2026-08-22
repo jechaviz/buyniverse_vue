@@ -276,9 +276,9 @@
         </RouterLink>
       </div>
 
-      <div class="flex flex-col lg:flex-row items-start gap-8">
+      <div class="grid items-start gap-8 lg:grid-cols-4">
         <!-- Main: Job Listings -->
-        <div class="flex-1 w-full space-y-4 min-w-0">
+        <div class="min-w-0 space-y-4 lg:col-span-3">
           <article
             v-for="job in featuredJobs"
             :key="job.id"
@@ -324,7 +324,7 @@
         </div>
 
         <!-- Sidebar: Quick Links & Safety Banner -->
-        <div class="w-full lg:w-80 flex-shrink-0 space-y-6">
+        <aside class="min-w-0 space-y-6 lg:col-span-1">
           <div class="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm dark:border-slate-800/80 dark:bg-slate-900/90 space-y-4">
             <h4 class="font-head text-sm font-800 text-slate-900 dark:text-white uppercase tracking-wider">
               {{ store.t("Habilidades Populares") }}
@@ -350,7 +350,7 @@
               {{ store.t("Todos los pagos se retienen de forma segura y solo se liberan tras tu aprobación de los entregables.") }}
             </p>
           </div>
-        </div>
+        </aside>
       </div>
     </section>
 

@@ -121,6 +121,14 @@
       </div>
     </section>
 
+    <CommunicationThread
+      v-else-if="activeTab === 'communications'"
+      context-type="project"
+      :context-id="job.id"
+      :title="job.title"
+      :can-announce="canManage"
+    />
+
     <!-- Comments Tab -->
     <section v-else class="panel overflow-hidden">
       <div class="border-b border-slate-100 p-5 dark:border-slate-700"><h2 class="font-800">Comments</h2></div>
@@ -188,9 +196,10 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const ProjectDetailsTab = load("./app/pages/project/ProjectDetailsTab.vue?v=1");
 const ProjectProvidersTab = load("./app/pages/project/ProjectProvidersTab.vue?v=1");
 const ProjectMilestonesTab = load("./app/pages/project/ProjectMilestonesTab.vue?v=1");
+const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 export default {
-  components: { ProjectDetailsTab, ProjectProvidersTab, ProjectMilestonesTab },
+  components: { ProjectDetailsTab, ProjectProvidersTab, ProjectMilestonesTab, CommunicationThread },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const job = computed(() => store.job(route.params.id));
@@ -223,7 +232,7 @@ export default {
     const tabs = computed(() => [
       { key: "details", label: "Details" }, { key: "providers", label: "Providers", count: proposals.value.length },
       { key: "milestones", label: "Milestones", count: milestones.value.length }, { key: "files", label: "Files", count: files.value.length },
-      { key: "comments", label: "Comments", count: comments.value.length },
+      { key: "communications", label: "Messages" }, { key: "comments", label: "Comments", count: comments.value.length },
     ]);
     const focusedTasks = computed(() => focusedMilestone.value?.tasks || []);
     const isPreHiring = computed(() => ["DRAFT", "OPEN", "PENDING_APPROVAL", "RFI"].includes(job.value?.status));
@@ -273,13 +282,13 @@ export default {
 
     const addComment = () => {
       if (!commentDraft.value) return;
-      store.sendMessage({ jobId: job.value.id, userId: store.currentUser.value.id, text: commentDraft.value, parentId: replyTo.value?.id || null, at: new Date().toISOString() });
-      commentDraft.value = ""; replyTo.value = null;
+      const comment = store.addProjectComment({ jobId: job.value.id, text: commentDraft.value, parentId: replyTo.value?.id || null });
+      if (comment) { commentDraft.value = ""; replyTo.value = null; }
     };
 
     const syncRouteState = () => {
       const q = route.query;
-      if (q.tab && ["details", "providers", "milestones", "files", "comments"].includes(q.tab)) activeTab.value = q.tab;
+      if (q.tab && ["details", "providers", "milestones", "files", "communications", "comments"].includes(q.tab)) activeTab.value = q.tab;
       if (q.providerTab && ["providers", "proposals"].includes(q.providerTab)) providerTab.value = q.providerTab;
       if (q.milestone) {
         const m = milestones.value.find((item) => item.id === q.milestone);

@@ -1,6 +1,6 @@
 # Buyniverse Vue (CDN + SFC)
 
-Réplica estática del frontend Buyniverse construida sin Node, bundler, `package.json` ni compilación.
+Réplica estática del frontend Buyniverse que se ejecuta sin Node, bundler ni compilación en el navegador. `package.json` y Bun se usan exclusivamente para QA local y para generar el artefacto `dist` precompilado.
 
 - Vue 3, Vue Router, `vue3-sfc-loader` y UnoCSS se consumen desde CDN con versiones fijas e integridad SRI.
 - Los componentes SFC se compilan en el navegador.

@@ -291,7 +291,7 @@ document.addEventListener("visibilitychange", () => {
 
 // Component Loaders
 const Dashboard = load("./app/pages/DashboardPage.vue?v=30");
-const Home = load("./app/pages/HomePage.vue?v=29");
+const Home = load("./app/pages/HomePage.vue?v=30");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=28");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
@@ -586,6 +586,6 @@ app.config.errorHandler = (error, instance, info) => {
 
 window.WebCommon.installFormValidation(document);
 app.config.globalProperties.$t = window.BuyniverseI18n.t;
-const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=2");
+const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=9");
 app.component("DocumentEditorModal", DocumentEditorModal);
 app.provide("store", store).use(router).mount("#app");
