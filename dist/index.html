@@ -439,13 +439,15 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.04);
       }
       html.dark .field {
-        background: rgba(15, 23, 42, 0.6);
+        /* Keep select's dedicated chevron background layers intact. Using the
+           `background` shorthand here reset their repeat/position and tiled it. */
+        background-color: rgba(15, 23, 42, 0.6);
         border-color: rgba(51, 65, 85, 0.8);
         color: #f8fafc;
       }
       html.dark .field:focus {
         border-color: var(--accent);
-        background: rgba(15, 23, 42, 0.8);
+        background-color: rgba(15, 23, 42, 0.8);
       }
       html.dark .btn-muted {
         background: rgba(30, 41, 59, 0.8);
