@@ -12,11 +12,11 @@ from urllib.parse import unquote, urlsplit
 
 CSP = (
     "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; "
-    "frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'none'; "
+    "frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'self'; "
     "script-src 'self' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; "
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-    "img-src 'self' data: blob:; connect-src 'self'; media-src 'self'; worker-src 'none'"
+    "img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'"
 )
 
 

@@ -1,7 +1,13 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <base href="/buyniverse_vue/" />
+    <script>
+      (function () {
+        var base = document.createElement("base");
+        base.href = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
+        document.head.appendChild(base);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buyniverse · Plataforma de Compras B2B, Sourcing y Talento Freelance</title>
@@ -489,56 +495,17 @@
           transparent
         ) !important;
       }
-      html.dark .dark\\:text-brand-200 {
-        color: color-mix(in srgb, var(--accent) 65%, white) !important;
-      }
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 999px;
-      }
-      .section-tabs {
-        scrollbar-width: none;
-      }
-      .section-tabs::-webkit-scrollbar {
-        display: none;
-      }
-      .required-marker {
-        margin-left: 0.2rem;
-        color: #e11d48;
-        font-weight: 800;
-      }
-      .field-error {
-        display: block;
-        margin-top: 0.35rem;
-        color: #e11d48;
-        font-size: 0.72rem;
-        font-weight: 600;
-        line-height: 1.25rem;
-      }
-      .field.is-invalid,
-      form.was-validated .field:invalid {
-        border-color: #f43f5e !important;
-        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12);
-      }
-      .field.is-valid {
-        border-color: #10b981 !important;
-      }
-      .required-note {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        color: #64748b;
-        font-size: 0.7rem;
-      }
-      .required-note::before {
-        content: "*";
-        color: #e11d48;
-        font-weight: 800;
-      }
+      html.dark .dark\:text-brand-200 { color: color-mix(in srgb, var(--accent) 65%, white) !important; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+      .section-tabs { scrollbar-width: none; }
+      .section-tabs::-webkit-scrollbar { display: none; }
+      .required-marker { margin-left: 0.2rem; color: #e11d48; font-weight: 800; }
+      .field-error { display: block; margin-top: 0.35rem; color: #e11d48; font-size: 0.72rem; font-weight: 600; line-height: 1.25rem; }
+      .field.is-invalid, form.was-validated .field:invalid { border-color: #f43f5e !important; box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12); }
+      .field.is-valid { border-color: #10b981 !important; }
+      .required-note { display: inline-flex; align-items: center; gap: 0.35rem; color: #64748b; font-size: 0.7rem; }
+      .required-note::before { content: "*"; color: #e11d48; font-weight: 800; }
     </style>
   </head>
   <body>
