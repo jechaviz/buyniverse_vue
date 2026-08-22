@@ -1,13 +1,7 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <script>
-      (function () {
-        var base = document.createElement("base");
-        base.href = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
-        document.head.appendChild(base);
-      })();
-    </script>
+    <base href="/" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buyniverse · Plataforma de Compras B2B, Sourcing y Talento Freelance</title>
@@ -131,7 +125,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'"
     />
-    <script src="app/boot.js?v=1"></script>
+    <script src="app/boot.js?v=2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -556,6 +550,6 @@
     <script src="app/store/initialState.js?v=1"></script>
     <script src="app/store/domainActions.js?v=3"></script>
     <script src="app/data/demo.js?v=4"></script>
-    <script src="app/main.js?v=107"></script>
+    <script src="app/main.js?v=108"></script>
   </body>
 </html>

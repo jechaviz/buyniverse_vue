@@ -1,6 +1,12 @@
 (function (document) {
   "use strict";
 
+  // Ensure base tag handles subfolder if running on /buyniverse_vue/ in local dev
+  var base = document.querySelector("base");
+  if (base && window.location.pathname.startsWith("/buyniverse_vue")) {
+    base.href = "/buyniverse_vue/";
+  }
+
   // Apply visual preferences before the first stylesheet paints. Vue applies
   // the same values later; this only prevents a light/red frame from flashing.
   var root = document.documentElement;
