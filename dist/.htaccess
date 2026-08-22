@@ -1,9 +1,5 @@
 Options -Indexes -MultiViews
 
-<LimitExcept GET HEAD>
-  Require all denied
-</LimitExcept>
-
 <FilesMatch "(?i)^(?:\.|.*\.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml))$">
   Require all denied
 </FilesMatch>
@@ -33,6 +29,11 @@ Options -Indexes -MultiViews
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # This public static artifact is read-only. Use rewrite instead of
+  # <LimitExcept>, which LiteSpeed can apply inconsistently to HEAD requests.
+  RewriteCond %{REQUEST_METHOD} !^(?:GET|HEAD)$ [NC]
+  RewriteRule ^ - [F,L]
 
   # The deployed document root is an allowlisted runtime artifact, never the
   # repository checkout. Deny source, operation and dependency paths first so

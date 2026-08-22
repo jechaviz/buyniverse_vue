@@ -50,7 +50,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of [
     "Options -Indexes", "Require all denied", "Content-Security-Policy", "Strict-Transport-Security",
     "Permissions-Policy", "X-Permitted-Cross-Domain-Policies", "X-Download-Options",
-    "<LimitExcept GET HEAD>", "RewriteRule ^(?:\\.git|node_modules|dist|scripts|tests?|docs)",
+    "RewriteCond %{REQUEST_METHOD} !^(?:GET|HEAD)$", "RewriteRule ^(?:\\.git|node_modules|dist|scripts|tests?|docs)",
     "RewriteRule \\.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml)$", "package(?:-lock)?\\.json",
   ]) {
     if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
