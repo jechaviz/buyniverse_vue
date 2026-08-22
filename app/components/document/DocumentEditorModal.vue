@@ -8,127 +8,62 @@
       role="dialog"
       aria-modal="true"
     >
-      <!-- Top Global Action Bar & Metadata Ribbon -->
-      <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/90 bg-slate-50/95 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950/95 flex-none z-10">
-        <div class="flex items-center gap-3 min-w-0">
-          <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand text-white shadow-sm flex-none">
+      <!-- Compact document identity and global actions. Section-specific controls live in the editor bar. -->
+      <header class="flex items-center gap-3 border-b border-slate-200/90 bg-slate-50/95 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/95 flex-none z-10">
+        <div class="flex min-w-0 flex-1 items-center gap-2.5">
+          <span class="grid h-8 w-8 place-items-center rounded-xl bg-brand text-white shadow-sm flex-none">
             <i class="fa-solid fa-file-lines text-sm"></i>
           </span>
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="badge bg-brand-50 text-brand text-[10px] font-bold dark:bg-brand/20 dark:text-brand-300">
-                {{ store.t("Editor Markdown Profesional") }}
-              </span>
-              <span class="text-xs text-slate-400">·</span>
-              <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ sections.length }} {{ store.t("secciones") }}</span>
-              <span class="text-xs text-slate-400">·</span>
-              <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{{ totalWordCount }} {{ store.t("palabras") }}</span>
-              <span class="text-xs text-slate-400">·</span>
-              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                <i class="fa-solid fa-circle-check text-[10px]" :class="isSaving ? 'animate-spin fa-spinner text-amber-500' : ''"></i>
-                <span>{{ isSaving ? store.t("Guardando...") : (lastAutosavedAt ? store.t("Autoguardado ") + lastAutosavedAt : store.t("Autosalvado activo")) }}</span>
-              </span>
-            </div>
-            <input
-              v-model.trim="docTitle"
-              class="font-head text-sm sm:text-base font-800 text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 focus:border-brand focus:outline-none transition py-0.5 max-w-md truncate"
-              :placeholder="store.t('Título del Pliego o Especificación de Compra')"
-            />
+          <input
+            v-model.trim="docTitle"
+            class="min-w-0 w-52 max-w-md flex-1 bg-transparent py-0.5 font-head text-sm font-800 text-slate-900 border-b border-transparent transition hover:border-slate-300 focus:border-brand focus:outline-none dark:text-white sm:text-base"
+            :placeholder="store.t('Título del Pliego o Especificación de Compra')"
+          />
+          <div class="editor-meta flex min-w-max items-center gap-1.5 text-[10px] text-slate-400">
+            <span class="font-mono">{{ sections.length }} {{ store.t("secciones") }} · {{ totalWordCount }} {{ store.t("palabras") }}</span>
+            <span class="text-slate-300 dark:text-slate-700">|</span>
+            <span class="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+              <i class="fa-solid fa-circle-check text-[9px]" :class="isSaving ? 'animate-spin fa-spinner text-amber-500' : ''"></i>
+              <span>{{ isSaving ? store.t("Guardando...") : (lastAutosavedAt ? store.t("Autoguardado ") + lastAutosavedAt : store.t("Autosalvado activo")) }}</span>
+            </span>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Fast template selector -->
-          <div class="relative">
-            <button
-              type="button"
-              class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
-              :title="store.t('Quick template')"
-              :aria-expanded="templatesOpen"
-              @click="templatesOpen = !templatesOpen"
-            >
-              <i class="fa-solid fa-wand-magic-sparkles text-brand text-xs"></i>
-              <span class="hidden sm:inline">{{ store.t("Quick template") }}</span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
-            </button>
-
-            <!-- Floating templates dropdown -->
-            <div
-              v-if="templatesOpen"
-              class="absolute right-0 top-full mt-1 w-72 z-50 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900 space-y-1"
-            >
-              <button
-                v-for="tpl in documentTemplates"
-                :key="tpl.id"
-                type="button"
-                class="flex w-full items-start gap-2.5 rounded-xl p-2.5 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                @click="loadTemplate(tpl)"
-              >
-                <i :class="tpl.icon" class="text-brand text-sm mt-0.5"></i>
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <b class="text-slate-900 dark:text-white">{{ tpl.name }}</b>
-                    <span v-if="tpl.isFormTemplate" class="badge bg-amber-100 text-amber-800 text-[9px] px-1 py-0 dark:bg-amber-900/50 dark:text-amber-300">Machote</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">{{ tpl.desc }}</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
+        <div class="flex shrink-0 items-center gap-1.5">
+          <!-- Templates are deliberately available from the library drawer: no clipped duplicate dropdown. -->
           <button
             type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+            class="btn-muted h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             :class="libraryOpen ? 'bg-brand-50 text-brand border-brand/35 dark:bg-brand/15' : ''"
             :title="store.t('Document library')"
+            :aria-label="store.t('Document library')"
             :aria-expanded="libraryOpen"
             @click="libraryOpen = !libraryOpen; if (libraryOpen) variableDrawerOpen = false"
           >
             <i class="fa-solid fa-books text-brand text-xs"></i>
-            <span>{{ store.t("Library") }}</span>
+            <span class="editor-action-label">{{ store.t("Library") }}</span>
             <span v-if="libraryDocuments.length" class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] dark:bg-slate-700">{{ libraryDocuments.length }}</span>
           </button>
 
           <button
             type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
-            :class="variableDrawerOpen ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30' : ''"
-            :title="store.t('Fields')"
-            :aria-expanded="variableDrawerOpen"
-            @click="variableDrawerOpen = !variableDrawerOpen; if (variableDrawerOpen) libraryOpen = false"
-          >
-            <i class="fa-solid fa-tags text-amber-600 text-xs"></i>
-            <span class="hidden sm:inline">{{ store.t("Fields") }}</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
-            :title="store.t('Section header and footer')"
-            :aria-label="store.t('Section header and footer')"
-            @click="headerFooterSettingsOpen = true"
-          >
-            <i class="fa-solid fa-heading text-slate-500 text-xs"></i>
-            <span class="hidden sm:inline">{{ store.t("Encabezado / Pie") }}</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn-muted text-xs py-1.5 px-3 font-semibold flex items-center gap-1.5 cursor-pointer"
+            class="btn-muted grid h-8 w-8 place-items-center p-0 text-xs cursor-pointer"
             @click="copyCompiledMarkdown"
             :title="store.t('Copiar documento completo a portapapeles')"
+            :aria-label="store.t('Copiar documento completo a portapapeles')"
           >
             <i class="fa-regular fa-copy text-xs"></i>
-            <span class="hidden md:inline">{{ store.t("Copiar MD") }}</span>
           </button>
 
           <button
             type="button"
-            class="btn-brand text-xs py-1.5 px-4 font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+            class="btn-brand h-8 px-3 text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+            :title="store.t('Aplicar al Proyecto')"
+            :aria-label="store.t('Aplicar al Proyecto')"
             @click="applyDocumentToDescription"
           >
             <i class="fa-solid fa-check text-xs"></i>
-            <span>{{ store.t("Aplicar al Proyecto") }}</span>
+            <span class="editor-action-label">{{ store.t("Apply") }}</span>
           </button>
 
           <button
@@ -282,7 +217,7 @@ export default {
     const blankSection = () => ({ id: "sec-" + Date.now(), type: "standard", title: store.t("Overview"), level: 1, pageBreakBefore: false, content: "" });
     const modalRoot = ref(null), docTitle = ref(store.t("Untitled document")), headerText = ref(""), footerText = ref("");
     const pageNumberFormat = ref("Page X of Y"), watermarkText = ref(""), suppressOnCover = ref(true), showRunningHeader = ref(true);
-    const headerFooterSettingsOpen = ref(false), templatesOpen = ref(false), variableDrawerOpen = ref(false), libraryOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
+    const headerFooterSettingsOpen = ref(false), variableDrawerOpen = ref(false), libraryOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
     const variableDialogOpen = ref(false), variableDialogValue = ref(""), pendingVariable = ref(null), libraryDocuments = ref([]), loadedIdentity = ref("");
     const sections = ref([blankSection()]), activeSectionId = ref(sections.value[0].id);
 
@@ -509,7 +444,6 @@ export default {
       docTitle.value = tpl.name;
       sections.value = tpl.build();
       activeSectionId.value = sections.value[0]?.id;
-      templatesOpen.value = false;
       libraryOpen.value = false;
       if (tpl.isFormTemplate) variableDrawerOpen.value = true;
       store.notice(`Plantilla '${tpl.name}' cargada`, "fa-wand-magic-sparkles");
@@ -540,8 +474,8 @@ export default {
     }
     async function deleteLibraryDocument(id) {
       const allowed = await store.confirm({
-        title: "Delete reusable document?", message: "This removes only your local library copy. Project descriptions are not changed.",
-        confirmText: "Delete", danger: true,
+        title: store.t("Delete reusable document?"), message: store.t("This removes only your local library copy. Project descriptions are not changed."),
+        confirmText: store.t("Delete"), danger: true,
       });
       if (!allowed || !documentLibrary?.remove(currentUserId(), id)) return;
       refreshLibrary();
@@ -571,7 +505,7 @@ export default {
 
     return {
       store, modalRoot, docTitle, headerText, footerText, pageNumberFormat, watermarkText, suppressOnCover, showRunningHeader,
-      headerFooterSettingsOpen, templatesOpen, variableDrawerOpen, libraryOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
+      headerFooterSettingsOpen, variableDrawerOpen, libraryOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
       variableDialogOpen, variableDialogValue, libraryDocuments, sections, activeSectionId, activeSection, flatNumberedSections,
       activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, documentTemplates, selectSection,
       addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel, insertMarkdownWrapper, insertMarkdownPrefix,
@@ -587,4 +521,6 @@ export default {
 .scrollbar-thin::-webkit-scrollbar { width: 5px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
+@media (max-width: 1023px) { .editor-meta { display: none; } }
+@media (max-width: 639px) { .editor-action-label { display: none; } }
 </style>

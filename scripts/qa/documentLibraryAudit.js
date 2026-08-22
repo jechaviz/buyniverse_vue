@@ -68,6 +68,8 @@ function runDocumentLibraryAudit(root, read) {
   const chrome = read("app/components/document/DocumentHeaderFooterModal.vue");
   if (!editor.includes("DocumentLibraryDrawer") || !editor.includes("parseMarkdownToDocument") || /\bprompt\s*\(/.test(editor))
     throw new Error("Document editor lacks the reusable library or retains a native prompt");
+  if (editor.includes("templatesOpen") || editor.includes("Floating templates dropdown"))
+    throw new Error("Document editor retains the clipped duplicate templates dropdown");
   if (fields.includes("buyniverse_saved_doc_templates"))
     throw new Error("Saved-document persistence remains duplicated in the fields drawer");
   if (!cover.includes("DocumentBlockStyleToolbar") || !cover.includes("setBlockStyle") || !chrome.includes("apply-to-all") || !chrome.includes("section_title"))

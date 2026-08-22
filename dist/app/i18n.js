@@ -67,9 +67,57 @@
 
   var patterns = [
     {
+      match: /^(\d+) selected$/,
+      replace: function (_, count) {
+        return count + " seleccionados";
+      },
+    },
+    {
+      match: /^Select all (\d+) matching$/,
+      replace: function (_, count) {
+        return "Seleccionar los " + count + " resultados";
+      },
+    },
+    {
+      match: /^Apply to (\d+) records$/,
+      replace: function (_, count) {
+        return "Aplicar a " + count + " registros";
+      },
+    },
+    {
+      match: /^(\d+) active filters?$/,
+      replace: function (_, count) {
+        return count === "1" ? "1 filtro activo" : count + " filtros activos";
+      },
+    },
+    {
+      match: /^Value for (.+)$/,
+      replace: function (_, label) {
+        return "Valor para " + (es[label] || label);
+      },
+    },
+    {
+      match: /^Clear (.+) filter$/,
+      replace: function (_, label) {
+        return "Limpiar filtro de " + (es[label] || label);
+      },
+    },
+    {
       match: /^Drag (.+)$/,
       replace: function (_, value) {
         return "Arrastrar " + (es[value] || value);
+      },
+    },
+    {
+      match: /^Sort by (.+)$/,
+      replace: function (_, value) {
+        return "Ordenar por " + (es[value] || value);
+      },
+    },
+    {
+      match: /^(.+) controls$/,
+      replace: function (_, value) {
+        return "Controles de " + (es[value] || value);
       },
     },
     {
