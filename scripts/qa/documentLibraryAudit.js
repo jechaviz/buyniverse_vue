@@ -72,6 +72,8 @@ function runDocumentLibraryAudit(root, read) {
   const sidebar = read("app/components/document/DocumentSidebarPanel.vue");
   const content = read("app/components/document/DocumentContentEditor.vue");
   const blockToolbar = read("app/components/document/DocumentBlockStyleToolbar.vue");
+  const richCanvas = read("app/components/document/DocumentRichTextCanvas.vue");
+  const inlineRichText = read("app/components/document/DocumentInlineRichText.vue");
   if (!editor.includes("DocumentLibraryDrawer") || !editor.includes("parseMarkdownToDocument") || /\bprompt\s*\(/.test(editor))
     throw new Error("Document editor lacks the reusable library or retains a native prompt");
   if (editor.includes("templatesOpen") || editor.includes("Floating templates dropdown"))
@@ -82,6 +84,16 @@ function runDocumentLibraryAudit(root, read) {
     throw new Error("Saved-document persistence remains duplicated in the fields drawer");
   if (!cover.includes("DocumentBlockStyleToolbar") || !cover.includes("setBlockStyle") || !chrome.includes("apply-to-all") || !chrome.includes("section_title"))
     throw new Error("Cover style controls or section-level page chrome are incomplete");
+  if ((cover.match(/<DocumentBlockStyleToolbar\b/g) || []).length !== 1 || !cover.includes("styleTargets") || !blockToolbar.includes("defaultExpanded"))
+    throw new Error("Cover/end controls are duplicated instead of using one visible contextual toolbar");
+  if (!content.includes("DocumentRichTextCanvas") || !content.includes("Markdown clásico sin renderizar") || !content.includes("Texto plano · sin renderizar"))
+    throw new Error("Visual editor or explicit raw Markdown authoring mode is unavailable");
+  if (!richCanvas.includes("contenteditable=\"true\"") || !richCanvas.includes("clipboardData?.getData(\"text/plain\")") || !richCanvas.includes("replaceChildren"))
+    throw new Error("Visual content canvas lacks safe editable DOM handling");
+  if (!chrome.includes("DocumentInlineRichText") || !inlineRichText.includes("contenteditable=\"true\"") || !inlineRichText.includes("clipboardData?.getData(\"text/plain\")"))
+    throw new Error("Headers and footers are not editable through the visual text component");
+  if (!sidebar.includes("edit-page-chrome") || !editor.includes("editPageChrome") || !editor.includes("standalonePage"))
+    throw new Error("Thumbnail page chrome editing or standalone cover pagination is missing");
   for (const token of ["previewOpen", "handleEditorKeydown", "continueList", "indentSelection", "parseOrderedLine", "parentPathBefore", "fa-list-ol", "@keydown=\"handleEditorKeydown\""]) {
     if (!content.includes(token)) throw new Error(`Markdown writing or on-demand preview is missing ${token}`);
   }

@@ -146,6 +146,7 @@
           @add-section-end="addSectionEnd"
           @delete-section="deleteSection"
           @select-section="selectSection"
+          @edit-page-chrome="editPageChrome"
         />
 
         <!-- CENTER PANEL: Focused Section Markdown & Cover/End Editor -->
@@ -202,10 +203,10 @@
 <script>
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=6");
-const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=9");
+const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=7");
+const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=12");
 const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=3");
-const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=2");
+const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=3");
 const DocumentLibraryDrawer = load("./app/components/document/DocumentLibraryDrawer.vue?v=4");
 const TextInputDialog = load("./app/components/TextInputDialog.vue?v=3");
 
@@ -225,7 +226,7 @@ export default {
     const blankSection = () => ({ id: "sec-" + Date.now(), type: "standard", title: store.t("Overview"), level: 1, pageBreakBefore: false, content: "" });
     const modalRoot = ref(null), docTitle = ref(store.t("Untitled document")), headerText = ref(""), footerText = ref("");
     const pageNumberFormat = ref("Page X of Y"), watermarkText = ref(""), suppressOnCover = ref(true), showRunningHeader = ref(true);
-    const headerFooterSettingsOpen = ref(false), variableDrawerOpen = ref(false), libraryOpen = ref(false), leftViewTab = ref("thumbnails"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
+    const headerFooterSettingsOpen = ref(false), variableDrawerOpen = ref(false), libraryOpen = ref(false), leftViewTab = ref("tree"), markdownTextarea = ref(null), isSaving = ref(false), lastAutosavedAt = ref("");
     const variableDialogOpen = ref(false), variableDialogValue = ref(""), pendingVariable = ref(null), libraryDocuments = ref([]), loadedIdentity = ref("");
     const sections = ref([blankSection()]), activeSectionId = ref(sections.value[0].id);
 
@@ -353,7 +354,14 @@ export default {
       const pages = [];
       let currentPage = { sections: [] };
       sections.value.forEach((sec, idx) => {
-        if ((sec.pageBreakBefore || sec.type === "cover" || sec.type === "section_end") && currentPage.sections.length > 0) {
+        const standalonePage = sec.type === "cover" || sec.type === "section_end";
+        if (standalonePage) {
+          if (currentPage.sections.length > 0) pages.push(currentPage);
+          pages.push({ sections: [sec] });
+          currentPage = { sections: [] };
+          return;
+        }
+        if (sec.pageBreakBefore && currentPage.sections.length > 0) {
           pages.push(currentPage);
           currentPage = { sections: [sec] };
         } else {
@@ -370,6 +378,10 @@ export default {
     });
 
     function selectSection(sec) { if (sec) activeSectionId.value = sec.id; }
+    function editPageChrome(sec) {
+      if (sec) activeSectionId.value = sec.id;
+      headerFooterSettingsOpen.value = true;
+    }
     function addRootSection() {
       const newId = "sec-" + Date.now();
       sections.value.push({ id: newId, type: "standard", title: "Nueva Sección", level: 1, pageBreakBefore: false, content: "Descripción de los requerimientos y condiciones." });
@@ -529,7 +541,7 @@ export default {
       store, modalRoot, docTitle, headerText, footerText, pageNumberFormat, watermarkText, suppressOnCover, showRunningHeader,
       headerFooterSettingsOpen, variableDrawerOpen, libraryOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
       variableDialogOpen, variableDialogValue, libraryDocuments, sections, activeSectionId, activeSection, flatNumberedSections,
-      activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, hasCover, hasSectionEnd, documentTemplates, selectSection,
+      activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, hasCover, hasSectionEnd, documentTemplates, selectSection, editPageChrome,
       addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel, insertMarkdownWrapper, insertMarkdownPrefix,
       insertCallout, insertTableSnippet, insertVariablePrompt, insertVariableByName, applyVariablesToSections, renderedBlocks,
       loadTemplate, loadTemplateById, loadLibraryDocument, saveLibraryDocument, saveTemplateCopy, deleteLibraryDocument, newBlankDocument,

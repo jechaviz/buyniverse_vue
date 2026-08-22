@@ -238,7 +238,7 @@
 const { inject, ref, computed, defineAsyncComponent } = Vue;
 
 const DocumentEditorModal = defineAsyncComponent(() =>
-    window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue?v=14", window.sfcOptions)
+    window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue?v=18", window.sfcOptions)
 );
 
 export default {

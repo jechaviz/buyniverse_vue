@@ -72,13 +72,16 @@
           :class="isPageActive(page) ? 'ring-2 ring-brand border-brand' : 'border-slate-200/90'"
         >
           <!-- Thumbnail Running Header (unless cover suppressed) -->
-          <div
+          <button
             v-if="!shouldSuppressHeaderFooter(page) && chromeForPage(page).headerEnabled"
-            class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1 text-[8px] font-mono text-slate-400 flex-none"
+            type="button"
+            class="flex w-full items-center justify-between border-b border-slate-100 pb-1 text-left font-mono text-[8px] text-slate-400 transition hover:bg-brand/5 hover:text-brand dark:border-slate-800 flex-none"
+            :title="store.t('Edit this section header')"
+            @click.stop="$emit('edit-page-chrome', page.sections[0])"
           >
             <span class="truncate max-w-[130px] font-bold text-slate-600 dark:text-slate-300 uppercase">{{ chromeForPage(page).headerText }}</span>
-            <span>{{ new Date().toLocaleDateString() }}</span>
-          </div>
+            <span class="flex items-center gap-1"><span>{{ new Date().toLocaleDateString() }}</span><i class="fa-solid fa-pen text-[7px] opacity-0 transition group-hover:opacity-100"></i></span>
+          </button>
 
           <!-- Thumbnail Page Content Body with Vertical Positioning -->
           <div
@@ -126,15 +129,18 @@
           </div>
 
           <!-- Thumbnail Running Footer -->
-          <div
+          <button
             v-if="!shouldSuppressHeaderFooter(page) && chromeForPage(page).footerEnabled"
-            class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-1 text-[8px] font-mono text-slate-400 flex-none"
+            type="button"
+            class="flex w-full items-center justify-between border-t border-slate-100 pt-1 text-left font-mono text-[8px] text-slate-400 transition hover:bg-brand/5 hover:text-brand dark:border-slate-800 flex-none"
+            :title="store.t('Edit this section footer')"
+            @click.stop="$emit('edit-page-chrome', page.sections[0])"
           >
             <span class="truncate max-w-[120px]">{{ chromeForPage(page).footerText }}</span>
-            <b class="text-slate-700 dark:text-slate-200 font-bold">
+            <span class="flex items-center gap-1"><b class="text-slate-700 dark:text-slate-200 font-bold">
               {{ formatPageNumber(pageIdx + 1, estimatedPages.length) }}
-            </b>
-          </div>
+            </b><i class="fa-solid fa-pen text-[7px] opacity-0 transition group-hover:opacity-100"></i></span>
+          </button>
 
           <!-- Page Number Tag on hover -->
           <span class="absolute top-2 right-2 rounded-md bg-slate-900/80 text-white text-[9px] font-mono px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition shadow-xs">
@@ -231,6 +237,7 @@ export default {
     "add-section-end",
     "delete-section",
     "select-section",
+    "edit-page-chrome",
   ],
   setup(props) {
     function isPageActive(page) {

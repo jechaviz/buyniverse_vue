@@ -23,7 +23,7 @@
             <option value="document_title">{{ store.t('Document title') }}</option>
             <option value="custom">{{ store.t('Custom text') }}</option>
           </select>
-          <input v-if="chrome.headerMode === 'custom'" class="field py-1.5 text-xs" :value="chrome.headerText" :placeholder="store.t('Header text')" @input="patch({ headerText: $event.target.value })" />
+          <DocumentInlineRichText v-if="chrome.headerMode === 'custom'" :store="store" :model-value="chrome.headerText" :label="store.t('Header text')" :placeholder="store.t('Header text')" @update:model-value="patch({ headerText: $event })" />
           <p class="text-[10px] leading-snug text-slate-400">{{ chrome.headerMode === 'section_title' ? store.t('It updates when this section title changes.') : store.t('Only this section uses this header.') }}</p>
         </section>
 
@@ -37,7 +37,7 @@
             <option value="document_title">{{ store.t('Document title') }}</option>
             <option value="custom">{{ store.t('Custom text') }}</option>
           </select>
-          <input v-if="chrome.footerMode === 'custom'" class="field py-1.5 text-xs" :value="chrome.footerText" :placeholder="store.t('Footer text')" @input="patch({ footerText: $event.target.value })" />
+          <DocumentInlineRichText v-if="chrome.footerMode === 'custom'" :store="store" :model-value="chrome.footerText" :label="store.t('Footer text')" :placeholder="store.t('Footer text')" @update:model-value="patch({ footerText: $event })" />
           <p class="text-[10px] leading-snug text-slate-400">{{ chrome.footerMode === 'section_title' ? store.t('It updates when this section title changes.') : store.t('Only this section uses this footer.') }}</p>
         </section>
       </div>
@@ -60,10 +60,13 @@
 </template>
 
 <script>
-const { computed } = Vue;
+const { computed, defineAsyncComponent } = Vue;
+const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const DocumentInlineRichText = load("./app/components/document/DocumentInlineRichText.vue?v=2");
 
 export default {
   name: "DocumentHeaderFooterModal",
+  components: { DocumentInlineRichText },
   props: {
     store: Object,
     activeSection: Object,

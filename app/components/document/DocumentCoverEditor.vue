@@ -1,7 +1,7 @@
 <template>
   <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 overflow-hidden">
-    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/90 bg-slate-50/90 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/90 flex-none">
-      <div class="flex items-center gap-2">
+    <div class="border-b border-slate-200/90 bg-slate-50/90 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/90 flex-none">
+      <div class="flex flex-wrap items-center gap-2">
         <span class="badge text-[11px] font-bold" :class="activeSection.type === 'cover' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'">
           <i :class="activeSection.type === 'cover' ? 'fa-solid fa-file-shield mr-1' : 'fa-solid fa-file-circle-check mr-1'"></i>
           {{ activeSection.type === 'cover' ? store.t('Section cover') : store.t('Section end / signatures') }}
@@ -13,7 +13,7 @@
           </button>
         </div>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="ml-auto flex items-center gap-1.5">
         <button v-if="activeSection.type === 'cover'" type="button" class="btn-muted px-2.5 py-1 text-xs font-bold" @click="applyNdaCoverPreset">
           <i class="fa-solid fa-user-lock mr-1 text-brand"></i>{{ store.t('NDA full preset') }}
         </button>
@@ -21,38 +21,44 @@
           <i class="fa-solid fa-signature mr-1 text-brand"></i>{{ store.t('Signature block') }}
         </button>
       </div>
+      <div class="mt-2 flex flex-wrap items-center gap-1.5">
+        <span class="text-[9px] font-800 uppercase tracking-wide text-slate-400">{{ store.t('Format block') }}</span>
+        <div class="flex flex-wrap rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800" role="tablist" :aria-label="store.t('Block style controls')">
+          <button v-for="target in styleTargets" :key="target.key" type="button" role="tab" class="rounded-md px-2 py-1 text-[10px] font-800 transition" :class="styleTarget === target.key ? 'bg-brand text-white shadow-2xs' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'" :aria-selected="styleTarget === target.key" @click="styleTarget = target.key">{{ store.t(target.label) }}</button>
+        </div>
+        <span class="h-4 w-px bg-slate-200 dark:bg-slate-700"></span>
+        <div class="flex items-center gap-0.5" role="toolbar" :aria-label="store.t('Visual text formatting')" @mousedown.prevent>
+          <button v-for="action in inlineActions" :key="action.key" type="button" class="grid h-6 w-6 place-items-center rounded text-[10px] text-slate-500 transition hover:bg-white hover:text-brand dark:hover:bg-slate-800" :title="store.t(action.title)" @click="executeInline(action.key)"><i class="fa-solid" :class="action.icon"></i></button>
+        </div>
+      </div>
+      <DocumentBlockStyleToolbar class="mt-2" :store="store" :label="store.t(activeStyleTarget.label)" :model-value="blockStyle(styleTarget)" :presets="activeStyleTarget.presets" :default-expanded="true" @update:model-value="setBlockStyle(styleTarget, $event)" />
     </div>
 
     <div class="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,.8fr)]">
       <div class="space-y-3 text-xs">
         <section class="space-y-1.5">
           <label class="block font-bold text-slate-700 dark:text-slate-300">{{ activeSection.type === 'cover' ? store.t('Cover title') : store.t('Closing title') }}</label>
-          <DocumentBlockStyleToolbar :store="store" :label="store.t('Title')" :model-value="blockStyle('title')" :presets="blockPresets.title" @update:model-value="setBlockStyle('title', $event)" />
-          <input v-model="activeSection.title" class="field text-sm font-bold" :placeholder="activeSection.type === 'cover' ? store.t('TECHNICAL SPECIFICATION BRIEF') : store.t('SECTION CLOSE & ACCEPTANCE')" />
+          <DocumentInlineRichText :ref="(element) => setInlineEditor('title', element)" :store="store" :model-value="activeSection.title" :label="store.t('Cover title')" :placeholder="activeSection.type === 'cover' ? store.t('TECHNICAL SPECIFICATION BRIEF') : store.t('SECTION CLOSE & ACCEPTANCE')" :show-toolbar="false" @focus="styleTarget = 'title'" @update:model-value="activeSection.title = $event" />
         </section>
 
         <section v-if="activeSection.type === 'cover'" class="space-y-1.5">
           <label class="block font-bold text-slate-700 dark:text-slate-300">{{ store.t('Subtitle / purchase modality') }}</label>
-          <DocumentBlockStyleToolbar :store="store" :label="store.t('Subtitle')" :model-value="blockStyle('subtitle')" :presets="blockPresets.subtitle" @update:model-value="setBlockStyle('subtitle', $event)" />
-          <input v-model="activeSection.subtitle" class="field text-xs" :placeholder="store.t('Reverse auction BAFO · RFQ-2026-042')" />
+          <DocumentInlineRichText :ref="(element) => setInlineEditor('subtitle', element)" :store="store" :model-value="activeSection.subtitle" :label="store.t('Subtitle')" :placeholder="store.t('Reverse auction BAFO · RFQ-2026-042')" :show-toolbar="false" @focus="styleTarget = 'subtitle'" @update:model-value="activeSection.subtitle = $event" />
         </section>
 
         <section class="space-y-1.5">
           <label class="block font-bold text-slate-700 dark:text-slate-300">{{ store.t('Executive summary') }}</label>
-          <DocumentBlockStyleToolbar :store="store" :label="store.t('Executive summary')" :model-value="blockStyle('body')" :presets="blockPresets.body" @update:model-value="setBlockStyle('body', $event)" />
-          <textarea v-model="activeSection.content" rows="3" class="field text-xs font-mono" :placeholder="store.t('Executive summary, scope and mandatory requirements...')"></textarea>
+          <DocumentInlineRichText :ref="(element) => setInlineEditor('body', element)" :store="store" :model-value="activeSection.content" :label="store.t('Executive summary')" :placeholder="store.t('Executive summary, scope and mandatory requirements...')" :show-toolbar="false" @focus="styleTarget = 'body'" @update:model-value="activeSection.content = $event" />
         </section>
 
         <template v-if="activeSection.type === 'cover'">
           <section class="space-y-1.5">
             <label class="block font-bold text-slate-700 dark:text-slate-300"><i class="fa-solid fa-shield-halved mr-1 text-brand"></i>{{ store.t('Legal notice / NDA confidentiality') }}</label>
-            <DocumentBlockStyleToolbar :store="store" :label="store.t('Legal notice')" :model-value="blockStyle('legal')" :presets="blockPresets.legal" @update:model-value="setBlockStyle('legal', $event)" />
-            <textarea v-model="activeSection.legalDisclaimer" rows="2" class="field text-xs" :placeholder="store.t('This document contains trade secrets protected by NDA...')"></textarea>
+            <DocumentInlineRichText :ref="(element) => setInlineEditor('legal', element)" :store="store" :model-value="activeSection.legalDisclaimer" :label="store.t('Legal notice')" :placeholder="store.t('This document contains trade secrets protected by NDA...')" :show-toolbar="false" @focus="styleTarget = 'legal'" @update:model-value="activeSection.legalDisclaimer = $event" />
           </section>
           <section class="space-y-1.5">
             <label class="block font-bold text-slate-700 dark:text-slate-300"><i class="fa-solid fa-code-branch mr-1 text-brand"></i>{{ store.t('Version control and metadata') }}</label>
-            <DocumentBlockStyleToolbar :store="store" :label="store.t('Version metadata')" :model-value="blockStyle('version')" :presets="blockPresets.version" @update:model-value="setBlockStyle('version', $event)" />
-            <input v-model="activeSection.versionText" class="field text-xs" :placeholder="store.t('v2.1 · 20/08/2026 · Approved by the sourcing committee')" />
+            <DocumentInlineRichText :ref="(element) => setInlineEditor('version', element)" :store="store" :model-value="activeSection.versionText" :label="store.t('Version metadata')" :placeholder="store.t('v2.1 · 20/08/2026 · Approved by the sourcing committee')" :show-toolbar="false" @focus="styleTarget = 'version'" @update:model-value="activeSection.versionText = $event" />
           </section>
         </template>
       </div>
@@ -84,15 +90,24 @@
 </template>
 
 <script>
-const { computed, defineAsyncComponent } = Vue;
+const { computed, ref, defineAsyncComponent, watch } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentBlockStyleToolbar = load("./app/components/document/DocumentBlockStyleToolbar.vue?v=3");
+const DocumentBlockStyleToolbar = load("./app/components/document/DocumentBlockStyleToolbar.vue?v=4");
+const DocumentInlineRichText = load("./app/components/document/DocumentInlineRichText.vue?v=2");
 
 export default {
   name: "DocumentCoverEditor",
-  components: { DocumentBlockStyleToolbar },
+  components: { DocumentBlockStyleToolbar, DocumentInlineRichText },
   props: { store: Object, activeSection: Object, sectionChrome: Object, suppressPageChrome: Boolean },
   setup(props) {
+    const styleTarget = ref("title");
+    const inlineEditors = {};
+    const inlineActions = [
+      { key: "bold", icon: "fa-bold", title: "Bold" }, { key: "italic", icon: "fa-italic", title: "Italic" },
+      { key: "strike", icon: "fa-strikethrough", title: "Strikethrough" }, { key: "code", icon: "fa-code", title: "Inline code" },
+    ];
+    const setInlineEditor = (key, element) => { if (element) inlineEditors[key] = element; else delete inlineEditors[key]; };
+    const executeInline = (command) => inlineEditors[styleTarget.value]?.execute(command);
     const baseStyle = { align: "left", vertical: "top", size: "md", tone: "default", surface: "plain" };
     const blockDefaults = {
       title: { align: "center", vertical: "center", size: "lg", tone: "default", surface: "plain" },
@@ -108,6 +123,20 @@ export default {
       legal: [{ key: "legal", label: "Legal", description: "High-visibility legal notice", style: { align: "left", vertical: "top", size: "md", tone: "legal", surface: "legal" } }, { key: "notice", label: "Notice", description: "Brand notice treatment", style: { align: "left", vertical: "top", size: "md", tone: "brand", surface: "brand" } }],
       version: [{ key: "metadata", label: "Metadata", description: "Quiet version metadata", style: { align: "center", vertical: "bottom", size: "sm", tone: "muted" } }, { key: "stamp", label: "Stamp", description: "Right-aligned document stamp", style: { align: "right", vertical: "bottom", size: "md", tone: "brand" } }],
     };
+    const styleTargets = computed(() => props.activeSection?.type === "cover"
+      ? [
+          { key: "title", label: "Title", presets: blockPresets.title },
+          { key: "subtitle", label: "Subtitle", presets: blockPresets.subtitle },
+          { key: "body", label: "Executive summary", presets: blockPresets.body },
+          { key: "legal", label: "Legal notice", presets: blockPresets.legal },
+          { key: "version", label: "Version metadata", presets: blockPresets.version },
+        ]
+      : [
+          { key: "title", label: "Title", presets: blockPresets.title },
+          { key: "body", label: "Executive summary", presets: blockPresets.body },
+        ]);
+    const activeStyleTarget = computed(() => styleTargets.value.find((target) => target.key === styleTarget.value) || styleTargets.value[0]);
+    watch(() => props.activeSection?.id, () => { styleTarget.value = "title"; });
     const pagePlacements = [
       { value: "top", label: "Top", title: "Align to top of page", icon: "fa-align-left rotate-90" },
       { value: "center", label: "Center", title: "Center on page", icon: "fa-align-center" },
@@ -141,7 +170,7 @@ export default {
       setBlockStyle("version", blockPresets.version[0].style);
       props.store.notice(props.store.t("NDA cover preset applied"), "fa-shield-halved");
     }
-    return { pagePlacements, previewDate, pagePositionClass, blockPresets, blockStyle, setBlockStyle, blockContainerClass, blockTextClass, legalSurfaceClass, applyNdaCoverPreset };
+    return { pagePlacements, previewDate, pagePositionClass, blockStyle, setBlockStyle, blockContainerClass, blockTextClass, legalSurfaceClass, applyNdaCoverPreset, styleTarget, styleTargets, activeStyleTarget, inlineActions, setInlineEditor, executeInline };
   },
 };
 </script>

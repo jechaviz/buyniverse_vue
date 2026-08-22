@@ -28,12 +28,13 @@ export default {
     label: { type: String, default: "Style" },
     modelValue: { type: Object, default: () => ({}) },
     presets: { type: Array, default: () => [] },
+    defaultExpanded: { type: Boolean, default: false },
   },
   emits: ["update:modelValue"],
   setup(props, { emit }) {
     const fallback = { align: "left", vertical: "top", size: "md", tone: "default", surface: "plain" };
     const value = computed(() => ({ ...fallback, ...(props.modelValue || {}) }));
-    const expanded = ref(false);
+    const expanded = ref(props.defaultExpanded);
     const horizontal = [
       { value: "left", icon: "fa-align-left", title: "Align left" },
       { value: "center", icon: "fa-align-center", title: "Align center" },
