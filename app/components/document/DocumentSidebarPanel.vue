@@ -1,53 +1,56 @@
 <template>
-  <aside class="w-72 sm:w-80 lg:w-96 flex-none border-r border-slate-200/90 bg-slate-100/70 dark:border-slate-800 dark:bg-slate-950/50 flex flex-col min-h-0">
+  <aside class="w-64 sm:w-72 lg:w-80 flex-none border-r border-slate-200/90 bg-slate-100/70 dark:border-slate-800 dark:bg-slate-950/50 flex flex-col min-h-0">
     <!-- Sub-tabs: Miniaturas vs Árbol -->
-    <div class="p-3 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 flex items-center justify-between gap-2 flex-none flex-wrap">
-      <div class="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 text-xs">
+    <div class="p-2.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 flex-none">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 text-xs">
         <button
           type="button"
-          class="px-2 py-1 rounded-lg font-bold transition text-xs"
+          class="px-2 py-1 rounded-lg font-bold transition text-[11px]"
           :class="leftViewTab === 'thumbnails' ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'"
           @click="$emit('update:leftViewTab', 'thumbnails')"
         >
-          <i class="fa-solid fa-file-invoice mr-1"></i>{{ store.t("Hojas Carta") }}
+          <i class="fa-solid fa-file-invoice mr-1"></i><span class="hidden sm:inline">{{ store.t("Hojas Carta") }}</span>
         </button>
         <button
           type="button"
-          class="px-2 py-1 rounded-lg font-bold transition text-xs"
+          class="px-2 py-1 rounded-lg font-bold transition text-[11px]"
           :class="leftViewTab === 'tree' ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400'"
           @click="$emit('update:leftViewTab', 'tree')"
         >
-          <i class="fa-solid fa-list-ol mr-1"></i>{{ store.t("Estructura") }}
+          <i class="fa-solid fa-list-ol mr-1"></i><span class="hidden sm:inline">{{ store.t("Estructura") }}</span>
         </button>
       </div>
+        <span class="inline-flex items-center gap-1 font-mono text-[10px] text-slate-400" :title="`${estimatedPages.length} ${store.t('Hojas Carta')}`"><i class="fa-regular fa-copy"></i>{{ estimatedPages.length }}</span>
+      </div>
 
-      <!-- Quick Add Actions Dropdown/Group -->
-      <div class="flex items-center gap-1">
+      <!-- Insert is deliberately separate from navigation, with one primary action. -->
+      <div class="mt-2 flex items-center gap-1.5">
         <button
           type="button"
-          class="rounded-lg bg-purple-50 px-2 py-1 text-[11px] font-bold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-purple-900/30 dark:text-purple-300"
+          class="flex-1 rounded-lg bg-brand px-2 py-1.5 text-[11px] font-bold text-white shadow-2xs transition hover:bg-brand-600"
+          @click="$emit('add-root-section')"
+          :title="store.t('Añadir Sección')"
+        >
+          <i class="fa-solid fa-plus mr-1"></i>{{ store.t("Añadir Sección") }}
+        </button>
+        <button
+          type="button"
+          class="grid h-8 w-8 place-items-center rounded-lg bg-purple-50 text-[11px] text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-purple-900/30 dark:text-purple-300"
           :disabled="!canAddCover"
           @click="$emit('add-cover')"
           :title="canAddCover ? store.t('Añadir Portada de Sección') : store.t('Only one cover is allowed per document.')"
         >
-          <i class="fa-solid fa-file-shield mr-1"></i>{{ store.t("+ Portada") }}
+          <i class="fa-solid fa-file-shield"></i>
         </button>
         <button
           type="button"
-          class="rounded-lg bg-brand-50 dark:bg-brand/20 px-2 py-1 text-[11px] font-bold text-brand hover:bg-brand hover:text-white transition"
-          @click="$emit('add-root-section')"
-          :title="store.t('Añadir Sección')"
-        >
-          <i class="fa-solid fa-plus mr-1"></i>{{ store.t("+ Sec") }}
-        </button>
-        <button
-          type="button"
-          class="rounded-lg bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-emerald-900/30 dark:text-emerald-300"
+          class="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-[11px] text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-emerald-900/30 dark:text-emerald-300"
           :disabled="!canAddSectionEnd"
           @click="$emit('add-section-end')"
           :title="canAddSectionEnd ? store.t('Añadir Fin de Sección / Firmas') : store.t('Only one section end is allowed per document.')"
         >
-          <i class="fa-solid fa-signature mr-1"></i>{{ store.t("+ Fin") }}
+          <i class="fa-solid fa-signature"></i>
         </button>
       </div>
     </div>

@@ -9,19 +9,25 @@
       aria-modal="true"
     >
       <!-- Compact document identity and global actions. Section-specific controls live in the editor bar. -->
-      <header class="flex items-center gap-3 border-b border-slate-200/90 bg-slate-50/95 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/95 flex-none z-10">
+      <header class="flex items-center gap-3 border-b border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 flex-none z-10 shadow-lg">
         <div class="flex min-w-0 flex-1 items-center gap-2.5">
-          <span class="grid h-8 w-8 place-items-center rounded-xl bg-brand text-white shadow-sm flex-none">
+          <span class="grid h-8 w-8 place-items-center rounded-xl bg-brand text-white shadow-lg shadow-brand/20 flex-none">
             <i class="fa-solid fa-file-lines text-sm"></i>
           </span>
-          <input
-            v-model.trim="docTitle"
-            class="min-w-0 w-52 max-w-md flex-1 bg-transparent py-0.5 font-head text-sm font-800 text-slate-900 border-b border-transparent transition hover:border-slate-300 focus:border-brand focus:outline-none dark:text-white sm:text-base"
-            :placeholder="store.t('Título del Pliego o Especificación de Compra')"
-          />
+          <div class="min-w-0 flex-1">
+            <input
+              v-model.trim="docTitle"
+              class="min-w-0 w-full max-w-xl bg-transparent py-0.5 font-head text-sm font-800 text-white border-b border-transparent transition placeholder:text-slate-500 hover:border-slate-600 focus:border-brand focus:outline-none sm:text-base"
+              :placeholder="store.t('Título del Pliego o Especificación de Compra')"
+              :aria-label="store.t('Título del Pliego o Especificación de Compra')"
+            />
+            <div class="editor-meta flex min-w-max items-center gap-1.5 text-[9px] text-slate-500">
+              <span class="font-mono">{{ sections.length }} {{ store.t("secciones") }} · {{ totalWordCount }} {{ store.t("palabras") }}</span>
+              <span class="text-slate-700">•</span>
+              <span v-if="activeSection" class="max-w-[20rem] truncate">{{ activeSectionNumber || '—' }} {{ activeSection.title || store.t('Sección Sin Título') }}</span>
+            </div>
+          </div>
           <div class="editor-meta flex min-w-max items-center gap-1.5 text-[10px] text-slate-400">
-            <span class="font-mono">{{ sections.length }} {{ store.t("secciones") }} · {{ totalWordCount }} {{ store.t("palabras") }}</span>
-            <span class="text-slate-300 dark:text-slate-700">|</span>
             <span class="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
               <i class="fa-solid fa-circle-check text-[9px]" :class="isSaving ? 'animate-spin fa-spinner text-amber-500' : ''"></i>
               <span>{{ isSaving ? store.t("Guardando...") : (lastAutosavedAt ? store.t("Autoguardado ") + lastAutosavedAt : store.t("Autosalvado activo")) }}</span>
@@ -33,8 +39,8 @@
           <!-- Templates are deliberately available from the library drawer: no clipped duplicate dropdown. -->
           <button
             type="button"
-            class="btn-muted h-8 px-2.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            :class="libraryOpen ? 'bg-brand-50 text-brand border-brand/35 dark:bg-brand/15' : ''"
+            class="h-8 rounded-lg border border-white/10 px-2.5 text-xs font-semibold text-slate-300 flex items-center gap-1.5 transition hover:bg-white/10 hover:text-white cursor-pointer"
+            :class="libraryOpen ? 'bg-brand/20 text-white border-brand/35' : ''"
             :title="store.t('Document library')"
             :aria-label="store.t('Document library')"
             :aria-expanded="libraryOpen"
@@ -47,7 +53,7 @@
 
           <button
             type="button"
-            class="btn-muted grid h-8 w-8 place-items-center p-0 text-xs cursor-pointer"
+            class="grid h-8 w-8 place-items-center rounded-lg text-xs text-slate-400 transition hover:bg-white/10 hover:text-white cursor-pointer"
             @click="copyCompiledMarkdown"
             :title="store.t('Copiar documento completo a portapapeles')"
             :aria-label="store.t('Copiar documento completo a portapapeles')"
@@ -68,7 +74,7 @@
 
           <button
             type="button"
-            class="grid h-8 w-8 place-items-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition cursor-pointer"
+            class="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition cursor-pointer"
             @click="$emit('update:modelValue', false)"
             aria-label="Cerrar"
           >
@@ -196,8 +202,8 @@
 <script>
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=5");
-const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=7");
+const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=6");
+const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=8");
 const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=3");
 const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=2");
 const DocumentLibraryDrawer = load("./app/components/document/DocumentLibraryDrawer.vue?v=4");

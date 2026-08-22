@@ -2,6 +2,12 @@
   "use strict";
 
   var dict = {
+    "Blocks": "Bloques",
+    "Section level": "Nivel de sección",
+    "Write content to see it formatted here.": "Escribe contenido para verlo formateado aquí.",
+    "Level 1": "Nivel 1",
+    "Level 2": "Nivel 2",
+    "Level 3": "Nivel 3",
     "Modelo estilo Contra con cero comisiones ocultas para el talento con insignia Top Rated Plus y suscripción Hero.": "Modelo estilo Contra con cero comisiones ocultas para el talento con insignia Top Rated Plus y suscripción Hero.",
     "Marketplace en Vivo": "Marketplace en Vivo",
     "Proyectos y Solicitudes Destacadas": "Proyectos y Solicitudes Destacadas",

@@ -1,12 +1,12 @@
 <template>
   <div class="flex-1 flex flex-col min-w-0 bg-white dark:bg-slate-900 overflow-hidden">
-    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/90 bg-slate-50/90 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-900/90 flex-none">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/90 bg-slate-50/90 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/90 flex-none">
       <div class="flex items-center gap-2">
         <span class="badge text-[11px] font-bold" :class="activeSection.type === 'cover' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'">
           <i :class="activeSection.type === 'cover' ? 'fa-solid fa-file-shield mr-1' : 'fa-solid fa-file-circle-check mr-1'"></i>
           {{ activeSection.type === 'cover' ? store.t('Section cover') : store.t('Section end / signatures') }}
         </span>
-        <div class="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 text-xs dark:border-slate-700 dark:bg-slate-800">
+        <div class="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 text-xs dark:border-slate-700 dark:bg-slate-800">
           <span class="px-1.5 text-[10px] font-bold uppercase text-slate-400">{{ store.t('Page position') }}</span>
           <button v-for="placement in pagePlacements" :key="placement.value" type="button" class="rounded-lg px-2 py-0.5 text-[11px] font-bold transition" :class="activeSection.alignVertical === placement.value ? 'bg-brand text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900 dark:text-slate-300'" :title="store.t(placement.title)" @click="activeSection.alignVertical = placement.value">
             <i class="fa-solid mr-1" :class="placement.icon"></i>{{ store.t(placement.label) }}
@@ -23,8 +23,8 @@
       </div>
     </div>
 
-    <div class="grid flex-1 grid-cols-1 gap-6 overflow-y-auto p-5 lg:grid-cols-2">
-      <div class="space-y-4 text-xs">
+    <div class="grid flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,.8fr)]">
+      <div class="space-y-3 text-xs">
         <section class="space-y-1.5">
           <label class="block font-bold text-slate-700 dark:text-slate-300">{{ activeSection.type === 'cover' ? store.t('Cover title') : store.t('Closing title') }}</label>
           <DocumentBlockStyleToolbar :store="store" :label="store.t('Title')" :model-value="blockStyle('title')" :presets="blockPresets.title" @update:model-value="setBlockStyle('title', $event)" />
@@ -57,7 +57,7 @@
         </template>
       </div>
 
-      <div class="flex flex-col items-center justify-center p-2">
+      <div class="sticky top-0 flex h-fit flex-col items-center justify-center p-1">
         <div class="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400"><i class="fa-solid fa-eye text-brand"></i>{{ store.t('Letter-size live preview') }}</div>
         <div class="flex aspect-[8.5/11] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-300 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
           <div v-if="sectionChrome?.headerEnabled && !suppressPageChrome" class="mb-3 flex items-center justify-between border-b border-slate-100 pb-1 text-[8px] font-mono text-slate-400 dark:border-slate-800"><span class="truncate font-bold uppercase">{{ sectionChrome.headerText }}</span><span>{{ previewDate }}</span></div>
@@ -86,7 +86,7 @@
 <script>
 const { computed, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentBlockStyleToolbar = load("./app/components/document/DocumentBlockStyleToolbar.vue?v=2");
+const DocumentBlockStyleToolbar = load("./app/components/document/DocumentBlockStyleToolbar.vue?v=3");
 
 export default {
   name: "DocumentCoverEditor",

@@ -67,6 +67,8 @@ function runDocumentLibraryAudit(root, read) {
   const cover = read("app/components/document/DocumentCoverEditor.vue");
   const chrome = read("app/components/document/DocumentHeaderFooterModal.vue");
   const sidebar = read("app/components/document/DocumentSidebarPanel.vue");
+  const content = read("app/components/document/DocumentContentEditor.vue");
+  const blockToolbar = read("app/components/document/DocumentBlockStyleToolbar.vue");
   if (!editor.includes("DocumentLibraryDrawer") || !editor.includes("parseMarkdownToDocument") || /\bprompt\s*\(/.test(editor))
     throw new Error("Document editor lacks the reusable library or retains a native prompt");
   if (editor.includes("templatesOpen") || editor.includes("Floating templates dropdown"))
@@ -77,6 +79,16 @@ function runDocumentLibraryAudit(root, read) {
     throw new Error("Saved-document persistence remains duplicated in the fields drawer");
   if (!cover.includes("DocumentBlockStyleToolbar") || !cover.includes("setBlockStyle") || !chrome.includes("apply-to-all") || !chrome.includes("section_title"))
     throw new Error("Cover style controls or section-level page chrome are incomplete");
+  for (const token of ["previewOpen", "handleEditorKeydown", "continueList", "indentSelection", "@keydown=\"handleEditorKeydown\""]) {
+    if (!content.includes(token)) throw new Error(`Markdown writing or on-demand preview is missing ${token}`);
+  }
+  if (!/previewOpen\s*=\s*ref\(false\)/.test(content) || !content.includes('v-if="previewOpen"'))
+    throw new Error("Rendered preview must stay closed and unmounted until the user requests it");
+  if (/activeSection\.type\s*=(?!=)/.test(content))
+    throw new Error("The content editor can bypass singleton cover/end creation through a type switcher");
+  for (const token of ["expanded", "activeHorizontal", "activeSize", "activeTone"]) {
+    if (!blockToolbar.includes(token)) throw new Error(`Compact per-block style controls are missing ${token}`);
+  }
 
   return { reusableDocuments: library.list("qa-owner").length, sectionLimit: saved.sections.length, styledCover: styledSection.title };
 }
