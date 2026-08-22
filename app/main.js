@@ -71,18 +71,22 @@ const load = (path) =>
     },
   });
 
-const STORAGE_VERSION = 10;
-const storage = window.WebCommon.createVersionedStorage(
-  "buyniverse-vue-demo-v1",
-  STORAGE_VERSION,
-);
-const cached = storage.read();
-const cachedValue = cached?.legacy ? null : cached?.value;
 const isSafeId = (value, max = 120) =>
   typeof value === "string" && value.length > 0 && value.length <= max && !/[\u0000-\u001f\u007f]/.test(value);
 const isSafeText = (value, max = 500) =>
   typeof value === "string" && value.length <= max && !/[\u0000-\u001f\u007f]/.test(value);
-const isSafeCachedState = (value) => {
+const hasUnsafeKeys = (value, depth = 0) => {
+  if (depth > 18 || value == null || typeof value !== "object") return depth > 18;
+  return Object.entries(value).some(([key, entry]) =>
+    ["__proto__", "prototype", "constructor"].includes(key) || hasUnsafeKeys(entry, depth + 1),
+  );
+};
+const isPlainRecord = (value) => value && typeof value === "object" && !Array.isArray(value);
+const isBoundedRecord = (value, maxEntries, maxBytes) => {
+  if (!isPlainRecord(value) || Object.keys(value).length > maxEntries) return false;
+  try { return JSON.stringify(value).length <= maxBytes; } catch (_) { return false; }
+};
+const isSafeRemoteState = (value) => {
   if (
     !value ||
     !Array.isArray(value.users) ||
@@ -108,12 +112,21 @@ const isSafeCachedState = (value) => {
   const safeSavedJobs = !Array.isArray(value.savedJobIds) || (
     value.savedJobIds.length <= 500 && value.savedJobIds.every((jobId) => isSafeId(jobId))
   );
+  const safeTablePreferences = value.tablePreferences === undefined || isBoundedRecord(value.tablePreferences, 100, 512000);
+  const safeDocumentLibrary = value.documentLibrary === undefined || (
+    isPlainRecord(value.documentLibrary) &&
+    isBoundedRecord(value.documentLibrary.documents || {}, 100, 512000) &&
+    isBoundedRecord(value.documentLibrary.drafts || {}, 100, 512000)
+  );
   return (
+    !hasUnsafeKeys(value) &&
     bounded &&
     allowedMode &&
     safeNotifications &&
     safeAudit &&
     safeSavedJobs &&
+    safeTablePreferences &&
+    safeDocumentLibrary &&
     value.users.every(
       (user) =>
         user &&
@@ -129,17 +142,18 @@ const isSafeCachedState = (value) => {
     value.users.some((user) => user.id === value.currentUserId)
   );
 };
-const candidateState = cachedValue?.users ? cachedValue : cachedValue?.state;
-const cachedState = isSafeCachedState(candidateState) ? candidateState : null;
-const state = reactive(cachedState || window.BuyniverseDemo.clone());
+const state = reactive(window.BuyniverseDemo.clone());
+// Document-library records and every other workspace draft share this object,
+// which is synchronised through the server-side encrypted state endpoint.
+window.BuyniverseWorkspaceRuntimeState = state;
 const ui = reactive({
   toast: null,
   loading: false,
   loadingMessage: "",
   modal: null,
   locked: false,
-  saveState: "saved",
-  lastSavedAt: cached?.savedAt || null,
+  saveState: "connecting",
+  lastSavedAt: null,
 });
 
 const { allowedMarketplaceModes } = window.BuyniverseInitialState
@@ -268,25 +282,60 @@ const store = {
 };
 
 let persistenceTimer = 0;
-const persistState = () => {
+let remoteReady = false;
+let remoteHydrating = true;
+const remoteWorkspace = window.BuyniverseWorkspaceState;
+const persistState = async () => {
   window.clearTimeout(persistenceTimer);
-  const saved = storage.write(state);
-  ui.saveState = saved ? "saved" : "error";
-  if (saved) ui.lastSavedAt = new Date().toISOString();
-  return saved;
+  if (!remoteReady || !remoteWorkspace) return false;
+  ui.saveState = "saving";
+  try {
+    const snapshot = JSON.parse(JSON.stringify(state));
+    const saved = await remoteWorkspace.save(snapshot);
+    ui.saveState = "saved";
+    ui.lastSavedAt = saved.savedAt;
+    return true;
+  } catch (error) {
+    ui.saveState = "error";
+    return false;
+  }
 };
 watch(
   state,
   () => {
+    if (remoteHydrating || !remoteReady) return;
     ui.saveState = "saving";
     window.clearTimeout(persistenceTimer);
-    persistenceTimer = window.setTimeout(persistState, 250);
+    persistenceTimer = window.setTimeout(() => { void persistState(); }, 550);
   },
   { deep: true },
 );
-window.addEventListener("pagehide", persistState);
+const hydrateRemoteWorkspace = async () => {
+  if (!remoteWorkspace) { ui.saveState = "error"; remoteHydrating = false; return; }
+  try {
+    const remote = await remoteWorkspace.load();
+    if (remote.state) {
+      if (!isSafeRemoteState(remote.state)) throw new Error("Remote workspace payload was rejected");
+      Object.keys(state).forEach((key) => { delete state[key]; });
+      Object.assign(state, remote.state);
+      window.BuyniverseInitialState?.normalizeState(state);
+    }
+    remoteReady = true;
+    ui.saveState = "saved";
+    ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
+    window.dispatchEvent(new Event("buyniverse:workspace-hydrated"));
+  } catch (error) {
+    // No browser-resident fallback is used: a failed remote write must remain
+    // visible instead of falsely claiming that drafts are persisted.
+    ui.saveState = "error";
+  } finally {
+    remoteHydrating = false;
+  }
+};
+void hydrateRemoteWorkspace();
+window.addEventListener("pagehide", () => { void persistState(); });
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") persistState();
+  if (document.visibilityState === "hidden") void persistState();
 });
 
 // Component Loaders
@@ -295,8 +344,8 @@ const Home = load("./app/pages/HomePage.vue?v=30");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=28");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
-const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=30");
-const JobDetails = load("./app/pages/JobDetailsPage.vue?v=34");
+const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=31");
+const JobDetails = load("./app/pages/JobDetailsPage.vue?v=36");
 const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
 const Identity = load("./app/pages/IdentityPage.vue?v=33");
@@ -304,7 +353,8 @@ const AdminIssuers = load("./app/pages/AdminIssuersPage.vue?v=30");
 const Billing = load("./app/pages/BillingPage.vue?v=31");
 const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
-const Directory = load("./app/pages/DirectoryPage.vue?v=38");
+const Directory = load("./app/pages/DirectoryPage.vue?v=39");
+const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
 const Procurement = load("./app/pages/ProcurementPage.vue?v=22");
 const NotFound = {
   template:
@@ -344,7 +394,7 @@ const routes = [
     modes: ["supplier", "admin"],
     paymentAccess: true,
   }),
-  r("/products", Workspace, { kind: "products", modes: ["buyer", "admin"] }),
+  r("/products", ProductCatalog, { kind: "products", modes: ["buyer", "admin"] }),
   r("/expenses", Workspace, { kind: "expenses", modes: ["buyer", "admin"] }),
   r("/messages", Workspace, { kind: "messages" }),
   r("/post-job/:id?", PostJobWizard, { modes: ["buyer", "admin"] }),
@@ -566,7 +616,7 @@ window.addEventListener("buyniverse:app-shell-ready", revealApp, { once: true })
 // Fail open rather than leaving a blank application if an external CDN fails.
 window.setTimeout(revealApp, 5000);
 
-const app = createApp(load("./app/App.vue?v=42"));
+const app = createApp(load("./app/App.vue?v=43"));
 window.__buyniverseErrors = [];
 app.config.errorHandler = (error, instance, info) => {
   const detail = {

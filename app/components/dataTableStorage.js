@@ -8,10 +8,18 @@
     return `buyniverse-table:${safe || "data-table"}`;
   }
 
+  function workspacePreferences() {
+    const state = global.BuyniverseWorkspaceRuntimeState;
+    if (!state || typeof state !== "object") return null;
+    if (!state.tablePreferences || typeof state.tablePreferences !== "object")
+      state.tablePreferences = {};
+    return state.tablePreferences;
+  }
+
   function readStore(tableId, columns, editable, normalizeView, layoutKeys, VIEW_MODES) {
-    let raw = "";
-    try { raw = localStorage.getItem(storageKey(tableId)) || ""; } catch (_) { return null; }
-    const data = window.WebCommon.safeJsonParse(raw, null);
+    const preferences = workspacePreferences();
+    if (!preferences) return null;
+    const data = preferences[storageKey(tableId)];
     if (!data || typeof data !== "object" || Array.isArray(data)) return null;
     const dataKeys = columns.map((c) => c.key),
       keys = layoutKeys(columns, editable),
@@ -54,12 +62,14 @@
   }
 
   function persistStore(tableId, data) {
+    const preferences = workspacePreferences();
+    if (!preferences || !data || typeof data !== "object") return false;
     try {
-      localStorage.setItem(
-        storageKey(tableId),
-        window.WebCommon.storageJson(data),
-      );
-    } catch (_) {}
+      const serialized = JSON.stringify(data);
+      if (serialized.length > 65536) return false;
+      preferences[storageKey(tableId)] = JSON.parse(serialized);
+      return true;
+    } catch (_) { return false; }
   }
 
   function computeSignature(view, columns, editable, layoutKeys) {

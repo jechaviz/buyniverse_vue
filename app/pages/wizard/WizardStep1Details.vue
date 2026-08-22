@@ -131,6 +131,10 @@
         @apply="project.description = $event"
       />
 
+      <div class="md:col-span-2">
+        <ProjectDocumentRequirements :project="project" />
+      </div>
+
       <!-- Category & Level -->
       <label class="block text-xs font-bold">
         <span class="mb-1.5 block">{{ store.t("Category") }} <span class="text-rose-500">*</span></span>
@@ -240,10 +244,14 @@ const { inject, ref, computed, defineAsyncComponent } = Vue;
 const DocumentEditorModal = defineAsyncComponent(() =>
     window["vue3-sfc-loader"].loadModule("./app/components/document/DocumentEditorModal.vue?v=18", window.sfcOptions)
 );
+const ProjectDocumentRequirements = defineAsyncComponent(() =>
+    window["vue3-sfc-loader"].loadModule("./app/components/project/ProjectDocumentRequirements.vue?v=1", window.sfcOptions)
+);
 
 export default {
   components: {
-    DocumentEditorModal
+    DocumentEditorModal,
+    ProjectDocumentRequirements
   },
   props: {
     project: Object,

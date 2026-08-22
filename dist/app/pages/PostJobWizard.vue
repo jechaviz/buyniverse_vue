@@ -89,7 +89,7 @@ const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const WizardStep0Strategy = load("./app/pages/wizard/WizardStep0Strategy.vue?v=3");
-const WizardStep1Details = load("./app/pages/wizard/WizardStep1Details.vue?v=3");
+const WizardStep1Details = load("./app/pages/wizard/WizardStep1Details.vue?v=4");
 const WizardStep3Files = load("./app/pages/wizard/WizardStep3Files.vue?v=3");
 const WizardStep4Team = load("./app/pages/wizard/WizardStep4Team.vue?v=3");
 const WizardStep5Approvers = load("./app/pages/wizard/WizardStep5Approvers.vue?v=3");
@@ -110,7 +110,7 @@ export default {
       sourcingType: "RFP", title: "", description: "", category: "Development", budget: 5000,
       projectLevel: "Intermediate", duration: "1 to 3 months", hiringLimitDate: "",
       dueDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
-      visibility: "private", currency: "USD", skills: [], files: [], team: [], approvers: [],
+      visibility: "private", currency: "USD", skills: [], files: [], team: [], approvers: [], requiredDocuments: [], documentAcceptances: [],
     });
     const project = ref(existing.value ? JSON.parse(JSON.stringify(existing.value)) : blankProject());
 

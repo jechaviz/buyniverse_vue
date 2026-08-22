@@ -1,12 +1,8 @@
 (function (global) {
   "use strict";
 
-  // Document bodies remain local in this CDN demo. The library is deliberately
-  // scoped to the active user, bounded, and normalized before every read/write.
-  // A production integration should replace this adapter with an authorized API.
-  var LIBRARY_PREFIX = "buyniverse_document_library_v2";
-  var DRAFT_PREFIX = "buyniverse_document_draft_v3";
-  var LEGACY_KEY = "buyniverse_saved_doc_templates";
+  // The library is scoped to the active user, bounded and normalised before
+  // every read/write. Its backing workspace state is encrypted server-side.
   var MAX_DOCUMENTS = 50;
   var MAX_SECTIONS = 60;
 
@@ -30,33 +26,19 @@
     return new Date().toISOString();
   }
 
-  function keyFor(prefix, userId, identity) {
-    var user = cleanId(userId, "anonymous");
-    return prefix + ":" + user + (identity ? ":" + cleanId(identity, "default") : "");
-  }
-
-  function read(key, fallback) {
-    try {
-      var raw = global.localStorage && global.localStorage.getItem(key);
-      if (!raw) return fallback;
-      return global.WebCommon && global.WebCommon.safeJsonParse
-        ? global.WebCommon.safeJsonParse(raw, fallback)
-        : JSON.parse(raw);
-    } catch (error) {
-      return fallback;
-    }
-  }
-
-  function write(key, value) {
-    try {
-      var serialized = global.WebCommon && global.WebCommon.storageJson
-        ? global.WebCommon.storageJson(value)
-        : JSON.stringify(value);
-      global.localStorage && global.localStorage.setItem(key, serialized);
-      return true;
-    } catch (error) {
-      return false;
-    }
+  // The main workspace state is server-synchronised. Keeping documents and
+  // drafts inside that state makes them subject to the same encrypted remote
+  // persistence, versioning and integrity checks as the rest of the project.
+  function workspaceBucket() {
+    var state = global.BuyniverseWorkspaceRuntimeState;
+    if (!state || typeof state !== "object") return null;
+    if (!state.documentLibrary || typeof state.documentLibrary !== "object")
+      state.documentLibrary = { documents: {}, drafts: {} };
+    if (!state.documentLibrary.documents || typeof state.documentLibrary.documents !== "object")
+      state.documentLibrary.documents = {};
+    if (!state.documentLibrary.drafts || typeof state.documentLibrary.drafts !== "object")
+      state.documentLibrary.drafts = {};
+    return state.documentLibrary;
   }
 
   function blockStyle(raw, key) {
@@ -151,18 +133,18 @@
   }
 
   function rawLibrary(userId) {
-    var key = keyFor(LIBRARY_PREFIX, userId);
-    var raw = read(key, null);
-    if (Array.isArray(raw)) return raw;
+    var bucket = workspaceBucket();
+    if (!bucket) return [];
+    var user = cleanId(userId, "anonymous");
+    if (!Array.isArray(bucket.documents[user])) bucket.documents[user] = [];
+    return bucket.documents[user];
+  }
 
-    // Carry legacy saved templates forward once; they no longer remain exposed
-    // through a shared, unscoped localStorage key.
-    var legacy = read(LEGACY_KEY, []);
-    var migrated = Array.isArray(legacy)
-      ? legacy.map(function (item) { return normalize(item, { source: "custom" }); }).filter(Boolean)
-      : [];
-    write(key, migrated.slice(0, MAX_DOCUMENTS));
-    return migrated;
+  function writeLibrary(userId, records) {
+    var bucket = workspaceBucket();
+    if (!bucket || !Array.isArray(records)) return false;
+    bucket.documents[cleanId(userId, "anonymous")] = clone(records.slice(0, MAX_DOCUMENTS));
+    return true;
   }
 
   function list(userId) {
@@ -179,7 +161,7 @@
     var existing = records.find(function (item) { return item.id === document.id; });
     if (existing) document.createdAt = existing.createdAt;
     records = [document].concat(records.filter(function (item) { return item.id !== document.id; })).slice(0, MAX_DOCUMENTS);
-    if (!write(keyFor(LIBRARY_PREFIX, userId), records)) return null;
+    if (!writeLibrary(userId, records)) return null;
     return clone(document);
   }
 
@@ -187,7 +169,7 @@
     var safeId = cleanId(id, "");
     if (!safeId) return false;
     var records = list(userId).filter(function (item) { return item.id !== safeId; });
-    return write(keyFor(LIBRARY_PREFIX, userId), records);
+    return writeLibrary(userId, records);
   }
 
   function fingerprint(value) {
@@ -201,22 +183,29 @@
   }
 
   function loadDraft(userId, identity) {
-    var draft = read(keyFor(DRAFT_PREFIX, userId, identity), null);
+    var bucket = workspaceBucket();
+    if (!bucket) return null;
+    var user = cleanId(userId, "anonymous"), draftId = cleanId(identity, "default");
+    var draft = bucket.drafts[user] && bucket.drafts[user][draftId];
     return draft ? normalize(draft, { source: "draft" }) : null;
   }
 
   function saveDraft(userId, identity, payload) {
     var draft = normalize(payload, { source: "draft" });
-    return Boolean(draft && write(keyFor(DRAFT_PREFIX, userId, identity), draft));
+    var bucket = workspaceBucket();
+    if (!draft || !bucket) return false;
+    var user = cleanId(userId, "anonymous"), draftId = cleanId(identity, "default");
+    if (!bucket.drafts[user] || typeof bucket.drafts[user] !== "object") bucket.drafts[user] = {};
+    bucket.drafts[user][draftId] = clone(draft);
+    return true;
   }
 
   function clearDraft(userId, identity) {
-    try {
-      global.localStorage && global.localStorage.removeItem(keyFor(DRAFT_PREFIX, userId, identity));
-      return true;
-    } catch (error) {
-      return false;
-    }
+    var bucket = workspaceBucket();
+    if (!bucket) return false;
+    var user = cleanId(userId, "anonymous"), draftId = cleanId(identity, "default");
+    if (bucket.drafts[user]) delete bucket.drafts[user][draftId];
+    return true;
   }
 
   global.DocumentLibrary = {

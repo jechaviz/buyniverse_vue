@@ -76,6 +76,140 @@ foreach ([__DIR__ . '/dist', __DIR__] as $root) {
 }
 if (!str_starts_with($uri, '/api/') && $uri !== '/api') serve_spa();
 
+// Server-local configuration lives outside the public document root (or at
+// BUYNIVERSE_RUNTIME_CONFIG). It supplies the PDO DSN and a 32-byte encryption
+// key; this published artifact intentionally contains neither credentials nor
+// a fallback key.
+function workspace_config(): array {
+    $path = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__) . '/buyniverse-runtime.php';
+    if (!is_file($path) || !is_readable($path)) return [];
+    $config = require $path;
+    return is_array($config) ? $config : [];
+}
+function workspace_header(string $name): string {
+    foreach (getallheaders() as $key => $value)
+        if (strcasecmp((string) $key, $name) === 0) return trim((string) $value);
+    return '';
+}
+function workspace_session(): array {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        $secure = (($_SERVER['HTTPS'] ?? '') === 'on') || strtolower(workspace_header('X-Forwarded-Proto')) === 'https';
+        session_name('buyniverse_workspace');
+        session_set_cookie_params(['lifetime'=>0, 'path'=>'/', 'secure'=>$secure, 'httponly'=>true, 'samesite'=>'Strict']);
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_samesite', 'Strict');
+        if (!session_start()) fail_response(503, 'Secure workspace session unavailable');
+    }
+    if (empty($_SESSION['workspace_csrf'])) $_SESSION['workspace_csrf'] = bin2hex(random_bytes(32));
+    return ['hash'=>hash('sha256', session_id()), 'csrf'=>(string) $_SESSION['workspace_csrf']];
+}
+function workspace_pdo(array $config): PDO {
+    $dsn = (string) ($config['db_dsn'] ?? '');
+    $user = (string) ($config['db_user'] ?? '');
+    $password = (string) ($config['db_password'] ?? '');
+    if (!$dsn || !$user || !$password || !extension_loaded('pdo_mysql')) fail_response(503, 'Secure storage is not configured');
+    try {
+        return new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES=>false]);
+    } catch (Throwable $error) { fail_response(503, 'Secure storage is unavailable'); }
+}
+function workspace_key(array $config): string {
+    $key = base64_decode((string) ($config['state_encryption_key'] ?? ''), true);
+    if ($key === false || strlen($key) !== 32 || !function_exists('openssl_encrypt')) fail_response(503, 'Secure storage is not configured');
+    return $key;
+}
+function workspace_safe_value($value, int $depth = 0): bool {
+    if ($depth > 18) return false;
+    if ($value === null || is_bool($value) || is_int($value) || is_float($value)) return true;
+    if (is_string($value)) return strlen($value) <= 500000 && !preg_match('/[\x00]/', $value);
+    if (!is_array($value) || count($value) > 10000) return false;
+    foreach ($value as $key => $item) {
+        if (is_string($key) && in_array($key, ['__proto__','prototype','constructor'], true)) return false;
+        if (!workspace_safe_value($item, $depth + 1)) return false;
+    }
+    return true;
+}
+function workspace_json(array $payload, int $status = 200): void {
+    security_headers(); http_response_code($status); header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit;
+}
+function workspace_encrypt(string $plain, string $key): array {
+    $iv = random_bytes(12); $tag = '';
+    $ciphertext = openssl_encrypt($plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, 'buyniverse-workspace-v1');
+    if ($ciphertext === false || strlen($tag) !== 16) fail_response(503, 'Secure storage encryption unavailable');
+    return [$ciphertext, $iv, $tag];
+}
+function workspace_decrypt(array $row, string $key): ?array {
+    $plain = openssl_decrypt((string) $row['ciphertext'], 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) $row['iv'], (string) $row['auth_tag'], 'buyniverse-workspace-v1');
+    if ($plain === false || strlen($plain) > 786432) return null;
+    $state = json_decode($plain, true);
+    return is_array($state) && workspace_safe_value($state) ? $state : null;
+}
+function workspace_audit(PDO $pdo, string $sessionHash, int $version, string $action, string $digest, string $key): void {
+    $mac = hash_hmac('sha256', implode('|', [$sessionHash, $version, $action, $digest]), $key);
+    $statement = $pdo->prepare('INSERT INTO workspace_state_audit (session_hash, version, action, payload_digest, event_mac) VALUES (?, ?, ?, ?, ?)');
+    $statement->execute([$sessionHash, $version, $action, $digest, $mac]);
+}
+
+if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
+    $config = workspace_config();
+    // This capability-bound store is only for the public demo. Production must
+    // turn this flag off and issue the session from a verified OIDC/MFA flow.
+    if (($config['allow_demo_workspace_state'] ?? false) !== true) fail_response(503, 'Secure workspace storage is not enabled');
+    $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    if (!in_array($method, ['GET','PUT','DELETE'], true)) fail_response(405, 'Method not allowed');
+    if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 786432) fail_response(413, 'Request body too large');
+    $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
+    if ($method !== 'GET') {
+        if (!hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'workspace-state-v1') fail_response(403, 'Request verification failed');
+        $lastWrite = (float) ($_SESSION['workspace_last_write'] ?? 0);
+        if (microtime(true) - $lastWrite < 0.35) fail_response(429, 'Please wait before saving again');
+        $_SESSION['workspace_last_write'] = microtime(true);
+    }
+    if ($method === 'GET') {
+        $statement = $pdo->prepare('SELECT version, ciphertext, iv, auth_tag FROM workspace_state WHERE session_hash = ? LIMIT 1');
+        $statement->execute([$session['hash']]); $row = $statement->fetch();
+        if (!$row) workspace_json(['state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>'server']);
+        $state = workspace_decrypt($row, $key);
+        if ($state === null) fail_response(409, 'Stored workspace integrity check failed');
+        workspace_json(['state'=>$state, 'version'=>(int) $row['version'], 'csrf'=>$session['csrf'], 'mode'=>'server']);
+    }
+    if ($method === 'DELETE') {
+        $pdo->beginTransaction();
+        try {
+            $statement = $pdo->prepare('SELECT version, payload_digest FROM workspace_state WHERE session_hash = ? FOR UPDATE');
+            $statement->execute([$session['hash']]); $row = $statement->fetch();
+            if ($row) {
+                $delete = $pdo->prepare('DELETE FROM workspace_state WHERE session_hash = ?'); $delete->execute([$session['hash']]);
+                workspace_audit($pdo, $session['hash'], (int) $row['version'], 'deleted', (string) $row['payload_digest'], $key);
+            }
+            $pdo->commit(); workspace_json(['deleted'=>true, 'csrf'=>$session['csrf']]);
+        } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Secure storage is unavailable'); }
+    }
+    $body = (string) file_get_contents('php://input'); $payload = json_decode($body, true);
+    if (!is_array($payload) || !isset($payload['state']) || !is_array($payload['state']) || !workspace_safe_value($payload['state'])) fail_response(400, 'Invalid workspace payload');
+    $expectedVersion = filter_var($payload['version'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>0]]);
+    if ($expectedVersion === false) fail_response(400, 'Invalid workspace version');
+    $plain = json_encode($payload['state'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if (!is_string($plain) || strlen($plain) > 786432) fail_response(413, 'Workspace payload is too large');
+    $digest = hash('sha256', $plain); [$ciphertext, $iv, $tag] = workspace_encrypt($plain, $key);
+    $pdo->beginTransaction();
+    try {
+        $statement = $pdo->prepare('SELECT version FROM workspace_state WHERE session_hash = ? FOR UPDATE'); $statement->execute([$session['hash']]); $row = $statement->fetch();
+        $currentVersion = $row ? (int) $row['version'] : 0;
+        if ($currentVersion !== (int) $expectedVersion) { $pdo->rollBack(); workspace_json(['error'=>'Workspace changed in another session', 'version'=>$currentVersion, 'csrf'=>$session['csrf']], 409); }
+        $nextVersion = $currentVersion + 1;
+        if ($row) {
+            $write = $pdo->prepare('UPDATE workspace_state SET version = ?, ciphertext = ?, iv = ?, auth_tag = ?, payload_digest = ? WHERE session_hash = ?');
+            $write->execute([$nextVersion, $ciphertext, $iv, $tag, $digest, $session['hash']]); workspace_audit($pdo, $session['hash'], $nextVersion, 'updated', $digest, $key);
+        } else {
+            $write = $pdo->prepare('INSERT INTO workspace_state (session_hash, version, ciphertext, iv, auth_tag, payload_digest) VALUES (?, ?, ?, ?, ?, ?)');
+            $write->execute([$session['hash'], $nextVersion, $ciphertext, $iv, $tag, $digest]); workspace_audit($pdo, $session['hash'], $nextVersion, 'created', $digest, $key);
+        }
+        $pdo->commit(); workspace_json(['version'=>$nextVersion, 'savedAt'=>gmdate('c'), 'csrf'=>$session['csrf']]);
+    } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Secure storage is unavailable'); }
+}
+
 // The demo does not call an API. A host must opt in to the local-only proxy.
 if (getenv('BUYNIVERSE_ENABLE_BACKEND_PROXY') !== '1') fail_response(404, 'Not found');
 $host = getenv('BUYNIVERSE_BACKEND_HOST') ?: '127.0.0.1';

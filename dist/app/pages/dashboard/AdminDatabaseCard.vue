@@ -7,12 +7,12 @@
         </span>
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("Demo state") }}</h2>
+            <h2 class="font-head text-base font-800 text-slate-900 dark:text-white">{{ store.t("Workspace state") }}</h2>
             <span class="badge border border-sky-200 bg-sky-50 text-[10px] font-bold text-sky-700 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-300">
-              <i class="fa-solid fa-laptop mr-1"></i>{{ store.t("LOCAL") }}
+              <i class="fa-solid fa-shield-halved mr-1"></i>{{ store.t("SERVER") }}
             </span>
           </div>
-          <p class="text-xs text-slate-400">{{ store.t("Data is stored only in this browser.") }} {{ store.t("Last refreshed") }}: {{ store.date(refreshedAt) }}</p>
+          <p class="text-xs text-slate-400">{{ store.t("Workspace changes are encrypted and saved on the server.") }} {{ store.t("Last refreshed") }}: {{ store.date(refreshedAt) }}</p>
         </div>
       </div>
 

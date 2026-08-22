@@ -1,6 +1,7 @@
 function runDocumentLibraryAudit(root, read) {
   const storage = {};
   const scope = {
+    BuyniverseWorkspaceRuntimeState: {},
     localStorage: {
       getItem: (key) => storage[key] || null,
       setItem: (key, value) => { storage[key] = value; },
@@ -14,6 +15,8 @@ function runDocumentLibraryAudit(root, read) {
   const library = scope.DocumentLibrary;
   if (!library || typeof library.save !== "function" || typeof library.loadDraft !== "function")
     throw new Error("Document library API is unavailable");
+  if (!read("app/components/document/documentLibrary.js").includes("BuyniverseWorkspaceRuntimeState") || read("app/components/document/documentLibrary.js").includes("localStorage"))
+    throw new Error("Document library is not using the central encrypted workspace state");
 
   const sections = Array.from({ length: 72 }, (_, index) => ({
     id: `sec-${index}`,
@@ -74,6 +77,9 @@ function runDocumentLibraryAudit(root, read) {
   const blockToolbar = read("app/components/document/DocumentBlockStyleToolbar.vue");
   const richCanvas = read("app/components/document/DocumentRichTextCanvas.vue");
   const inlineRichText = read("app/components/document/DocumentInlineRichText.vue");
+  const requirements = read("app/components/project/ProjectDocumentRequirements.vue");
+  const signature = read("app/components/project/ProjectDocumentSignatureModal.vue");
+  const jobDetails = read("app/pages/JobDetailsPage.vue");
   if (!editor.includes("DocumentLibraryDrawer") || !editor.includes("parseMarkdownToDocument") || /\bprompt\s*\(/.test(editor))
     throw new Error("Document editor lacks the reusable library or retains a native prompt");
   if (editor.includes("templatesOpen") || editor.includes("Floating templates dropdown"))
@@ -104,6 +110,14 @@ function runDocumentLibraryAudit(root, read) {
   for (const token of ["expanded", "activeHorizontal", "activeSize", "activeTone"]) {
     if (!blockToolbar.includes(token)) throw new Error(`Compact per-block style controls are missing ${token}`);
   }
+  for (const token of ["DocumentLibrary", "DocumentTemplates", "requiredForProposal", "signatureRequired", "versionHash"]) {
+    if (!requirements.includes(token)) throw new Error(`Project document requirement management is missing ${token}`);
+  }
+  for (const token of ["typedName", "clickwrap", "documentId", "versionHash"]) {
+    if (!signature.includes(token)) throw new Error(`Candidate document acknowledgment is missing ${token}`);
+  }
+  if (!jobDetails.includes("ProjectDocumentSignatureModal") || !jobDetails.includes("missingDocuments") || !jobDetails.includes("documentAcceptances"))
+    throw new Error("Proposal submission is not gated by signed document requirements");
 
   return { reusableDocuments: library.list("qa-owner").length, sectionLimit: saved.sections.length, styledCover: styledSection.title };
 }

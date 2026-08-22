@@ -54,7 +54,7 @@
         <input v-if="kind === 'announcement'" v-model.trim="subject" class="field py-2 text-xs" maxlength="180" :placeholder="store.t('Announcement subject')" required />
         <textarea v-model="draft" class="field min-h-22 resize-y py-2 text-xs leading-relaxed" maxlength="3000" required :placeholder="kind === 'announcement' ? store.t('Write an announcement for the authorized audience…') : store.t('Type a message…')"></textarea>
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <p class="text-[10px] text-slate-400">{{ draft.length }}/3000 · {{ store.t("Stored locally in this demo") }}</p>
+          <p class="text-[10px] text-slate-400">{{ draft.length }}/3000 · {{ store.t("Saved to workspace") }}</p>
           <div class="flex items-center gap-2">
             <button v-if="canAnnounce" type="button" class="btn-muted px-3 py-2 text-xs" :disabled="!subject || !draft.trim()" :title="store.t('Creates an email draft locally; it does not send email.')" @click="saveMailDraft">
               <i class="fa-regular fa-envelope mr-1.5"></i>{{ store.t("Save email draft") }}

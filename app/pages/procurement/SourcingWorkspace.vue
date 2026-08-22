@@ -391,7 +391,7 @@ export default {
         store.sendMessage({ contextType: "sourcing", contextId: event.value.id, kind: "announcement", subject: template.subject, text: template.body });
         store.createMailDraft({ contextType: "sourcing", contextId: event.value.id, templateId: "tpl-rfx-invitation", subject: template.subject, body: template.body });
       }
-      store.notice("Invitations posted; email draft saved locally", "fa-paper-plane");
+      store.notice("Invitations posted; email draft saved to workspace", "fa-paper-plane");
     };
 
     const publish = () => {

@@ -119,7 +119,7 @@ console.log(
       nestedNavigation: "breadcrumbs + route-backed views pass",
       bilingual: `EN/ES runtime + ${bilingualSummary}`,
       seo: `${seoResult.origin} (${seoResult.files} canonical sources checked)`,
-      communications: `${communicationsResult.threads} threads / ${communicationsResult.templates} templates / ${communicationsResult.localDrafts} local drafts`,
+      communications: `${communicationsResult.threads} threads / ${communicationsResult.templates} templates / ${communicationsResult.workspaceDrafts} workspace drafts`,
       documentLibrary: `${documentLibraryResult.reusableDocuments} reusable document / ${documentLibraryResult.sectionLimit} section safety cap`,
       canonicalImages: secResult.assetCount,
     },

@@ -67,7 +67,7 @@ export default {
       variableValues.value.REPRESENTANTE_CLIENTE = user.name || "Authorized representative";
       variableValues.value.NOMBRE_CLIENTE = user.name || "Customer";
       variableValues.value.TITULO_PROYECTO = props.docTitle || "Strategic project";
-      props.store.notice(props.store.t("Document fields filled from your local profile"), "fa-wand-magic-sparkles");
+      props.store.notice(props.store.t("Document fields filled from your profile"), "fa-wand-magic-sparkles");
     };
     return { variableValues, detectedVariables, applyVariables, autofillWithUserData };
   },

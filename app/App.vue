@@ -174,14 +174,20 @@
               <span>Quick access</span>
               <kbd class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Ctrl K</kbd>
             </button>
-            <span class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300" title="Active company workspace">
+            <button
+              type="button"
+              class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300"
+              :title="store.t('Open purchasing workspace')"
+              :aria-label="store.t('Open purchasing workspace')"
+              @click="openPurchasingWorkspace"
+            >
               <i class="fa-solid text-brand text-xs" :class="marketplaceMode === 'buyer' ? 'fa-cart-shopping' : marketplaceMode === 'supplier' ? 'fa-store' : 'fa-shield-halved'"></i>
               {{ activeModeLabel }}
-            </span>
+            </button>
           </div>
 
           <div class="flex items-center gap-3 sm:gap-4">
-            <span class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="store.t('Demo data is stored only in this browser.')" role="status" aria-live="polite">
+            <span class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="store.t('Workspace changes are encrypted and saved on the server.')" role="status" aria-live="polite">
               <i class="fa-solid text-[10px]" :class="saveStatus.icon"></i>
               {{ saveStatus.label }}
             </span>
@@ -459,9 +465,10 @@ export default {
     const visibleNotifications = computed(() => store.userNotifications(user.value.id));
     const unreadNotifications = computed(() => store.unreadNotifications(user.value.id));
     const saveStatus = computed(() => {
-      if (store.ui.saveState === "saving") return { label: store.t("Saving…"), icon: "fa-arrows-rotate fa-spin", tone: "text-amber-600 dark:text-amber-400" };
-      if (store.ui.saveState === "error") return { label: store.t("Save failed"), icon: "fa-triangle-exclamation", tone: "text-rose-600 dark:text-rose-400" };
-      return { label: store.t("Saved locally"), icon: "fa-circle-check", tone: "text-emerald-600 dark:text-emerald-400" };
+      if (store.ui.saveState === "connecting") return { label: store.t("Connecting secure workspace…"), icon: "fa-arrows-rotate fa-spin", tone: "text-sky-600 dark:text-sky-300" };
+      if (store.ui.saveState === "saving") return { label: store.t("Saving securely…"), icon: "fa-arrows-rotate fa-spin", tone: "text-amber-600 dark:text-amber-400" };
+      if (store.ui.saveState === "error") return { label: store.t("Secure save unavailable"), icon: "fa-triangle-exclamation", tone: "text-rose-600 dark:text-rose-400" };
+      return { label: store.t("Saved to workspace"), icon: "fa-shield-halved", tone: "text-emerald-600 dark:text-emerald-400" };
     });
 
     const setAccent = (opt) => {
@@ -481,6 +488,16 @@ export default {
       accountOpen.value = false;
       router.replace(mode === "supplier" ? "/find-work" : "/dashboard");
       store.notice(mode === "buyer" ? "Buyer workspace active" : mode === "supplier" ? "Supplier workspace active" : "Administration workspace active");
+    };
+    const openPurchasingWorkspace = () => {
+      const switched = marketplaceMode.value !== "buyer";
+      if (!store.setMarketplaceMode("buyer")) {
+        store.notice("Buyer workspace is unavailable for this account", "fa-shield-halved");
+        return;
+      }
+      accountOpen.value = false;
+      router.push("/procurement");
+      if (switched) store.notice("Buyer workspace active");
     };
 
     const toggleNav = () => { if (window.innerWidth < 768) mobileOpen.value = !mobileOpen.value; else collapsed.value = !collapsed.value; };
@@ -543,7 +560,7 @@ export default {
     });
 
     return {
-      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, switchMarketplaceMode,
+      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, switchMarketplaceMode, openPurchasingWorkspace,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,

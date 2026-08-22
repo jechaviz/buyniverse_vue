@@ -69,11 +69,11 @@ function runCommunicationsAudit(root, read) {
   });
   if (
     !draft ||
-    !draft.localOnly ||
+    draft.localOnly ||
     draft.status !== "Draft" ||
     !draft.recipientSupplierIds.length
   )
-    throw new Error("Local email draft flow is incomplete");
+    throw new Error("Server-workspace email draft flow is incomplete");
 
   const comment = store.addProjectComment({
     jobId: "job-1",
@@ -114,7 +114,7 @@ function runCommunicationsAudit(root, read) {
   return {
     threads: state.conversations.length,
     templates: state.messageTemplates.length,
-    localDrafts: state.mailings.length,
+    workspaceDrafts: state.mailings.length,
   };
 }
 

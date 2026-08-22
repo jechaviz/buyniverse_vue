@@ -7,7 +7,7 @@
         </span>
         <div class="min-w-0">
           <h2 class="text-sm font-800 text-slate-900 dark:text-white">{{ store.t("Document library") }}</h2>
-          <p class="text-[10px] leading-4 text-slate-400">{{ store.t("Reusable copies are private to this local demo account.") }}</p>
+          <p class="text-[10px] leading-4 text-slate-400">{{ store.t("Reusable copies are encrypted in this workspace session.") }}</p>
         </div>
       </div>
       <button type="button" class="grid h-7 w-7 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white" :aria-label="store.t('Close')" @click="$emit('close')">
@@ -101,7 +101,7 @@
     </div>
 
     <footer class="flex items-center justify-between gap-3 border-t border-slate-200/80 bg-white/75 px-4 py-2.5 text-[10px] text-slate-400 dark:border-slate-800 dark:bg-slate-900/75">
-      <span><i class="fa-solid fa-lock mr-1 text-brand"></i>{{ store.t("Stored locally per user") }}</span>
+      <span><i class="fa-solid fa-lock mr-1 text-brand"></i>{{ store.t("Encrypted workspace storage") }}</span>
       <button type="button" class="font-bold text-brand hover:underline" @click="$emit('new-document')">{{ store.t("New blank") }}</button>
     </footer>
   </aside>

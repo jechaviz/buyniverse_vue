@@ -39,6 +39,9 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["BUYNIVERSE_ENABLE_BACKEND_PROXY", "static_file", "fail_response", "127.0.0.1"]) {
     if (!phpShim.includes(token)) throw new Error(`Fail-closed PHP deployment shim is missing ${token}`);
   }
+  for (const token of ["/api/v1/workspace-state", "aes-256-gcm", "X-Buyniverse-CSRF", "workspace_safe_value", "allow_demo_workspace_state", "workspace_state_audit"]) {
+    if (!phpShim.includes(token)) throw new Error(`Encrypted workspace persistence is missing ${token}`);
+  }
   if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
     throw new Error("Deployment shim retains privileged database or deploy surface");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");

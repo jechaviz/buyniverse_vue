@@ -315,6 +315,24 @@ html[data-app-ready="true"] #app-boot {
   outline: none;
   background-color: rgba(255, 255, 255, 0.95);
 }
+/* Native select arrows ignore padding in several Chromium layouts. Own the
+   affordance so every compact field reserves a predictable click target. */
+select.field:not([multiple]) {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3.1 4.5 2.9 3 2.9-3' stroke='%2364758b' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 0.75rem 0.75rem;
+}
+select.field:not([multiple]):disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+html.dark select.field:not([multiple]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3.1 4.5 2.9 3 2.9-3' stroke='%23cbd5e1' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
 
 @media (min-width: 640px) {
   .sm\:flex-row { flex-direction: row; }

@@ -126,6 +126,7 @@ export default {
     const allowedContract = (contract) =>
       user.value.type === "Admin" ||
       [contract.clientId, contract.providerId].includes(user.value.id);
+    const canonicalPath = (path) => String(path || "").split("?")[0];
     const staticItems = computed(() => {
       const common = [
         [
@@ -189,21 +190,40 @@ export default {
         group: "View",
       }));
     });
+    const resolveRecent = (item) => {
+      const path = item.path.includes("?new=1")
+        ? item.path.split("?")[0]
+        : item.path;
+      const basePath = canonicalPath(path);
+      const projectId = basePath.match(/^\/project\/([^/]+)$/)?.[1];
+      const invoiceId = basePath.match(/^\/invoices\/([^/]+)$/)?.[1];
+      const contractId = basePath.match(/^\/contract\/([^/]+)$/)?.[1];
+      const job = projectId && store.job(projectId);
+      const invoice = invoiceId && store.state.invoices.find((entry) => entry.id === invoiceId);
+      const contract = contractId && store.contract(contractId);
+      const request = path.match(/[?&]request=([^&]+)/)?.[1];
+      const purchaseRequest = request && store.purchaseRequest(decodeURIComponent(request));
+      const direct = staticItems.value.find((entry) => entry.path === basePath);
+      const fallback = String(item.label || "").trim();
+      const isGeneric = !fallback || /^workspace$/i.test(fallback);
+      if (job) return { path, label: job.title, subtitle: `Project · ${job.status}`, icon: "fa-folder-open", group: "Recent" };
+      if (invoice) return { path, label: `Invoice ${invoice.serie}-${invoice.folio}`, subtitle: invoice.projectTitle || invoice.paymentStatus, icon: "fa-file-invoice-dollar", group: "Recent" };
+      if (contract) return { path, label: store.job(contract.sourceId)?.title || contract.id, subtitle: `Contract · ${contract.status}`, icon: "fa-file-contract", group: "Recent" };
+      if (purchaseRequest) return { path, label: `${purchaseRequest.id} · ${purchaseRequest.title}`, subtitle: `Purchase request · ${purchaseRequest.status}`, icon: "fa-clipboard-list", group: "Recent" };
+      if (direct) return { ...direct, path, subtitle: "Recently opened", group: "Recent" };
+      return {
+        path,
+        label: isGeneric ? basePath.replace(/^\//, "").replace(/[-/]/g, " ") || "Dashboard" : fallback,
+        subtitle: "Recently opened",
+        icon: "fa-clock-rotate-left",
+        group: "Recent",
+      };
+    };
     const items = computed(() => {
       const recent = (store.state.recentViews || [])
         .filter((item) => item.userId === user.value.id)
         .slice(0, 6)
-        .map((item) => ({
-          path: item.path.includes("?new=1")
-            ? item.path.split("?")[0]
-            : item.path,
-          label: item.path.startsWith("/procurement/queue")
-            ? "Purchase requests"
-            : item.label,
-          subtitle: "Recently opened",
-          icon: "fa-clock-rotate-left",
-          group: "Recent",
-        }));
+        .map(resolveRecent);
       const jobs = store.state.jobs.filter(allowedJob).map((job) => ({
         path: `/project/${job.id}`,
         label: job.title,
@@ -256,7 +276,8 @@ export default {
         ...invoices,
         ...requests,
       ].forEach((item) => {
-        if (!unique.has(item.path)) unique.set(item.path, item);
+        const key = canonicalPath(item.path);
+        if (!unique.has(key)) unique.set(key, item);
       });
       return [...unique.values()];
     });

@@ -45,6 +45,28 @@
     if (!state.procurementAnalytics || typeof state.procurementAnalytics !== "object")
       state.procurementAnalytics = window.BuyniverseDemo.clone().procurementAnalytics;
 
+    state.jobs = state.jobs.filter((job) => job && typeof job === "object" && typeof job.id === "string" && typeof job.clientId === "string").slice(0, 5000);
+    const ndaTemplate = (window.DocumentTemplates?.documentTemplates || []).find((template) => template?.id === "nda_b2b");
+    const cleanDocumentText = (value, limit) => window.WebCommon.sanitizeText(value, limit).trim();
+    const normalizeRequiredDocument = (document, index) => {
+      const sourceId = cleanDocumentText(document?.sourceId, 120);
+      const name = cleanDocumentText(document?.name, 180);
+      const sections = (Array.isArray(document?.sections) ? document.sections : []).slice(0, 60).map((section, sectionIndex) => ({
+        id: cleanDocumentText(section?.id, 80) || `section-${sectionIndex + 1}`,
+        title: cleanDocumentText(section?.title, 220), subtitle: cleanDocumentText(section?.subtitle, 400),
+        content: cleanDocumentText(section?.content, 50000), legalDisclaimer: cleanDocumentText(section?.legalDisclaimer, 3000),
+        type: ["cover", "section_end"].includes(section?.type) ? section.type : "standard",
+        level: Math.min(3, Math.max(1, Number(section?.level) || 1)),
+      }));
+      if (!sourceId || !name || !sections.length) return null;
+      const versionHash = cleanDocumentText(document?.versionHash, 32) || String(window.DocumentLibrary?.fingerprint(JSON.stringify({ name, sections })) || `v${index + 1}`).slice(0, 20);
+      return {
+        id: cleanDocumentText(document?.id, 120) || `requirement-${index + 1}`,
+        sourceId, sourceLabel: document?.sourceLabel === "Library" ? "Library" : "Template", name,
+        kind: document?.kind === "nda" || sourceId === "nda_b2b" ? "nda" : "document", versionHash, sections,
+        signatureRequired: document?.signatureRequired !== false, requiredForProposal: document?.requiredForProposal !== false,
+      };
+    };
     state.jobs.forEach((job, index) => {
       job.skills ||= [];
       job.proposals ||= [];
@@ -57,6 +79,18 @@
       job.experienceLevel ||= ["Intermediate", "Expert", "Entry"][index % 3];
       job.location ||= "Remote";
       job.requiresNDA ??= index === 1;
+      job.requiredDocuments = (Array.isArray(job.requiredDocuments) ? job.requiredDocuments : []).map(normalizeRequiredDocument).filter(Boolean).slice(0, 12);
+      if (job.requiresNDA && !job.requiredDocuments.some((document) => document.kind === "nda") && ndaTemplate?.build) {
+        const sections = ndaTemplate.build().slice(0, 60).map((section, sectionIndex) => ({ id: cleanDocumentText(section?.id, 80) || `section-${sectionIndex + 1}`, title: cleanDocumentText(section?.title, 220), subtitle: cleanDocumentText(section?.subtitle, 400), content: cleanDocumentText(section?.content, 50000), legalDisclaimer: cleanDocumentText(section?.legalDisclaimer, 3000), type: ["cover", "section_end"].includes(section?.type) ? section.type : "standard", level: Math.min(3, Math.max(1, Number(section?.level) || 1)) }));
+        job.requiredDocuments.push({ id: `requirement-nda-${job.id}`, sourceId: "nda_b2b", sourceLabel: "Template", name: cleanDocumentText(ndaTemplate.name, 180) || "NDA", kind: "nda", versionHash: String(window.DocumentLibrary?.fingerprint(JSON.stringify(sections)) || "nda").slice(0, 20), sections, signatureRequired: true, requiredForProposal: true });
+      }
+      job.documentAcceptances = (Array.isArray(job.documentAcceptances) ? job.documentAcceptances : []).map((entry) => {
+        const document = job.requiredDocuments.find((item) => item.id === entry?.documentId && item.versionHash === entry?.versionHash);
+        const signerId = cleanDocumentText(entry?.signerId, 120);
+        if (!document || !state.users.some((user) => user.id === signerId)) return null;
+        const acceptedAt = new Date(entry?.acceptedAt);
+        return { documentId: document.id, sourceId: document.sourceId, versionHash: document.versionHash, signerId, signerName: cleanDocumentText(entry?.signerName, 120), acceptedAt: Number.isNaN(acceptedAt.getTime()) ? new Date().toISOString() : acceptedAt.toISOString(), method: entry?.method === "clickwrap" ? "clickwrap" : "acknowledgment" };
+      }).filter(Boolean).slice(-500);
     });
 
     state.users.forEach((user) => {
@@ -76,6 +110,18 @@
     state.purchaseRequests.forEach((request) => {
       request.items ||= [];
       request.audit ||= [];
+    });
+
+    const seededProducts = new Map((window.BuyniverseDemo?.clone?.().products || []).map((product) => [product.id, product]));
+    state.products.forEach((product) => {
+      const seeded = seededProducts.get(product?.id);
+      product.description ||= product.name || product.id;
+      product.sku ||= String(product.id || "catalog").toUpperCase();
+      product.unit ||= "Each";
+      product.currency ||= "USD";
+      product.referencePrice = Number(product.referencePrice || product.rate || 0);
+      if (!Array.isArray(product.offers) || !product.offers.length)
+        product.offers = Array.isArray(seeded?.offers) ? seeded.offers : [];
     });
 
     state.sourcingEvents.forEach((event) => {
@@ -243,7 +289,9 @@
           recipientUserIds: [...new Set((Array.isArray(mailing?.recipientUserIds) ? mailing.recipientUserIds : []).filter((userId) => knownUsers.has(userId)))].slice(0, 50),
           status: "Draft",
           channel: "email",
-          localOnly: true,
+          // A draft is persisted through the encrypted workspace endpoint;
+          // it remains a draft, not an automatically delivered email.
+          localOnly: false,
           createdById: knownUsers.has(mailing?.createdById) ? mailing.createdById : state.currentUserId,
           createdAt: Number.isNaN(new Date(mailing?.createdAt).getTime()) ? new Date().toISOString() : new Date(mailing.createdAt).toISOString(),
         };

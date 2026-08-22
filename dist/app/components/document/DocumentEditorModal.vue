@@ -493,9 +493,9 @@ export default {
     }
     function saveLibraryDocument(meta) {
       const saved = documentLibrary?.save(currentUserId(), { ...snapshot(meta?.name), name: meta?.name, tags: meta?.tags || [] });
-      if (!saved) return store.notice(store.t("Document could not be saved locally"), "fa-triangle-exclamation");
+      if (!saved) return store.notice(store.t("Document could not be saved to the workspace"), "fa-triangle-exclamation");
       refreshLibrary();
-      store.notice(store.t("Reusable document saved to your local library"), "fa-bookmark");
+      store.notice(store.t("Reusable document saved to your workspace library"), "fa-bookmark");
     }
     function saveTemplateCopy(template) {
       if (!template?.build) return;
@@ -508,7 +508,7 @@ export default {
     }
     async function deleteLibraryDocument(id) {
       const allowed = await store.confirm({
-        title: store.t("Delete reusable document?"), message: store.t("This removes only your local library copy. Project descriptions are not changed."),
+        title: store.t("Delete reusable document?"), message: store.t("This removes only your workspace library copy. Project descriptions are not changed."),
         confirmText: store.t("Delete"), danger: true,
       });
       if (!allowed || !documentLibrary?.remove(currentUserId(), id)) return;

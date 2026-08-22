@@ -245,11 +245,16 @@ export default {
       order: saved?.order || layoutKeys(this.columns, this.editable), widths: saved?.widths || {},
       page: 1, pageSize: saved?.pageSize || 10, selection: {}, mode: saved?.mode || "table", editing: null, dragColumn: "", activeGroup: "all",
       savedViews, activeView,
+      onWorkspaceHydrated: null,
       remote: { items: [], total: null, totalRelation: "eq", nextCursor: null, facets: {}, tookMs: 0, loading: false, error: "", cursors: [null], controller: null, timer: null, requestId: 0 },
       tableElementId: `table-${cleanText(this.tableId, 80).replace(/[^a-zA-Z0-9_-]/g, "-") || "records"}`,
     };
   },
-  mounted() { if (this.activeView) this.applyView(); else this.persist(); },
+  mounted() {
+    this.onWorkspaceHydrated = () => this.resetForTable();
+    window.addEventListener("buyniverse:workspace-hydrated", this.onWorkspaceHydrated);
+    if (this.activeView) this.applyView(); else this.persist();
+  },
   computed: {
     activeSavedView() { return this.savedViews.find((v) => v.id === this.activeView) || null; },
     currentViewLabel() { return this.activeSavedView?.name || "All records"; },
@@ -350,7 +355,11 @@ export default {
     widths: { deep: true, handler() { this.persist(); } },
     mode() { this.persist(); },
   },
-  beforeUnmount() { if (this.remote.timer) clearTimeout(this.remote.timer); this.remote.controller?.abort(); },
+  beforeUnmount() {
+    if (this.remote.timer) clearTimeout(this.remote.timer);
+    this.remote.controller?.abort();
+    window.removeEventListener("buyniverse:workspace-hydrated", this.onWorkspaceHydrated);
+  },
   methods: {
     resetForTable() {
       const saved = this.readStore(), keys = layoutKeys(this.columns, this.editable), stored = (saved?.order || []).filter((k) => keys.includes(k)), order = [...stored, ...keys.filter((k) => !stored.includes(k))];

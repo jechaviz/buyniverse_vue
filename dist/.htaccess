@@ -30,7 +30,13 @@ Options -Indexes -MultiViews
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # This public static artifact is read-only. Use rewrite instead of
+  # The encrypted workspace-state endpoint is the sole mutable runtime route.
+  # It is routed through index.php, where method, CSRF, session and payload
+  # validation are enforced before the database is reached.
+  RewriteCond %{REQUEST_URI} ^/api/v1/workspace-state/?$ [NC]
+  RewriteRule ^ index.php [L,QSA]
+
+  # This public static artifact is otherwise read-only. Use rewrite instead of
   # <LimitExcept>, which LiteSpeed can apply inconsistently to HEAD requests.
   RewriteCond %{REQUEST_METHOD} !^(?:GET|HEAD)$ [NC]
   RewriteRule ^ - [F,L]

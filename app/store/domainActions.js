@@ -167,11 +167,11 @@
         const mailing = {
           id: id("mail"), contextType: context.type, contextId: context.id, templateId: template?.id || null,
           subject, body, recipientSupplierIds: context.supplierIds, recipientUserIds: supplierUserIds(context.supplierIds),
-          status: "Draft", channel: "email", localOnly: true, createdById: currentUser.id, createdAt: new Date().toISOString(),
+          status: "Draft", channel: "email", localOnly: false, createdById: currentUser.id, createdAt: new Date().toISOString(),
         };
         state.mailings.unshift(mailing);
         state.mailings = state.mailings.slice(0, 200);
-        this.notice("Email draft saved locally", "fa-envelope");
+        this.notice("Email draft saved to workspace", "fa-envelope");
         return mailing;
       },
 

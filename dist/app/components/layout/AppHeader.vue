@@ -18,9 +18,9 @@
       </span>
     </div>
 
-      <span class="hidden items-center gap-1.5 text-[11px] font-semibold text-sky-600 dark:text-sky-300 lg:flex" :title="store.t('Demo data is stored only in this browser')">
+      <span class="hidden items-center gap-1.5 text-[11px] font-semibold text-sky-600 dark:text-sky-300 lg:flex" :title="store.t('Workspace data is protected by server-side storage')">
         <span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
-        {{ store.t("Demo data · local only") }}
+        {{ store.t("Workspace sync") }}
       </span>
 
       <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
