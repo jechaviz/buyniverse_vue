@@ -66,10 +66,13 @@ function runDocumentLibraryAudit(root, read) {
   const fields = read("app/components/document/DocumentVariableDrawer.vue");
   const cover = read("app/components/document/DocumentCoverEditor.vue");
   const chrome = read("app/components/document/DocumentHeaderFooterModal.vue");
+  const sidebar = read("app/components/document/DocumentSidebarPanel.vue");
   if (!editor.includes("DocumentLibraryDrawer") || !editor.includes("parseMarkdownToDocument") || /\bprompt\s*\(/.test(editor))
     throw new Error("Document editor lacks the reusable library or retains a native prompt");
   if (editor.includes("templatesOpen") || editor.includes("Floating templates dropdown"))
     throw new Error("Document editor retains the clipped duplicate templates dropdown");
+  if (!editor.includes("hasCover") || !editor.includes("hasSectionEnd") || !sidebar.includes("canAddCover") || !sidebar.includes("canAddSectionEnd"))
+    throw new Error("Document cover and ending singleton guards are incomplete");
   if (fields.includes("buyniverse_saved_doc_templates"))
     throw new Error("Saved-document persistence remains duplicated in the fields drawer");
   if (!cover.includes("DocumentBlockStyleToolbar") || !cover.includes("setBlockStyle") || !chrome.includes("apply-to-all") || !chrome.includes("section_title"))

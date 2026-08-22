@@ -358,7 +358,9 @@
     "Apply this format to all sections": "Aplicar este formato a todas las secciones",
     "Done": "Listo",
     "Untitled section": "Sección sin título",
-    "Section header and footer format applied to all sections": "Formato de encabezado y pie aplicado a todas las secciones"
+    "Section header and footer format applied to all sections": "Formato de encabezado y pie aplicado a todas las secciones",
+    "Only one cover is allowed per document.": "Solo se permite una portada por documento.",
+    "Only one section end is allowed per document.": "Solo se permite un cierre de sección por documento."
   };
 
   if (typeof global !== "undefined") global.__buyniverseI18n_workspace = dict;

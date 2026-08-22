@@ -25,9 +25,10 @@
       <div class="flex items-center gap-1">
         <button
           type="button"
-          class="rounded-lg bg-purple-50 dark:bg-purple-900/30 px-2 py-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition"
+          class="rounded-lg bg-purple-50 px-2 py-1 text-[11px] font-bold text-purple-700 transition hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-purple-900/30 dark:text-purple-300"
+          :disabled="!canAddCover"
           @click="$emit('add-cover')"
-          :title="store.t('Añadir Portada de Sección')"
+          :title="canAddCover ? store.t('Añadir Portada de Sección') : store.t('Only one cover is allowed per document.')"
         >
           <i class="fa-solid fa-file-shield mr-1"></i>{{ store.t("+ Portada") }}
         </button>
@@ -41,9 +42,10 @@
         </button>
         <button
           type="button"
-          class="rounded-lg bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition"
+          class="rounded-lg bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-emerald-900/30 dark:text-emerald-300"
+          :disabled="!canAddSectionEnd"
           @click="$emit('add-section-end')"
-          :title="store.t('Añadir Fin de Sección / Firmas')"
+          :title="canAddSectionEnd ? store.t('Añadir Fin de Sección / Firmas') : store.t('Only one section end is allowed per document.')"
         >
           <i class="fa-solid fa-signature mr-1"></i>{{ store.t("+ Fin") }}
         </button>
@@ -213,6 +215,8 @@ export default {
     docTitle: String,
     showRunningHeader: Boolean,
     suppressOnCover: { type: Boolean, default: true },
+    canAddCover: { type: Boolean, default: true },
+    canAddSectionEnd: { type: Boolean, default: true },
     resolveSectionChrome: Function,
   },
   emits: [

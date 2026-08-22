@@ -586,6 +586,6 @@ app.config.errorHandler = (error, instance, info) => {
 
 window.WebCommon.installFormValidation(document);
 app.config.globalProperties.$t = window.BuyniverseI18n.t;
-const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=11");
+const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=12");
 app.component("DocumentEditorModal", DocumentEditorModal);
 app.provide("store", store).use(router).mount("#app");

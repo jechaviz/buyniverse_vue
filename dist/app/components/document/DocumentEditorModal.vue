@@ -129,6 +129,8 @@
           :doc-title="docTitle"
           :show-running-header="showRunningHeader"
           :suppress-on-cover="suppressOnCover"
+          :can-add-cover="!hasCover"
+          :can-add-section-end="!hasSectionEnd"
           :resolve-section-chrome="sectionChrome"
           @update:left-view-tab="leftViewTab = $event"
           @update:active-section-id="activeSectionId = $event"
@@ -194,7 +196,7 @@
 <script>
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=4");
+const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=5");
 const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=7");
 const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=3");
 const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=2");
@@ -293,6 +295,8 @@ export default {
     watch([docTitle, headerText, footerText, sections], () => triggerAutosave(), { deep: true });
 
     const activeSection = computed(() => sections.value.find((s) => s.id === activeSectionId.value) || sections.value[0] || null);
+    const hasCover = computed(() => sections.value.some((section) => section.type === "cover"));
+    const hasSectionEnd = computed(() => sections.value.some((section) => section.type === "section_end"));
     function interpolateChrome(text, section) {
       const sectionTitle = section?.title || docTitle.value || store.t("Untitled section");
       return String(text || "").replace(/\{\{sectionTitle\}\}/g, sectionTitle).replace(/\{\{documentTitle\}\}/g, docTitle.value || store.t("Untitled document"));
@@ -366,11 +370,23 @@ export default {
       activeSectionId.value = newId;
     }
     function addCover() {
+      const existing = sections.value.find((section) => section.type === "cover");
+      if (existing) {
+        activeSectionId.value = existing.id;
+        store.notice(store.t("Only one cover is allowed per document."), "fa-file-shield");
+        return;
+      }
       const newId = "sec-cov-" + Date.now();
       sections.value.unshift({ id: newId, type: "cover", alignVertical: "center", title: "PORTADA DE SECCIÓN / PLIEGO", subtitle: "Documento Protegido · Buyniverse", content: "Resumen y objetivo formal del documento.", legalDisclaimer: "Información confidencial sujeta a secreto industrial.", versionText: `v1.0 · ${new Date().toLocaleDateString()}` });
       activeSectionId.value = newId;
     }
     function addSectionEnd() {
+      const existing = sections.value.find((section) => section.type === "section_end");
+      if (existing) {
+        activeSectionId.value = existing.id;
+        store.notice(store.t("Only one section end is allowed per document."), "fa-signature");
+        return;
+      }
       const newId = "sec-end-" + Date.now();
       sections.value.push({ id: newId, type: "section_end", alignVertical: "bottom", title: "FIN DE SECCIÓN & CONSTANCIA DE FIRMAS", content: "Las partes manifiestan su conformidad con los acuerdos técnicos.", showSignatures: true });
       activeSectionId.value = newId;
@@ -507,7 +523,7 @@ export default {
       store, modalRoot, docTitle, headerText, footerText, pageNumberFormat, watermarkText, suppressOnCover, showRunningHeader,
       headerFooterSettingsOpen, variableDrawerOpen, libraryOpen, leftViewTab, markdownTextarea, isSaving, lastAutosavedAt,
       variableDialogOpen, variableDialogValue, libraryDocuments, sections, activeSectionId, activeSection, flatNumberedSections,
-      activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, documentTemplates, selectSection,
+      activeSectionNumber, totalWordCount, estimatedPages, sectionChrome, shouldSuppressChrome, hasCover, hasSectionEnd, documentTemplates, selectSection,
       addRootSection, addCover, addSectionEnd, addSubSection, deleteSection, setSectionLevel, insertMarkdownWrapper, insertMarkdownPrefix,
       insertCallout, insertTableSnippet, insertVariablePrompt, insertVariableByName, applyVariablesToSections, renderedBlocks,
       loadTemplate, loadTemplateById, loadLibraryDocument, saveLibraryDocument, saveTemplateCopy, deleteLibraryDocument, newBlankDocument,
