@@ -37,6 +37,8 @@ const index = read("index.html");
 const criticalCss = read("app/critical.css");
 if (!index.includes('src="app/boot.js') || !fs.existsSync(path.join(root, "app", "boot.js")))
   throw new Error("Missing synchronous visual-preference bootstrap");
+if (!index.includes('<base href="./"') || index.includes('<base href="/"'))
+  throw new Error("Asset base must remain relative for root and subfolder deployments");
 if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot"))
   throw new Error("Missing anti-FOUC boot layer");
 if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready"))
