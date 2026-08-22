@@ -1,5 +1,9 @@
 Options -Indexes -MultiViews
 
+<LimitExcept GET HEAD>
+  Require all denied
+</LimitExcept>
+
 <FilesMatch "(?i)^(?:\.|.*\.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml))$">
   Require all denied
 </FilesMatch>
@@ -34,6 +38,7 @@ Options -Indexes -MultiViews
   # repository checkout. Deny source, operation and dependency paths first so
   # the generic static-file shortcut below can never expose them.
   RewriteRule ^(?:\.git|node_modules|dist|scripts|tests?|docs)(?:/|$) - [F,L,NC]
+  RewriteRule \.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml)$ - [F,L,NC]
   RewriteRule ^(?:package(?:-lock)?\.json|bun\.lockb?|tsconfig(?:\..+)?\.json|(?:vite|uno)\.config\.[a-z]+|serve\.py)$ - [F,L,NC]
 
   # Allowlisted static assets are served directly; application routes use the shim.
