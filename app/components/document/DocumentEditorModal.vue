@@ -203,7 +203,7 @@
 const { inject, ref, computed, watch, nextTick, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DocumentSidebarPanel = load("./app/components/document/DocumentSidebarPanel.vue?v=6");
-const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=8");
+const DocumentContentEditor = load("./app/components/document/DocumentContentEditor.vue?v=9");
 const DocumentVariableDrawer = load("./app/components/document/DocumentVariableDrawer.vue?v=3");
 const DocumentHeaderFooterModal = load("./app/components/document/DocumentHeaderFooterModal.vue?v=2");
 const DocumentLibraryDrawer = load("./app/components/document/DocumentLibraryDrawer.vue?v=4");

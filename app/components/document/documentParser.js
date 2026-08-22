@@ -77,6 +77,7 @@
     var lines = (content || "").split("\n");
     var blocks = [];
     var tableBuffer = [];
+    var listBuffer = [];
 
     function flushTable() {
       if (tableBuffer.length >= 2) {
@@ -89,14 +90,53 @@
       tableBuffer = [];
     }
 
+    function flushList() {
+      if (!listBuffer.length) return;
+      blocks.push({
+        type: listBuffer[0].type,
+        items: listBuffer.map(function (item) {
+          return { text: formatInlineVariables(item.text), marker: item.marker, depth: item.depth };
+        }),
+      });
+      listBuffer = [];
+    }
+
+    function parseListLine(raw) {
+      var ordered = String(raw || "").match(/^(\s*)((?:\d+\.)*\d+)([.)])\s+(.+)$/);
+      if (ordered) return {
+        type: "ol",
+        marker: ordered[2] + ordered[3],
+        depth: Math.floor(ordered[1].replace(/\t/g, "  ").length / 2),
+        text: ordered[4],
+      };
+      var bullet = String(raw || "").match(/^(\s*)[-+*]\s+(.+)$/);
+      if (bullet) return {
+        type: "ul",
+        marker: "•",
+        depth: Math.floor(bullet[1].replace(/\t/g, "  ").length / 2),
+        text: bullet[2],
+      };
+      return null;
+    }
+
     for (var i = 0; i < lines.length; i++) {
-      var l = lines[i].trim();
+      var raw = lines[i];
+      var l = raw.trim();
       if (l.startsWith("|") && l.endsWith("|")) {
+        flushList();
         tableBuffer.push(l);
         continue;
       } else if (tableBuffer.length > 0) {
         flushTable();
       }
+
+      var listItem = parseListLine(raw);
+      if (listItem) {
+        if (listBuffer.length && listBuffer[0].type !== listItem.type) flushList();
+        listBuffer.push(listItem);
+        continue;
+      }
+      flushList();
 
       if (l.startsWith("> [!NOTE]")) {
         blocks.push({ type: "callout", tone: "info", title: "NOTA", text: formatInlineVariables(lines[++i]?.replace(/^>\s*/, "") || "") });
@@ -114,13 +154,12 @@
         blocks.push({ type: "quote", text: formatInlineVariables(l.slice(2)) });
       } else if (l.startsWith("- [ ] ") || l.startsWith("- [x] ")) {
         blocks.push({ type: "todo", checked: l.startsWith("- [x] "), text: formatInlineVariables(l.slice(6)) });
-      } else if (l.startsWith("- ") || l.startsWith("* ")) {
-        blocks.push({ type: "list-item", text: formatInlineVariables(l.slice(2)) });
       } else if (l) {
         blocks.push({ type: "p", text: formatInlineVariables(l) });
       }
     }
     if (tableBuffer.length > 0) flushTable();
+    flushList();
     return blocks;
   }
 

@@ -61,6 +61,9 @@ function runDocumentLibraryAudit(root, read) {
   const parsed = scope.DocumentParser.parseMarkdownToDocument("# Source brief\n\n## Scope\nControlled text");
   if (parsed.title !== "Source brief" || parsed.sections.length !== 1 || parsed.sections[0].title !== "Scope")
     throw new Error("Initial Markdown is not hydrated into document sections");
+  const listPreview = scope.DocumentParser.parseMarkdownToBlocks("2. Root item\n  2.1. Nested item\n3. Next item\n\n- Bullet item");
+  if (listPreview.length !== 2 || listPreview[0].type !== "ol" || listPreview[0].items[1].marker !== "2.1." || listPreview[0].items[1].depth !== 1 || listPreview[1].type !== "ul")
+    throw new Error("Nested ordered and unordered Markdown lists are not preserved in the preview parser");
 
   const editor = read("app/components/document/DocumentEditorModal.vue");
   const fields = read("app/components/document/DocumentVariableDrawer.vue");
@@ -79,7 +82,7 @@ function runDocumentLibraryAudit(root, read) {
     throw new Error("Saved-document persistence remains duplicated in the fields drawer");
   if (!cover.includes("DocumentBlockStyleToolbar") || !cover.includes("setBlockStyle") || !chrome.includes("apply-to-all") || !chrome.includes("section_title"))
     throw new Error("Cover style controls or section-level page chrome are incomplete");
-  for (const token of ["previewOpen", "handleEditorKeydown", "continueList", "indentSelection", "@keydown=\"handleEditorKeydown\""]) {
+  for (const token of ["previewOpen", "handleEditorKeydown", "continueList", "indentSelection", "parseOrderedLine", "parentPathBefore", "fa-list-ol", "@keydown=\"handleEditorKeydown\""]) {
     if (!content.includes(token)) throw new Error(`Markdown writing or on-demand preview is missing ${token}`);
   }
   if (!/previewOpen\s*=\s*ref\(false\)/.test(content) || !content.includes('v-if="previewOpen"'))
