@@ -28,8 +28,17 @@
         </p>
       </div>
 
+      <div v-if="isDemoRuntime" class="rounded-2xl border border-amber-300/80 bg-amber-50 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-700/70 dark:bg-amber-950/30 dark:text-amber-100" role="note">
+        <p class="flex items-center gap-1.5 font-bold">
+          <i class="fa-solid fa-shield-halved"></i>{{ store.t("Entorno demostrativo; no ingreses credenciales reales.") }}
+        </p>
+        <p class="mt-1 text-[11px] leading-relaxed opacity-85">
+          {{ store.t("El acceso de producción requiere identidad federada, MFA y autorización verificada en servidor.") }}
+        </p>
+      </div>
+
       <!-- Mode Switcher Tabs (Only if not in forgot password mode) -->
-      <div v-if="mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
+      <div v-if="!isDemoRuntime && mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
         <button
           type="button"
           class="rounded-xl py-2 text-xs font-bold transition"
@@ -51,7 +60,7 @@
       <!-- ================================================================= -->
       <!-- 1. SOCIAL LOGINS (Google, Microsoft, GitHub, LinkedIn)           -->
       <!-- ================================================================= -->
-      <div v-if="mode !== 'forgot'" class="space-y-3">
+      <div v-if="!isDemoRuntime && mode !== 'forgot'" class="space-y-3">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <button
             v-for="prov in socialProviders"
@@ -102,7 +111,7 @@
           </div>
         </div>
 
-        <form class="space-y-3" @submit.prevent="handleEmailLogin">
+        <form v-if="!isDemoRuntime" class="space-y-3" @submit.prevent="handleEmailLogin">
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">{{ store.t("Correo Electrónico") }}</label>
             <div class="relative">
@@ -136,7 +145,7 @@
       <!-- ================================================================= -->
       <!-- 3. REGISTER FORM (Email & Enterprise)                            -->
       <!-- ================================================================= -->
-      <div v-else-if="mode === 'register'" class="space-y-4">
+      <div v-else-if="mode === 'register' && !isDemoRuntime" class="space-y-4">
         <!-- Account Type Selector -->
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">{{ store.t("Tipo de Cuenta") }}</label>
@@ -214,7 +223,7 @@
       <!-- ================================================================= -->
       <!-- 4. FORGOT PASSWORD FLOW (OTP & Reset)                             -->
       <!-- ================================================================= -->
-      <div v-else-if="mode === 'forgot'" class="space-y-4">
+      <div v-else-if="mode === 'forgot' && !isDemoRuntime" class="space-y-4">
         <!-- Step 1: Send OTP -->
         <div v-if="forgotStep === 1" class="space-y-3">
           <div>
@@ -270,6 +279,13 @@
           </button>
         </div>
       </div>
+
+      <div v-else-if="mode !== 'login'" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center dark:border-slate-800 dark:bg-slate-800/60">
+        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">{{ store.t("Este flujo está deshabilitado en la demostración pública.") }}</p>
+        <button type="button" class="mt-2 text-xs font-bold text-brand hover:underline" @click="mode = 'login'">
+          {{ store.t("Volver a los perfiles demo") }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -288,6 +304,10 @@ export default {
     const store = inject("store");
     const router = useRouter();
     const mode = ref(props.initialMode || "login");
+    // This public build intentionally never collects real credentials. A
+    // production identity provider must set serverAuth only together with a
+    // server-verified OIDC/MFA session and API-side authorization.
+    const isDemoRuntime = !Boolean(window.BuyniverseRuntime?.serverAuth);
 
     // Login fields
     const loginEmail = ref("");
@@ -358,116 +378,21 @@ export default {
       router.push("/dashboard");
     };
 
-    const handleSocialAuth = (prov) => {
-      // Create or locate social user
-      const socialId = `user-social-${prov.id}`;
-      let user = store.state.users.find(u => u.id === socialId);
-      if (!user) {
-        user = {
-          id: socialId,
-          name: `${prov.short} Verified Executive`,
-          email: `auth.${prov.id}@enterprise-sso.com`,
-          type: "Client",
-          companyName: `${prov.short} Enterprise Partner`,
-          headline: `Autenticado con ${prov.name} SSO`,
-          skills: ["SSO", "Enterprise", "B2B"],
-          avatar: prov.short.slice(0, 2).toUpperCase(),
-          jss: 100,
-          tier: "Hero",
-          certLevel: 5,
-          connects: 150,
-          rfc: "SSO990101XYZ",
-          folioBalance: 50
-        };
-        store.state.users.push(user);
-      }
-      activateUser(user.id);
-      store.notice(`${store.t("Acceso exitoso con")} ${prov.name}`, "fa-circle-check");
-      emit("close");
-      router.push("/dashboard");
+    const unavailable = () => {
+      store.notice(store.t("Disponible únicamente con identidad federada de producción."), "fa-shield-halved");
+      mode.value = "login";
     };
-
-    const handleEmailLogin = () => {
-      const found = store.state.users.find(u => u.email.toLowerCase() === loginEmail.value.toLowerCase());
-      const targetId = found ? found.id : store.state.users[0]?.id || "user-client-brenda";
-      activateUser(targetId);
-      store.notice(store.t("Sesión iniciada con éxito"), "fa-circle-check");
-      emit("close");
-      router.push("/dashboard");
-    };
-
-    const handleEmailRegister = () => {
-      const newId = `user-${Date.now()}`;
-      const initials = regName.value.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "U1";
-      
-      const newUser = {
-        id: newId,
-        name: regName.value,
-        email: regEmail.value,
-        type: regType.value,
-        companyName: regType.value === "Client" ? regName.value : `${regName.value} Studio`,
-        headline: regType.value === "Client" ? "Gerente de Compras & Proyectos" : "Especialista Profesional Certificado",
-        skills: ["B2B", "Escrow", "Sourcing"],
-        avatar: initials,
-        jss: 100,
-        tier: "Hero",
-        certLevel: 5,
-        connects: 100,
-        rfc: regRfc.value || "XAXX010101000",
-        folioBalance: 25
-      };
-
-      store.state.users.push(newUser);
-      activateUser(newId);
-      store.notice(store.t("¡Cuenta creada exitosamente! Bienvenido a Buyniverse."), "fa-sparkles");
-      emit("close");
-      router.push(regType.value === "Client" ? "/post-job/new" : "/dashboard");
-    };
-
-    const openForgot = () => {
-      mode.value = "forgot";
-      forgotStep.value = 1;
-      forgotEmail.value = loginEmail.value || "";
-    };
-
-    const sendRecoveryOtp = () => {
-      if (!forgotEmail.value) {
-        store.notice(store.t("Por favor ingresa un correo válido"), "fa-triangle-exclamation");
-        return;
-      }
-      // Generate 6-digit PIN
-      generatedOtp.value = String(Math.floor(100000 + Math.random() * 900000));
-      inputOtp.value = generatedOtp.value; // pre-fill for frictionless UX
-      forgotStep.value = 2;
-      store.notice(store.t("Código de recuperación generado"), "fa-envelope");
-    };
-
-    const verifyOtpAndReset = () => {
-      if (inputOtp.value !== generatedOtp.value) {
-        store.notice(store.t("El código PIN no coincide"), "fa-triangle-exclamation");
-        return;
-      }
-      if (!newPassword.value || newPassword.value.length < 8) {
-        store.notice(store.t("La contraseña debe tener al menos 8 caracteres"), "fa-triangle-exclamation");
-        return;
-      }
-      if (newPassword.value !== confirmPassword.value) {
-        store.notice(store.t("Las contraseñas no coinciden"), "fa-triangle-exclamation");
-        return;
-      }
-
-      // Successful password reset
-      store.notice(store.t("Contraseña restablecida exitosamente. Iniciando sesión..."), "fa-circle-check");
-      const found = store.state.users.find(u => u.email.toLowerCase() === forgotEmail.value.toLowerCase());
-      const targetId = found ? found.id : store.state.users[0]?.id || "user-client-brenda";
-      activateUser(targetId);
-      emit("close");
-      router.push("/dashboard");
-    };
+    const handleSocialAuth = unavailable;
+    const handleEmailLogin = unavailable;
+    const handleEmailRegister = unavailable;
+    const openForgot = unavailable;
+    const sendRecoveryOtp = unavailable;
+    const verifyOtpAndReset = unavailable;
 
     return {
       store,
       mode,
+      isDemoRuntime,
       socialProviders,
       demoProfiles,
       loginEmail,

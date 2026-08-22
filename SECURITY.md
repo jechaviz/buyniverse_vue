@@ -1,6 +1,6 @@
 # Seguridad de Buyniverse Vue
 
-Revisión actualizada el 21 de agosto de 2026 contra OWASP Top 10 para el alcance real de esta aplicación: una demostración estática, sin backend ni autenticación de producción.
+Revisión actualizada el 22 de agosto de 2026 contra OWASP Top 10 para el alcance real de esta aplicación: una demostración estática, sin backend ni autenticación de producción.
 
 ## Controles implementados
 
@@ -13,6 +13,12 @@ Revisión actualizada el 21 de agosto de 2026 contra OWASP Top 10 para el alcanc
 - A07 — identidad: el cambio de cuenta está etiquetado como función demo y siempre vuelve al dashboard para invalidar la vista del rol anterior. Los diálogos, drawers y bloqueo de privacidad mantienen el foco dentro de la capa activa y restauran el foco al cerrarse.
 - A09 — trazabilidad: los flujos de compras y subastas generan eventos de auditoría; los errores de componentes se capturan sin exponer secretos. El shell muestra con precisión el guardado local, sin afirmar una sincronización de base de datos inexistente.
 - A10 — solicitudes: el cargador SFC sólo acepta mismo origen, no sigue redirecciones y CSP limita conexiones a `self`.
+
+## Publicación verificable
+
+- El despliegue prepara un directorio temporal construido desde `dist` y sólo después reemplaza el webroot. No copia el artefacto encima de un checkout: así no sobreviven `package.json`, `scripts/`, dumps, semillas ni archivos de automatización de una versión anterior.
+- Apache y el shim PHP aplican la misma CSP con hash para el único bootstrap inline, HSTS, `Permissions-Policy` compatible con navegadores actuales, `nosniff`, aislamiento de origen, anti-framing y bloqueo explícito de rutas de código, dependencias y operación.
+- El modal público ya no acepta correo, contraseña, OTP ni proveedores SSO simulados. Sólo permite elegir perfiles ficticios y advierte que no se ingresen credenciales reales.
 
 ## Endurecimiento operacional
 

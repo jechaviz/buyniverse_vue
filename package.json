@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node serve.py --port 4178",
-    "build": "node scripts/build_dist.js",
-    "build:vite": "vite build",
-    "qa": "node scripts/qa.js && node scripts/qa/deepReview.js && node scripts/qa/e2eSimulation.js && node scripts/qa/test_job_auction.js"
+    "dev": "uv run python serve.py --port 4178",
+    "build": "bun scripts/build_dist.js",
+    "qa": "bun scripts/qa.js && bun scripts/qa/deepReview.js && bun scripts/qa/e2eSimulation.js && bun scripts/qa/test_job_auction.js"
   },
   "devDependencies": {
     "@unocss/core": "^66.7.5",

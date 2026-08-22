@@ -1,0 +1,43 @@
+# Robots.txt for Buyniverse Platform
+# https://buyniverse.com/
+
+User-agent: *
+Allow: /
+Allow: /find-talent
+Allow: /browse-services
+Allow: /procurement
+Allow: /procurement/cockpit
+Allow: /procurement/sourcing
+Allow: /procurement/auction
+Allow: /procurement/execution
+Allow: /procurement/intelligence
+Allow: /procurement/governance
+Allow: /projects
+Allow: /suppliers
+Allow: /job/
+Allow: /gig/
+Allow: /agency/
+Allow: /profile/
+Allow: /assets/
+
+# Disallow authenticated/internal/private action states
+Disallow: /admin/
+Disallow: /invoices/new
+Disallow: /payments/new
+Disallow: /*?new=*
+Disallow: /*?private=*
+
+# Googlebot, Bingbot & Common Crawlers
+User-agent: Googlebot
+Allow: /
+Allow: /assets/
+Allow: /app/
+
+User-agent: Bingbot
+Allow: /
+Allow: /assets/
+Allow: /app/
+
+# Host and Sitemap
+Host: https://buyniverse.com
+Sitemap: https://buyniverse.com/sitemap.xml

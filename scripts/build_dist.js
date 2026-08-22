@@ -239,7 +239,9 @@ async function build() {
     "index.php",
     ".htaccess",
     "manifest.json",
-    "favicon.ico"
+    "favicon.ico",
+    "robots.txt",
+    "sitemap.xml"
   ];
 
   for (const file of runtimeFiles) {

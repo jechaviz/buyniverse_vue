@@ -41,10 +41,26 @@ function runSecurityAudit(root, read, vueFiles) {
   }
   if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
     throw new Error("Deployment shim retains privileged database or deploy surface");
+  if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");
+  for (const token of ["'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='", "X-Permitted-Cross-Domain-Policies", "X-Download-Options", "Strict-Transport-Security"]) {
+    if (!phpShim.includes(token)) throw new Error(`PHP response hardening is missing ${token}`);
+  }
   if (/db_schema\.sql|db_seed\.sql|buyniverse\.c|buyniverse\.v/.test(buildScript))
     throw new Error("Published dist artifact includes internal database or backend source files");
-  for (const token of ["Options -Indexes", "Require all denied", "Content-Security-Policy"]) {
+  for (const token of [
+    "Options -Indexes", "Require all denied", "Content-Security-Policy", "Strict-Transport-Security",
+    "Permissions-Policy", "X-Permitted-Cross-Domain-Policies", "X-Download-Options",
+    "RewriteRule ^(?:\\.git|node_modules|dist|scripts|tests?|docs)", "package(?:-lock)?\\.json",
+  ]) {
     if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
+  }
+  if (htaccess.includes("document-domain")) throw new Error("Apache Permissions-Policy contains an unsupported document-domain directive");
+  for (const runtimeFile of ["index.php", ".htaccess", "manifest.json", "robots.txt", "sitemap.xml"]) {
+    if (!buildScript.includes(`"${runtimeFile}"`)) throw new Error(`Published runtime artifact omits ${runtimeFile}`);
+  }
+  const authModal = read("app/components/AuthModal.vue");
+  for (const token of ["isDemoRuntime", "no ingreses credenciales reales", "Disponible únicamente con identidad federada de producción."]) {
+    if (!authModal.includes(token)) throw new Error(`Public demo identity safeguard is missing ${token}`);
   }
   const demoAdminSource = read("app/pages/dashboard/AdminDatabaseCard.vue");
   if (/\/index\.php\?action=|MySQL Database|server2\.shared\.spaceship\.host/.test(demoAdminSource))
