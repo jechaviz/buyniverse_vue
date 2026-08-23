@@ -11,6 +11,20 @@ return [
     // issuance is connected, so state is bound to a verified subject.
     'allow_demo_workspace_state' => true,
 
+    // Transactional email is queued encrypted in MySQL and sent only by the
+    // CLI worker. Keep disabled until the sending domain is verified and the
+    // provider API key is supplied through this 0600 runtime configuration.
+    'email' => [
+        'enabled' => false,
+        'provider' => 'resend',
+        'public_base_url' => 'https://buyniverse.com',
+        'from_name' => 'Buyniverse',
+        'from_email' => 'notifications@buyniverse.com',
+        'reply_to' => 'support@buyniverse.com',
+        'api_key' => '', // e.g. getenv('BUYNIVERSE_RESEND_API_KEY') ?: ''
+        'api_key_ref' => 'secret-manager://buyniverse/resend/api-key',
+    ],
+
     // Enterprise identity adapters are server-side only. Keep both disabled
     // until Security supplies the approved issuer/CA, redirects, group map and
     // secret references. Values ending in _secret_ref are names/paths in the

@@ -36,6 +36,10 @@ function runSecurityAudit(root, read, vueFiles) {
   const phpShim = read("index.php");
   const buildScript = read("scripts/build_dist.js");
   const htaccess = read(".htaccess");
+  const mailService = read("email_service.php");
+  const mailWorker = read("email_worker.php");
+  const mailCatalog = JSON.parse(read("email_templates.json"));
+  const mailMigration = read("ops/migrations/20260823_email_outbox.sql");
   for (const token of ["BUYNIVERSE_ENABLE_BACKEND_PROXY", "static_file", "fail_response", "127.0.0.1"]) {
     if (!phpShim.includes(token)) throw new Error(`Fail-closed PHP deployment shim is missing ${token}`);
   }
@@ -55,6 +59,22 @@ function runSecurityAudit(root, read, vueFiles) {
   }
   if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
     throw new Error("Deployment shim retains privileged database or deploy surface");
+  for (const token of ["mail_enqueue", "email.queued", "auth.welcome", "tenant.invitation"]) {
+    if (!phpShim.includes(token)) throw new Error(`Transactional mail integration is missing ${token}`);
+  }
+  for (const token of ["mail_render", "mail_encrypt_payload", "aes-256-gcm", "Idempotency-Key", "CURLOPT_SSL_VERIFYPEER", "mail_dispatch_pending"]) {
+    if (!mailService.includes(token)) throw new Error(`Transactional mail security control is missing ${token}`);
+  }
+  if (/\bmail\s*\(/.test(mailService) || /\bmail\s*\(/.test(phpShim))
+    throw new Error("Legacy PHP mail transport is not allowed");
+  if (!mailWorker.includes("PHP_SAPI !== 'cli'") || !mailWorker.includes("mail_dispatch_pending"))
+    throw new Error("Mail worker is not CLI-only or cannot dispatch the outbox");
+  if (!mailMigration.includes("tenant_email_outbox") || !mailMigration.includes("payload_ciphertext") || !mailMigration.includes("idempotency_hash"))
+    throw new Error("Encrypted transactional mail migration is incomplete");
+  const requiredMailTemplates = ["auth.account_verification", "auth.two_factor_code", "auth.recovery_code", "auth.password_changed", "tenant.invitation", "project.published", "sourcing.rfx_invitation", "auction.opened", "procurement.purchase_order_issued", "billing.invoice_issued", "compliance.audit_alert"];
+  const catalogIds = new Set(Array.isArray(mailCatalog.templates) ? mailCatalog.templates.map((template) => template.id) : []);
+  if (catalogIds.size < 40 || requiredMailTemplates.some((id) => !catalogIds.has(id)))
+    throw new Error("Bilingual transactional mail catalog is incomplete");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");
   for (const token of ["'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='", "X-Permitted-Cross-Domain-Policies", "X-Download-Options", "Strict-Transport-Security"]) {
     if (!phpShim.includes(token)) throw new Error(`PHP response hardening is missing ${token}`);
@@ -70,9 +90,11 @@ function runSecurityAudit(root, read, vueFiles) {
     if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
   }
   if (htaccess.includes("document-domain")) throw new Error("Apache Permissions-Policy contains an unsupported document-domain directive");
-  for (const runtimeFile of ["index.php", ".htaccess", "manifest.json", "robots.txt", "sitemap.xml"]) {
+  for (const runtimeFile of ["index.php", ".htaccess", "email_service.php", "email_worker.php", "email_templates.json", "manifest.json", "robots.txt", "sitemap.xml"]) {
     if (!buildScript.includes(`"${runtimeFile}"`)) throw new Error(`Published runtime artifact omits ${runtimeFile}`);
   }
+  if (!htaccess.includes("email_service\\.php|email_worker\\.php|email_templates\\.json"))
+    throw new Error("HTTP access to transactional-mail implementation is not denied");
   const authModal = read("app/components/AuthModal.vue");
   for (const token of ["isDemoRuntime", "no ingreses credenciales reales", "Disponible únicamente con identidad federada de producción."]) {
     if (!authModal.includes(token)) throw new Error(`Public demo identity safeguard is missing ${token}`);

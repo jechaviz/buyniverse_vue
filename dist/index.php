@@ -155,6 +155,10 @@ function workspace_audit(PDO $pdo, string $sessionHash, int $version, string $ac
     $statement->execute([$sessionHash, $version, $action, $digest, $mac]);
 }
 
+// Transactional mail is intentionally server and CLI only. The module keeps
+// recipient addresses and rendered bodies encrypted at rest in the outbox.
+require_once __DIR__ . '/email_service.php';
+
 // ---------------------------------------------------------------------------
 // Federated social identity (server-side Authorization Code flow)
 // ---------------------------------------------------------------------------
@@ -237,7 +241,7 @@ function social_profile(array $provider, string $code, string $verifier): array 
     if ($provider['id'] === 'google' && !in_array($profile['email_verified'] ?? false, [true, 'true', 1, '1'], true)) throw new RuntimeException('Google account email is not verified');
     $displayName = tenant_text($profile['name'] ?? '', 180) ?: 'Personal workspace owner';
     $email = isset($profile['email']) && is_string($profile['email']) && filter_var($profile['email'], FILTER_VALIDATE_EMAIL) ? strtolower(trim($profile['email'])) : null;
-    return ['provider'=>$provider['provider'], 'subject'=>$subject, 'displayName'=>$displayName, 'email'=>$email];
+    return ['provider'=>$provider['provider'], 'subject'=>$subject, 'displayName'=>$displayName, 'email'=>$email, 'emailVerified'=>$provider['id'] === 'google'];
 }
 function social_start(array $config, string $provider): void {
     $definition = social_provider_config($config, $provider); if ($definition === null) fail_response(404, 'Identity provider is not enabled');
@@ -261,7 +265,22 @@ function social_callback(PDO $pdo, array $config, array $session, string $key, s
     unset($_SESSION['social_oauth'], $_SESSION['tenant_context'], $_SESSION['tenant_demo_subject']);
     session_regenerate_id(true); $_SESSION['workspace_csrf'] = bin2hex(random_bytes(32)); $_SESSION['buyniverse_identity'] = $identity;
     $context = tenant_context($pdo, $config, $session, $key);
-    $pdo->beginTransaction(); tenant_audit($pdo, $context, 'identity.social_authenticated', 'principal', $context['principalId'], ['provider'=>$identity['provider']], $key); $pdo->commit();
+    $pdo->beginTransaction();
+    try {
+        // Google only reaches this point after its verified-email check. A
+        // Facebook profile email has no equivalent assertion in this flow and
+        // therefore must never receive a security-relevant mail automatically.
+        if (($identity['emailVerified'] ?? false) === true && is_string($identity['email'] ?? null)) {
+            $welcome = mail_enqueue($pdo, $config, $key, $context, 'auth.welcome', $identity['email'], [
+                'recipient_name'=>$identity['displayName'] ?? 'there',
+                'workspace_name'=>$context['tenant']['name'] ?? 'Buyniverse',
+                'action_url'=>mail_public_url($config, '/#/dashboard'),
+            ], 'auth-welcome:' . $context['principalId'], null, 'es');
+            tenant_audit($pdo, $context, 'email.queued', 'email_outbox', $welcome['id'], ['template'=>'auth.welcome','reused'=>!$welcome['queued']], $key);
+        }
+        tenant_audit($pdo, $context, 'identity.social_authenticated', 'principal', $context['principalId'], ['provider'=>$identity['provider']], $key);
+        $pdo->commit();
+    } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
     social_redirect(social_base_path() . '/#/dashboard?login=' . rawurlencode($provider));
 }
 
@@ -567,9 +586,23 @@ if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {
         if ($scope === 'location' && !$allowedLocation) fail_response(400, 'Location is not accessible');
         $id = tenant_uuid(); $emailCipher = workspace_encrypt($email, $key, 'buyniverse-tenant-invite|' . $id);
         $pdo->beginTransaction();
-        tenant_audit($pdo, $context, 'tenant.invitation_created', 'invitation', $id, ['companyId'=>$companyId,'role'=>$role,'scope'=>$scope,'emailHash'=>hash_hmac('sha256',$email,$key)], $key);
-        $pdo->prepare('INSERT INTO tenant_invitations (id, tenant_id, legal_entity_id, location_id, email_hash, email_ciphertext, email_iv, email_tag, role_key, scope_kind, expires_at, created_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 DAY), ?)')->execute([$id, $context['tenant']['id'], $scope === 'tenant' ? null : $companyId, $scope === 'location' ? $allowedLocation : null, hash_hmac('sha256',$email,$key), $emailCipher[0], $emailCipher[1], $emailCipher[2], $role, $scope, $context['principalId']]);
-        $pdo->commit(); workspace_json(['invitationId'=>$id,'delivery'=>'pending_identity_delivery','csrf'=>$session['csrf']]);
+        try {
+            tenant_audit($pdo, $context, 'tenant.invitation_created', 'invitation', $id, ['companyId'=>$companyId,'role'=>$role,'scope'=>$scope,'emailHash'=>hash_hmac('sha256',$email,$key)], $key);
+            $pdo->prepare('INSERT INTO tenant_invitations (id, tenant_id, legal_entity_id, location_id, email_hash, email_ciphertext, email_iv, email_tag, role_key, scope_kind, expires_at, created_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 DAY), ?)')->execute([$id, $context['tenant']['id'], $scope === 'tenant' ? null : $companyId, $scope === 'location' ? $allowedLocation : null, hash_hmac('sha256',$email,$key), $emailCipher[0], $emailCipher[1], $emailCipher[2], $role, $scope, $context['principalId']]);
+            $roleNames = ['admin'=>'administrador','buyer'=>'comprador','approver'=>'aprobador','warehouse'=>'almacén','auditor'=>'auditor','viewer'=>'consulta','supplier'=>'proveedor'];
+            $scopeNames = ['tenant'=>'todas las empresas','legal_entity'=>'la empresa seleccionada','location'=>'la sucursal o bodega seleccionada'];
+            $queued = mail_enqueue($pdo, $config, $key, $context, 'tenant.invitation', $email, [
+                'recipient_name'=>'there',
+                'inviter_name'=>$context['principal']['displayName'] ?? 'Workspace owner',
+                'company_name'=>$context['company']['legalName'] ?? 'Buyniverse',
+                'role_name'=>$roleNames[$role] ?? $role,
+                'scope_name'=>$scopeNames[$scope] ?? $scope,
+                'expires_at'=>gmdate('c', time() + 7 * 86400),
+                'action_url'=>mail_public_url($config, '/#/dashboard'),
+            ], 'tenant-invitation:' . $id, gmdate('Y-m-d H:i:s', time() + 7 * 86400), 'es');
+            tenant_audit($pdo, $context, 'email.queued', 'email_outbox', $queued['id'], ['template'=>'tenant.invitation','reused'=>!$queued['queued']], $key);
+            $pdo->commit(); workspace_json(['invitationId'=>$id,'delivery'=>'queued','csrf'=>$session['csrf']]);
+        } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Tenant service is unavailable'); }
 }
 

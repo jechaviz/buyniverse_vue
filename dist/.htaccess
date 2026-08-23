@@ -6,6 +6,9 @@ Options -Indexes -MultiViews
 <FilesMatch "(?i)^(?:(?:db_|deploy_sync|temp_sync)|package(?:-lock)?\.json|bun\.lockb?|tsconfig(?:\..+)?\.json|(?:vite|uno)\.config\..+|serve\.py)$">
   Require all denied
 </FilesMatch>
+<FilesMatch "(?i)^(?:email_service\.php|email_worker\.php|email_templates\.json)$">
+  Require all denied
+</FilesMatch>
 
 <IfModule mod_mime.c>
   # CloudLinux PHP 8.4 is the supported handler with PDO MySQL enabled on

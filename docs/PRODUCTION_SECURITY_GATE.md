@@ -8,6 +8,7 @@ Estado: el artefacto público está endurecido para una demostración. No debe p
 - CSP, HSTS, anti-framing, `nosniff`, aislamiento de origen, política de permisos y `no-store` se aplican tanto a recursos estáticos como a rutas SPA.
 - La API PHP permanece cerrada por defecto. Sólo puede reenviar a un backend local configurado explícitamente; no expone administración, despliegue, seed ni base de datos.
 - El acceso público es explícitamente demo: no solicita ni simula validación de contraseñas, OTP o SSO.
+- El correo transaccional se renderiza en servidor, se encola cifrado e idempotente y sólo puede enviarlo el trabajador CLI; jamás se entrega una clave de proveedor ni el contenido de la cola al navegador.
 
 ## Bloqueadores obligatorios para banca
 
@@ -19,5 +20,6 @@ Estado: el artefacto público está endurecido para una demostración. No debe p
 6. CI/CD con SAST, DAST, SCA/SBOM, secret scanning, revisión de infraestructura y pruebas de penetración independientes.
 7. Artefactos precompilados y dependencias autoalojadas o gobernadas; eliminar `unsafe-eval` y dependencias CDN de la versión bancaria.
 8. Evidencia de respaldo, DR, pruebas de restauración, retención regulatoria y evaluación legal/regulatoria aplicable.
+9. Dominio de envío con SPF, DKIM y DMARC alineados, proveedor aprobado, monitoreo de rebotes/quejas y una cola de correo operada con alertas.
 
 La aprobación de este documento requiere evidencias técnicas y la aceptación del responsable de seguridad; no se obtiene sólo con cambios de frontend.

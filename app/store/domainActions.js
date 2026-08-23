@@ -389,6 +389,10 @@
         const record = contextType === "project" ? state.jobs.find((item) => item.id === contextId) : contextType === "sourcing" ? state.sourcingEvents.find((item) => item.id === contextId) : state.auctions.find((item) => item.id === contextId);
         const buyer = state.users.find((user) => user.id === (record?.clientId || record?.ownerId || record?.hostId));
         const values = {
+          "{{context}}": record?.title || record?.id || "",
+          "{{reference}}": record?.id || "",
+          "{{deadline}}": record?.deadline ? new Date(record.deadline).toLocaleDateString() : "—",
+          "{{company}}": buyer?.company || buyer?.name || "Buyniverse",
           "{eventTitle}": record?.title || record?.id || "",
           "{buyerName}": buyer?.name || "",
           "{date}": new Date().toLocaleDateString(),

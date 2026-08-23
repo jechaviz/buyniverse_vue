@@ -238,6 +238,9 @@ async function build() {
   const runtimeFiles = [
     "index.php",
     ".htaccess",
+    "email_service.php",
+    "email_worker.php",
+    "email_templates.json",
     "manifest.json",
     "favicon.ico",
     "robots.txt",
