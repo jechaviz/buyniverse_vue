@@ -38,7 +38,7 @@
       </div>
 
       <!-- Mode Switcher Tabs (Only if not in forgot password mode) -->
-      <div v-if="!isDemoRuntime && mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
+      <div v-if="!isDemoRuntime && !federatedOnly && mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
         <button
           type="button"
           class="rounded-xl py-2 text-xs font-bold transition"
@@ -58,10 +58,13 @@
       </div>
 
       <!-- ================================================================= -->
-      <!-- 1. SOCIAL LOGINS (Google, Microsoft, GitHub, LinkedIn)           -->
+      <!-- 1. Social logins are server-configured, never client-side mocks. -->
       <!-- ================================================================= -->
-      <div v-if="!isDemoRuntime && mode !== 'forgot'" class="space-y-3">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div v-if="socialProviders.length && mode !== 'forgot'" class="space-y-2.5">
+        <p class="text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <i class="fa-solid fa-user-shield mr-1 text-brand"></i>{{ store.t("Acceso personal seguro; tu espacio se crea sin RFC hasta que agregues una empresa.") }}
+        </p>
+        <div class="grid grid-cols-2 gap-2">
           <button
             v-for="prov in socialProviders"
             :key="prov.id"
@@ -74,13 +77,6 @@
             <span class="truncate">{{ prov.short }}</span>
           </button>
         </div>
-
-        <div class="relative flex items-center justify-center">
-          <span class="absolute inset-x-0 h-px bg-slate-200 dark:bg-slate-800"></span>
-          <span class="relative bg-white px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:bg-slate-900">
-            {{ store.t("o con tu correo electrónico") }}
-          </span>
-        </div>
       </div>
 
       <!-- ================================================================= -->
@@ -88,7 +84,7 @@
       <!-- ================================================================= -->
       <div v-if="mode === 'login'" class="space-y-4">
         <!-- 1-Click Fast Demo Logins -->
-        <div class="rounded-2xl border border-brand-100 bg-brand-50/50 p-3 dark:border-brand-900/40 dark:bg-brand-950/20 space-y-2">
+        <div v-if="isDemoRuntime" class="rounded-2xl border border-brand-100 bg-brand-50/50 p-3 dark:border-brand-900/40 dark:bg-brand-950/20 space-y-2">
           <p class="text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 flex items-center gap-1.5">
             <i class="fa-solid fa-bolt text-amber-500"></i>{{ store.t("Acceso Rápido con Perfiles Demo") }}
           </p>
@@ -111,7 +107,7 @@
           </div>
         </div>
 
-        <form v-if="!isDemoRuntime" class="space-y-3" @submit.prevent="handleEmailLogin">
+        <form v-if="!isDemoRuntime && !federatedOnly" class="space-y-3" @submit.prevent="handleEmailLogin">
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">{{ store.t("Correo Electrónico") }}</label>
             <div class="relative">
@@ -145,7 +141,7 @@
       <!-- ================================================================= -->
       <!-- 3. REGISTER FORM (Email & Enterprise)                            -->
       <!-- ================================================================= -->
-      <div v-else-if="mode === 'register' && !isDemoRuntime" class="space-y-4">
+      <div v-else-if="mode === 'register' && !isDemoRuntime && !federatedOnly" class="space-y-4">
         <!-- Account Type Selector -->
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">{{ store.t("Tipo de Cuenta") }}</label>
@@ -291,7 +287,7 @@
 </template>
 
 <script>
-const { inject, ref, computed } = Vue;
+const { inject, ref, computed, onMounted, watch } = Vue;
 const { useRouter } = VueRouter;
 
 export default {
@@ -305,9 +301,12 @@ export default {
     const router = useRouter();
     const mode = ref(props.initialMode || "login");
     // This public build intentionally never collects real credentials. A
-    // production identity provider must set serverAuth only together with a
-    // server-verified OIDC/MFA session and API-side authorization.
-    const isDemoRuntime = !Boolean(window.BuyniverseRuntime?.serverAuth);
+    // federated production session is established only by the server callback.
+    const socialProviders = ref([]);
+    const socialLoading = ref(false);
+    const basePath = window.location.pathname.startsWith("/buyniverse_vue/") ? "/buyniverse_vue" : "";
+    const federatedOnly = computed(() => socialProviders.value.length > 0);
+    const isDemoRuntime = computed(() => !Boolean(window.BuyniverseRuntime?.serverAuth) && !federatedOnly.value);
 
     // Login fields
     const loginEmail = ref("");
@@ -331,13 +330,25 @@ export default {
     const newPassword = ref("");
     const confirmPassword = ref("");
 
-    // Social Providers
-    const socialProviders = [
-      { id: "google", name: "Google Workspace", short: "Google", icon: "fa-brands fa-google", color: "text-rose-500" },
-      { id: "microsoft", name: "Microsoft 365 / Azure", short: "Microsoft", icon: "fa-brands fa-microsoft", color: "text-blue-500" },
-      { id: "github", name: "GitHub Enterprise", short: "GitHub", icon: "fa-brands fa-github", color: "text-slate-800 dark:text-white" },
-      { id: "linkedin", name: "LinkedIn Professional", short: "LinkedIn", icon: "fa-brands fa-linkedin", color: "text-sky-600" }
-    ];
+    const providerAppearance = {
+      google: { short: "Google", icon: "fa-brands fa-google", color: "text-rose-500" },
+      facebook: { short: "Facebook", icon: "fa-brands fa-facebook", color: "text-blue-600" },
+    };
+    const loadSocialProviders = async () => {
+      socialLoading.value = true;
+      try {
+        const response = await fetch(`${basePath}/api/v1/auth/providers`, { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !Array.isArray(payload.providers)) throw new Error("Identity providers unavailable");
+        socialProviders.value = payload.providers
+          .filter((provider) => provider && typeof provider.id === "string" && providerAppearance[provider.id])
+          .map((provider) => ({ id: provider.id, name: typeof provider.name === "string" ? provider.name : providerAppearance[provider.id].short, ...providerAppearance[provider.id] }));
+      } catch (_) {
+        socialProviders.value = [];
+      } finally {
+        socialLoading.value = false;
+      }
+    };
 
     const demoProfiles = [
       { id: "user-client-brenda", name: "Brenda Smith", role: "Cliente / VP Compras", avatar: "BS" },
@@ -382,18 +393,30 @@ export default {
       store.notice(store.t("Disponible únicamente con identidad federada de producción."), "fa-shield-halved");
       mode.value = "login";
     };
-    const handleSocialAuth = unavailable;
+    const handleSocialAuth = (provider) => {
+      const id = provider && typeof provider.id === "string" ? provider.id : "";
+      if (!providerAppearance[id] || socialLoading.value) return;
+      window.location.assign(`${basePath}/api/v1/auth/${encodeURIComponent(id)}/start`);
+    };
     const handleEmailLogin = unavailable;
     const handleEmailRegister = unavailable;
     const openForgot = unavailable;
     const sendRecoveryOtp = unavailable;
     const verifyOtpAndReset = unavailable;
 
+    onMounted(loadSocialProviders);
+    watch(() => props.open, (open) => { if (open) loadSocialProviders(); });
+    watch(federatedOnly, (enabled) => {
+      if (enabled && mode.value !== "login" && mode.value !== "forgot") mode.value = "login";
+    });
+
     return {
       store,
       mode,
       isDemoRuntime,
+      federatedOnly,
       socialProviders,
+      socialLoading,
       demoProfiles,
       loginEmail,
       loginPass,

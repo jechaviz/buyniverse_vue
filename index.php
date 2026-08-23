@@ -95,10 +95,14 @@ function workspace_session(): array {
     if (session_status() !== PHP_SESSION_ACTIVE) {
         $secure = (($_SERVER['HTTPS'] ?? '') === 'on') || strtolower(workspace_header('X-Forwarded-Proto')) === 'https';
         session_name('buyniverse_workspace');
-        session_set_cookie_params(['lifetime'=>0, 'path'=>'/', 'secure'=>$secure, 'httponly'=>true, 'samesite'=>'Strict']);
+        // Lax preserves the session only for the top-level GET callback from a
+        // configured OAuth provider. Every state-changing endpoint additionally
+        // requires Origin + per-session CSRF verification, so it remains closed
+        // to cross-site writes while supporting the standard code flow.
+        session_set_cookie_params(['lifetime'=>0, 'path'=>'/', 'secure'=>$secure, 'httponly'=>true, 'samesite'=>'Lax']);
         ini_set('session.use_strict_mode', '1');
         ini_set('session.cookie_httponly', '1');
-        ini_set('session.cookie_samesite', 'Strict');
+        ini_set('session.cookie_samesite', 'Lax');
         if (!session_start()) fail_response(503, 'Secure workspace session unavailable');
     }
     if (empty($_SESSION['workspace_csrf'])) $_SESSION['workspace_csrf'] = bin2hex(random_bytes(32));
@@ -149,6 +153,116 @@ function workspace_audit(PDO $pdo, string $sessionHash, int $version, string $ac
     $mac = hash_hmac('sha256', implode('|', [$sessionHash, $version, $action, $digest]), $key);
     $statement = $pdo->prepare('INSERT INTO workspace_state_audit (session_hash, version, action, payload_digest, event_mac) VALUES (?, ?, ?, ?, ?)');
     $statement->execute([$sessionHash, $version, $action, $digest, $mac]);
+}
+
+// ---------------------------------------------------------------------------
+// Federated social identity (server-side Authorization Code flow)
+// ---------------------------------------------------------------------------
+// Provider client secrets are read only from the runtime configuration outside
+// the document root. Tokens are used once to obtain a profile and are never
+// returned to, stored in, or trusted from the browser.
+function social_base_path(): string {
+    $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+    if (!str_ends_with($script, '/index.php')) return '';
+    $base = substr($script, 0, -10);
+    return $base === '/' ? '' : rtrim($base, '/');
+}
+function social_b64url(string $bytes): string { return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '='); }
+function social_redirect(string $path): void {
+    // Every terminal redirect is local and deliberately drops provider query
+    // parameters, especially the short-lived authorization code.
+    if (!str_starts_with($path, '/')) $path = '/';
+    security_headers(); http_response_code(303); header('Location: ' . $path); exit;
+}
+function social_callback_path(string $provider): string { return social_base_path() . '/api/v1/auth/' . $provider . '/callback'; }
+function social_provider_config(array $config, string $provider): ?array {
+    $map = ['google'=>'google_oidc', 'facebook'=>'facebook_oauth'];
+    if (!isset($map[$provider])) return null;
+    $raw = $config['identity'][$map[$provider]] ?? null;
+    if (!is_array($raw) || ($raw['enabled'] ?? false) !== true) return null;
+    $clientId = tenant_text($raw['client_id'] ?? '', 360);
+    // client_secret_ref is documentation for the platform's secret manager,
+    // never a usable secret. The runtime loader must hydrate client_secret.
+    $clientSecret = tenant_text($raw['client_secret'] ?? '', 2048);
+    $redirectUri = tenant_text($raw['redirect_uri'] ?? '', 500);
+    $parts = parse_url($redirectUri);
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+    $path = (string) ($parts['path'] ?? '');
+    $loopback = in_array($host, ['localhost','127.0.0.1','::1'], true);
+    if ($clientId === '' || $clientSecret === '' || !in_array($scheme, ['https','http'], true) ||
+        ($scheme !== 'https' && !$loopback) || $host === '' || $path !== social_callback_path($provider) ||
+        isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) return null;
+    if ($provider === 'google') return [
+        'id'=>'google', 'name'=>'Google', 'provider'=>'google_oidc', 'client_id'=>$clientId, 'client_secret'=>$clientSecret, 'redirect_uri'=>$redirectUri,
+        'authorization_endpoint'=>'https://accounts.google.com/o/oauth2/v2/auth', 'token_endpoint'=>'https://oauth2.googleapis.com/token',
+        'profile_endpoint'=>'https://openidconnect.googleapis.com/v1/userinfo', 'scope'=>'openid email profile', 'pkce'=>true,
+    ];
+    $version = tenant_text($raw['graph_version'] ?? 'v22.0', 16);
+    if (preg_match('/^v[0-9]{1,3}\.[0-9]{1,3}$/', $version) !== 1) return null;
+    return [
+        'id'=>'facebook', 'name'=>'Facebook', 'provider'=>'facebook_oauth', 'client_id'=>$clientId, 'client_secret'=>$clientSecret, 'redirect_uri'=>$redirectUri,
+        'authorization_endpoint'=>'https://www.facebook.com/' . $version . '/dialog/oauth', 'token_endpoint'=>'https://graph.facebook.com/' . $version . '/oauth/access_token',
+        'profile_endpoint'=>'https://graph.facebook.com/' . $version . '/me?fields=id,name,email', 'scope'=>'email,public_profile', 'pkce'=>false,
+    ];
+}
+function social_rate_limit(string $bucket, int $limit, int $windowSeconds): void {
+    $now = time(); $entry = $_SESSION['social_rate_limits'][$bucket] ?? ['startedAt'=>0, 'count'=>0];
+    if (!is_array($entry) || $now - (int) ($entry['startedAt'] ?? 0) >= $windowSeconds) $entry = ['startedAt'=>$now, 'count'=>0];
+    if ((int) $entry['count'] >= $limit) fail_response(429, 'Please wait before trying again');
+    $entry['count'] = (int) $entry['count'] + 1; $_SESSION['social_rate_limits'][$bucket] = $entry;
+}
+function social_http_json(string $url, string $method, array $headers = [], ?array $form = null): array {
+    if (!function_exists('curl_init') || !str_starts_with($url, 'https://')) throw new RuntimeException('Federated identity transport unavailable');
+    $curl = curl_init($url); if ($curl === false) throw new RuntimeException('Federated identity transport unavailable');
+    $requestHeaders = array_merge(['Accept: application/json', 'User-Agent: Buyniverse-Identity/1.0'], $headers);
+    $options = [CURLOPT_CUSTOMREQUEST=>$method, CURLOPT_HTTPHEADER=>$requestHeaders, CURLOPT_RETURNTRANSFER=>true, CURLOPT_HEADER=>false,
+        CURLOPT_TIMEOUT=>12, CURLOPT_CONNECTTIMEOUT=>4, CURLOPT_FOLLOWLOCATION=>false, CURLOPT_MAXREDIRS=>0,
+        CURLOPT_SSL_VERIFYPEER=>true, CURLOPT_SSL_VERIFYHOST=>2, CURLOPT_FAILONERROR=>false];
+    if ($form !== null) { $options[CURLOPT_POSTFIELDS] = http_build_query($form, '', '&', PHP_QUERY_RFC3986); $requestHeaders[] = 'Content-Type: application/x-www-form-urlencoded'; $options[CURLOPT_HTTPHEADER] = $requestHeaders; }
+    curl_setopt_array($curl, $options); $raw = curl_exec($curl); $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE); curl_close($curl);
+    if (!is_string($raw) || strlen($raw) > 262144 || $status < 200 || $status >= 300) throw new RuntimeException('Federated identity provider rejected the request');
+    $body = json_decode($raw, true); if (!is_array($body) || !workspace_safe_value($body)) throw new RuntimeException('Federated identity response was invalid');
+    return $body;
+}
+function social_profile(array $provider, string $code, string $verifier): array {
+    $form = ['client_id'=>$provider['client_id'], 'client_secret'=>$provider['client_secret'], 'code'=>$code, 'grant_type'=>'authorization_code', 'redirect_uri'=>$provider['redirect_uri']];
+    if (!empty($provider['pkce'])) $form['code_verifier'] = $verifier;
+    $tokens = social_http_json($provider['token_endpoint'], 'POST', [], $form);
+    $accessToken = $tokens['access_token'] ?? null;
+    if (!is_string($accessToken) || strlen($accessToken) < 16 || strlen($accessToken) > 8192) throw new RuntimeException('Federated identity token was invalid');
+    $profile = social_http_json($provider['profile_endpoint'], 'GET', ['Authorization: Bearer ' . $accessToken]);
+    $subject = $provider['id'] === 'google' ? ($profile['sub'] ?? null) : ($profile['id'] ?? null);
+    if (!is_string($subject) || strlen($subject) < 6 || strlen($subject) > 320 || preg_match('/^[A-Za-z0-9._:@-]+$/', $subject) !== 1) throw new RuntimeException('Federated identity subject was invalid');
+    if ($provider['id'] === 'google' && !in_array($profile['email_verified'] ?? false, [true, 'true', 1, '1'], true)) throw new RuntimeException('Google account email is not verified');
+    $displayName = tenant_text($profile['name'] ?? '', 180) ?: 'Personal workspace owner';
+    $email = isset($profile['email']) && is_string($profile['email']) && filter_var($profile['email'], FILTER_VALIDATE_EMAIL) ? strtolower(trim($profile['email'])) : null;
+    return ['provider'=>$provider['provider'], 'subject'=>$subject, 'displayName'=>$displayName, 'email'=>$email];
+}
+function social_start(array $config, string $provider): void {
+    $definition = social_provider_config($config, $provider); if ($definition === null) fail_response(404, 'Identity provider is not enabled');
+    social_rate_limit('start_' . $provider, 12, 600);
+    $state = social_b64url(random_bytes(32)); $verifier = social_b64url(random_bytes(48));
+    $_SESSION['social_oauth'] = ['provider'=>$provider, 'state'=>$state, 'verifier'=>$verifier, 'expiresAt'=>time() + 600];
+    $query = ['client_id'=>$definition['client_id'], 'redirect_uri'=>$definition['redirect_uri'], 'response_type'=>'code', 'scope'=>$definition['scope'], 'state'=>$state];
+    if (!empty($definition['pkce'])) { $query['code_challenge'] = social_b64url(hash('sha256', $verifier, true)); $query['code_challenge_method'] = 'S256'; }
+    security_headers(); header('Location: ' . $definition['authorization_endpoint'] . '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986), true, 303); exit;
+}
+function social_callback(PDO $pdo, array $config, array $session, string $key, string $provider): void {
+    $definition = social_provider_config($config, $provider); $pending = $_SESSION['social_oauth'] ?? null;
+    $state = $_GET['state'] ?? ''; $code = $_GET['code'] ?? ''; $error = $_GET['error'] ?? '';
+    if ($definition === null || !is_array($pending) || ($pending['provider'] ?? '') !== $provider || !is_string($state) || !is_string($pending['state'] ?? null) ||
+        !hash_equals((string) $pending['state'], $state) || time() > (int) ($pending['expiresAt'] ?? 0) || !is_string($code) || strlen($code) < 6 || strlen($code) > 4096 || $error !== '') {
+        unset($_SESSION['social_oauth']); social_redirect(social_base_path() . '/#/?login_error=cancelled');
+    }
+    social_rate_limit('callback_' . $provider, 8, 600);
+    try { $identity = social_profile($definition, $code, (string) ($pending['verifier'] ?? '')); }
+    catch (Throwable $error) { unset($_SESSION['social_oauth']); social_redirect(social_base_path() . '/#/?login_error=identity'); }
+    unset($_SESSION['social_oauth'], $_SESSION['tenant_context'], $_SESSION['tenant_demo_subject']);
+    session_regenerate_id(true); $_SESSION['workspace_csrf'] = bin2hex(random_bytes(32)); $_SESSION['buyniverse_identity'] = $identity;
+    $context = tenant_context($pdo, $config, $session, $key);
+    $pdo->beginTransaction(); tenant_audit($pdo, $context, 'identity.social_authenticated', 'principal', $context['principalId'], ['provider'=>$identity['provider']], $key); $pdo->commit();
+    social_redirect(social_base_path() . '/#/dashboard?login=' . rawurlencode($provider));
 }
 
 // ---------------------------------------------------------------------------
@@ -235,9 +349,28 @@ function tenant_seed_demo(PDO $pdo, array $principal, string $key): void {
         $pdo->commit();
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
 }
+function tenant_seed_personal_workspace(PDO $pdo, array $principal, string $key): void {
+    $membership = $pdo->prepare('SELECT id FROM tenant_memberships WHERE principal_id = ? AND status = "active" LIMIT 1');
+    $membership->execute([$principal['id']]);
+    if ($membership->fetch()) return;
+    $tenantId = tenant_uuid(); $workspaceId = tenant_uuid();
+    $displayName = tenant_text($principal['display_name'] ?? 'Personal', 160) ?: 'Personal';
+    $pdo->beginTransaction();
+    try {
+        // A personal workspace is a tenant boundary, not an RFC-bearing fiscal
+        // entity. The row keeps the existing authorization model uniform while
+        // fiscal modules can require a verified business entity before issuing.
+        $pdo->prepare('INSERT INTO tenant_accounts (id, display_name, account_kind) VALUES (?, ?, "individual")')->execute([$tenantId, $displayName . ' · Personal']);
+        $pdo->prepare('INSERT INTO tenant_legal_entities (id, tenant_id, legal_name, rfc, rfc_hash, tax_regime) VALUES (?, ?, ?, NULL, NULL, NULL)')->execute([$workspaceId, $tenantId, $displayName . ' · Personal workspace']);
+        $pdo->prepare('INSERT INTO tenant_memberships (id, tenant_id, principal_id, role_key, scope_kind) VALUES (?, ?, ?, "owner", "tenant")')->execute([tenant_uuid(), $tenantId, $principal['id']]);
+        $context = ['principalId'=>$principal['id'], 'tenant'=>['id'=>$tenantId], 'company'=>['id'=>$workspaceId], 'location'=>['id'=>null]];
+        tenant_audit($pdo, $context, 'tenant.personal_workspace_created', 'tenant_account', $tenantId, ['identityProvider'=>$principal['provider']], $key);
+        $pdo->commit();
+    } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
+}
 function tenant_principal(PDO $pdo, array $config, array $session, string $key): array {
     $identity = $_SESSION['buyniverse_identity'] ?? null;
-    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 8) {
+    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps','google_oidc','facebook_oauth'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) {
         $provider = (string) $identity['provider'];
         $subject = (string) $identity['subject'];
         $displayName = tenant_text($identity['displayName'] ?? 'Enterprise user', 180) ?: 'Enterprise user';
@@ -258,6 +391,7 @@ function tenant_principal(PDO $pdo, array $config, array $session, string $key):
     }
     if (($principal['status'] ?? '') !== 'active') fail_response(403, 'Identity is disabled');
     if ($provider === 'demo') tenant_seed_demo($pdo, $principal, $key);
+    if (in_array($provider, ['google_oidc','facebook_oauth'], true)) tenant_seed_personal_workspace($pdo, $principal, $key);
     return ['id'=>(string) $principal['id'], 'provider'=>(string) $principal['provider'], 'displayName'=>(string) $principal['display_name']];
 }
 function tenant_context(PDO $pdo, array $config, array $session, string $key, ?array $requested = null): array {
@@ -266,7 +400,7 @@ function tenant_context(PDO $pdo, array $config, array $session, string $key, ?a
     $rows->execute([$principal['id']]); $memberships = $rows->fetchAll();
     if (!$memberships) fail_response(403, 'No active company membership');
     $tenantIds = array_values(array_unique(array_map(static fn($row) => (string) $row['tenant_id'], $memberships)));
-    $tenantQuery = $pdo->prepare('SELECT id, display_name FROM tenant_accounts WHERE id IN (' . implode(',', array_fill(0, count($tenantIds), '?')) . ') AND status = "active"');
+    $tenantQuery = $pdo->prepare('SELECT id, display_name, account_kind FROM tenant_accounts WHERE id IN (' . implode(',', array_fill(0, count($tenantIds), '?')) . ') AND status = "active"');
     $tenantQuery->execute($tenantIds); $tenants = [];
     foreach ($tenantQuery->fetchAll() as $tenant) $tenants[(string) $tenant['id']] = $tenant;
     if (!$tenants) fail_response(403, 'No active tenant');
@@ -305,7 +439,7 @@ function tenant_context(PDO $pdo, array $config, array $session, string $key, ?a
         $companyLocations[$entityId][] = ['id'=>(string)$location['id'], 'kind'=>(string)$location['kind'], 'code'=>(string)$location['code'], 'name'=>(string)$location['name']];
     }
     $companies = [];
-    foreach ($entities as $entityId => $entity) if (isset($access[$entityId])) $companies[] = ['id'=>$entityId, 'legalName'=>(string)$entity['legal_name'], 'rfc'=>(string)$entity['rfc'], 'taxRegime'=>(string)($entity['tax_regime'] ?? ''), 'locations'=>$companyLocations[$entityId] ?? []];
+    foreach ($entities as $entityId => $entity) if (isset($access[$entityId])) $companies[] = ['id'=>$entityId, 'legalName'=>(string)$entity['legal_name'], 'rfc'=>(string)($entity['rfc'] ?? ''), 'taxRegime'=>(string)($entity['tax_regime'] ?? ''), 'kind'=>(string)($tenants[(string)$entity['tenant_id']]['account_kind'] ?? 'business'), 'locations'=>$companyLocations[$entityId] ?? []];
     $roleSet = $roles[$tenantId] ?? [];
     $manageTenant = false; $manageCompany = false;
     foreach ($roleSet as $role) {
@@ -315,8 +449,8 @@ function tenant_context(PDO $pdo, array $config, array $session, string $key, ?a
     }
     $context = [
         'principalId'=>$principal['id'], 'principal'=>['provider'=>$principal['provider'],'displayName'=>$principal['displayName']],
-        'tenant'=>['id'=>$tenantId,'name'=>(string)$tenants[$tenantId]['display_name']],
-        'company'=>['id'=>$companyId,'legalName'=>(string)$company['legal_name'],'rfc'=>(string)$company['rfc'],'taxRegime'=>(string)($company['tax_regime'] ?? '')],
+        'tenant'=>['id'=>$tenantId,'name'=>(string)$tenants[$tenantId]['display_name'],'kind'=>(string)($tenants[$tenantId]['account_kind'] ?? 'business')],
+        'company'=>['id'=>$companyId,'legalName'=>(string)$company['legal_name'],'rfc'=>(string)($company['rfc'] ?? ''),'taxRegime'=>(string)($company['tax_regime'] ?? ''),'kind'=>(string)($tenants[$tenantId]['account_kind'] ?? 'business')],
         'location'=>$locationId ? ['id'=>$locationId,'kind'=>(string)$locations[$locationId]['kind'],'code'=>(string)$locations[$locationId]['code'],'name'=>(string)$locations[$locationId]['name']] : null,
         'companies'=>$companies, 'permissions'=>['manageTenant'=>$manageTenant,'manageCompany'=>$manageCompany],
     ];
@@ -361,6 +495,23 @@ function tenant_workspace_scopes_are_valid(array $state, array $context): bool {
         }
     }
     return true;
+}
+
+if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
+    $config = workspace_config(); workspace_session(); $providers = [];
+    foreach (['google','facebook'] as $provider) {
+        $definition = social_provider_config($config, $provider);
+        if ($definition !== null) $providers[] = ['id'=>$definition['id'], 'name'=>$definition['name'], 'audience'=>'individual'];
+    }
+    workspace_json(['providers'=>$providers]);
+}
+if (preg_match('#^/api/v1/auth/(google|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
+    $config = workspace_config(); $session = workspace_session();
+    if ($socialMatch[2] === 'start') social_start($config, $socialMatch[1]);
+    try { $pdo = workspace_pdo($config); $key = workspace_key($config); social_callback($pdo, $config, $session, $key, $socialMatch[1]); }
+    catch (Throwable $error) { if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack(); social_redirect(social_base_path() . '/#/?login_error=identity'); }
 }
 
 if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {

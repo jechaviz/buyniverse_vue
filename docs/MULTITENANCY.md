@@ -5,7 +5,7 @@ Buyniverse separa la suscripción (`tenant_accounts`) de las razones sociales (`
 ## Jerarquía y permisos
 
 ```
-Principal de identidad (OIDC/LDAP)
+Principal de identidad (OIDC/LDAP/social)
   └─ Cuenta SaaS / tenant
        ├─ Razón social RFC A
        │    ├─ Sucursal matriz
@@ -19,6 +19,19 @@ Principal de identidad (OIDC/LDAP)
 - Los proyectos, solicitudes/órdenes de compra, rondas RFX, invitaciones de talento, solicitudes de servicio, facturas y complementos almacenan un `operationalScope` inmutable para la sesión de escritura: tenant, razón social y, cuando se selecciona, sucursal o bodega. El servidor rechaza una escritura cuyo alcance no coincida exactamente con el contexto autorizado.
 - La invitación no crea una contraseña local: queda pendiente hasta que un proveedor de identidad corporativo vincule el sujeto verificado.
 - El selector de contexto no transmite el tenant como fuente de verdad; el servidor verifica que la membresía permite la entidad y la ubicación solicitadas y devuelve un nuevo estado cifrado por contexto.
+
+## Cuenta personal con Google o Facebook
+
+Una persona que todavía no representa una empresa puede entrar con **Google** o **Facebook** cuando Seguridad haya habilitado el proveedor en la configuración privada del servidor. La primera autenticación crea una cuenta SaaS de tipo `individual`, una membresía `owner` y un espacio personal aislado sin RFC. No se fabrica un RFC ni se habilita a ese espacio para emitir CFDI: para facturar o gestionar una razón social, la persona debe agregar una entidad legal verificada.
+
+El flujo es Authorization Code del lado servidor; Google usa PKCE S256. El navegador nunca recibe `client_secret`, token de proveedor ni una contraseña local. El callback consume `state` de un solo uso, rota la sesión, elimina el código de la URL mediante redirección local y registra el evento en la cadena de auditoría.
+
+Para habilitar cada proveedor, copie los valores de `ops/buyniverse-runtime.example.php` al archivo privado `~/buyniverse-runtime.php`, configure exactamente estas URIs de callback en Google Cloud / Meta:
+
+- `https://buyniverse.com/api/v1/auth/google/callback`
+- `https://buyniverse.com/api/v1/auth/facebook/callback`
+
+Mantenga `enabled => false` hasta completar revisión de Seguridad, MFA/conditional access empresarial y la aprobación de Meta que corresponda. Los `*_secret_ref` son referencias operativas: el valor efectivo debe ser entregado al proceso PHP desde el gestor de secretos, nunca desde el repositorio ni el cliente.
 
 ## Identidad empresarial preparada
 

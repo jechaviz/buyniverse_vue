@@ -49,7 +49,10 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["tenant_accounts", "tenant_legal_entities", "tenant_locations", "tenant_memberships", "tenant_invitations", "tenant_workspace_state", "tenant_audit_events", "tenant_audit_events_no_update", "tenant_audit_events_no_delete"]) {
     if (!tenancyMigration.includes(token)) throw new Error(`Tenant migration is missing ${token}`);
   }
-  if (!htaccess.includes("tenant-context|tenant-companies")) throw new Error("Apache does not route the tenant API to the authorization boundary");
+  if (!htaccess.includes("auth|workspace-state|tenant-context|tenant-companies")) throw new Error("Apache does not route identity and tenant APIs to the authorization boundary");
+  for (const token of ["social_provider_config", "social_rate_limit", "code_challenge_method", "session_regenerate_id", "google_oidc", "facebook_oauth", "identity.social_authenticated"]) {
+    if (!phpShim.includes(token)) throw new Error(`Social identity security control is missing ${token}`);
+  }
   if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
     throw new Error("Deployment shim retains privileged database or deploy surface");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");

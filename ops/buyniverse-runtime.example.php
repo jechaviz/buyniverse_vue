@@ -16,6 +16,25 @@ return [
     // secret references. Values ending in _secret_ref are names/paths in the
     // host secret manager; they are not secret values.
     'identity' => [
+        // Personal accounts use server-side Authorization Code OAuth. Set the
+        // actual client_secret only in this 0600 runtime file (or obtain it
+        // from the host secret manager here); client_secret_ref is descriptive
+        // metadata and is never treated as the secret by the application.
+        'google_oidc' => [
+            'enabled' => false,
+            'client_id' => 'REPLACE_GOOGLE_WEB_CLIENT_ID',
+            'client_secret' => '', // e.g. getenv('BUYNIVERSE_GOOGLE_CLIENT_SECRET') ?: ''
+            'client_secret_ref' => 'secret-manager://buyniverse/google/client-secret',
+            'redirect_uri' => 'https://buyniverse.com/api/v1/auth/google/callback',
+        ],
+        'facebook_oauth' => [
+            'enabled' => false,
+            'client_id' => 'REPLACE_FACEBOOK_APP_ID',
+            'client_secret' => '', // e.g. getenv('BUYNIVERSE_FACEBOOK_APP_SECRET') ?: ''
+            'client_secret_ref' => 'secret-manager://buyniverse/facebook/app-secret',
+            'redirect_uri' => 'https://buyniverse.com/api/v1/auth/facebook/callback',
+            'graph_version' => 'v22.0',
+        ],
         'entra_oidc' => [
             'enabled' => false,
             'issuer' => 'https://login.microsoftonline.com/REPLACE_TENANT_ID/v2.0',

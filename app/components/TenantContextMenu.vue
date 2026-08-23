@@ -7,7 +7,7 @@
       :aria-label="store.t('Switch company or location')"
       @click="open = !open"
     >
-      <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-brand/12 text-brand dark:bg-brand/20"><i class="fa-solid fa-building text-[11px]"></i></span>
+      <span class="grid h-7 w-7 flex-none place-items-center rounded-lg bg-brand/12 text-brand dark:bg-brand/20"><i class="fa-solid text-[11px]" :class="context.company.kind === 'individual' ? 'fa-user' : 'fa-building'"></i></span>
       <span class="min-w-0 flex-1 leading-tight">
         <span class="block truncate text-[10px] font-800 text-slate-700 dark:text-slate-200">{{ context.company.legalName }}</span>
         <span class="block truncate text-[9px] font-semibold text-slate-400">{{ context.location?.name || store.t('All locations') }}</span>
@@ -23,8 +23,8 @@
       <div class="max-h-80 space-y-1 overflow-y-auto pr-0.5">
         <section v-for="company in context.companies || []" :key="company.id" class="overflow-hidden rounded-xl border border-transparent" :class="company.id === context.company.id ? 'bg-brand-50/70 dark:bg-brand/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/70'">
           <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-left" :disabled="switching" @click="choose(company.id, null)">
-            <span class="grid h-7 w-7 place-items-center rounded-lg bg-white text-slate-500 shadow-xs dark:bg-slate-800 dark:text-slate-300"><i class="fa-solid fa-landmark text-[10px]"></i></span>
-            <span class="min-w-0 flex-1"><b class="block truncate text-[11px] text-slate-800 dark:text-slate-100">{{ company.legalName }}</b><span class="block text-[9px] text-slate-400">RFC {{ company.rfc }}</span></span>
+            <span class="grid h-7 w-7 place-items-center rounded-lg bg-white text-slate-500 shadow-xs dark:bg-slate-800 dark:text-slate-300"><i class="fa-solid text-[10px]" :class="company.kind === 'individual' ? 'fa-user' : 'fa-landmark'"></i></span>
+            <span class="min-w-0 flex-1"><b class="block truncate text-[11px] text-slate-800 dark:text-slate-100">{{ company.legalName }}</b><span class="block text-[9px] text-slate-400">{{ company.rfc ? `RFC ${company.rfc}` : store.t('Personal workspace') }}</span></span>
             <i v-if="company.id === context.company.id && !context.location" class="fa-solid fa-check text-[10px] text-brand"></i>
           </button>
           <div v-if="company.locations?.length" class="mb-1 ml-5 border-l border-slate-200 pb-1 pl-2 dark:border-slate-700">

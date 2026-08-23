@@ -397,8 +397,8 @@ const CommandPalette = load("./app/components/CommandPalette.vue?v=4");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
 const AppModals = load("./app/components/layout/AppModals.vue?v=3");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
-const AuthModal = load("./app/components/AuthModal.vue?v=2");
-const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=1");
+const AuthModal = load("./app/components/AuthModal.vue?v=3");
+const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=2");
 
 export default {
   components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AuthModal, TenantContextMenu },
