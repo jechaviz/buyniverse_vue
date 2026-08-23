@@ -168,7 +168,7 @@ export default {
   components: { JobEmployerBidRoom, JobFreelancerBidding, JobPublicQna, ProjectDocumentSignatureModal },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
-    const job = computed(() => store.job(route.params.jobId));
+    const job = computed(() => store.scopedRecords(store.state.jobs).find((item) => item.id === route.params.jobId));
 
     if (job.value) {
       job.value.description ||= "A focused project with clear milestones, collaborative reviews and production-ready delivery.";

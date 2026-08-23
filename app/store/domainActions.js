@@ -2,7 +2,10 @@
   "use strict";
 
   function createDomainActions(state, ui, helpers) {
-    const { id, clean, positive, allowedMarketplaceModes } = helpers;
+    const { id, clean, positive, allowedMarketplaceModes, applyCurrentOperationalScope } = helpers;
+    const scoped = (record) => typeof applyCurrentOperationalScope === "function"
+      ? applyCurrentOperationalScope(record)
+      : record;
 
     const userIds = (ids) => [
       ...new Set((Array.isArray(ids) ? ids : []).filter((userId) =>
@@ -259,9 +262,9 @@
         if (!this.isBuyer.value || !gig || !state.gigs.includes(gig) || gig.creatorId === this.currentUser.value.id || ownAgency)
           return this.notice("Service request denied", "fa-shield-halved");
         if (!Array.isArray(state.serviceRequests)) state.serviceRequests = [];
-        state.serviceRequests.unshift({
+        state.serviceRequests.unshift(scoped({
           id: id("service-request"), gigId: gig.id, buyerId: this.currentUser.value.id, status: "Requested", createdAt: new Date().toISOString(),
-        });
+        }));
         if (state.users.some((user) => user.id === gig.creatorId))
           this.addNotification({
             userId: gig.creatorId, title: "New service request", text: `${this.currentUser.value.name} requested ${gig.title}.`,
@@ -288,7 +291,7 @@
           this.notice("Only buyer accounts can post jobs", "fa-shield-halved");
           return null;
         }
-        const job = {
+        const job = scoped({
           id: id("job"), clientId: this.currentUser.value.id, title: clean(payload.title, 160) || "Untitled Project",
           category: clean(payload.category, 80) || "Engineering", description: clean(payload.description, 5000) || "",
           type: payload.type === "hourly" ? "hourly" : "fixed", budget: positive(payload.budget) || 1000,
@@ -296,10 +299,65 @@
           visibility: ["public", "private", "invite-only"].includes(payload.visibility) ? payload.visibility : "public",
           skills: Array.isArray(payload.skills) ? payload.skills.map((s) => clean(s, 50)).filter(Boolean) : [],
           status: "OPEN", proposals: [], proposalsCount: 0, createdAt: new Date().toISOString(),
-        };
+        });
         state.jobs.unshift(job);
         this.notice("Project created successfully", "fa-circle-check");
         return job;
+      },
+
+      addInvoice(payload = {}) {
+        const currentUser = this.currentUser?.value;
+        const receiverId = clean(payload.receiverId, 120);
+        const currency = ["MXN", "USD", "EUR"].includes(payload.currency) ? payload.currency : "MXN";
+        const total = Number(payload.total);
+        if (!currentUser || (!this.isSupplier?.value && !this.isAdmin?.value) ||
+          !state.users.some((item) => item.id === receiverId) || !Number.isFinite(total) || total <= 0 || !window.WebCommon.isSafeAmount(total, 0)) {
+          this.notice("Invoice creation denied", "fa-shield-halved");
+          return null;
+        }
+        const lineItems = (Array.isArray(payload.lineItems) ? payload.lineItems : []).map((line, index) => {
+          const quantity = Number(line?.quantity), unitPrice = Number(line?.unitPrice);
+          const description = clean(line?.description, 500);
+          if (!description || !Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unitPrice) || unitPrice <= 0) return null;
+          return { id: clean(line?.id, 120) || `line-${index + 1}`, description, quantity, unitPrice, amount: quantity * unitPrice, taxes: Array.isArray(line?.taxes) ? line.taxes.slice(0, 8) : [] };
+        }).filter(Boolean).slice(0, 100);
+        if (!lineItems.length) {
+          this.notice("Complete every invoice concept", "fa-triangle-exclamation");
+          return null;
+        }
+        const invoice = scoped({
+          id: id("invoice"), issuerId: clean(payload.issuerId, 120) || null, receiverId,
+          clientId: receiverId, providerId: currentUser.id, currency, total, status: "Vigente", paymentStatus: "Unpaid",
+          method: clean(payload.method, 20), exchangeRate: Number(payload.exchangeRate) || 1,
+          projectTitle: clean(payload.projectTitle, 240) || lineItems[0].description,
+          issuedDate: typeof payload.issuedDate === "string" ? payload.issuedDate : new Date().toISOString(),
+          dueDate: typeof payload.dueDate === "string" ? payload.dueDate : null,
+          lineItems,
+        });
+        state.invoices.unshift(invoice);
+        this.notice("Invoice created successfully", "fa-file-invoice-dollar");
+        return invoice;
+      },
+
+      addPayment(payload = {}) {
+        const currentUser = this.currentUser?.value;
+        const invoice = state.invoices.find((item) => item.id === clean(payload.invoiceId, 120));
+        const amount = Number(payload.amount);
+        if (!currentUser || !invoice || (!this.isAdmin?.value && invoice.providerId !== currentUser.id) ||
+          !Number.isFinite(amount) || amount <= 0 || amount > Number(invoice.total) || !window.WebCommon.isSafeAmount(amount, 0)) {
+          this.notice("Payment creation denied", "fa-shield-halved");
+          return null;
+        }
+        const receipt = scoped({
+          id: id("payment"), invoiceId: invoice.id, receiverId: invoice.clientId, providerId: invoice.providerId,
+          issuerId: clean(payload.issuerId, 120) || null, amount, currency: invoice.currency, status: "Vigente",
+          date: typeof payload.date === "string" ? payload.date : new Date().toISOString(), method: clean(payload.method, 20),
+          relatedDocuments: Array.isArray(payload.relatedDocuments) ? payload.relatedDocuments.slice(0, 20) : [],
+        });
+        state.paymentReceipts.unshift(receipt);
+        invoice.paymentStatus = amount >= Number(invoice.total) ? "Paid" : "Partial";
+        this.notice("Payment receipt created", "fa-receipt");
+        return receipt;
       },
 
       submitProposal(jobId, payload = {}) {

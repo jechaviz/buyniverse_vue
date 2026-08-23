@@ -12,6 +12,7 @@
       <span v-if="project.sourcingType" class="rounded-xl border border-brand/20 bg-brand-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand dark:bg-brand/20">
         {{ project.sourcingType }}
       </span>
+      <OperationalScopeBadge :scope="existing?.operationalScope || store.operationalScope.value" />
     </div>
 
     <div
@@ -93,13 +94,14 @@ const WizardStep1Details = load("./app/pages/wizard/WizardStep1Details.vue?v=4")
 const WizardStep3Files = load("./app/pages/wizard/WizardStep3Files.vue?v=3");
 const WizardStep4Team = load("./app/pages/wizard/WizardStep4Team.vue?v=3");
 const WizardStep5Approvers = load("./app/pages/wizard/WizardStep5Approvers.vue?v=3");
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 
 export default {
-  components: { WizardStep0Strategy, WizardStep1Details, WizardStep3Files, WizardStep4Team, WizardStep5Approvers },
+  components: { WizardStep0Strategy, WizardStep1Details, WizardStep3Files, WizardStep4Team, WizardStep5Approvers, OperationalScopeBadge },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const allowed = computed(() => store.isBuyer.value || store.isAdmin.value);
-    const existing = computed(() => route.params.id !== "new" ? store.job(route.params.id) : null);
+    const existing = computed(() => route.params.id !== "new" ? store.scopedRecords(store.state.jobs).find((item) => item.id === route.params.id) : null);
 
     const initialStep = Number(route.query.step);
     const step = ref(Number.isInteger(initialStep) && initialStep >= 0 && initialStep <= 4 ? initialStep : (existing.value ? 1 : 1));
@@ -176,7 +178,7 @@ export default {
         router.push(`/project/${existing.value.id}`);
       } else {
         const newId = `job-${Date.now().toString().slice(-6)}`;
-        const full = { ...project.value, id: newId, clientId: store.currentUser.value.id, status: "OPEN", createdAt: new Date().toISOString(), proposals: [], comments: [] };
+        const full = store.scopeRecord({ ...project.value, id: newId, clientId: store.currentUser.value.id, status: "OPEN", createdAt: new Date().toISOString(), proposals: [], comments: [] });
         store.state.jobs.unshift(full);
         store.notice("Project created successfully!");
         router.push(`/project/${newId}`);

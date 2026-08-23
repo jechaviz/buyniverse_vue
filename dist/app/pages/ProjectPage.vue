@@ -8,7 +8,7 @@
           {{ job.dueDate ? `Due ${store.date(job.dueDate)}` : "No due date" }}
         </p>
       </div>
-      <span class="badge bg-brand-50 text-brand dark:bg-brand/20">{{ job.status.replace("_", " ") }}</span>
+      <div class="flex flex-wrap items-center justify-end gap-2"><OperationalScopeBadge :record="job" /><span class="badge bg-brand-50 text-brand dark:bg-brand/20">{{ job.status.replace("_", " ") }}</span></div>
     </div>
 
     <div v-if="contest" class="panel border-brand-200 p-5">
@@ -196,13 +196,14 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const ProjectDetailsTab = load("./app/pages/project/ProjectDetailsTab.vue?v=1");
 const ProjectProvidersTab = load("./app/pages/project/ProjectProvidersTab.vue?v=1");
 const ProjectMilestonesTab = load("./app/pages/project/ProjectMilestonesTab.vue?v=1");
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 export default {
-  components: { ProjectDetailsTab, ProjectProvidersTab, ProjectMilestonesTab, CommunicationThread },
+  components: { ProjectDetailsTab, ProjectProvidersTab, ProjectMilestonesTab, CommunicationThread, OperationalScopeBadge },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
-    const job = computed(() => store.job(route.params.id));
+    const job = computed(() => store.scopedRecords(store.state.jobs).find((item) => item.id === route.params.id));
     const contract = computed(() => job.value?.contractId ? store.contract(job.value.contractId) : null);
     const contest = computed(() => store.state.contests.find((i) => i.id === job.value?.contestId));
 

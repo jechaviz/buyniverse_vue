@@ -1,14 +1,14 @@
 (function (global) {
   "use strict";
 
-  function normalizeState(state) {
+  function normalizeState(state, tenantContext) {
     [
       "users", "jobs", "contracts", "invoices", "paymentReceipts", "transactions",
       "timeEntries", "contests", "gigs", "conversations", "issuers", "agencies",
       "suppliers", "leads", "products", "expenses", "estimates", "purchaseRequests",
       "sourcingEvents", "auctions", "purchaseOrders", "procurementRules",
       "procurementWorkflows", "procurementAudit", "securityAudit", "recentViews",
-      "messageTemplates", "mailings",
+      "messageTemplates", "mailings", "serviceRequests", "talentEngagements",
     ].forEach((key) => {
       if (!Array.isArray(state[key])) state[key] = [];
     });
@@ -46,6 +46,20 @@
       state.procurementAnalytics = window.BuyniverseDemo.clone().procurementAnalytics;
 
     state.jobs = state.jobs.filter((job) => job && typeof job === "object" && typeof job.id === "string" && typeof job.clientId === "string").slice(0, 5000);
+    // Operational records inherit the verified tenant context exactly once when
+    // legacy/demo data is loaded. New records are stamped by store.scopeRecord.
+    // A pre-existing but mismatched scope is deliberately retained so the
+    // server can reject it instead of silently moving data across a boundary.
+    const scopeRecord = (record) => {
+      if (!record || typeof record !== "object") return;
+      const normalized = window.BuyniverseTenantScope?.normalize(record.operationalScope, tenantContext);
+      if (normalized && !record.operationalScope) record.operationalScope = normalized;
+    };
+    [
+      "jobs", "contracts", "invoices", "paymentReceipts", "expenses", "estimates",
+      "purchaseRequests", "sourcingEvents", "auctions", "purchaseOrders",
+      "serviceRequests", "talentEngagements",
+    ].forEach((key) => state[key].forEach(scopeRecord));
     const ndaTemplate = (window.DocumentTemplates?.documentTemplates || []).find((template) => template?.id === "nda_b2b");
     const cleanDocumentText = (value, limit) => window.WebCommon.sanitizeText(value, limit).trim();
     const normalizeRequiredDocument = (document, index) => {

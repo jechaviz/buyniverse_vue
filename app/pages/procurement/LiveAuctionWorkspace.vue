@@ -288,7 +288,8 @@ export default {
     let timer = null;
 
     const accessibleAuctions = computed(() => {
-      const list = store.state.auctions.filter((item) => {
+      const scopedAuctions = store.scopedRecords(store.state.auctions);
+      const list = scopedAuctions.filter((item) => {
         if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
@@ -299,7 +300,7 @@ export default {
       });
       return store.marketplaceMode.value === "supplier"
         ? list
-        : (list.length ? list : store.state.auctions);
+        : (list.length ? list : scopedAuctions);
     });
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);

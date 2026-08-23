@@ -159,7 +159,7 @@ const ui = reactive({
 });
 
 const { allowedMarketplaceModes } = window.BuyniverseInitialState
-  ? window.BuyniverseInitialState.normalizeState(state)
+  ? window.BuyniverseInitialState.normalizeState(state, ui.tenantContext)
   : { allowedMarketplaceModes: (u) => u?.marketplaceModes || ["buyer", "supplier"] };
 
 const locale = ref(window.BuyniverseI18n.getLocale());
@@ -182,8 +182,34 @@ const id = (prefix) => window.ProcurementCommon.uid(prefix);
 const clean = (value, limit = 4000) => window.WebCommon.sanitizeText(value, limit).trim();
 const MAX_TRANSACTION_AMOUNT = window.WebCommon.MAX_FINANCIAL_AMOUNT;
 const positive = (value) => window.WebCommon.isSafeAmount(value, 0) && Number(value) > 0;
+const activeOperationalScope = () =>
+  window.BuyniverseTenantScope?.scopeForContext(ui.tenantContext) || {
+    // This fallback keeps the static local preview usable. A configured server
+    // always supplies a verified UUID context and rejects non-matching scopes.
+    tenantId: "local-demo", companyId: "local-demo-company", locationId: null,
+  };
+const applyCurrentOperationalScope = (record) => {
+  const scope = activeOperationalScope();
+  record.operationalScope = { ...scope };
+  return record;
+};
+const scopeLabel = (recordOrScope) => {
+  const scope = recordOrScope?.operationalScope || recordOrScope;
+  const context = ui.tenantContext;
+  if (!scope || !context?.company) return "Local preview";
+  const company = (context.companies || []).find((item) => item.id === scope.companyId);
+  const companyName = company?.legalName || context.company.legalName || "Company";
+  if (!scope.locationId) return `${companyName} · ${window.BuyniverseI18n.t("All locations")}`;
+  const location = (company?.locations || []).find((item) => item.id === scope.locationId);
+  return location ? `${companyName} · ${location.name}` : companyName;
+};
+const isInActiveOperationalScope = (record) => {
+  if (!ui.tenantContext) return true;
+  if (!record?.operationalScope) return false;
+  return window.BuyniverseTenantScope?.matches(record.operationalScope, ui.tenantContext) ?? true;
+};
 
-const helpers = { id, clean, positive, allowedMarketplaceModes };
+const helpers = { id, clean, positive, allowedMarketplaceModes, applyCurrentOperationalScope };
 const domainActions = window.BuyniverseDomainActions
   ? window.BuyniverseDomainActions.createDomainActions(state, ui, helpers)
   : {};
@@ -206,6 +232,15 @@ const store = {
     () => state.users.find((user) => user.id === state.currentUserId) || state.users[0],
   ),
   tenantContext: computed(() => ui.tenantContext),
+  operationalScope: computed(() => activeOperationalScope()),
+  scopeRecord(record) {
+    return applyCurrentOperationalScope(record);
+  },
+  scopeLabel,
+  isInActiveOperationalScope,
+  scopedRecords(records) {
+    return Array.isArray(records) ? records.filter(isInActiveOperationalScope) : [];
+  },
   marketplaceModes: computed(() =>
     allowedMarketplaceModes(state.users.find((user) => user.id === state.currentUserId)),
   ),
@@ -324,16 +359,16 @@ const isSafeTenantContext = (context) => Boolean(
   (!context.location || isSafeId(context.location.id)) &&
   Array.isArray(context.companies) && context.companies.length > 0 && context.companies.length <= 100,
 );
-const replaceWorkspaceState = (nextState) => {
+const replaceWorkspaceState = (nextState, context = ui.tenantContext) => {
   if (!isSafeRemoteState(nextState)) throw new Error("Remote workspace payload was rejected");
   Object.keys(state).forEach((key) => { delete state[key]; });
   Object.assign(state, nextState);
-  window.BuyniverseInitialState?.normalizeState(state);
+  window.BuyniverseInitialState?.normalizeState(state, context);
 };
 const applyRemoteWorkspace = (remote) => {
   if (remote?.context && !isSafeTenantContext(remote.context)) throw new Error("Tenant context was rejected");
-  replaceWorkspaceState(remote?.state || window.BuyniverseDemo.clone());
   ui.tenantContext = remote?.context || null;
+  replaceWorkspaceState(remote?.state || window.BuyniverseDemo.clone(), ui.tenantContext);
 };
 const persistState = async () => {
   window.clearTimeout(persistenceTimer);

@@ -74,9 +74,10 @@ const configs = {
       { key: "status", label: "Status", edit: select(["DRAFT", "OPEN", "IN_PROGRESS", "COMPLETED"]) },
       { key: "budget", label: "Budget", edit: number },
       { key: "progress", label: "Progress", edit: number },
+      { key: "operationalScope", label: "Applies to" },
     ],
   },
-  invoices: { title: "Invoices", copy: "Issued and received invoices with fiscal status.", action: { mode: "invoice", label: "Create invoice" }, groupBy: "status", columns: [{ key: "id", label: "Invoice #" }, { key: "projectTitle", label: "Project", edit: text }, { key: "status", label: "Status", edit: select(["DRAFT", "ISSUED", "PAID", "CANCELLED"]) }, { key: "total", label: "Amount", edit: number }, { key: "dueDate", label: "Due date", edit: { type: "date" } }] },
+  invoices: { title: "Invoices", copy: "Issued and received invoices with fiscal status.", action: { mode: "invoice", label: "Create invoice" }, groupBy: "status", columns: [{ key: "id", label: "Invoice #" }, { key: "projectTitle", label: "Project", edit: text }, { key: "status", label: "Status", edit: select(["DRAFT", "ISSUED", "PAID", "CANCELLED"]) }, { key: "total", label: "Amount", edit: number }, { key: "dueDate", label: "Due date", edit: { type: "date" } }, { key: "operationalScope", label: "Applies to" }] },
   estimates: { title: "Estimates & proposals", copy: "Commercial proposals sent to clients.", groupBy: "status", columns: [{ key: "title", label: "Estimate", edit: text }, { key: "status", label: "Status", edit: select(["Draft", "Sent", "Accepted", "Declined"]) }, { key: "total", label: "Amount", edit: number }, { key: "validUntil", label: "Valid until", edit: { type: "date" } }] },
   payments: { title: "Payment receipts", copy: "Confirmed financial transactions and escrow releases.", groupBy: "status", columns: [{ key: "id", label: "Receipt #" }, { key: "invoiceId", label: "Invoice" }, { key: "amount", label: "Amount", edit: number }, { key: "paidAt", label: "Paid date" }, { key: "method", label: "Method", edit: select(["Escrow Release", "Bank Transfer", "Credit Card", "SPEI"]) }] },
   products: { title: "Product catalog", copy: "Standardized products and goods for procurement.", groupBy: "category", columns: [{ key: "name", label: "Product", edit: text }, { key: "sku", label: "SKU", edit: text }, { key: "category", label: "Category", edit: text }, { key: "price", label: "Unit price", edit: number }, { key: "stock", label: "Stock", edit: number }] },
@@ -110,21 +111,23 @@ export default {
     const selected = ref(store.state.conversations[0]?.id), newInvoiceOpen = ref(false);
     const invoiceDraft = ref({ projectTitle: "", total: null, currency: "USD", dueDate: "" });
 
+    const operationalJobs = computed(() => store.scopedRecords(store.state.jobs));
+    const operationalInvoices = computed(() => store.scopedRecords(store.state.invoices));
     const accessibleJobs = computed(() => {
-      if (isAdmin.value) return store.state.jobs;
-      if (user.value.type === "Client") return store.state.jobs.filter((j) => j.clientId === user.value.id);
-      const contractJobs = new Set(store.state.contracts.filter((c) => c.providerId === user.value.id).map((c) => c.sourceId));
-      return store.state.jobs.filter((j) => contractJobs.has(j.id) || (j.proposals || []).some((p) => p.freelancerId === user.value.id));
+      if (isAdmin.value) return operationalJobs.value;
+      if (user.value.type === "Client") return operationalJobs.value.filter((j) => j.clientId === user.value.id);
+      const contractJobs = new Set(store.scopedRecords(store.state.contracts).filter((c) => c.providerId === user.value.id).map((c) => c.sourceId));
+      return operationalJobs.value.filter((j) => contractJobs.has(j.id) || (j.proposals || []).some((p) => p.freelancerId === user.value.id));
     });
 
-    const accessibleInvoices = computed(() => isAdmin.value ? store.state.invoices : store.state.invoices.filter((i) => i.clientId === user.value.id || i.providerId === user.value.id));
+    const accessibleInvoices = computed(() => isAdmin.value ? operationalInvoices.value : operationalInvoices.value.filter((i) => i.clientId === user.value.id || i.providerId === user.value.id));
     const clientIds = computed(() => new Set(accessibleJobs.value.map((j) => j.clientId)));
 
     const collections = () => ({
       clients: store.state.users, suppliers: store.state.suppliers, leads: store.state.leads,
-      projects: store.state.jobs, invoices: store.state.invoices, estimates: store.state.estimates,
-      payments: store.state.paymentReceipts, products: store.state.products, expenses: store.state.expenses,
-      saved: store.state.jobs, issuers: store.state.issuers,
+      projects: operationalJobs.value, invoices: operationalInvoices.value, estimates: store.scopedRecords(store.state.estimates),
+      payments: store.scopedRecords(store.state.paymentReceipts), products: store.state.products, expenses: store.scopedRecords(store.state.expenses),
+      saved: operationalJobs.value, issuers: store.state.issuers,
     });
 
     const items = computed(() => {
@@ -132,13 +135,13 @@ export default {
         case "clients": return store.state.users.filter((i) => i.type === "Client" && (isAdmin.value || i.id === user.value.id || clientIds.value.has(i.id)));
         case "suppliers":
         case "products": return ["Admin", "Client"].includes(user.value.type) ? collections()[kind.value] : [];
-        case "expenses": return isAdmin.value ? store.state.expenses : user.value.type === "Client" ? store.state.expenses.filter((i) => accessibleJobs.value.some((j) => j.id === i.projectId)) : [];
+        case "expenses": return isAdmin.value ? collections().expenses : user.value.type === "Client" ? collections().expenses.filter((i) => accessibleJobs.value.some((j) => j.id === i.projectId)) : [];
         case "leads": return isAdmin.value || user.value.type === "Client" ? store.state.leads : store.state.leads.filter((i) => (i.assignedTo || []).includes(user.value.id));
         case "projects": return accessibleJobs.value;
         case "invoices": return accessibleInvoices.value;
-        case "estimates": return isAdmin.value ? store.state.estimates : store.state.estimates.filter((i) => i.companyId === user.value.id || i.createdById === user.value.id);
-        case "payments": return isAdmin.value ? store.state.paymentReceipts : store.state.paymentReceipts.filter((i) => i.receiverId === user.value.id || accessibleInvoices.value.some((inv) => inv.id === i.invoiceId));
-        case "saved": return store.state.jobs.filter((i) => i.status === "OPEN" && store.state.savedJobIds?.includes(i.id));
+        case "estimates": return isAdmin.value ? collections().estimates : collections().estimates.filter((i) => i.companyId === user.value.id || i.createdById === user.value.id);
+        case "payments": return isAdmin.value ? collections().payments : collections().payments.filter((i) => i.receiverId === user.value.id || accessibleInvoices.value.some((inv) => inv.id === i.invoiceId));
+        case "saved": return operationalJobs.value.filter((i) => i.status === "OPEN" && store.state.savedJobIds?.includes(i.id));
         case "issuers": return isAdmin.value ? store.state.issuers : [];
         default: return [];
       }
@@ -207,6 +210,7 @@ export default {
       if (key === "assignedTo") return Array.isArray(v) ? v.map((id) => store.user(id)?.name || id).join(", ") : "—";
       if (key === "branches") return Array.isArray(v) ? v.join(", ") : "—";
       if (["paidAt", "dueDate", "validUntil"].includes(key) && v) return store.date(v);
+      if (key === "operationalScope") return store.scopeLabel(item);
       return v ?? "—";
     };
 
@@ -272,7 +276,7 @@ export default {
     const createInvoice = () => {
       if (!canCreateInvoice.value) return store.notice("Invoice creation denied", "fa-shield-halved");
       const client = store.state.users.find((u) => u.type === "Client") || store.state.users[0];
-      const inv = {
+      const inv = store.scopeRecord({
         id: `INV-${Date.now().toString().slice(-6)}`,
         clientId: client.id, providerId: user.value.id,
         projectTitle: invoiceDraft.value.projectTitle || "Consulting Services",
@@ -284,7 +288,7 @@ export default {
         fiscalStatus: { isStamped: true, uuid: `FISC-${Date.now().toString().slice(-8)}`, stampDate: new Date().toISOString() },
         subtotal: invoiceDraft.value.total || 1000,
         taxes: (invoiceDraft.value.total || 1000) * 0.16,
-      };
+      });
       store.state.invoices.unshift(inv);
       newInvoiceOpen.value = false;
       store.notice("Invoice created successfully");

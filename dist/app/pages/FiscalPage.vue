@@ -1,6 +1,7 @@
 <template>
   <section v-if="allowed" class="mx-auto max-w-5xl space-y-6">
-    <header>
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div>
       <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">
         {{ paymentMode ? "CFDI Payment 2.0" : "CFDI 4.0" }}
       </p>
@@ -23,6 +24,8 @@
             : `Draft protected ${draftSavedAt}`
         }}
       </p>
+      </div>
+      <OperationalScopeBadge :scope="existing?.operationalScope || store.operationalScope.value" />
     </header>
     <form class="space-y-5" @submit.prevent="save">
       <article class="panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
@@ -212,7 +215,10 @@
 <script>
 const { inject, computed, reactive, ref, watch, onBeforeUnmount } = Vue;
 const { useRoute, useRouter } = VueRouter;
+const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 export default {
+  components: { OperationalScopeBadge },
   setup() {
     const store = inject("store"),
       route = useRoute(),
@@ -220,17 +226,17 @@ export default {
     const paymentMode = computed(() => route.meta.fiscal === "payment");
     const existing = computed(() =>
       paymentMode.value
-        ? store.state.paymentReceipts.find(
+        ? store.scopedRecords(store.state.paymentReceipts).find(
             (item) => item.id === route.params.paymentId,
           )
-        : store.state.invoices.find(
+        : store.scopedRecords(store.state.invoices).find(
             (item) => item.id === route.params.invoiceId,
           ),
     );
     const editing = computed(() => Boolean(existing.value));
     const relatedInvoice = computed(() =>
       paymentMode.value && existing.value
-        ? store.state.invoices.find(
+        ? store.scopedRecords(store.state.invoices).find(
             (item) => item.id === existing.value.invoiceId,
           )
         : null,
@@ -304,7 +310,7 @@ export default {
       store.state.users.filter((item) => item.type === "Client"),
     );
     const unpaid = computed(() =>
-      store.state.invoices.filter(
+      store.scopedRecords(store.state.invoices).filter(
         (item) =>
           item.paymentStatus !== "Paid" &&
           (store.isAdmin.value ||

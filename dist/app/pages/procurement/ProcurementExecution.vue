@@ -177,10 +177,12 @@ export default {
       { key: "matchStatus", label: "Invoice check", width: 130 },
       { key: "eta", label: "ETA", width: 125, edit: { type: "date" } },
       { key: "exceptionCount", label: "Issues", width: 105 },
+      { key: "operationalScope", label: "Applies to", width: 210 },
     ];
 
     const accessibleOrders = computed(() => {
-      const list = store.state.purchaseOrders.filter((item) => {
+      const scopedOrders = store.scopedRecords(store.state.purchaseOrders);
+      const list = scopedOrders.filter((item) => {
         if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
@@ -188,7 +190,7 @@ export default {
         }
         return item.buyerId === store.currentUser.value.id || store.isBuyer.value;
       });
-      return list.length ? list : store.state.purchaseOrders;
+      return list.length ? list : scopedOrders;
     });
 
     const canManage = (item) => Boolean(item) && (store.isAdmin.value || (store.isBuyer.value && item.buyerId === store.currentUser.value.id) || store.isBuyer.value);
@@ -245,6 +247,7 @@ export default {
       if (key === "eta") return item.eta === "Delivered" ? "Delivered" : store.date(item.eta);
       if (key === "exceptionCount") return item.exceptions.filter((e) => e.status !== "Resolved").length;
       if (key === "matchStatus") return matchLabel(item.matchStatus);
+      if (key === "operationalScope") return store.scopeLabel(item);
       if (key === "status") return statusLabel(item.status);
       return item[key] ?? "—";
     };

@@ -13,7 +13,7 @@
 
     <section class="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_380px]">
       <DataTable
-        :items="store.state.purchaseRequests"
+        :items="scopedRequests"
         :columns="columns"
         title="Requests"
         table-id="procurement-requests"
@@ -66,17 +66,19 @@ export default {
       { key: "status", label: "Status", width: 160 },
       { key: "priority", label: "Priority", width: 100, edit: { type: "select", options: ["Low", "Medium", "High"] } },
       { key: "dueDate", label: "Needed by", width: 125, edit: { type: "date" } },
+      { key: "operationalScope", label: "Applies to", width: 210 },
     ];
 
-    const selected = computed(() => store.purchaseRequest(route.query.request) || store.state.purchaseRequests[0]);
+    const scopedRequests = computed(() => store.scopedRecords(store.state.purchaseRequests));
+    const selected = computed(() => scopedRequests.value.find((item) => item.id === route.query.request) || scopedRequests.value[0]);
     const canOwn = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.ownerId === store.currentUser.value.id));
     const canApprove = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.approverId === store.currentUser.value.id));
 
     const metrics = computed(() => [
       { label: "New request", value: "+", note: "Create purchase request", icon: "fa-plus", tone: "bg-brand text-white", action: () => { formOpen.value = true; } },
-      { label: "Pending approval", value: store.state.purchaseRequests.filter((i) => i.status === "Pending approval").length, note: "Awaiting sign-off", icon: "fa-clock", tone: "bg-amber-50 text-amber-600 dark:bg-amber-500/10", action: () => {} },
-      { label: "Ready for quotes", value: store.state.purchaseRequests.filter((i) => i.status === "Approved" && !i.sourcingEventId).length, note: "Start sourcing round", icon: "fa-file-signature", tone: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10", action: () => {} },
-      { label: "Active RFQs", value: store.state.purchaseRequests.filter((i) => Boolean(i.sourcingEventId)).length, note: "Suppliers bidding", icon: "fa-comments-dollar", tone: "bg-violet-50 text-violet-600 dark:bg-violet-500/10", action: () => {} },
+      { label: "Pending approval", value: scopedRequests.value.filter((i) => i.status === "Pending approval").length, note: "Awaiting sign-off", icon: "fa-clock", tone: "bg-amber-50 text-amber-600 dark:bg-amber-500/10", action: () => {} },
+      { label: "Ready for quotes", value: scopedRequests.value.filter((i) => i.status === "Approved" && !i.sourcingEventId).length, note: "Start sourcing round", icon: "fa-file-signature", tone: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10", action: () => {} },
+      { label: "Active RFQs", value: scopedRequests.value.filter((i) => Boolean(i.sourcingEventId)).length, note: "Suppliers bidding", icon: "fa-comments-dollar", tone: "bg-violet-50 text-violet-600 dark:bg-violet-500/10", action: () => {} },
     ]);
 
     const detailMetrics = computed(() => selected.value ? [
@@ -89,7 +91,7 @@ export default {
     ] : []);
 
     const simpleStatus = (s) => s === "RFQ in progress" ? "Quotes in progress" : s;
-    const format = (item, key) => key === "amount" ? store.money(item.amount, item.currency) : key === "dueDate" ? store.date(item.dueDate) : key === "status" ? simpleStatus(item.status) : (item[key] ?? "—");
+    const format = (item, key) => key === "amount" ? store.money(item.amount, item.currency) : key === "dueDate" ? store.date(item.dueDate) : key === "status" ? simpleStatus(item.status) : key === "operationalScope" ? store.scopeLabel(item) : (item[key] ?? "—");
     const linkFor = (item, key) => ["id", "title"].includes(key) ? `/procurement/queue?request=${item.id}` : null;
 
     const updateCell = ({ id, key, value }) => {
@@ -138,7 +140,7 @@ export default {
         !window.WebCommon.isSafeAmount(up, 0) || up <= 0 || Number.isNaN(dueDate.getTime())
       ) return store.notice("Complete required fields with valid values", "fa-triangle-exclamation");
       const id = "PR-" + String(2410 + store.state.purchaseRequests.length);
-      const req = {
+      const req = store.scopeRecord({
         id, title, requesterId: store.currentUser.value.id, department: dept, amount: amt, currency: "USD",
         status: "Draft", approverId: "user-admin-admin", ownerId: store.currentUser.value.id,
         priority: ["Low", "Medium", "High"].includes(d.priority) ? d.priority : "Medium",
@@ -147,7 +149,7 @@ export default {
         nextAction: "Submit for approval",
         items: [{ id: window.ProcurementCommon.uid("pr-line"), description: desc, quantity: qty, unitPrice: up }],
         audit: [],
-      };
+      });
       store.state.purchaseRequests.unshift(req);
       store.procurementEvent(req, "Request created", "Draft saved", "success");
       store.notice("Purchase request created");
@@ -186,7 +188,7 @@ export default {
     const createRfx = () => {
       const req = selected.value;
       if (!req || !canOwn.value || req.status !== "Approved" || req.sourcingEventId) return store.notice("Quote request creation denied", "fa-shield-halved");
-      const ev = {
+      const ev = store.scopeRecord({
         id: "RFQ-" + new Date().getFullYear() + "-" + String(100 + store.state.sourcingEvents.length),
         title: window.WebCommon.sanitizeText(req.title, 160).trim(), type: "RFQ", status: "Draft",
         requestId: req.id, projectId: req.projectId || null, ownerId: store.currentUser.value.id,
@@ -196,7 +198,7 @@ export default {
         weights: { price: 40, quality: 25, delivery: 15, risk: 15, esg: 5 },
         lots: req.items.map((i) => ({ id: window.ProcurementCommon.uid("lot"), description: i.description, quantity: i.quantity, targetPrice: i.unitPrice })),
         quotes: [], audit: [],
-      };
+      });
       store.state.sourcingEvents.unshift(ev);
       req.sourcingEventId = ev.id;
       req.status = "RFQ in progress";
@@ -223,7 +225,7 @@ export default {
     };
 
     return {
-      store, columns, selected, canOwn, canApprove, metrics, detailMetrics, simpleStatus, format, linkFor,
+      store, columns, scopedRequests, selected, canOwn, canApprove, metrics, detailMetrics, simpleStatus, format, linkFor,
       updateCell, statusClass, formOpen, draft, closeForm, saveRequest, submitRequest, approve, reject,
       requestInfo, createRfx, removeRequest, archiveRequests,
     };

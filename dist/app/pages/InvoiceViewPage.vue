@@ -211,7 +211,7 @@ export default {
       route = useRoute(),
       router = useRouter();
     const invoice = computed(() =>
-      store.state.invoices.find((item) => item.id === route.params.invoiceId),
+      store.scopedRecords(store.state.invoices).find((item) => item.id === route.params.invoiceId),
     );
     const issuer = computed(
         () =>
@@ -299,7 +299,7 @@ export default {
         issuedDate: new Date().toISOString(),
       });
       delete copy.cancellationDetails;
-      store.state.invoices.unshift(copy);
+      store.state.invoices.unshift(store.scopeRecord(copy));
       store.notice("Draft cloned");
       router.push(`/invoices/${copy.id}/edit`);
     }

@@ -16,6 +16,7 @@ Principal de identidad (OIDC/LDAP)
 
 - `owner` y `admin` con alcance `tenant` pueden crear razones sociales, ubicaciones e invitaciones.
 - Los alcances `legal_entity` y `location` conceden acceso exclusivamente a esa entidad o ubicación.
+- Los proyectos, solicitudes/órdenes de compra, rondas RFX, invitaciones de talento, solicitudes de servicio, facturas y complementos almacenan un `operationalScope` inmutable para la sesión de escritura: tenant, razón social y, cuando se selecciona, sucursal o bodega. El servidor rechaza una escritura cuyo alcance no coincida exactamente con el contexto autorizado.
 - La invitación no crea una contraseña local: queda pendiente hasta que un proveedor de identidad corporativo vincule el sujeto verificado.
 - El selector de contexto no transmite el tenant como fuente de verdad; el servidor verifica que la membresía permite la entidad y la ubicación solicitadas y devuelve un nuevo estado cifrado por contexto.
 
@@ -31,3 +32,7 @@ Los adaptadores permanecen desactivados y el endpoint falla cerrado hasta que Se
 ## Auditoría
 
 Los cambios de contexto, altas de entidad, ubicación e invitación se registran en `tenant_audit_events`. Cada evento tiene hash encadenado y MAC derivado de la clave de cifrado de estado. Triggers de MySQL impiden `UPDATE` o `DELETE` sobre el historial para la cuenta operativa. La exportación a SIEM y retención regulatoria siguen siendo una configuración de plataforma obligatoria antes de procesar datos reales.
+
+## Regla operativa
+
+El selector superior define el destino antes de crear un registro. Con **Todas las ubicaciones**, la operación aplica a toda la razón social; al elegir una **Sucursal** o **Bodega**, el registro queda ligado a esa ubicación. El catálogo de proveedores, talento y servicios sigue siendo de mercado; la invitación, comparación guardada o solicitud generada desde él queda ligada al contexto comprador activo.

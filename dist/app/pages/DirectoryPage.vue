@@ -5,6 +5,7 @@
         <p class="premium-kicker text-xs font-bold uppercase text-brand">{{ t('Marketplace discovery') }}</p>
         <h1 class="premium-title mt-1 text-3xl font-800">{{ talentMode ? t('Find talent') : t('Browse services') }}</h1>
         <p class="mt-1 text-sm text-slate-500">{{ talentMode ? t('Compare verified specialists on delivery signals, not just keywords.') : t('Find scoped services with clear deliverables, delivery and provider signals.') }}</p>
+        <div class="mt-2"><OperationalScopeBadge :scope="store.operationalScope.value" /></div>
       </div>
       <div class="flex rounded-xl border border-slate-200/80 bg-white/70 p-1 text-sm font-bold shadow-sm dark:border-slate-700 dark:bg-slate-900/60">
         <RouterLink to="/find-talent" class="rounded-lg px-3 py-2 transition" :class="talentMode ? 'bg-brand text-white shadow-sm' : 'text-slate-500 hover:text-brand'">
@@ -86,8 +87,11 @@
 <script>
 const { inject, computed, ref, watch } = Vue;
 const { useRoute } = VueRouter;
+const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 
 export default {
+  components: { OperationalScopeBadge },
   setup() {
     const store = inject('store');
     const route = useRoute();
@@ -150,7 +154,9 @@ export default {
     const compareItems = computed(() => compareIds.value.map((id) => source.value.find((item) => item.id === id)).filter(Boolean).map((item) => talentMode.value ? ({ id: item.id, name: item.name, subline: item.headline, rating: `${item.rating} ★`, delivery: `${item.onTime}%`, price: `${store.money(item.rate)}/${t('hour')}` }) : ({ id: item.id, name: item.title, subline: item.ownerName, rating: `${item.rating} ★`, delivery: `${item.deliveryDays} ${t('days')}`, price: store.money(item.price) })));
     const invite = (person) => {
       if (!canInvite.value || !talent.value.some((item) => item.id === person.id)) return store.notice(t('Invitation denied'), 'fa-shield-halved');
-      const job = store.state.jobs.find((item) => item.clientId === store.currentUser.value.id && item.status === 'OPEN');
+      const job = store.scopedRecords(store.state.jobs).find((item) => item.clientId === store.currentUser.value.id && item.status === 'OPEN');
+      store.state.talentEngagements ||= [];
+      store.state.talentEngagements.unshift(store.scopeRecord({ id: window.ProcurementCommon.uid('talent-engagement'), talentId: person.id, buyerId: store.currentUser.value.id, projectId: job?.id || null, status: 'Invited', createdAt: new Date().toISOString() }));
       store.addNotification({ userId: person.id, title: 'New project invitation', text: job ? `${store.currentUser.value.name} invited you to ${job.title}.` : `${store.currentUser.value.name} requested an introduction.`, link: job ? `/job/${job.id}` : '/messages', icon: 'fa-user-plus' });
       store.notice(`${person.name} ${t('invited')}`);
     };

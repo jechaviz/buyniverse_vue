@@ -17,6 +17,7 @@
     "Company workspace": "Espacio operativo de la empresa",
     "Company operating workspace": "Contexto operativo de la empresa",
     "Active company workspace": "Espacio operativo activo",
+    "Applies to": "Aplica a",
     "Buy": "Comprar",
     "Sell": "Vender",
     "Admin": "Administración",

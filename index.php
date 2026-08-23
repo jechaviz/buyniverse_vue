@@ -336,6 +336,32 @@ function tenant_can_manage_company(PDO $pdo, array $context, string $companyId):
     $statement->execute([$context['tenant']['id'], $context['principalId'], $companyId]);
     return (bool) $statement->fetchColumn();
 }
+// Workspace state is encrypted as one document, so every durable operational
+// record still carries a context binding. This validation makes company and
+// branch/warehouse scope an authorization invariant rather than a UI hint.
+function tenant_operational_scope_is_valid($scope, array $context): bool {
+    if (!is_array($scope)) return false;
+    $tenantId = $scope['tenantId'] ?? null;
+    $companyId = $scope['companyId'] ?? null;
+    $locationId = $scope['locationId'] ?? null;
+    if (!tenant_is_uuid($tenantId) || !tenant_is_uuid($companyId)) return false;
+    if (!hash_equals((string)$context['tenant']['id'], $tenantId) || !hash_equals((string)$context['company']['id'], $companyId)) return false;
+    if ($locationId !== null && !tenant_is_uuid($locationId)) return false;
+    $expectedLocation = $context['location']['id'] ?? null;
+    if ($expectedLocation === null) return $locationId === null;
+    return is_string($locationId) && hash_equals((string)$expectedLocation, $locationId);
+}
+function tenant_workspace_scopes_are_valid(array $state, array $context): bool {
+    $collections = ['jobs','contracts','invoices','paymentReceipts','expenses','estimates','purchaseRequests','sourcingEvents','auctions','purchaseOrders','serviceRequests','talentEngagements'];
+    foreach ($collections as $collection) {
+        if (!array_key_exists($collection, $state)) continue;
+        if (!is_array($state[$collection])) return false;
+        foreach ($state[$collection] as $record) {
+            if (!is_array($record) || !tenant_operational_scope_is_valid($record['operationalScope'] ?? null, $context)) return false;
+        }
+    }
+    return true;
+}
 
 if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {
     $config = workspace_config(); $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
@@ -427,6 +453,7 @@ if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
         }
         $body = (string) file_get_contents('php://input'); $payload = json_decode($body, true);
         if (!is_array($payload) || !isset($payload['state']) || !is_array($payload['state']) || !workspace_safe_value($payload['state'])) fail_response(400, 'Invalid workspace payload');
+        if (!tenant_workspace_scopes_are_valid($payload['state'], $context)) fail_response(403, 'Operational record scope is not permitted');
         $expectedVersion = filter_var($payload['version'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>0]]);
         if ($expectedVersion === false) fail_response(400, 'Invalid workspace version');
         $plain = json_encode($payload['state'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

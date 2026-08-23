@@ -184,10 +184,11 @@
 <script>
 const {inject,computed}=Vue;
 export default {setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
-  const activeRequests=computed(()=>store.state.purchaseRequests.filter(item=>!['Closed','Rejected'].includes(item.status)).length);
-  const activeEvents=computed(()=>store.state.sourcingEvents.filter(item=>!['Closed','Awarded'].includes(item.status)).length);
-  const openOrders=computed(()=>store.state.purchaseOrders.filter(item=>!['Matched','Closed'].includes(item.status)).length);
-  const exceptionCount=computed(()=>store.state.purchaseOrders.reduce((sum,item)=>sum+(item.exceptions||[]).filter(exception=>exception.status!=='Resolved').length,0));
+  const requests=computed(()=>store.scopedRecords(store.state.purchaseRequests)), events=computed(()=>store.scopedRecords(store.state.sourcingEvents)), orders=computed(()=>store.scopedRecords(store.state.purchaseOrders));
+  const activeRequests=computed(()=>requests.value.filter(item=>!['Closed','Rejected'].includes(item.status)).length);
+  const activeEvents=computed(()=>events.value.filter(item=>!['Closed','Awarded'].includes(item.status)).length);
+  const openOrders=computed(()=>orders.value.filter(item=>!['Matched','Closed'].includes(item.status)).length);
+  const exceptionCount=computed(()=>orders.value.reduce((sum,item)=>sum+(item.exceptions||[]).filter(exception=>exception.status!=='Resolved').length,0));
   const kpis=computed(()=>[
     {label:'Addressable spend',value:store.money(analytics.kpis.addressableSpend),delta:'+6.1% coverage',progress:87,icon:'fa-wallet',iconTone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-300',deltaTone:'text-violet-500'},
     {label:'Realized savings',value:store.money(analytics.kpis.realizedSavings),delta:`${analytics.kpis.savingsRate}% rate`,progress:74,icon:'fa-piggy-bank',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
@@ -201,9 +202,9 @@ export default {setup(){const store=inject('store'),analytics=store.state.procur
     {label:'Orders',value:openOrders.value,note:'Commitment, receipt and follow-up',icon:'fa-cart-shopping',to:'/procurement/execution'},
     {label:'Invoice checks',value:exceptionCount.value,note:'Issues that still need review',icon:'fa-link',to:'/procurement/execution'}]);
   const workQueue=computed(()=>[
-    ...store.state.purchaseRequests.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):'Today',action:'Review decision',to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
-    ...store.state.purchaseOrders.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,action:'Resolve issue',to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
-    ...store.state.sourcingEvents.filter(item=>item.status==='Comparing').map(item=>({id:item.id,title:'Supplier choice ready',detail:`${item.id} · ${(item.quotes||[]).length} offers`,when:'Now',action:'Compare offers',to:`/procurement/sourcing?event=${item.id}`,icon:'fa-scale-balanced',tone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10'}))
+    ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):'Today',action:'Review decision',to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
+    ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,action:'Resolve issue',to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
+    ...events.value.filter(item=>item.status==='Comparing').map(item=>({id:item.id,title:'Supplier choice ready',detail:`${item.id} · ${(item.quotes||[]).length} offers`,when:'Now',action:'Compare offers',to:`/procurement/sourcing?event=${item.id}`,icon:'fa-scale-balanced',tone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10'}))
   ].slice(0,5));
   const topSuppliers=computed(()=>[...store.state.suppliers].sort((a,b)=>b.score-a.score).slice(0,4));
 

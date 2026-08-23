@@ -1,7 +1,7 @@
 <template>
   <section class="space-y-4">
     <header class="flex flex-wrap items-end justify-between gap-4">
-      <div><p class="premium-kicker text-xs font-bold uppercase text-brand">{{ t('Procurement catalog') }}</p><h1 class="premium-title mt-1 text-3xl font-800">{{ t('Products') }}</h1><p class="mt-1 text-sm text-slate-500">{{ t('Compare qualified supplier offers and turn the best option into a controlled requisition.') }}</p></div>
+      <div><p class="premium-kicker text-xs font-bold uppercase text-brand">{{ t('Procurement catalog') }}</p><h1 class="premium-title mt-1 text-3xl font-800">{{ t('Products') }}</h1><p class="mt-1 text-sm text-slate-500">{{ t('Compare qualified supplier offers and turn the best option into a controlled requisition.') }}</p><div class="mt-2"><OperationalScopeBadge :scope="store.operationalScope.value" /></div></div>
       <div class="flex gap-2"><RouterLink to="/procurement/queue" class="btn-muted h-9 px-3 text-xs"><i class="fa-solid fa-cart-plus mr-1.5"></i>{{ t('Purchase requests') }}</RouterLink><button class="btn-brand h-9 px-3 text-xs" @click="showOnlySavings = !showOnlySavings" :aria-pressed="showOnlySavings"><i class="fa-solid fa-piggy-bank mr-1.5"></i>{{ showOnlySavings ? t('All products') : t('Savings opportunities') }}</button></div>
     </header>
 
@@ -44,7 +44,11 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRouter } = VueRouter;
 
+const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
+
 export default {
+  components: { OperationalScopeBadge },
   setup() {
     const store = inject('store'), router = useRouter();
     const query = ref(''), category = ref(''), sort = ref('savings'), showOnlySavings = ref(false), selectedProductId = ref(''), selectedOfferId = ref(''), quantity = ref(1);
@@ -82,7 +86,7 @@ export default {
       if (!canBuy.value || !product || !product.offers.some((item) => item.id === offer.id) || !Number.isInteger(qty) || qty < 1 || qty > 100000) return store.notice(t('Purchase request denied'), 'fa-shield-halved');
       const amount = Number((offer.price * qty).toFixed(2));
       if (!window.WebCommon.isSafeAmount(amount, 0) || amount <= 0) return store.notice(t('Enter a valid quantity'), 'fa-triangle-exclamation');
-      const request = { id: `PR-CAT-${Date.now().toString(36)}`, title: `${product.description} · ${offer.supplier.name}`, requesterId: store.currentUser.value.id, ownerId: store.currentUser.value.id, approverId: 'user-admin-admin', department: 'Procurement', amount, currency: product.currency || 'USD', status: 'Draft', priority: 'Medium', category: product.category, dueDate: new Date(Date.now() + offer.leadDays * 86400000).toISOString(), budgetCode: 'CATALOG-2026', nextAction: 'Submit for approval', supplierId: offer.supplier.id, preferredOfferId: offer.id, notes: `Catalog comparison selected ${offer.supplier.name}; reference ${store.money(product.referencePrice)} / ${product.unit}.`, items: [{ id: window.ProcurementCommon.uid('pr-line'), productId: product.id, description: product.description, quantity: qty, unitPrice: offer.price, supplierId: offer.supplier.id }], audit: [] };
+      const request = store.scopeRecord({ id: `PR-CAT-${Date.now().toString(36)}`, title: `${product.description} · ${offer.supplier.name}`, requesterId: store.currentUser.value.id, ownerId: store.currentUser.value.id, approverId: 'user-admin-admin', department: 'Procurement', amount, currency: product.currency || 'USD', status: 'Draft', priority: 'Medium', category: product.category, dueDate: new Date(Date.now() + offer.leadDays * 86400000).toISOString(), budgetCode: 'CATALOG-2026', nextAction: 'Submit for approval', supplierId: offer.supplier.id, preferredOfferId: offer.id, notes: `Catalog comparison selected ${offer.supplier.name}; reference ${store.money(product.referencePrice)} / ${product.unit}.`, items: [{ id: window.ProcurementCommon.uid('pr-line'), productId: product.id, description: product.description, quantity: qty, unitPrice: offer.price, supplierId: offer.supplier.id }], audit: [] });
       store.state.purchaseRequests.unshift(request);
       store.procurementEvent(request, 'Catalog offer selected', `${offer.supplier.name} · ${store.money(amount)}`, 'success');
       store.notice(t('Purchase request created'));

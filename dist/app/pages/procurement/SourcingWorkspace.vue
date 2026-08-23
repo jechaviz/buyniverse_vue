@@ -177,7 +177,7 @@
       :steps="wizardSteps"
       :model-value="wizard"
       :suppliers="store.state.suppliers"
-      :requests="store.state.purchaseRequests"
+      :requests="store.scopedRecords(store.state.purchaseRequests)"
       :error="wizardError"
       :type-label="typeLabel"
       :format-money="store.money"
@@ -242,10 +242,12 @@ export default {
       { key: "budget", label: "Budget", width: 130, edit: { type: "number" } },
       { key: "savingsTarget", label: "Savings %", width: 105, edit: { type: "number" } },
       { key: "ownerId", label: "Owner", width: 130, edit: { type: "user" } },
+      { key: "operationalScope", label: "Applies to", width: 210 },
     ];
 
     const accessibleEvents = computed(() => {
-      const list = store.state.sourcingEvents.filter((item) => {
+      const scopedEvents = store.scopedRecords(store.state.sourcingEvents);
+      const list = scopedEvents.filter((item) => {
         if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
@@ -254,7 +256,7 @@ export default {
         const request = store.purchaseRequest(item.requestId);
         return item.ownerId === store.currentUser.value.id || request?.ownerId === store.currentUser.value.id || request?.requesterId === store.currentUser.value.id || store.isBuyer.value;
       });
-      return list.length ? list : store.state.sourcingEvents;
+      return list.length ? list : scopedEvents;
     });
 
     const canManage = (item) => Boolean(item) && (store.isAdmin.value || store.isBuyer.value || item.ownerId === store.currentUser.value.id);
@@ -307,6 +309,7 @@ export default {
     const format = (item, key) => {
       if (key === "deadline") return store.date(item.deadline);
       if (key === "budget") return store.money(item.budget, item.currency);
+      if (key === "operationalScope") return store.scopeLabel(item);
       if (key === "responseCount") return `${item.quotes?.length || 0}/${item.invitedSupplierIds?.length || 0}`;
       if (key === "ownerId") return store.user(item.ownerId)?.name || "—";
       if (key === "type") return typeLabel(item.type);
@@ -409,7 +412,7 @@ export default {
       clone.id = "RFX-" + new Date().getFullYear() + "-" + String(120 + store.state.sourcingEvents.length);
       clone.ownerId = store.currentUser.value.id;
       clone.title = event.value.title + " · copy";
-      store.state.sourcingEvents.unshift(clone);
+      store.state.sourcingEvents.unshift(store.scopeRecord(clone));
       store.state.procurementAudit.unshift(...clone.audit.map((item) => ({ ...item, objectId: clone.id })));
       router.push(`/procurement/sourcing?event=${clone.id}`);
       store.notice("Quote round copied as a draft");
@@ -468,9 +471,9 @@ export default {
       let order = store.state.purchaseOrders.find((item) => item.eventId === event.value.id);
       if (!order) {
         const qty = Math.max(1, event.value.lots.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
-        order = {
+        order = store.scopeRecord({
           id: "PO-" + String(7720 + store.state.purchaseOrders.length), title: event.value.title, requestId: event.value.requestId, eventId: event.value.id, projectId: event.value.projectId, supplierId: awardSupplierId.value, buyerId: store.currentUser.value.id, status: "Ordered", total: selectedAwardQuote.value.price, currency: event.value.currency, receivedPercent: 0, matchStatus: "3-way match", shipTo: "Main warehouse", incoterm: "DAP", paymentTerms: selectedAwardQuote.value.terms, eta: new Date(Date.now() + selectedAwardQuote.value.leadDays * 86400000).toISOString(), warehouse: "WH-01", invoiceId: null, exceptions: [], lines: event.value.lots.map((lot) => ({ id: window.ProcurementCommon.uid("po-line"), description: window.WebCommon.sanitizeText(lot.description, 300), ordered: Number(lot.quantity), received: 0, unitPrice: selectedAwardQuote.value.price / qty })), receipts: [], audit: [],
-        };
+        });
         store.state.purchaseOrders.unshift(order);
         store.procurementEvent(order, "Purchase order created", "Generated from " + event.value.id, "success");
       }
@@ -493,10 +496,10 @@ export default {
       const data = wizard.value, request = store.purchaseRequest(data.requestId);
       const title = window.WebCommon.sanitizeText(data.title, 160).trim(), description = window.WebCommon.sanitizeText(data.description, 2000).trim(), budget = Number(data.budget), deadline = new Date(data.deadline + "T17:00:00Z");
       const supplierIds = new Set(store.state.suppliers.map((item) => item.id));
-      const item = {
+      const item = store.scopeRecord({
         id: (data.type === "Auction" ? "AUC" : "RFX") + "-" + new Date().getFullYear() + "-" + String(130 + store.state.sourcingEvents.length),
         title, type: data.type, status: "Draft", requestId: request?.id || null, projectId: request?.projectId || null, ownerId: store.currentUser.value.id, budget, currency: "USD", round: 1, deadline: deadline.toISOString(), visibility: data.visibility, autoExtend: Boolean(data.autoExtend), publishedAt: null, invitedSupplierIds: [...new Set(data.suppliers)].filter((id) => supplierIds.has(id)).slice(0, 50), messagesOpen: 0, savingsTarget: 8, awardReason: "", awardedSupplierId: null, weights: { price: 40, quality: 25, delivery: 15, risk: 15, esg: 5 }, lots: [{ id: window.ProcurementCommon.uid("lot"), description, quantity: 1, unit: "lot", ceiling: budget }], quotes: [], files: [], audit: [],
-      };
+      });
       store.state.sourcingEvents.unshift(item);
       store.procurementEvent(item, "Quote round created", typeLabel(data.type) + " draft", "success");
       if (request) { request.sourcingEventId = item.id; request.status = "RFQ in progress"; request.nextAction = "Complete quote setup"; }

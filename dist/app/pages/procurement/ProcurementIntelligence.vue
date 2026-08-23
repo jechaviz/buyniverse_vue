@@ -106,9 +106,9 @@ export default {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const analytics = store.state.procurementAnalytics;
     const selectedEventId = ref(
-      store.state.sourcingEvents.some((item) => item.id === route.query.event && item.quotes?.length)
+      store.scopedRecords(store.state.sourcingEvents).some((item) => item.id === route.query.event && item.quotes?.length)
         ? route.query.event
-        : store.state.sourcingEvents.find((item) => item.quotes?.length)?.id || "",
+        : store.scopedRecords(store.state.sourcingEvents).find((item) => item.quotes?.length)?.id || "",
     );
     const scenarioId = ref(route.query.scenario || "scenario-balanced");
     const weights = reactive({ ...analytics.scenarios[0].weights });
@@ -146,7 +146,7 @@ export default {
 
     const maxSpend = Math.max(...analytics.monthly.map((i) => i.spend)), maxSavings = Math.max(...analytics.monthly.map((i) => i.savings)), maxCategorySpend = Math.max(...analytics.categories.map((i) => i.spend));
     const height = (v, max) => `${Math.max(8, Math.round((v / max) * 100))}%`;
-    const comparableEvents = computed(() => store.state.sourcingEvents.filter((item) => item.quotes?.length));
+    const comparableEvents = computed(() => store.scopedRecords(store.state.sourcingEvents).filter((item) => item.quotes?.length));
     const selectedEvent = computed(() => store.sourcingEvent(selectedEventId.value) || comparableEvents.value[0]);
     const scenarioRanking = computed(() => selectedEvent.value ? window.ProcurementCommon.rankQuotes(selectedEvent.value.quotes, weights) : []);
     const recommendation = computed(() => scenarioRanking.value[0] ? { quote: scenarioRanking.value[0], name: store.supplier(scenarioRanking.value[0].supplierId)?.name } : null);
@@ -215,7 +215,7 @@ export default {
       let rows;
       if (id === "supplier-risk" || id === "esg") rows = store.state.suppliers;
       else if (["portfolio", "spend", "savings", "cycle-time"].includes(id)) rows = analytics.monthly;
-      else if (id === "auction") rows = store.state.auctions;
+      else if (id === "auction") rows = store.scopedRecords(store.state.auctions);
       else rows = analytics.categories;
       const isJson = id === "supplier-risk" || id === "auction";
       window.ProcurementCommon.download(`purchases-${id}.${isJson ? "json" : "csv"}`, isJson ? JSON.stringify(rows, null, 2) : window.ProcurementCommon.csv(rows), isJson ? "application/json" : "text/csv");

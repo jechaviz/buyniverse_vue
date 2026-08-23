@@ -80,10 +80,10 @@ for (const token of [
 ]) {
   if (!main.includes(token)) throw new Error(`Company workspace context is missing ${token}`);
 }
-for (const token of ["tenantContext", "switchTenantContext", "refreshTenantContext", "TenantAdminPage.vue", "/settings/organizations"]) {
+for (const token of ["tenantContext", "switchTenantContext", "refreshTenantContext", "operationalScope", "scopedRecords", "TenantAdminPage.vue", "/settings/organizations"]) {
   if (!main.includes(token)) throw new Error(`Server-enforced multi-tenant context is missing ${token}`);
 }
-for (const file of ["app/components/TenantContextMenu.vue", "app/pages/TenantAdminPage.vue", "app/lib/tenant-context.js", "ops/migrations/20260823_multitenancy.sql"]) {
+for (const file of ["app/components/TenantContextMenu.vue", "app/components/OperationalScopeBadge.vue", "app/pages/TenantAdminPage.vue", "app/lib/tenant-context.js", "app/lib/tenant-scope.js", "ops/migrations/20260823_multitenancy.sql"]) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Multi-tenant runtime artifact is missing ${file}`);
 }
 

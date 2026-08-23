@@ -26,6 +26,7 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
+        <OperationalScopeBadge :scope="store.operationalScope.value" />
         <button v-if="canBuy" class="btn-muted" @click="exportWorkspace">
           <i class="fa-solid fa-download"></i>{{ store.t("Export") }}
         </button>
@@ -80,7 +81,9 @@ const Intelligence = load(
 const Governance = load(
   "./app/pages/procurement/ProcurementGovernance.vue?v=8",
 );
+const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 export default {
+  components: { OperationalScopeBadge },
   setup() {
     const store = inject("store"),
       route = useRoute(),
@@ -178,12 +181,12 @@ export default {
     );
     const attentionCount = computed(() =>
       canBuy.value
-        ? store.state.purchaseRequests.filter((item) =>
+        ? store.scopedRecords(store.state.purchaseRequests).filter((item) =>
             ["Pending approval", "Exception", "Escalated"].includes(
               item.status,
             ),
           ).length +
-          store.state.purchaseOrders.reduce(
+          store.scopedRecords(store.state.purchaseOrders).reduce(
             (sum, item) =>
               sum +
               (item.exceptions || []).filter(
