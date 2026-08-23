@@ -174,6 +174,7 @@
               <span>Quick access</span>
               <kbd class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Ctrl K</kbd>
             </button>
+            <TenantContextMenu :context="tenantContext" :switching="ui.tenantSwitching" @switch="switchTenantContext" />
             <button
               type="button"
               class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300"
@@ -270,6 +271,9 @@
                   </RouterLink>
                   <RouterLink to="/profile/billing" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="accountOpen = false">
                     <i class="fa-regular fa-credit-card mr-2.5 w-4 text-slate-400"></i>Billing & folios
+                  </RouterLink>
+                  <RouterLink to="/settings/organizations" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="accountOpen = false">
+                    <i class="fa-solid fa-building-shield mr-2.5 w-4 text-slate-400"></i>{{ store.t('Companies & access') }}
                   </RouterLink>
                   <button class="flex w-full items-center px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="lockNow">
                     <i class="fa-solid fa-lock mr-2.5 w-4 text-slate-400"></i>Lock workspace
@@ -394,9 +398,10 @@ const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
 const AppModals = load("./app/components/layout/AppModals.vue?v=3");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
 const AuthModal = load("./app/components/AuthModal.vue?v=2");
+const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=1");
 
 export default {
-  components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AuthModal },
+  components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AuthModal, TenantContextMenu },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const collapsed = ref(false), mobileOpen = ref(false);
@@ -455,7 +460,7 @@ export default {
     applyAccent(accents.find((x) => x.key === accent.value));
     const currentAccent = computed(() => accents.find((x) => x.key === accent.value) || accents[0]);
 
-    const user = store.currentUser, marketplaceMode = store.marketplaceMode;
+    const user = store.currentUser, marketplaceMode = store.marketplaceMode, tenantContext = store.tenantContext;
     const marketplaceModeOptions = computed(() => {
       const meta = { buyer: { key: "buyer", label: "Buy", icon: "fa-cart-shopping" }, supplier: { key: "supplier", label: "Sell", icon: "fa-store" }, admin: { key: "admin", label: "Admin", icon: "fa-shield-halved" } };
       return store.marketplaceModes.value.map((m) => meta[m]);
@@ -488,6 +493,13 @@ export default {
       accountOpen.value = false;
       router.replace(mode === "supplier" ? "/find-work" : "/dashboard");
       store.notice(mode === "buyer" ? "Buyer workspace active" : mode === "supplier" ? "Supplier workspace active" : "Administration workspace active");
+    };
+    const switchTenantContext = async ({ companyId, locationId }) => {
+      const switched = await store.switchTenantContext(companyId, locationId);
+      if (!switched) return;
+      accountOpen.value = false;
+      router.replace("/dashboard");
+      store.notice(store.t("Company context switched"), "fa-building-shield");
     };
     const openPurchasingWorkspace = () => {
       const switched = marketplaceMode.value !== "buyer";
@@ -560,7 +572,7 @@ export default {
     });
 
     return {
-      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, switchMarketplaceMode, openPurchasingWorkspace,
+      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,

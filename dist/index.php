@@ -133,14 +133,14 @@ function workspace_json(array $payload, int $status = 200): void {
     security_headers(); http_response_code($status); header('Content-Type: application/json; charset=utf-8');
     echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit;
 }
-function workspace_encrypt(string $plain, string $key): array {
+function workspace_encrypt(string $plain, string $key, string $aad = 'buyniverse-workspace-v1'): array {
     $iv = random_bytes(12); $tag = '';
-    $ciphertext = openssl_encrypt($plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, 'buyniverse-workspace-v1');
+    $ciphertext = openssl_encrypt($plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, $aad);
     if ($ciphertext === false || strlen($tag) !== 16) fail_response(503, 'Secure storage encryption unavailable');
     return [$ciphertext, $iv, $tag];
 }
-function workspace_decrypt(array $row, string $key): ?array {
-    $plain = openssl_decrypt((string) $row['ciphertext'], 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) $row['iv'], (string) $row['auth_tag'], 'buyniverse-workspace-v1');
+function workspace_decrypt(array $row, string $key, string $aad = 'buyniverse-workspace-v1'): ?array {
+    $plain = openssl_decrypt((string) $row['ciphertext'], 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) $row['iv'], (string) $row['auth_tag'], $aad);
     if ($plain === false || strlen($plain) > 786432) return null;
     $state = json_decode($plain, true);
     return is_array($state) && workspace_safe_value($state) ? $state : null;
@@ -151,62 +151,300 @@ function workspace_audit(PDO $pdo, string $sessionHash, int $version, string $ac
     $statement->execute([$sessionHash, $version, $action, $digest, $mac]);
 }
 
-if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
-    $config = workspace_config();
-    // This capability-bound store is only for the public demo. Production must
-    // turn this flag off and issue the session from a verified OIDC/MFA flow.
-    if (($config['allow_demo_workspace_state'] ?? false) !== true) fail_response(503, 'Secure workspace storage is not enabled');
+// ---------------------------------------------------------------------------
+// SaaS tenant boundary
+// ---------------------------------------------------------------------------
+// Context is derived from the server session and memberships. Client-provided
+// company, branch and warehouse ids are selectors only; they can never grant
+// a permission by themselves.
+function tenant_uuid(): string {
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+    $hex = bin2hex($bytes);
+    return substr($hex, 0, 8) . '-' . substr($hex, 8, 4) . '-' . substr($hex, 12, 4) . '-' . substr($hex, 16, 4) . '-' . substr($hex, 20);
+}
+function tenant_is_uuid($value): bool {
+    return is_string($value) && preg_match('/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i', $value) === 1;
+}
+function tenant_text($value, int $limit): string {
+    if (!is_string($value)) return '';
+    $value = trim(preg_replace('/[\x00-\x1f\x7f]/u', '', $value) ?? '');
+    return function_exists('mb_substr') ? mb_substr($value, 0, $limit, 'UTF-8') : substr($value, 0, $limit);
+}
+function tenant_rfc($value): string {
+    $rfc = strtoupper(tenant_text($value, 13));
+    return preg_match('/^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/u', $rfc) === 1 ? $rfc : '';
+}
+function tenant_header_origin_is_safe(): bool {
+    $origin = workspace_header('Origin');
+    if ($origin === '') return true; // SameSite + CSRF protects older clients without Origin.
+    $parts = parse_url($origin);
+    $host = strtolower((string) ($parts['host'] ?? ''));
+    $requestHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    $requestHost = preg_replace('/:\d+$/', '', $requestHost) ?? '';
+    $secure = (($_SERVER['HTTPS'] ?? '') === 'on') || strtolower(workspace_header('X-Forwarded-Proto')) === 'https';
+    $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+    return $host !== '' && hash_equals($requestHost, $host) && ($secure ? $scheme === 'https' : in_array($scheme, ['http','https'], true));
+}
+function tenant_require_write(array $session): void {
+    if (!tenant_header_origin_is_safe() || !hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'tenant-context-v1')
+        fail_response(403, 'Request verification failed');
+    $lastWrite = (float) ($_SESSION['tenant_last_write'] ?? 0);
+    if (microtime(true) - $lastWrite < 0.35) fail_response(429, 'Please wait before saving again');
+    $_SESSION['tenant_last_write'] = microtime(true);
+}
+function tenant_request_body(): array {
+    if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 32768) fail_response(413, 'Request body too large');
+    $body = json_decode((string) file_get_contents('php://input'), true);
+    if (!is_array($body) || !workspace_safe_value($body)) fail_response(400, 'Invalid request payload');
+    return $body;
+}
+function tenant_audit(PDO $pdo, array $context, string $action, string $resourceType, string $resourceId, array $payload, string $key): void {
+    $payloadJson = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if (!is_string($payloadJson)) throw new RuntimeException('Unable to encode audit payload');
+    // The tenant/id index and FOR UPDATE serialize concurrent events per tenant.
+    $last = $pdo->prepare('SELECT chain_hash FROM tenant_audit_events WHERE tenant_id = ? ORDER BY id DESC LIMIT 1 FOR UPDATE');
+    $last->execute([$context['tenant']['id']]);
+    $previous = (string) (($last->fetch()['chain_hash'] ?? str_repeat('0', 64)));
+    $digest = hash('sha256', $payloadJson);
+    $chain = hash('sha256', implode('|', [$previous, $context['tenant']['id'], $context['company']['id'], $context['location']['id'] ?? '', $context['principalId'], $action, $resourceType, $resourceId, $digest]));
+    $mac = hash_hmac('sha256', $chain, $key);
+    $write = $pdo->prepare('INSERT INTO tenant_audit_events (tenant_id, legal_entity_id, location_id, actor_principal_id, action, resource_type, resource_id, payload_digest, previous_hash, chain_hash, event_mac) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $write->execute([$context['tenant']['id'], $context['company']['id'], $context['location']['id'] ?? null, $context['principalId'], $action, $resourceType, $resourceId, $digest, $previous, $chain, $mac]);
+}
+function tenant_seed_demo(PDO $pdo, array $principal, string $key): void {
+    $membership = $pdo->prepare('SELECT id FROM tenant_memberships WHERE principal_id = ? AND status = "active" LIMIT 1');
+    $membership->execute([$principal['id']]);
+    if ($membership->fetch()) return;
+    $tenantId = tenant_uuid(); $companyOne = tenant_uuid(); $companyTwo = tenant_uuid();
+    $branch = tenant_uuid(); $warehouse = tenant_uuid(); $secondBranch = tenant_uuid();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('INSERT INTO tenant_accounts (id, display_name) VALUES (?, ?)')->execute([$tenantId, 'Demo multi-company workspace']);
+        $company = $pdo->prepare('INSERT INTO tenant_legal_entities (id, tenant_id, legal_name, rfc, rfc_hash, tax_regime) VALUES (?, ?, ?, ?, ?, ?)');
+        $company->execute([$companyOne, $tenantId, 'Grupo Nébula Servicios, S.A. de C.V.', 'XAXX010101000', hash_hmac('sha256', 'XAXX010101000', $key), '601']);
+        $company->execute([$companyTwo, $tenantId, 'Nébula Operaciones, S.A. de C.V.', 'XEXX010101000', hash_hmac('sha256', 'XEXX010101000', $key), '601']);
+        $location = $pdo->prepare('INSERT INTO tenant_locations (id, tenant_id, legal_entity_id, kind, code, name) VALUES (?, ?, ?, ?, ?, ?)');
+        $location->execute([$branch, $tenantId, $companyOne, 'branch', 'CDMX-MAT', 'Matriz CDMX']);
+        $location->execute([$warehouse, $tenantId, $companyOne, 'warehouse', 'CDMX-CEDIS', 'CEDIS Ciudad de México']);
+        $location->execute([$secondBranch, $tenantId, $companyTwo, 'branch', 'MTY-OP', 'Operaciones Monterrey']);
+        $pdo->prepare('INSERT INTO tenant_memberships (id, tenant_id, principal_id, role_key, scope_kind) VALUES (?, ?, ?, "owner", "tenant")')->execute([tenant_uuid(), $tenantId, $principal['id']]);
+        $context = ['principalId'=>$principal['id'], 'tenant'=>['id'=>$tenantId], 'company'=>['id'=>$companyOne], 'location'=>['id'=>null]];
+        tenant_audit($pdo, $context, 'tenant.demo_seeded', 'tenant_account', $tenantId, ['companies'=>2,'locations'=>3], $key);
+        $pdo->commit();
+    } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
+}
+function tenant_principal(PDO $pdo, array $config, array $session, string $key): array {
+    $identity = $_SESSION['buyniverse_identity'] ?? null;
+    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 8) {
+        $provider = (string) $identity['provider'];
+        $subject = (string) $identity['subject'];
+        $displayName = tenant_text($identity['displayName'] ?? 'Enterprise user', 180) ?: 'Enterprise user';
+        $emailHash = isset($identity['email']) && is_string($identity['email']) ? hash_hmac('sha256', strtolower(trim($identity['email'])), $key) : null;
+    } elseif (($config['allow_demo_workspace_state'] ?? false) === true) {
+        if (empty($_SESSION['tenant_demo_subject'])) $_SESSION['tenant_demo_subject'] = bin2hex(random_bytes(32));
+        $provider = 'demo'; $subject = (string) $_SESSION['tenant_demo_subject']; $displayName = 'Demo workspace owner'; $emailHash = null;
+    } else {
+        fail_response(401, 'Enterprise identity is required');
+    }
+    $subjectHash = hash_hmac('sha256', $subject, $key);
+    $find = $pdo->prepare('SELECT id, provider, display_name, status FROM tenant_principals WHERE provider = ? AND subject_hash = ? LIMIT 1');
+    $find->execute([$provider, $subjectHash]); $principal = $find->fetch();
+    if (!$principal) {
+        $id = tenant_uuid();
+        $pdo->prepare('INSERT INTO tenant_principals (id, provider, subject_hash, display_name, email_hash) VALUES (?, ?, ?, ?, ?)')->execute([$id, $provider, $subjectHash, $displayName, $emailHash]);
+        $principal = ['id'=>$id, 'provider'=>$provider, 'display_name'=>$displayName, 'status'=>'active'];
+    }
+    if (($principal['status'] ?? '') !== 'active') fail_response(403, 'Identity is disabled');
+    if ($provider === 'demo') tenant_seed_demo($pdo, $principal, $key);
+    return ['id'=>(string) $principal['id'], 'provider'=>(string) $principal['provider'], 'displayName'=>(string) $principal['display_name']];
+}
+function tenant_context(PDO $pdo, array $config, array $session, string $key, ?array $requested = null): array {
+    $principal = tenant_principal($pdo, $config, $session, $key);
+    $rows = $pdo->prepare('SELECT id, tenant_id, role_key, scope_kind, legal_entity_id, location_id FROM tenant_memberships WHERE principal_id = ? AND status = "active" ORDER BY created_at ASC');
+    $rows->execute([$principal['id']]); $memberships = $rows->fetchAll();
+    if (!$memberships) fail_response(403, 'No active company membership');
+    $tenantIds = array_values(array_unique(array_map(static fn($row) => (string) $row['tenant_id'], $memberships)));
+    $tenantQuery = $pdo->prepare('SELECT id, display_name FROM tenant_accounts WHERE id IN (' . implode(',', array_fill(0, count($tenantIds), '?')) . ') AND status = "active"');
+    $tenantQuery->execute($tenantIds); $tenants = [];
+    foreach ($tenantQuery->fetchAll() as $tenant) $tenants[(string) $tenant['id']] = $tenant;
+    if (!$tenants) fail_response(403, 'No active tenant');
+    $entityQuery = $pdo->prepare('SELECT id, tenant_id, legal_name, rfc, tax_regime FROM tenant_legal_entities WHERE tenant_id IN (' . implode(',', array_fill(0, count($tenantIds), '?')) . ') AND status = "active" ORDER BY legal_name ASC');
+    $entityQuery->execute($tenantIds); $entities = [];
+    foreach ($entityQuery->fetchAll() as $entity) $entities[(string) $entity['id']] = $entity;
+    $locationQuery = $pdo->prepare('SELECT id, tenant_id, legal_entity_id, kind, code, name FROM tenant_locations WHERE tenant_id IN (' . implode(',', array_fill(0, count($tenantIds), '?')) . ') AND status = "active" ORDER BY name ASC');
+    $locationQuery->execute($tenantIds); $locations = [];
+    foreach ($locationQuery->fetchAll() as $location) $locations[(string) $location['id']] = $location;
+    $access = []; $roles = []; $locationAccess = [];
+    foreach ($memberships as $membership) {
+        $tenantId = (string) $membership['tenant_id']; if (!isset($tenants[$tenantId])) continue;
+        $roles[$tenantId][] = ['role'=>(string)$membership['role_key'], 'scope'=>(string)$membership['scope_kind'], 'entity'=>(string)($membership['legal_entity_id'] ?? ''), 'location'=>(string)($membership['location_id'] ?? '')];
+        if ($membership['scope_kind'] === 'tenant') {
+            foreach ($entities as $entityId => $entity) if ($entity['tenant_id'] === $tenantId) { $access[$entityId] = true; $locationAccess[$entityId] = '*'; }
+        } elseif ($membership['scope_kind'] === 'legal_entity' && isset($entities[$membership['legal_entity_id']])) {
+            $access[(string)$membership['legal_entity_id']] = true; $locationAccess[(string)$membership['legal_entity_id']] = '*';
+        } elseif ($membership['scope_kind'] === 'location' && isset($locations[$membership['location_id']])) {
+            $entityId = (string)$membership['legal_entity_id']; $access[$entityId] = true;
+            if (($locationAccess[$entityId] ?? null) !== '*') $locationAccess[$entityId][(string)$membership['location_id']] = true;
+        }
+    }
+    if (!$access) fail_response(403, 'No accessible legal entity');
+    $saved = is_array($_SESSION['tenant_context'] ?? null) ? $_SESSION['tenant_context'] : [];
+    $requestedCompany = $requested['companyId'] ?? $saved['companyId'] ?? null;
+    $companyId = tenant_is_uuid($requestedCompany) && isset($access[$requestedCompany]) ? $requestedCompany : array_key_first($access);
+    $company = $entities[$companyId]; $tenantId = (string)$company['tenant_id'];
+    $requestedLocation = $requested['locationId'] ?? $saved['locationId'] ?? null;
+    $locationId = tenant_is_uuid($requestedLocation) ? $requestedLocation : null;
+    if ($locationId && (!isset($locations[$locationId]) || $locations[$locationId]['legal_entity_id'] !== $companyId || (($locationAccess[$companyId] ?? null) !== '*' && !isset($locationAccess[$companyId][$locationId])))) $locationId = null;
+    $companyLocations = [];
+    foreach ($locations as $location) {
+        $entityId = (string)$location['legal_entity_id'];
+        if (!isset($access[$entityId])) continue;
+        if (($locationAccess[$entityId] ?? null) !== '*' && !isset($locationAccess[$entityId][$location['id']])) continue;
+        $companyLocations[$entityId][] = ['id'=>(string)$location['id'], 'kind'=>(string)$location['kind'], 'code'=>(string)$location['code'], 'name'=>(string)$location['name']];
+    }
+    $companies = [];
+    foreach ($entities as $entityId => $entity) if (isset($access[$entityId])) $companies[] = ['id'=>$entityId, 'legalName'=>(string)$entity['legal_name'], 'rfc'=>(string)$entity['rfc'], 'taxRegime'=>(string)($entity['tax_regime'] ?? ''), 'locations'=>$companyLocations[$entityId] ?? []];
+    $roleSet = $roles[$tenantId] ?? [];
+    $manageTenant = false; $manageCompany = false;
+    foreach ($roleSet as $role) {
+        $privileged = in_array($role['role'], ['owner','admin'], true);
+        if ($privileged && $role['scope'] === 'tenant') $manageTenant = true;
+        if ($privileged && ($role['scope'] === 'tenant' || ($role['scope'] === 'legal_entity' && $role['entity'] === $companyId) || ($role['scope'] === 'location' && $role['entity'] === $companyId))) $manageCompany = true;
+    }
+    $context = [
+        'principalId'=>$principal['id'], 'principal'=>['provider'=>$principal['provider'],'displayName'=>$principal['displayName']],
+        'tenant'=>['id'=>$tenantId,'name'=>(string)$tenants[$tenantId]['display_name']],
+        'company'=>['id'=>$companyId,'legalName'=>(string)$company['legal_name'],'rfc'=>(string)$company['rfc'],'taxRegime'=>(string)($company['tax_regime'] ?? '')],
+        'location'=>$locationId ? ['id'=>$locationId,'kind'=>(string)$locations[$locationId]['kind'],'code'=>(string)$locations[$locationId]['code'],'name'=>(string)$locations[$locationId]['name']] : null,
+        'companies'=>$companies, 'permissions'=>['manageTenant'=>$manageTenant,'manageCompany'=>$manageCompany],
+    ];
+    $context['contextHash'] = hash_hmac('sha256', implode('|', [$principal['id'], $tenantId, $companyId, $locationId ?? 'all']), $key);
+    $_SESSION['tenant_context'] = ['companyId'=>$companyId,'locationId'=>$locationId];
+    return $context;
+}
+function tenant_company_is_accessible(PDO $pdo, array $context, string $companyId): bool {
+    foreach ($context['companies'] as $company) if (hash_equals((string)$company['id'], $companyId)) return true;
+    return false;
+}
+function tenant_require_permission(array $context, string $permission): void {
+    if (empty($context['permissions'][$permission])) fail_response(403, 'Insufficient company permission');
+}
+function tenant_can_manage_company(PDO $pdo, array $context, string $companyId): bool {
+    $statement = $pdo->prepare('SELECT 1 FROM tenant_memberships WHERE tenant_id = ? AND principal_id = ? AND status = "active" AND role_key IN ("owner", "admin") AND (scope_kind = "tenant" OR (scope_kind = "legal_entity" AND legal_entity_id = ?)) LIMIT 1');
+    $statement->execute([$context['tenant']['id'], $context['principalId'], $companyId]);
+    return (bool) $statement->fetchColumn();
+}
+
+if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {
+    $config = workspace_config(); $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    if (!in_array($method, ['GET','PUT','POST'], true)) fail_response(405, 'Method not allowed');
+    try {
+        if ($uri === '/api/v1/tenant-context' || $uri === '/api/v1/tenant-context/') {
+            if ($method === 'GET') { $context = tenant_context($pdo, $config, $session, $key); workspace_json(['context'=>$context, 'csrf'=>$session['csrf'], 'mode'=>'server']); }
+            if ($method !== 'PUT') fail_response(405, 'Method not allowed');
+            tenant_require_write($session); $input = tenant_request_body();
+            $current = tenant_context($pdo, $config, $session, $key);
+            $target = ['companyId'=>$input['companyId'] ?? null, 'locationId'=>$input['locationId'] ?? null];
+            $next = tenant_context($pdo, $config, $session, $key, $target);
+            if ($next['company']['id'] !== $target['companyId'] || (($target['locationId'] ?? null) !== null && ($next['location']['id'] ?? null) !== $target['locationId'])) fail_response(403, 'Company context is not permitted');
+            $pdo->beginTransaction(); tenant_audit($pdo, $next, 'tenant.context_switched', 'tenant_context', $next['company']['id'], ['from'=>$current['company']['id'],'to'=>$next['company']['id'],'location'=>$next['location']['id'] ?? null], $key); $pdo->commit();
+            workspace_json(['context'=>$next, 'csrf'=>$session['csrf'], 'mode'=>'server']);
+        }
+        if ($method !== 'POST') fail_response(405, 'Method not allowed');
+        tenant_require_write($session); $context = tenant_context($pdo, $config, $session, $key); $input = tenant_request_body();
+        if ($uri === '/api/v1/tenant-companies' || $uri === '/api/v1/tenant-companies/') {
+            tenant_require_permission($context, 'manageTenant');
+            $name = tenant_text($input['legalName'] ?? '', 220); $rfc = tenant_rfc($input['rfc'] ?? ''); $regime = tenant_text($input['taxRegime'] ?? '', 12);
+            if ($name === '' || $rfc === '') fail_response(400, 'Legal name and RFC are required');
+            $id = tenant_uuid(); $pdo->beginTransaction();
+            try {
+                $pdo->prepare('INSERT INTO tenant_legal_entities (id, tenant_id, legal_name, rfc, rfc_hash, tax_regime) VALUES (?, ?, ?, ?, ?, ?)')->execute([$id, $context['tenant']['id'], $name, $rfc, hash_hmac('sha256', $rfc, $key), $regime ?: null]);
+                tenant_audit($pdo, $context, 'tenant.company_created', 'legal_entity', $id, ['rfc'=>substr($rfc,0,4) . '***','nameDigest'=>hash('sha256',$name)], $key); $pdo->commit();
+            } catch (PDOException $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(409, 'This RFC already exists in the tenant'); }
+            // Creating a company must not silently switch the session context:
+            // that could direct an in-flight workspace save into the new entity.
+            $next = tenant_context($pdo, $config, $session, $key); workspace_json(['companyId'=>$id,'context'=>$next,'csrf'=>$session['csrf']]);
+        }
+        if (!preg_match('#^/api/v1/tenant-companies/([a-f0-9-]{36})/(locations|invitations)/?$#i', $uri, $match)) fail_response(404, 'Not found');
+        $companyId = strtolower($match[1]); $resource = strtolower($match[2]);
+        if (!tenant_company_is_accessible($pdo, $context, $companyId)) fail_response(404, 'Company not found');
+        if (!tenant_can_manage_company($pdo, $context, $companyId)) fail_response(403, 'Insufficient company permission');
+        if ($resource === 'locations') {
+            $kind = $input['kind'] ?? ''; $code = strtoupper(tenant_text($input['code'] ?? '', 40)); $name = tenant_text($input['name'] ?? '', 160);
+            if (!in_array($kind, ['branch','warehouse'], true) || !preg_match('/^[A-Z0-9_-]{2,40}$/', $code) || $name === '') fail_response(400, 'Valid location type, code and name are required');
+            $id = tenant_uuid(); $pdo->beginTransaction();
+            try {
+                $pdo->prepare('INSERT INTO tenant_locations (id, tenant_id, legal_entity_id, kind, code, name) VALUES (?, ?, ?, ?, ?, ?)')->execute([$id, $context['tenant']['id'], $companyId, $kind, $code, $name]);
+                tenant_audit($pdo, $context, 'tenant.location_created', 'location', $id, ['companyId'=>$companyId,'kind'=>$kind,'code'=>$code], $key); $pdo->commit();
+            } catch (PDOException $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(409, 'This location code already exists'); }
+            workspace_json(['locationId'=>$id,'context'=>tenant_context($pdo, $config, $session, $key),'csrf'=>$session['csrf']]);
+        }
+        $email = strtolower(trim((string)($input['email'] ?? ''))); $role = (string)($input['role'] ?? 'viewer'); $scope = (string)($input['scope'] ?? 'legal_entity'); $locationId = $input['locationId'] ?? null;
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !in_array($role, ['admin','buyer','approver','warehouse','auditor','viewer','supplier'], true) || !in_array($scope, ['tenant','legal_entity','location'], true)) fail_response(400, 'Valid invitation details are required');
+        if ($scope === 'tenant') tenant_require_permission($context, 'manageTenant');
+        $allowedLocation = null;
+        foreach ($context['companies'] as $company) if ($company['id'] === $companyId) foreach ($company['locations'] as $location) if (($location['id'] ?? '') === $locationId) $allowedLocation = $locationId;
+        if ($scope === 'location' && !$allowedLocation) fail_response(400, 'Location is not accessible');
+        $id = tenant_uuid(); $emailCipher = workspace_encrypt($email, $key, 'buyniverse-tenant-invite|' . $id);
+        $pdo->beginTransaction();
+        tenant_audit($pdo, $context, 'tenant.invitation_created', 'invitation', $id, ['companyId'=>$companyId,'role'=>$role,'scope'=>$scope,'emailHash'=>hash_hmac('sha256',$email,$key)], $key);
+        $pdo->prepare('INSERT INTO tenant_invitations (id, tenant_id, legal_entity_id, location_id, email_hash, email_ciphertext, email_iv, email_tag, role_key, scope_kind, expires_at, created_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 7 DAY), ?)')->execute([$id, $context['tenant']['id'], $scope === 'tenant' ? null : $companyId, $scope === 'location' ? $allowedLocation : null, hash_hmac('sha256',$email,$key), $emailCipher[0], $emailCipher[1], $emailCipher[2], $role, $scope, $context['principalId']]);
+        $pdo->commit(); workspace_json(['invitationId'=>$id,'delivery'=>'pending_identity_delivery','csrf'=>$session['csrf']]);
+    } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Tenant service is unavailable'); }
+}
+
+if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
+    $config = workspace_config(); $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     if (!in_array($method, ['GET','PUT','DELETE'], true)) fail_response(405, 'Method not allowed');
     if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 786432) fail_response(413, 'Request body too large');
     $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
-    if ($method !== 'GET') {
-        if (!hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'workspace-state-v1') fail_response(403, 'Request verification failed');
-        $lastWrite = (float) ($_SESSION['workspace_last_write'] ?? 0);
-        if (microtime(true) - $lastWrite < 0.35) fail_response(429, 'Please wait before saving again');
-        $_SESSION['workspace_last_write'] = microtime(true);
-    }
-    if ($method === 'GET') {
-        $statement = $pdo->prepare('SELECT version, ciphertext, iv, auth_tag FROM workspace_state WHERE session_hash = ? LIMIT 1');
-        $statement->execute([$session['hash']]); $row = $statement->fetch();
-        if (!$row) workspace_json(['state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>'server']);
-        $state = workspace_decrypt($row, $key);
-        if ($state === null) fail_response(409, 'Stored workspace integrity check failed');
-        workspace_json(['state'=>$state, 'version'=>(int) $row['version'], 'csrf'=>$session['csrf'], 'mode'=>'server']);
-    }
-    if ($method === 'DELETE') {
-        $pdo->beginTransaction();
-        try {
-            $statement = $pdo->prepare('SELECT version, payload_digest FROM workspace_state WHERE session_hash = ? FOR UPDATE');
-            $statement->execute([$session['hash']]); $row = $statement->fetch();
-            if ($row) {
-                $delete = $pdo->prepare('DELETE FROM workspace_state WHERE session_hash = ?'); $delete->execute([$session['hash']]);
-                workspace_audit($pdo, $session['hash'], (int) $row['version'], 'deleted', (string) $row['payload_digest'], $key);
-            }
-            $pdo->commit(); workspace_json(['deleted'=>true, 'csrf'=>$session['csrf']]);
-        } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Secure storage is unavailable'); }
-    }
-    $body = (string) file_get_contents('php://input'); $payload = json_decode($body, true);
-    if (!is_array($payload) || !isset($payload['state']) || !is_array($payload['state']) || !workspace_safe_value($payload['state'])) fail_response(400, 'Invalid workspace payload');
-    $expectedVersion = filter_var($payload['version'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>0]]);
-    if ($expectedVersion === false) fail_response(400, 'Invalid workspace version');
-    $plain = json_encode($payload['state'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    if (!is_string($plain) || strlen($plain) > 786432) fail_response(413, 'Workspace payload is too large');
-    $digest = hash('sha256', $plain); [$ciphertext, $iv, $tag] = workspace_encrypt($plain, $key);
-    $pdo->beginTransaction();
     try {
-        $statement = $pdo->prepare('SELECT version FROM workspace_state WHERE session_hash = ? FOR UPDATE'); $statement->execute([$session['hash']]); $row = $statement->fetch();
+        $context = tenant_context($pdo, $config, $session, $key);
+        $scopeHash = (string) $context['contextHash']; $aad = 'buyniverse-workspace-v2|' . $scopeHash;
+        if ($method !== 'GET') {
+            if (!tenant_header_origin_is_safe() || !hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'workspace-state-v1') fail_response(403, 'Request verification failed');
+            $lastWrite = (float) ($_SESSION['workspace_last_write'] ?? 0);
+            if (microtime(true) - $lastWrite < 0.35) fail_response(429, 'Please wait before saving again');
+            $_SESSION['workspace_last_write'] = microtime(true);
+        }
+        if ($method === 'GET') {
+            $statement = $pdo->prepare('SELECT version, ciphertext, iv, auth_tag FROM tenant_workspace_state WHERE context_hash = ? LIMIT 1');
+            $statement->execute([$scopeHash]); $row = $statement->fetch();
+            if (!$row) workspace_json(['state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>'server', 'context'=>$context]);
+            $state = workspace_decrypt($row, $key, $aad);
+            if ($state === null) fail_response(409, 'Stored workspace integrity check failed');
+            workspace_json(['state'=>$state, 'version'=>(int) $row['version'], 'csrf'=>$session['csrf'], 'mode'=>'server', 'context'=>$context]);
+        }
+        if ($method === 'DELETE') {
+            $pdo->beginTransaction();
+            $statement = $pdo->prepare('SELECT version FROM tenant_workspace_state WHERE context_hash = ? FOR UPDATE'); $statement->execute([$scopeHash]); $row = $statement->fetch();
+            if ($row) $pdo->prepare('DELETE FROM tenant_workspace_state WHERE context_hash = ?')->execute([$scopeHash]);
+            tenant_audit($pdo, $context, 'tenant.workspace_deleted', 'workspace_state', $scopeHash, ['version'=>(int)($row['version'] ?? 0)], $key);
+            $pdo->commit(); workspace_json(['deleted'=>true, 'csrf'=>$session['csrf'], 'context'=>$context]);
+        }
+        $body = (string) file_get_contents('php://input'); $payload = json_decode($body, true);
+        if (!is_array($payload) || !isset($payload['state']) || !is_array($payload['state']) || !workspace_safe_value($payload['state'])) fail_response(400, 'Invalid workspace payload');
+        $expectedVersion = filter_var($payload['version'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>0]]);
+        if ($expectedVersion === false) fail_response(400, 'Invalid workspace version');
+        $plain = json_encode($payload['state'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (!is_string($plain) || strlen($plain) > 786432) fail_response(413, 'Workspace payload is too large');
+        $digest = hash('sha256', $plain); [$ciphertext, $iv, $tag] = workspace_encrypt($plain, $key, $aad);
+        $pdo->beginTransaction();
+        $statement = $pdo->prepare('SELECT version FROM tenant_workspace_state WHERE context_hash = ? FOR UPDATE'); $statement->execute([$scopeHash]); $row = $statement->fetch();
         $currentVersion = $row ? (int) $row['version'] : 0;
         if ($currentVersion !== (int) $expectedVersion) { $pdo->rollBack(); workspace_json(['error'=>'Workspace changed in another session', 'version'=>$currentVersion, 'csrf'=>$session['csrf']], 409); }
         $nextVersion = $currentVersion + 1;
         if ($row) {
-            $write = $pdo->prepare('UPDATE workspace_state SET version = ?, ciphertext = ?, iv = ?, auth_tag = ?, payload_digest = ? WHERE session_hash = ?');
-            $write->execute([$nextVersion, $ciphertext, $iv, $tag, $digest, $session['hash']]); workspace_audit($pdo, $session['hash'], $nextVersion, 'updated', $digest, $key);
+            $write = $pdo->prepare('UPDATE tenant_workspace_state SET version = ?, ciphertext = ?, iv = ?, auth_tag = ?, payload_digest = ? WHERE context_hash = ?');
+            $write->execute([$nextVersion, $ciphertext, $iv, $tag, $digest, $scopeHash]);
         } else {
-            $write = $pdo->prepare('INSERT INTO workspace_state (session_hash, version, ciphertext, iv, auth_tag, payload_digest) VALUES (?, ?, ?, ?, ?, ?)');
-            $write->execute([$session['hash'], $nextVersion, $ciphertext, $iv, $tag, $digest]); workspace_audit($pdo, $session['hash'], $nextVersion, 'created', $digest, $key);
+            $write = $pdo->prepare('INSERT INTO tenant_workspace_state (context_hash, tenant_id, principal_id, legal_entity_id, location_id, version, ciphertext, iv, auth_tag, payload_digest) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $write->execute([$scopeHash, $context['tenant']['id'], $context['principalId'], $context['company']['id'], $context['location']['id'] ?? null, $nextVersion, $ciphertext, $iv, $tag, $digest]);
         }
-        $pdo->commit(); workspace_json(['version'=>$nextVersion, 'savedAt'=>gmdate('c'), 'csrf'=>$session['csrf']]);
+        $pdo->commit(); workspace_json(['version'=>$nextVersion, 'savedAt'=>gmdate('c'), 'csrf'=>$session['csrf'], 'context'=>$context]);
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Secure storage is unavailable'); }
 }
 

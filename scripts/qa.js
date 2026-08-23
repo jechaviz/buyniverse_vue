@@ -80,6 +80,12 @@ for (const token of [
 ]) {
   if (!main.includes(token)) throw new Error(`Company workspace context is missing ${token}`);
 }
+for (const token of ["tenantContext", "switchTenantContext", "refreshTenantContext", "TenantAdminPage.vue", "/settings/organizations"]) {
+  if (!main.includes(token)) throw new Error(`Server-enforced multi-tenant context is missing ${token}`);
+}
+for (const file of ["app/components/TenantContextMenu.vue", "app/pages/TenantAdminPage.vue", "app/lib/tenant-context.js", "ops/migrations/20260823_multitenancy.sql"]) {
+  if (!fs.existsSync(path.join(root, file))) throw new Error(`Multi-tenant runtime artifact is missing ${file}`);
+}
 
 const requiredRoutes = [
   "/", "/find-work", "/dashboard/:section?", "/clients", "/suppliers", "/leads", "/projects", "/project/:id",
@@ -88,7 +94,7 @@ const requiredRoutes = [
   "/products", "/expenses", "/messages", "/post-job/:id?", "/job/:jobId", "/client/job/:jobId",
   "/profile/billing", "/profile/:userId", "/agency/:agencyId", "/contract/:contractId",
   "/find-talent", "/saved-jobs", "/browse-services", "/gig/:gigId", "/admin/issuers",
-  "/procurement/:section?",
+  "/procurement/:section?", "/settings/organizations",
 ];
 const missingRoutes = requiredRoutes.filter((r) => !main.includes(`r("${r}"`) && !main.includes(`r('${r}'`));
 if (missingRoutes.length) throw new Error(`Missing routes: ${missingRoutes.join(", ")}`);
@@ -121,6 +127,7 @@ console.log(
       seo: `${seoResult.origin} (${seoResult.files} canonical sources checked)`,
       communications: `${communicationsResult.threads} threads / ${communicationsResult.templates} templates / ${communicationsResult.workspaceDrafts} workspace drafts`,
       documentLibrary: `${documentLibraryResult.reusableDocuments} reusable document / ${documentLibraryResult.sectionLimit} section safety cap`,
+      tenancy: "tenant + legal entities + locations + scoped memberships + immutable audit",
       canonicalImages: secResult.assetCount,
     },
     null,

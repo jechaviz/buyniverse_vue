@@ -3,7 +3,8 @@
 
   // The browser never supplies an account identifier to this adapter. The
   // server binds the record to its HttpOnly session and enforces CSRF itself.
-  var ENDPOINT = "/api/v1/workspace-state";
+  var BASE_PATH = global.location.pathname.startsWith("/buyniverse_vue/") ? "/buyniverse_vue" : "";
+  var ENDPOINT = BASE_PATH + "/api/v1/workspace-state";
   var CSRF_HEADER = "X-Buyniverse-CSRF";
   var csrf = "";
   var version = 0;
@@ -51,7 +52,7 @@
     return request("GET").then(function (body) {
       csrf = typeof body.csrf === "string" ? body.csrf : "";
       version = Number.isSafeInteger(body.version) && body.version >= 0 ? body.version : 0;
-      return { state: body.state || null, version: version, mode: body.mode || "server" };
+      return { state: body.state || null, version: version, mode: body.mode || "server", context: body.context || null };
     });
   }
 
@@ -59,7 +60,7 @@
     return request("PUT", { state: state, version: version }).then(function (body) {
       csrf = typeof body.csrf === "string" ? body.csrf : csrf;
       version = Number.isSafeInteger(body.version) && body.version >= 0 ? body.version : version;
-      return { version: version, savedAt: body.savedAt || new Date().toISOString() };
+      return { version: version, savedAt: body.savedAt || new Date().toISOString(), context: body.context || null };
     });
   }
 

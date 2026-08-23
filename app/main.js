@@ -154,6 +154,8 @@ const ui = reactive({
   locked: false,
   saveState: "connecting",
   lastSavedAt: null,
+  tenantContext: null,
+  tenantSwitching: false,
 });
 
 const { allowedMarketplaceModes } = window.BuyniverseInitialState
@@ -203,6 +205,7 @@ const store = {
   currentUser: computed(
     () => state.users.find((user) => user.id === state.currentUserId) || state.users[0],
   ),
+  tenantContext: computed(() => ui.tenantContext),
   marketplaceModes: computed(() =>
     allowedMarketplaceModes(state.users.find((user) => user.id === state.currentUserId)),
   ),
@@ -278,6 +281,36 @@ const store = {
       this.securityEvent("Demo identity switched", `${previous} to ${userId}`, "warning");
     }
   },
+  async switchTenantContext(companyId, locationId = null) {
+    if (!window.BuyniverseTenantContext || !remoteWorkspace || ui.tenantSwitching) return false;
+    ui.tenantSwitching = true;
+    try {
+      if (!(await persistState())) throw new Error("Current workspace could not be saved");
+      await window.BuyniverseTenantContext.switchContext(companyId, locationId);
+      remoteHydrating = true;
+      const remote = await remoteWorkspace.load();
+      applyRemoteWorkspace(remote);
+      remoteReady = true;
+      ui.saveState = "saved";
+      ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
+      this.securityEvent("Company context switched", `${companyId}:${locationId || "all"}`, "info");
+      return true;
+    } catch (error) {
+      ui.saveState = "error";
+      this.notice("Company context could not be switched", "fa-triangle-exclamation");
+      return false;
+    } finally {
+      remoteHydrating = false;
+      ui.tenantSwitching = false;
+    }
+  },
+  async refreshTenantContext() {
+    if (!window.BuyniverseTenantContext) return null;
+    const response = await window.BuyniverseTenantContext.load();
+    if (!isSafeTenantContext(response?.context)) throw new Error("Tenant context was rejected");
+    ui.tenantContext = response.context;
+    return response.context;
+  },
   ...domainActions,
 };
 
@@ -285,6 +318,23 @@ let persistenceTimer = 0;
 let remoteReady = false;
 let remoteHydrating = true;
 const remoteWorkspace = window.BuyniverseWorkspaceState;
+const isSafeTenantContext = (context) => Boolean(
+  context && isSafeId(context?.tenant?.id) && isSafeId(context?.company?.id) &&
+  typeof context.company.legalName === "string" && context.company.legalName.length <= 220 &&
+  (!context.location || isSafeId(context.location.id)) &&
+  Array.isArray(context.companies) && context.companies.length > 0 && context.companies.length <= 100,
+);
+const replaceWorkspaceState = (nextState) => {
+  if (!isSafeRemoteState(nextState)) throw new Error("Remote workspace payload was rejected");
+  Object.keys(state).forEach((key) => { delete state[key]; });
+  Object.assign(state, nextState);
+  window.BuyniverseInitialState?.normalizeState(state);
+};
+const applyRemoteWorkspace = (remote) => {
+  if (remote?.context && !isSafeTenantContext(remote.context)) throw new Error("Tenant context was rejected");
+  replaceWorkspaceState(remote?.state || window.BuyniverseDemo.clone());
+  ui.tenantContext = remote?.context || null;
+};
 const persistState = async () => {
   window.clearTimeout(persistenceTimer);
   if (!remoteReady || !remoteWorkspace) return false;
@@ -314,12 +364,7 @@ const hydrateRemoteWorkspace = async () => {
   if (!remoteWorkspace) { ui.saveState = "error"; remoteHydrating = false; return; }
   try {
     const remote = await remoteWorkspace.load();
-    if (remote.state) {
-      if (!isSafeRemoteState(remote.state)) throw new Error("Remote workspace payload was rejected");
-      Object.keys(state).forEach((key) => { delete state[key]; });
-      Object.assign(state, remote.state);
-      window.BuyniverseInitialState?.normalizeState(state);
-    }
+    applyRemoteWorkspace(remote);
     remoteReady = true;
     ui.saveState = "saved";
     ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
@@ -350,6 +395,7 @@ const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
 const Identity = load("./app/pages/IdentityPage.vue?v=33");
 const AdminIssuers = load("./app/pages/AdminIssuersPage.vue?v=30");
+const TenantAdmin = load("./app/pages/TenantAdminPage.vue?v=1");
 const Billing = load("./app/pages/BillingPage.vue?v=31");
 const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
@@ -416,6 +462,7 @@ const routes = [
   r("/gig/:gigId", Detail, { kind: "gig" }),
   r("/gig/:gigId/:slug", Detail, { kind: "gig" }),
   r("/admin/issuers", AdminIssuers, { admin: true, roles: ["Admin"] }),
+  r("/settings/organizations", TenantAdmin),
   r("/procurement/:section?", Procurement, { domain: "procurement" }),
   r("/:pathMatch(.*)*", NotFound),
 ];
@@ -616,7 +663,7 @@ window.addEventListener("buyniverse:app-shell-ready", revealApp, { once: true })
 // Fail open rather than leaving a blank application if an external CDN fails.
 window.setTimeout(revealApp, 5000);
 
-const app = createApp(load("./app/App.vue?v=43"));
+const app = createApp(load("./app/App.vue?v=44"));
 window.__buyniverseErrors = [];
 app.config.errorHandler = (error, instance, info) => {
   const detail = {

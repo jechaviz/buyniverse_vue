@@ -42,6 +42,14 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["/api/v1/workspace-state", "aes-256-gcm", "X-Buyniverse-CSRF", "workspace_safe_value", "allow_demo_workspace_state", "workspace_state_audit"]) {
     if (!phpShim.includes(token)) throw new Error(`Encrypted workspace persistence is missing ${token}`);
   }
+  const tenancyMigration = read("ops/migrations/20260823_multitenancy.sql");
+  for (const token of ["tenant_context", "tenant_workspace_state", "tenant_header_origin_is_safe", "tenant_can_manage_company", "tenant_audit_events", "tenant-context", "tenant-companies"]) {
+    if (!phpShim.includes(token)) throw new Error(`Server tenant boundary is missing ${token}`);
+  }
+  for (const token of ["tenant_accounts", "tenant_legal_entities", "tenant_locations", "tenant_memberships", "tenant_invitations", "tenant_workspace_state", "tenant_audit_events", "tenant_audit_events_no_update", "tenant_audit_events_no_delete"]) {
+    if (!tenancyMigration.includes(token)) throw new Error(`Tenant migration is missing ${token}`);
+  }
+  if (!htaccess.includes("tenant-context|tenant-companies")) throw new Error("Apache does not route the tenant API to the authorization boundary");
   if (/dbPass|dbUser|shell_exec|ZipArchive|deploy_sync/.test(phpShim))
     throw new Error("Deployment shim retains privileged database or deploy surface");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");

@@ -7,7 +7,7 @@ Réplica estática del frontend Buyniverse que se ejecuta sin Node, bundler ni c
 - La interfaz funciona en inglés y español; el selector `EN / ES` persiste la preferencia y localiza contenido dinámico, fechas y monedas.
 - `../lib/web-common/browser.js` comparte persistencia defensiva, sanitización y validación accesible de formularios.
 - `../lib/procurement-common/browser.js` comparte lifecycle, roles, auditoría, scoring, subastas y exportación CSV segura.
-- El estado es exclusivamente demo. No hay login ni backend real y no deben guardarse credenciales o secretos operativos.
+- El estado demo se persiste en servidor cifrado y separado por cuenta SaaS, razón social/RFC, sucursal y bodega. No hay login empresarial configurado todavía y no deben guardarse credenciales o secretos operativos.
 
 ## Ejecutar sin Node
 
@@ -27,7 +27,7 @@ El CSP conserva `unsafe-eval` y estilos inline porque son requisitos técnicos d
 - El dashboard conserva accesos recientes por cuenta y ofrece acciones frecuentes.
 - El estado muestra cuándo está guardado; proyectos, documentos fiscales y solicitudes recuperan borradores efímeros tras un refresh.
 - El menú de cuenta permite bloquear la pantalla y también se bloquea tras 15 minutos sin actividad.
-- La variante actual es una demo endurecida, no una arquitectura bancaria completa; consulta `SECURITY.md` para el límite y la ruta de producción.
+- La variante actual es una demo endurecida con aislamiento multiempresa, no una arquitectura bancaria certificada completa; consulta `SECURITY.md` y `docs/MULTITENANCY.md` para el límite y la ruta de producción.
 
 ## QA opcional
 

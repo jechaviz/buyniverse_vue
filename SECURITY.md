@@ -32,9 +32,15 @@ Revisión actualizada el 22 de agosto de 2026 contra OWASP Top 10 para el alcanc
 
 Los campos obligatorios muestran `*`, `aria-required` y límites de longitud. Al enviar, el primer campo inválido recibe foco, borde de error, `aria-invalid`, `aria-describedby` y un mensaje `role="alert"`. Los formularios dinámicos y los pasos de wizard se decoran mediante `MutationObserver`.
 
+## Aislamiento multiempresa y multisucursal
+
+El contexto servidor ahora separa la cuenta SaaS, razón social/RFC, sucursal y bodega. El navegador sólo solicita un cambio de contexto; la API vuelve a resolver la membresía, el alcance y el rol antes de leer o escribir el estado cifrado. Los espacios de trabajo se cifran con AAD ligado a principal + tenant + razón social + ubicación, de modo que no pueden reutilizarse entre contextos.
+
+Las altas de empresa, ubicaciones e invitaciones pasan por la misma autorización. Las invitaciones almacenan correo cifrado y hash HMAC, no crean contraseñas locales, y quedan pendientes hasta vincularse con identidad corporativa. Los eventos relevantes se encadenan y MACean; MySQL rechaza su actualización o borrado. Consulta [MULTITENANCY.md](MULTITENANCY.md) para el modelo completo.
+
 ## Límite arquitectónico
 
-El selector de cuentas no es autenticación y `localStorage` no es una base de datos multiusuario. Esta versión sirve datos ficticios y debe permanecer como demo. Un despliegue con usuarios o datos reales requiere una API que repita autorización, validación, rate limiting, sesiones seguras, auditoría persistente y almacenamiento de secretos en servidor.
+El selector de perfiles demo no es autenticación. La cuenta, entidad, sucursal y bodega sí se validan en servidor, pero esta versión sigue sirviendo datos ficticios y debe permanecer como demo hasta enlazar una identidad empresarial real. Un despliegue con usuarios o datos reales requiere OIDC/LDAPS configurado, autorización de cada objeto de negocio en API, rate limiting global, sesiones de servidor, auditoría a SIEM y almacenamiento de secretos administrado.
 
 El runtime SFC/UnoCSS en navegador requiere `unsafe-eval` y estilos inline en CSP. Para eliminar esas excepciones hay que publicar artefactos precompilados; eso sería otra modalidad de distribución, no esta variante CDN + SFC solicitada.
 
