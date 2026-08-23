@@ -8,6 +8,9 @@ Options -Indexes -MultiViews
 </FilesMatch>
 
 <IfModule mod_mime.c>
+  # CloudLinux PHP 8.4 is the supported handler with PDO MySQL enabled on
+  # this account. Do not fall back to the legacy PHP 7 handlers.
+  AddHandler application/x-httpd-alt-php84 .php .php8 .phtml
   AddType text/plain .vue
 </IfModule>
 
