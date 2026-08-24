@@ -38,7 +38,7 @@
       </div>
 
       <!-- Mode Switcher Tabs (Only if not in forgot password mode) -->
-      <div v-if="!isDemoRuntime && !federatedOnly && mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
+      <div v-if="!isDemoRuntime && !federatedOnly && !identityUnavailable && mode !== 'forgot'" class="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800/80">
         <button
           type="button"
           class="rounded-xl py-2 text-xs font-bold transition"
@@ -79,6 +79,12 @@
         </div>
       </div>
 
+      <div v-else-if="identityUnavailable" class="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-center dark:border-sky-900/50 dark:bg-sky-950/25" role="status">
+        <span class="mx-auto grid h-9 w-9 place-items-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200"><i class="fa-solid fa-shield-halved text-sm"></i></span>
+        <p class="mt-2 text-xs font-bold text-slate-800 dark:text-slate-100">{{ store.t("Identity access is being configured") }}</p>
+        <p class="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{{ store.t("This production workspace accepts only server-configured identity providers. Ask your administrator to enable your organization or a personal sign-in provider.") }}</p>
+      </div>
+
       <!-- ================================================================= -->
       <!-- 2. LOGIN FORM                                                     -->
       <!-- ================================================================= -->
@@ -107,7 +113,7 @@
           </div>
         </div>
 
-        <form v-if="!isDemoRuntime && !federatedOnly" class="space-y-3" @submit.prevent="handleEmailLogin">
+        <form v-if="!isDemoRuntime && !federatedOnly && !identityUnavailable" class="space-y-3" @submit.prevent="handleEmailLogin">
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">{{ store.t("Correo Electrónico") }}</label>
             <div class="relative">
@@ -141,7 +147,7 @@
       <!-- ================================================================= -->
       <!-- 3. REGISTER FORM (Email & Enterprise)                            -->
       <!-- ================================================================= -->
-      <div v-else-if="mode === 'register' && !isDemoRuntime && !federatedOnly" class="space-y-4">
+      <div v-else-if="mode === 'register' && !isDemoRuntime && !federatedOnly && !identityUnavailable" class="space-y-4">
         <!-- Account Type Selector -->
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">{{ store.t("Tipo de Cuenta") }}</label>
@@ -219,7 +225,7 @@
       <!-- ================================================================= -->
       <!-- 4. FORGOT PASSWORD FLOW (OTP & Reset)                             -->
       <!-- ================================================================= -->
-      <div v-else-if="mode === 'forgot' && !isDemoRuntime" class="space-y-4">
+      <div v-else-if="mode === 'forgot' && !isDemoRuntime && !identityUnavailable" class="space-y-4">
         <!-- Step 1: Send OTP -->
         <div v-if="forgotStep === 1" class="space-y-3">
           <div>
@@ -306,7 +312,8 @@ export default {
     const socialLoading = ref(false);
     const basePath = window.location.pathname.startsWith("/buyniverse_vue/") ? "/buyniverse_vue" : "";
     const federatedOnly = computed(() => socialProviders.value.length > 0);
-    const isDemoRuntime = computed(() => !Boolean(window.BuyniverseRuntime?.serverAuth) && !federatedOnly.value);
+    const isDemoRuntime = computed(() => store.runtimeMode?.value === "demo");
+    const identityUnavailable = computed(() => !isDemoRuntime.value && !federatedOnly.value);
 
     // Login fields
     const loginEmail = ref("");
@@ -383,6 +390,7 @@ export default {
     };
 
     const loginAs = (userId) => {
+      if (!isDemoRuntime.value) return;
       activateUser(userId);
       store.notice(store.t("Sesión iniciada correctamente"), "fa-circle-check");
       emit("close");
@@ -409,12 +417,16 @@ export default {
     watch(federatedOnly, (enabled) => {
       if (enabled && mode.value !== "login" && mode.value !== "forgot") mode.value = "login";
     });
+    watch(identityUnavailable, (unavailable) => {
+      if (unavailable) mode.value = "login";
+    }, { immediate: true });
 
     return {
       store,
       mode,
       isDemoRuntime,
       federatedOnly,
+      identityUnavailable,
       socialProviders,
       socialLoading,
       demoProfiles,

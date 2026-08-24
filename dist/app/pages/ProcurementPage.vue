@@ -145,18 +145,25 @@ export default {
     const canBuy = computed(
       () => store.marketplaceMode.value !== "supplier",
     );
-    const sections = computed(() =>
+    const accessibleSections = computed(() =>
       store.marketplaceMode.value === "supplier"
         ? allSections.filter((item) => item.key === "auction")
         : store.marketplaceMode.value === "admin"
           ? allSections
           : allSections.filter((item) => item.key !== "governance"),
     );
+    // The purchasing rail exposes only the operational sequence. Intelligence
+    // and governance remain deep-linkable from their contextual cards, rather
+    // than competing with the core request-to-order path on every screen.
+    const primaryKeys = ["cockpit", "queue", "sourcing", "auction", "execution"];
+    const sections = computed(() =>
+      accessibleSections.value.filter((item) => primaryKeys.includes(item.key)),
+    );
     const defaultSection = computed(() =>
       store.marketplaceMode.value === "supplier" ? "auction" : "cockpit",
     );
     const section = computed(() =>
-      sections.value.some((item) => item.key === route.params.section)
+      accessibleSections.value.some((item) => item.key === route.params.section)
         ? route.params.section
         : defaultSection.value,
     );
@@ -217,7 +224,7 @@ export default {
     const normalizeRoute = () => {
       if (
         !route.params.section ||
-        !sections.value.some((item) => item.key === route.params.section)
+        !accessibleSections.value.some((item) => item.key === route.params.section)
       )
         router.replace(`/procurement/${defaultSection.value}`);
     };

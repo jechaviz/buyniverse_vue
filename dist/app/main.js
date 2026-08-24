@@ -142,7 +142,21 @@ const isSafeRemoteState = (value) => {
     value.users.some((user) => user.id === value.currentUserId)
   );
 };
-const state = reactive(window.BuyniverseDemo.clone());
+const runtimeMode = ref(window.BuyniverseRuntime?.mode === "demo" ? "demo" : "production");
+const emptyWorkspaceState = () => ({
+  currentUserId: null,
+  activeMarketplaceMode: "buyer",
+  users: [], jobs: [], contracts: [], invoices: [], paymentReceipts: [],
+  transactions: [], timeEntries: [], contests: [], gigs: [], conversations: [],
+  issuers: [], agencies: [], suppliers: [], leads: [], products: [], expenses: [],
+  estimates: [], purchaseRequests: [], sourcingEvents: [], auctions: [],
+  purchaseOrders: [], procurementRules: [], procurementWorkflows: [],
+  procurementAudit: [], securityAudit: [], recentViews: [], messageTemplates: [],
+  mailings: [], serviceRequests: [], talentEngagements: [], notifications: [],
+  savedJobIds: [], tablePreferences: {}, documentLibrary: { documents: {}, drafts: {} },
+  procurementAnalytics: {},
+});
+const state = reactive(emptyWorkspaceState());
 // Document-library records and every other workspace draft share this object,
 // which is synchronised through the server-side encrypted state endpoint.
 window.BuyniverseWorkspaceRuntimeState = state;
@@ -156,6 +170,7 @@ const ui = reactive({
   lastSavedAt: null,
   tenantContext: null,
   tenantSwitching: false,
+  workspaceAccess: "loading",
 });
 
 const { allowedMarketplaceModes } = window.BuyniverseInitialState
@@ -182,21 +197,25 @@ const id = (prefix) => window.ProcurementCommon.uid(prefix);
 const clean = (value, limit = 4000) => window.WebCommon.sanitizeText(value, limit).trim();
 const MAX_TRANSACTION_AMOUNT = window.WebCommon.MAX_FINANCIAL_AMOUNT;
 const positive = (value) => window.WebCommon.isSafeAmount(value, 0) && Number(value) > 0;
-const activeOperationalScope = () =>
-  window.BuyniverseTenantScope?.scopeForContext(ui.tenantContext) || {
-    // This fallback keeps the static local preview usable. A configured server
-    // always supplies a verified UUID context and rejects non-matching scopes.
-    tenantId: "local-demo", companyId: "local-demo-company", locationId: null,
-  };
+const activeOperationalScope = () => {
+  const verified = window.BuyniverseTenantScope?.scopeForContext(ui.tenantContext);
+  if (verified) return verified;
+  // This fallback exists only for an explicit local demo. A production record
+  // is never stamped with a client-invented tenant scope.
+  return runtimeMode.value === "demo"
+    ? { tenantId: "local-demo", companyId: "local-demo-company", locationId: null }
+    : null;
+};
 const applyCurrentOperationalScope = (record) => {
   const scope = activeOperationalScope();
-  record.operationalScope = { ...scope };
+  if (scope) record.operationalScope = { ...scope };
   return record;
 };
 const scopeLabel = (recordOrScope) => {
   const scope = recordOrScope?.operationalScope || recordOrScope;
   const context = ui.tenantContext;
-  if (!scope || !context?.company) return "Local preview";
+  if (!scope || !context?.company)
+    return runtimeMode.value === "demo" ? "Vista previa local" : "Sin empresa activa";
   const company = (context.companies || []).find((item) => item.id === scope.companyId);
   const companyName = company?.legalName || context.company.legalName || "Company";
   if (!scope.locationId) return `${companyName} · ${window.BuyniverseI18n.t("All locations")}`;
@@ -218,6 +237,9 @@ const store = {
   state,
   ui,
   locale,
+  runtimeMode: computed(() => runtimeMode.value),
+  isDemo: computed(() => runtimeMode.value === "demo"),
+  workspaceAccess: computed(() => ui.workspaceAccess),
   setLocale: (next) => {
     window.BuyniverseI18n.setLocale(next);
     locale.value = next;
@@ -264,7 +286,7 @@ const store = {
       "user-freelancer-charlie": "sup-2",
     };
     const u = state.users.find((x) => x.id === userId);
-    return u?.supplierProfileId || map[userId] || "sup-1";
+    return u?.supplierProfileId || (runtimeMode.value === "demo" ? map[userId] || "sup-1" : null);
   },
   currentSupplierId: computed(() => {
     const map = {
@@ -274,7 +296,7 @@ const store = {
       "user-freelancer-charlie": "sup-2",
     };
     const u = state.users.find((x) => x.id === state.currentUserId);
-    return u?.supplierProfileId || map[state.currentUserId] || "sup-1";
+    return u?.supplierProfileId || (runtimeMode.value === "demo" ? map[state.currentUserId] || "sup-1" : null);
   }),
   purchaseRequest: (requestId) =>
     state.purchaseRequests.find((request) => request.id === requestId),
@@ -305,6 +327,7 @@ const store = {
     return true;
   },
   selectUser(userId) {
+    if (runtimeMode.value !== "demo") return false;
     const nextUser = state.users.find((user) => user.id === userId);
     if (nextUser) {
       const previous = state.currentUserId;
@@ -363,12 +386,33 @@ const replaceWorkspaceState = (nextState, context = ui.tenantContext) => {
   if (!isSafeRemoteState(nextState)) throw new Error("Remote workspace payload was rejected");
   Object.keys(state).forEach((key) => { delete state[key]; });
   Object.assign(state, nextState);
-  window.BuyniverseInitialState?.normalizeState(state, context);
+  window.BuyniverseInitialState?.normalizeState(state, context, {
+    demo: runtimeMode.value === "demo",
+  });
+};
+const productionWorkspaceState = (context) => {
+  const principal = context?.principal || {};
+  const name = clean(principal.displayName || "Workspace user", 180) || "Workspace user";
+  const avatar = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || "BU";
+  const canAdmin = context?.permissions?.manageTenant === true;
+  const user = {
+    id: context?.principalId || "workspace-user",
+    name,
+    email: "",
+    avatar,
+    type: canAdmin ? "Admin" : "Client",
+    marketplaceModes: canAdmin ? ["buyer", "supplier", "admin"] : ["buyer", "supplier"],
+  };
+  return { ...emptyWorkspaceState(), currentUserId: user.id, users: [user] };
 };
 const applyRemoteWorkspace = (remote) => {
   if (remote?.context && !isSafeTenantContext(remote.context)) throw new Error("Tenant context was rejected");
+  if (remote?.mode && remote.mode !== runtimeMode.value) throw new Error("Runtime policy mismatch");
   ui.tenantContext = remote?.context || null;
-  replaceWorkspaceState(remote?.state || window.BuyniverseDemo.clone(), ui.tenantContext);
+  const fallback = runtimeMode.value === "demo"
+    ? window.BuyniverseDemo.clone()
+    : productionWorkspaceState(ui.tenantContext);
+  replaceWorkspaceState(remote?.state || fallback, ui.tenantContext);
 };
 const persistState = async () => {
   window.clearTimeout(persistenceTimer);
@@ -396,23 +440,44 @@ watch(
   { deep: true },
 );
 const hydrateRemoteWorkspace = async () => {
-  if (!remoteWorkspace) { ui.saveState = "error"; remoteHydrating = false; return; }
+  if (!remoteWorkspace) {
+    ui.saveState = "error";
+    ui.workspaceAccess = runtimeMode.value === "demo" ? "demo" : "unavailable";
+    remoteHydrating = false;
+    return;
+  }
   try {
     const remote = await remoteWorkspace.load();
     applyRemoteWorkspace(remote);
     remoteReady = true;
     ui.saveState = "saved";
+    ui.workspaceAccess = runtimeMode.value === "demo" ? "demo" : "ready";
     ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
     window.dispatchEvent(new Event("buyniverse:workspace-hydrated"));
   } catch (error) {
-    // No browser-resident fallback is used: a failed remote write must remain
-    // visible instead of falsely claiming that drafts are persisted.
-    ui.saveState = "error";
+    if (runtimeMode.value === "demo") {
+      applyRemoteWorkspace({ state: window.BuyniverseDemo.clone(), context: null, mode: "demo" });
+      ui.saveState = "demo";
+      ui.workspaceAccess = "demo";
+    } else {
+      // Production never falls back to browser demo data. The root route will
+      // present only configured identity options when the server denies access.
+      ui.saveState = "error";
+      ui.workspaceAccess = Number(error?.status) === 401 ? "identity-required" : "unavailable";
+    }
   } finally {
     remoteHydrating = false;
   }
 };
-void hydrateRemoteWorkspace();
+const initializeRuntime = async () => {
+  const decision = await window.BuyniverseRuntime?.load?.();
+  runtimeMode.value = decision?.mode === "demo" ? "demo" : "production";
+  if (runtimeMode.value === "demo") {
+    replaceWorkspaceState(window.BuyniverseDemo.clone(), null);
+  } else {
+    replaceWorkspaceState(emptyWorkspaceState(), null);
+  }
+};
 window.addEventListener("pagehide", () => { void persistState(); });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") void persistState();
@@ -424,7 +489,7 @@ const Home = load("./app/pages/HomePage.vue?v=30");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=28");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
-const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=31");
+const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=32");
 const JobDetails = load("./app/pages/JobDetailsPage.vue?v=36");
 const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
@@ -436,10 +501,10 @@ const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=22");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=23");
 const NotFound = {
   template:
-    '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe en esta réplica.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
+    '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
 };
 
 const r = (path, component, meta = {}) => ({ path, component, meta });
@@ -529,6 +594,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
+  if (runtimeMode.value !== "demo" && !store.currentUser.value && to.path !== "/") {
+    return { path: "/", query: { auth: "login", returnTo: to.fullPath } };
+  }
   const roles = Array.isArray(to.meta.roles) ? to.meta.roles : null;
   if (roles && !roles.includes(store.currentUser.value?.type)) {
     store.securityEvent("Route access denied", to.path, "warning");
@@ -698,26 +766,42 @@ window.addEventListener("buyniverse:app-shell-ready", revealApp, { once: true })
 // Fail open rather than leaving a blank application if an external CDN fails.
 window.setTimeout(revealApp, 5000);
 
-const app = createApp(load("./app/App.vue?v=44"));
-window.__buyniverseErrors = [];
-app.config.errorHandler = (error, instance, info) => {
-  const detail = {
-    message: clean(error?.message || String(error), 500),
-    stack: clean(error?.stack || "", 1500),
-    info: clean(info, 160),
-    at: new Date().toISOString(),
-    component: clean(
-      instance?.$options?.name || instance?.$?.type?.__file || instance?.$?.type?.name || "anonymous",
-      160,
-    ),
-  };
-  window.__buyniverseErrors.push(detail);
-  if (window.__buyniverseErrors.length > 50) window.__buyniverseErrors.shift();
-  console.error("[Buyniverse Exception]:", error?.message || error, "\nComponent:", detail.component, "\nInfo:", detail.info, "\nStack:", error?.stack, detail);
-};
+const startApplication = async () => {
+  await initializeRuntime();
+  await hydrateRemoteWorkspace();
+  if (
+    runtimeMode.value !== "demo" &&
+    ui.workspaceAccess === "identity-required" &&
+    router.currentRoute.value.path !== "/"
+  ) {
+    await router.replace({
+      path: "/",
+      query: { auth: "login", returnTo: router.currentRoute.value.fullPath },
+    });
+  }
 
-window.WebCommon.installFormValidation(document);
-app.config.globalProperties.$t = window.BuyniverseI18n.t;
-const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=18");
-app.component("DocumentEditorModal", DocumentEditorModal);
-app.provide("store", store).use(router).mount("#app");
+  const app = createApp(load("./app/App.vue?v=45"));
+  window.__buyniverseErrors = [];
+  app.config.errorHandler = (error, instance, info) => {
+    const detail = {
+      message: clean(error?.message || String(error), 500),
+      stack: clean(error?.stack || "", 1500),
+      info: clean(info, 160),
+      at: new Date().toISOString(),
+      component: clean(
+        instance?.$options?.name || instance?.$?.type?.__file || instance?.$?.type?.name || "anonymous",
+        160,
+      ),
+    };
+    window.__buyniverseErrors.push(detail);
+    if (window.__buyniverseErrors.length > 50) window.__buyniverseErrors.shift();
+    console.error("[Buyniverse Exception]:", error?.message || error, "\nComponent:", detail.component, "\nInfo:", detail.info, "\nStack:", error?.stack, detail);
+  };
+
+  window.WebCommon.installFormValidation(document);
+  app.config.globalProperties.$t = window.BuyniverseI18n.t;
+  const DocumentEditorModal = load("./app/components/document/DocumentEditorModal.vue?v=18");
+  app.component("DocumentEditorModal", DocumentEditorModal);
+  app.provide("store", store).use(router).mount("#app");
+};
+void startApplication();

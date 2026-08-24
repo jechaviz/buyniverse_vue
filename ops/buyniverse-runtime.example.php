@@ -7,9 +7,11 @@ return [
     'db_user' => 'REPLACE_ME',
     'db_password' => 'REPLACE_ME',
     'state_encryption_key' => 'REPLACE_WITH_BASE64_32_BYTE_KEY',
-    // Only for the publicly seeded demo. Set false after OIDC/MFA session
-    // issuance is connected, so state is bound to a verified subject.
-    'allow_demo_workspace_state' => true,
+    // Production fails closed: no anonymous workspace, no seeded sample data.
+    // A demo is opt-in and must run only on an explicitly allowlisted host.
+    'app_mode' => 'production', // Set to 'demo' only on an isolated demo host.
+    'demo_hosts' => ['demo.buyniverse.com', 'localhost', '127.0.0.1', '::1'],
+    'allow_demo_workspace_state' => false,
 
     // Transactional email is queued encrypted in MySQL and sent only by the
     // CLI worker. Keep disabled until the sending domain is verified and the

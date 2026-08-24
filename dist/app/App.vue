@@ -125,7 +125,7 @@
             <b class="font-head text-slate-900 dark:text-white uppercase tracking-wider text-[11px] block">{{ store.t("Cumplimiento") }}</b>
             <ul class="space-y-1.5 text-slate-500 dark:text-slate-400">
               <li><RouterLink to="/invoices" class="hover:text-brand">{{ store.t("Facturación CFDI 4.0") }}</RouterLink></li>
-              <li><RouterLink to="/contracts" class="hover:text-brand">{{ store.t("Fideicomiso por Hitos") }}</RouterLink></li>
+              <li><RouterLink to="/projects" class="hover:text-brand">{{ store.t("Fideicomiso por Hitos") }}</RouterLink></li>
               <li><RouterLink to="/dashboard" class="hover:text-brand">{{ store.t("Auditoría Inmutable") }}</RouterLink></li>
             </ul>
           </div>
@@ -166,12 +166,12 @@
             <button class="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 md:hidden" aria-label="Toggle navigation" @click="toggleNav">
               <i class="fa-solid fa-bars text-xl"></i>
             </button>
-            <button class="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 md:hidden dark:border-slate-800 dark:bg-slate-800" aria-label="Quick access" @click="commandOpen = true">
+            <button class="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 md:hidden dark:border-slate-800 dark:bg-slate-800" :aria-label="store.t('Quick access')" @click="commandOpen = true">
               <i class="fa-solid fa-magnifying-glass text-xs"></i>
             </button>
             <button class="hidden items-center gap-2.5 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900/90 px-3.5 py-2 text-xs font-semibold text-slate-500 hover:border-brand hover:text-brand md:flex shadow-xs transition" @click="commandOpen = true">
               <i class="fa-solid fa-magnifying-glass text-xs"></i>
-              <span>Quick access</span>
+              <span>{{ store.t("Quick access") }}</span>
               <kbd class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Ctrl K</kbd>
             </button>
             <TenantContextMenu :context="tenantContext" :switching="ui.tenantSwitching" @switch="switchTenantContext" />
@@ -204,8 +204,8 @@
             <div class="relative">
               <button
                 class="relative hidden h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400 sm:grid shadow-xs transition"
-                title="Notifications"
-                aria-label="Notifications"
+                :title="store.t('Notifications')"
+                :aria-label="store.t('Notifications')"
                 :aria-expanded="notificationsOpen"
                 @click="closeOverlays('notifications')"
               >
@@ -217,11 +217,11 @@
               <div v-if="notificationsOpen" class="absolute right-0 top-11 z-50 w-90 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-elevated dark:border-slate-700 dark:bg-slate-900">
                 <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
                   <div>
-                    <h2 class="font-head font-bold text-sm">Notifications</h2>
-                    <p class="mt-0.5 text-xs text-slate-500">{{ unreadNotifications.length ? `${unreadNotifications.length} unread` : "You are all caught up" }}</p>
+                    <h2 class="font-head font-bold text-sm">{{ store.t("Notifications") }}</h2>
+                    <p class="mt-0.5 text-xs text-slate-500">{{ unreadNotifications.length ? `${unreadNotifications.length} ${store.t("unread")}` : store.t("You are all caught up") }}</p>
                   </div>
                   <button v-if="unreadNotifications.length" class="text-xs font-semibold text-brand hover:underline" @click="store.markAllNotificationsRead(user.id)">
-                    Mark all read
+                    {{ store.t("Mark all read") }}
                   </button>
                 </div>
                 <div class="max-h-96 overflow-y-auto">
@@ -244,7 +244,7 @@
                   </RouterLink>
                   <div v-if="!visibleNotifications.length" class="p-8 text-center text-sm text-slate-500">
                     <i class="fa-regular fa-bell-slash text-2xl text-slate-300 dark:text-slate-600"></i>
-                    <p class="mt-2 text-xs">No notifications yet.</p>
+                    <p class="mt-2 text-xs">{{ store.t("No notifications yet.") }}</p>
                   </div>
                 </div>
               </div>
@@ -254,7 +254,7 @@
             <div class="relative">
               <button
                 class="grid h-9 w-9 place-items-center rounded-xl bg-brand-100 text-xs font-bold text-brand ring-2 ring-transparent hover:ring-brand/30 dark:bg-brand/20 dark:text-brand-200 transition"
-                aria-label="Account menu"
+                :aria-label="store.t('Account menu')"
                 :aria-expanded="accountOpen"
                 @click="closeOverlays('account')"
               >
@@ -267,22 +267,22 @@
                 </div>
                 <div class="py-1">
                   <RouterLink :to="`/profile/${user.id}`" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="accountOpen = false">
-                    <i class="fa-regular fa-user mr-2.5 w-4 text-slate-400"></i>View profile
+                    <i class="fa-regular fa-user mr-2.5 w-4 text-slate-400"></i>{{ store.t("View profile") }}
                   </RouterLink>
                   <RouterLink to="/profile/billing" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="accountOpen = false">
-                    <i class="fa-regular fa-credit-card mr-2.5 w-4 text-slate-400"></i>Billing & folios
+                    <i class="fa-regular fa-credit-card mr-2.5 w-4 text-slate-400"></i>{{ store.t("Billing & folios") }}
                   </RouterLink>
                   <RouterLink to="/settings/organizations" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="accountOpen = false">
                     <i class="fa-solid fa-building-shield mr-2.5 w-4 text-slate-400"></i>{{ store.t('Companies & access') }}
                   </RouterLink>
                   <button class="flex w-full items-center px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="lockNow">
-                    <i class="fa-solid fa-lock mr-2.5 w-4 text-slate-400"></i>Lock workspace
+                    <i class="fa-solid fa-lock mr-2.5 w-4 text-slate-400"></i>{{ store.t("Lock workspace") }}
                   </button>
                 </div>
 
                 <!-- Company Workspace Mode -->
                 <section v-if="marketplaceModeOptions.length > 1" class="border-t border-slate-100 p-3.5 dark:border-slate-800">
-                  <h2 class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Company workspace</h2>
+                  <h2 class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Company workspace") }}</h2>
                   <div class="grid gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/60" :class="marketplaceModeOptions.length > 2 ? 'grid-cols-3' : 'grid-cols-2'" role="group">
                     <button
                       v-for="option in marketplaceModeOptions"
@@ -291,16 +291,16 @@
                       :class="marketplaceMode === option.key ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
                       @click="switchMarketplaceMode(option.key)"
                     >
-                      <i class="fa-solid text-xs" :class="option.icon"></i>{{ option.label }}
+                      <i class="fa-solid text-xs" :class="option.icon"></i>{{ store.t(option.label) }}
                     </button>
                   </div>
                 </section>
 
                 <!-- Preferences -->
                 <section class="border-t border-slate-100 p-3.5 dark:border-slate-800" aria-labelledby="user-preferences-title">
-                  <h2 id="user-preferences-title" class="mb-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Preferences</h2>
+                  <h2 id="user-preferences-title" class="mb-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Preferences") }}</h2>
                   <div class="flex items-center justify-between gap-3">
-                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Language</span>
+                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Language") }}</span>
                     <div class="flex rounded-lg bg-slate-100 p-0.5 text-[10px] font-800 dark:bg-slate-800/60" role="group" aria-label="Language">
                       <button
                         v-for="code in ['en', 'es']"
@@ -314,10 +314,10 @@
                     </div>
                   </div>
                   <div class="mt-3 flex items-center justify-between gap-3">
-                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Theme</span>
+                    <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Theme") }}</span>
                     <button class="flex items-center gap-2 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:text-brand dark:bg-slate-800/60 dark:text-slate-300 transition" @click="toggleTheme">
                       <i class="fa-solid" :class="dark ? 'fa-moon' : 'fa-sun'"></i>
-                      {{ dark ? "Dark mode" : "Light mode" }}
+                      {{ store.t(dark ? "Dark mode" : "Light mode") }}
                     </button>
                   </div>
                   <div class="mt-3 rounded-xl border border-brand/15 bg-gradient-to-br from-brand-50/70 via-white to-slate-50 p-2.5 dark:from-brand/10 dark:via-slate-900 dark:to-slate-800/70">
@@ -353,8 +353,8 @@
                 </section>
 
                 <!-- Demo Account Selector -->
-                <div class="border-t border-slate-100 p-3.5 dark:border-slate-800">
-                  <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Demo account</label>
+                <div v-if="showDemoControls" class="border-t border-slate-100 p-3.5 dark:border-slate-800">
+                  <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Demo account") }}</label>
                   <select class="field py-2 text-xs" :value="store.state.currentUserId" @change="switchUser($event.target.value)">
                     <option v-for="person in store.state.users" :key="person.id" :value="person.id">
                       {{ person.name }} · {{ person.type }}
@@ -397,7 +397,7 @@ const CommandPalette = load("./app/components/CommandPalette.vue?v=4");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
 const AppModals = load("./app/components/layout/AppModals.vue?v=3");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
-const AuthModal = load("./app/components/AuthModal.vue?v=3");
+const AuthModal = load("./app/components/AuthModal.vue?v=4");
 const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=2");
 
 export default {
@@ -415,7 +415,8 @@ export default {
     };
     const dark = ref(preference.read("buyniverse-vue-theme") !== "light");
     const notificationsOpen = ref(false), accountOpen = ref(false), commandOpen = ref(false);
-    const authOpen = ref(false), authMode = ref("login");
+    const authMode = ref(route.query.auth === "register" ? "register" : "login");
+    const authOpen = ref(["login", "register"].includes(route.query.auth));
     const locale = store.locale;
     let stopTranslator = () => {};
 
@@ -433,6 +434,11 @@ export default {
       authMode.value = mode;
       authOpen.value = true;
     };
+    watch(() => route.query.auth, (requested) => {
+      if (!["login", "register"].includes(requested)) return;
+      authMode.value = requested;
+      authOpen.value = true;
+    });
 
     const setLocale = (code) => {
       store.setLocale(code);
@@ -467,12 +473,13 @@ export default {
     });
     const activeModeLabel = computed(() => marketplaceModeOptions.value.find((o) => o.key === marketplaceMode.value)?.label || "Workspace");
 
-    const visibleNotifications = computed(() => store.userNotifications(user.value.id));
-    const unreadNotifications = computed(() => store.unreadNotifications(user.value.id));
+    const visibleNotifications = computed(() => store.userNotifications(user.value?.id || ""));
+    const unreadNotifications = computed(() => store.unreadNotifications(user.value?.id || ""));
     const saveStatus = computed(() => {
       if (store.ui.saveState === "connecting") return { label: store.t("Connecting secure workspace…"), icon: "fa-arrows-rotate fa-spin", tone: "text-sky-600 dark:text-sky-300" };
       if (store.ui.saveState === "saving") return { label: store.t("Saving securely…"), icon: "fa-arrows-rotate fa-spin", tone: "text-amber-600 dark:text-amber-400" };
       if (store.ui.saveState === "error") return { label: store.t("Secure save unavailable"), icon: "fa-triangle-exclamation", tone: "text-rose-600 dark:text-rose-400" };
+      if (store.ui.saveState === "demo") return { label: store.t("Local demo · not synced"), icon: "fa-flask", tone: "text-amber-600 dark:text-amber-400" };
       return { label: store.t("Saved to workspace"), icon: "fa-shield-halved", tone: "text-emerald-600 dark:text-emerald-400" };
     });
 
@@ -487,7 +494,14 @@ export default {
       accountOpen.value = kind === "account" ? !accountOpen.value : false;
     };
     const openNotification = (n) => { store.markNotificationRead(n); notificationsOpen.value = false; };
-    const switchUser = (id) => { store.selectUser(id); accountOpen.value = false; router.replace("/dashboard"); store.notice("Demo account switched"); };
+    const showDemoControls = computed(() => store.isDemo.value);
+    const switchUser = (id) => {
+      if (!showDemoControls.value) return;
+      store.selectUser(id);
+      accountOpen.value = false;
+      router.replace("/dashboard");
+      store.notice("Demo account switched");
+    };
     const switchMarketplaceMode = (mode) => {
       if (!store.setMarketplaceMode(mode)) return;
       accountOpen.value = false;
@@ -550,32 +564,37 @@ export default {
     document.documentElement.classList.toggle("dark", dark.value);
 
     const menu = computed(() => {
+      const localize = (sections) => sections.map((section) => ({
+        ...section,
+        title: store.t(section.title),
+        items: section.items.map((item) => ({ ...item, label: store.t(item.label) })),
+      }));
       const core = { title: "", items: [{ to: "/dashboard", icon: "fa-solid fa-tachometer-alt", label: "Dashboard" }] };
       const purchases = { to: "/procurement", icon: "fa-solid fa-cart-shopping", label: "Purchases" };
-      if (marketplaceMode.value === "buyer") return [
+      if (marketplaceMode.value === "buyer") return localize([
         core,
         { title: "", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, purchases, { to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/products", icon: "fa-solid fa-boxes-stacked", label: "Products" }, { to: "/expenses", icon: "fa-solid fa-money-bill-wave", label: "Expenses" }] },
         { title: "Payables", items: [{ to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }] },
         { title: "Discover", items: [{ to: "/find-talent", icon: "fa-solid fa-users", label: "Find Talent" }, { to: "/browse-services", icon: "fa-solid fa-store", label: "Browse Services" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
-      ];
-      if (marketplaceMode.value === "admin") return [
+      ]);
+      if (marketplaceMode.value === "admin") return localize([
         core,
         { title: "Management", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, purchases, { to: "/clients", icon: "fa-solid fa-user-tie", label: "Clients" }, { to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }] },
         { title: "Settings", items: [{ to: "/admin/issuers", icon: "fa-solid fa-building-columns", label: "Issuers" }] },
-      ];
-      return [
+      ]);
+      return localize([
         core,
         { title: "Delivery", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, { to: "/procurement/auction", icon: "fa-solid fa-gavel", label: "Live Offers" }] },
         { title: "Find work", items: [{ to: "/find-work", icon: "fa-solid fa-briefcase", label: "Find Work" }, { to: "/saved-jobs", icon: "fa-solid fa-bookmark", label: "Saved Jobs" }] },
         { title: "Sales", items: [{ to: "/leads", icon: "fa-solid fa-bullseye", label: "Leads" }, { to: "/clients", icon: "fa-solid fa-user-tie", label: "Clients" }, { to: "/estimates", icon: "fa-solid fa-file-invoice", label: "Estimates" }, { to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
-      ];
+      ]);
     });
 
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
-      unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
+      unreadNotifications, openNotification, switchUser, showDemoControls, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };
   },

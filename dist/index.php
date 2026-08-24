@@ -86,6 +86,24 @@ function workspace_config(): array {
     $config = require $path;
     return is_array($config) ? $config : [];
 }
+function workspace_request_host(): string {
+    $host = strtolower(trim((string) ($_SERVER['HTTP_HOST'] ?? '')));
+    return preg_replace('/:\\d+$/', '', $host) ?? '';
+}
+function workspace_mode(array $config): string {
+    // Production is the fail-closed default. Demo data can only be enabled by
+    // an explicit runtime setting on a host that was allowlisted by operators.
+    if (strtolower((string) ($config['app_mode'] ?? 'production')) !== 'demo') return 'production';
+    $host = workspace_request_host();
+    $localHosts = ['localhost', '127.0.0.1', '::1', '[::1]'];
+    if (in_array($host, $localHosts, true)) return 'demo';
+    $configured = $config['demo_hosts'] ?? [];
+    if (!is_array($configured)) return 'production';
+    foreach ($configured as $candidate) {
+        if (is_string($candidate) && hash_equals(strtolower(trim($candidate)), $host)) return 'demo';
+    }
+    return 'production';
+}
 function workspace_header(string $name): string {
     foreach (getallheaders() as $key => $value)
         if (strcasecmp((string) $key, $name) === 0) return trim((string) $value);
@@ -394,7 +412,7 @@ function tenant_principal(PDO $pdo, array $config, array $session, string $key):
         $subject = (string) $identity['subject'];
         $displayName = tenant_text($identity['displayName'] ?? 'Enterprise user', 180) ?: 'Enterprise user';
         $emailHash = isset($identity['email']) && is_string($identity['email']) ? hash_hmac('sha256', strtolower(trim($identity['email'])), $key) : null;
-    } elseif (($config['allow_demo_workspace_state'] ?? false) === true) {
+    } elseif (workspace_mode($config) === 'demo' && ($config['allow_demo_workspace_state'] ?? false) === true) {
         if (empty($_SESSION['tenant_demo_subject'])) $_SESSION['tenant_demo_subject'] = bin2hex(random_bytes(32));
         $provider = 'demo'; $subject = (string) $_SESSION['tenant_demo_subject']; $displayName = 'Demo workspace owner'; $emailHash = null;
     } else {
@@ -525,6 +543,11 @@ if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
     }
     workspace_json(['providers'=>$providers]);
 }
+if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
+    $config = workspace_config();
+    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true]);
+}
 if (preg_match('#^/api/v1/auth/(google|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config(); $session = workspace_session();
@@ -539,7 +562,7 @@ if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {
     if (!in_array($method, ['GET','PUT','POST'], true)) fail_response(405, 'Method not allowed');
     try {
         if ($uri === '/api/v1/tenant-context' || $uri === '/api/v1/tenant-context/') {
-            if ($method === 'GET') { $context = tenant_context($pdo, $config, $session, $key); workspace_json(['context'=>$context, 'csrf'=>$session['csrf'], 'mode'=>'server']); }
+            if ($method === 'GET') { $context = tenant_context($pdo, $config, $session, $key); workspace_json(['context'=>$context, 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config)]); }
             if ($method !== 'PUT') fail_response(405, 'Method not allowed');
             tenant_require_write($session); $input = tenant_request_body();
             $current = tenant_context($pdo, $config, $session, $key);
@@ -547,7 +570,7 @@ if (preg_match('#^/api/v1/(tenant-context|tenant-companies)(?:/|$)#', $uri)) {
             $next = tenant_context($pdo, $config, $session, $key, $target);
             if ($next['company']['id'] !== $target['companyId'] || (($target['locationId'] ?? null) !== null && ($next['location']['id'] ?? null) !== $target['locationId'])) fail_response(403, 'Company context is not permitted');
             $pdo->beginTransaction(); tenant_audit($pdo, $next, 'tenant.context_switched', 'tenant_context', $next['company']['id'], ['from'=>$current['company']['id'],'to'=>$next['company']['id'],'location'=>$next['location']['id'] ?? null], $key); $pdo->commit();
-            workspace_json(['context'=>$next, 'csrf'=>$session['csrf'], 'mode'=>'server']);
+            workspace_json(['context'=>$next, 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config)]);
         }
         if ($method !== 'POST') fail_response(405, 'Method not allowed');
         tenant_require_write($session); $context = tenant_context($pdo, $config, $session, $key); $input = tenant_request_body();
@@ -623,10 +646,10 @@ if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
         if ($method === 'GET') {
             $statement = $pdo->prepare('SELECT version, ciphertext, iv, auth_tag FROM tenant_workspace_state WHERE context_hash = ? LIMIT 1');
             $statement->execute([$scopeHash]); $row = $statement->fetch();
-            if (!$row) workspace_json(['state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>'server', 'context'=>$context]);
+            if (!$row) workspace_json(['state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config), 'context'=>$context]);
             $state = workspace_decrypt($row, $key, $aad);
             if ($state === null) fail_response(409, 'Stored workspace integrity check failed');
-            workspace_json(['state'=>$state, 'version'=>(int) $row['version'], 'csrf'=>$session['csrf'], 'mode'=>'server', 'context'=>$context]);
+            workspace_json(['state'=>$state, 'version'=>(int) $row['version'], 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config), 'context'=>$context]);
         }
         if ($method === 'DELETE') {
             $pdo->beginTransaction();

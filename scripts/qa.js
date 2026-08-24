@@ -37,6 +37,8 @@ const index = read("index.html");
 const criticalCss = read("app/critical.css");
 if (!index.includes('src="app/boot.js') || !fs.existsSync(path.join(root, "app", "boot.js")))
   throw new Error("Missing synchronous visual-preference bootstrap");
+if (!index.includes('src="app/lib/runtime.js') || !fs.existsSync(path.join(root, "app", "lib", "runtime.js")))
+  throw new Error("Missing explicit demo/production runtime policy adapter");
 const dynamicBase = '(function(d,l){var a="/buyniverse_vue/",p=l.pathname,r=p.indexOf(a)>-1?a:"/";d.write(\'<base href="\'+r+\'">\')})(document,location);';
 if (!index.includes(dynamicBase) || !index.includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read(".htaccess").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read("serve.py").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='"))
   throw new Error("Dynamic base bootstrap must stay hash-authorized by every CSP policy");

@@ -56,7 +56,7 @@
       </div>
 
       <!-- Local demo-state summary and reset controls -->
-      <AdminDatabaseCard v-if="store.isAdmin.value" />
+      <AdminDatabaseCard v-if="store.isDemo.value && store.isAdmin.value" />
 
       <!-- Recent Workspaces -->
       <article
@@ -292,7 +292,7 @@ export default {
         ];
       return [
         { label: "Active contracts", value: contracts.value.length, note: "Across workspaces", icon: "fa-briefcase" },
-        { label: "Platform value", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Demo portfolio", icon: "fa-chart-line" },
+        { label: "Platform value", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Current portfolio", icon: "fa-chart-line" },
         { label: "Open requests", value: store.state.purchaseRequests.filter((x) => !["Closed", "Rejected"].includes(x.status)).length, note: "Needs attention", icon: "fa-cart-plus" },
         { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
       ];
@@ -390,7 +390,7 @@ export default {
       copies: {
         overview: "A compact view of work, money and activity.",
         timesheets: "Recorded delivery time across contracts.",
-        transactions: "A complete ledger of demo activity.",
+        transactions: "A complete ledger of workspace activity.",
         "my-agency": "Members, capabilities and shared delivery.",
       },
     };

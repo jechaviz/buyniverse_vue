@@ -87,7 +87,7 @@
       <!-- Title -->
       <label class="block text-xs font-bold md:col-span-2">
         <div class="flex items-center justify-between mb-1.5">
-          <span>{{ store.t("Title") }} <span class="text-rose-500">*</span></span>
+          <span>{{ store.t("Title") }}</span>
           <span class="text-[10px] font-normal text-slate-400">{{ (project.title || '').length }} / 120</span>
         </div>
         <input
@@ -102,7 +102,7 @@
       <!-- Scope & Detailed Description -->
       <label class="block text-xs font-bold md:col-span-2">
         <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-          <span>{{ store.t("Description") }} <span class="text-rose-500">*</span></span>
+          <span>{{ store.t("Description") }}</span>
           <div class="flex items-center gap-2">
             <button
               type="button"
@@ -137,7 +137,7 @@
 
       <!-- Category & Level -->
       <label class="block text-xs font-bold">
-        <span class="mb-1.5 block">{{ store.t("Category") }} <span class="text-rose-500">*</span></span>
+        <span class="mb-1.5 block">{{ store.t("Category") }}</span>
         <select v-model="project.category" class="field" required>
           <option value="Development">{{ store.t("Development") }}</option>
           <option value="Design">{{ store.t("Design") }}</option>
@@ -147,7 +147,7 @@
       </label>
 
       <label class="block text-xs font-bold">
-        <span class="mb-1.5 block">{{ store.t("Project level") }} <span class="text-rose-500">*</span></span>
+        <span class="mb-1.5 block">{{ store.t("Project level") }}</span>
         <select v-model="project.projectLevel" class="field" required>
           <option value="Basic">{{ store.t("Basic") }}</option>
           <option value="Intermediate">{{ store.t("Intermediate") }}</option>
@@ -159,7 +159,7 @@
       <template v-if="project.sourcingType === 'RFP'">
         <label class="block text-xs font-bold">
           <div class="flex items-center justify-between mb-1.5">
-            <span>{{ store.t("Budget") }} <span class="text-rose-500">*</span></span>
+            <span>{{ store.t("Budget") }}</span>
             <span class="text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
               <i class="fa-solid fa-shield-halved mr-1"></i>{{ store.t("Escrow protected") }}
             </span>
@@ -174,7 +174,7 @@
         </label>
 
         <label class="block text-xs font-bold">
-          <span class="mb-1.5 block">{{ store.t("Currency") }} <span class="text-rose-500">*</span></span>
+          <span class="mb-1.5 block">{{ store.t("Currency") }}</span>
           <select v-model="project.currency" class="field" required>
             <option value="USD">USD ($)</option>
             <option value="MXN">MXN ($)</option>
@@ -184,7 +184,7 @@
 
         <!-- Duration & Hiring Limit -->
         <label class="block text-xs font-bold">
-          <span class="mb-1.5 block">{{ store.t("Duration") }} <span class="text-rose-500">*</span></span>
+          <span class="mb-1.5 block">{{ store.t("Duration") }}</span>
           <select v-model="project.duration" class="field" required>
             <option value="Less than 1 month">{{ store.t("Less than 1 month") }}</option>
             <option value="1 to 3 months">{{ store.t("1 to 3 months") }}</option>

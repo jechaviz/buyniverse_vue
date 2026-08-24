@@ -43,9 +43,11 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["BUYNIVERSE_ENABLE_BACKEND_PROXY", "static_file", "fail_response", "127.0.0.1"]) {
     if (!phpShim.includes(token)) throw new Error(`Fail-closed PHP deployment shim is missing ${token}`);
   }
-  for (const token of ["/api/v1/workspace-state", "aes-256-gcm", "X-Buyniverse-CSRF", "workspace_safe_value", "allow_demo_workspace_state", "workspace_state_audit"]) {
+  for (const token of ["/api/v1/runtime", "workspace_mode", "workspace_request_host", "/api/v1/workspace-state", "aes-256-gcm", "X-Buyniverse-CSRF", "workspace_safe_value", "allow_demo_workspace_state", "workspace_state_audit"]) {
     if (!phpShim.includes(token)) throw new Error(`Encrypted workspace persistence is missing ${token}`);
   }
+  if (!phpShim.includes("workspace_mode($config) === 'demo' && ($config['allow_demo_workspace_state'] ?? false) === true"))
+    throw new Error("Demo workspace access is not constrained by the explicit runtime policy");
   const tenancyMigration = read("ops/migrations/20260823_multitenancy.sql");
   for (const token of ["tenant_context", "tenant_workspace_state", "tenant_header_origin_is_safe", "tenant_can_manage_company", "tenant_audit_events", "tenant-context", "tenant-companies"]) {
     if (!phpShim.includes(token)) throw new Error(`Server tenant boundary is missing ${token}`);
@@ -53,7 +55,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["tenant_accounts", "tenant_legal_entities", "tenant_locations", "tenant_memberships", "tenant_invitations", "tenant_workspace_state", "tenant_audit_events", "tenant_audit_events_no_update", "tenant_audit_events_no_delete"]) {
     if (!tenancyMigration.includes(token)) throw new Error(`Tenant migration is missing ${token}`);
   }
-  if (!htaccess.includes("auth|workspace-state|tenant-context|tenant-companies")) throw new Error("Apache does not route identity and tenant APIs to the authorization boundary");
+  if (!htaccess.includes("runtime|auth|workspace-state|tenant-context|tenant-companies")) throw new Error("Apache does not route runtime, identity and tenant APIs to the authorization boundary");
   for (const token of ["social_provider_config", "social_rate_limit", "code_challenge_method", "session_regenerate_id", "google_oidc", "facebook_oauth", "identity.social_authenticated"]) {
     if (!phpShim.includes(token)) throw new Error(`Social identity security control is missing ${token}`);
   }
@@ -99,6 +101,14 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["isDemoRuntime", "no ingreses credenciales reales", "Disponible únicamente con identidad federada de producción."]) {
     if (!authModal.includes(token)) throw new Error(`Public demo identity safeguard is missing ${token}`);
   }
+  if (!authModal.includes("identityUnavailable") || authModal.includes("!Boolean(window.BuyniverseRuntime?.serverAuth)"))
+    throw new Error("Production identity UI can still be mistaken for a demo login");
+  const mainRuntime = read("app/main.js");
+  const runtimeAdapter = read("app/lib/runtime.js");
+  if (!runtimeAdapter.includes("fallbackMode") || !runtimeAdapter.includes("Runtime policy unavailable") || !mainRuntime.includes("productionWorkspaceState") || !mainRuntime.includes("Runtime policy mismatch"))
+    throw new Error("Demo and production workspace boundary is incomplete");
+  if (mainRuntime.includes("const state = reactive(window.BuyniverseDemo.clone())"))
+    throw new Error("Production boot still initializes the demo workspace");
   const demoAdminSource = read("app/pages/dashboard/AdminDatabaseCard.vue");
   if (/\/index\.php\?action=|MySQL Database|server2\.shared\.spaceship\.host/.test(demoAdminSource))
     throw new Error("Demo administration still presents or calls a production database surface");

@@ -1,7 +1,15 @@
 (function (global) {
   "use strict";
 
-  function normalizeState(state, tenantContext) {
+  function normalizeState(state, tenantContext, options) {
+    // Sample records are permitted only when the runtime policy explicitly
+    // selected demo. A production workspace must begin empty rather than
+    // inheriting products, messages or analytics from the presentation layer.
+    var isDemo = Boolean(
+      options && options.demo !== undefined
+        ? options.demo
+        : global.BuyniverseRuntime && global.BuyniverseRuntime.mode === "demo",
+    );
     [
       "users", "jobs", "contracts", "invoices", "paymentReceipts", "transactions",
       "timeEntries", "contests", "gigs", "conversations", "issuers", "agencies",
@@ -43,7 +51,9 @@
           : initialMarketplaceModes[0] || "supplier";
 
     if (!state.procurementAnalytics || typeof state.procurementAnalytics !== "object")
-      state.procurementAnalytics = window.BuyniverseDemo.clone().procurementAnalytics;
+      state.procurementAnalytics = isDemo && global.BuyniverseDemo
+        ? global.BuyniverseDemo.clone().procurementAnalytics
+        : {};
 
     state.jobs = state.jobs.filter((job) => job && typeof job === "object" && typeof job.id === "string" && typeof job.clientId === "string").slice(0, 5000);
     // Operational records inherit the verified tenant context exactly once when
@@ -126,7 +136,7 @@
       request.audit ||= [];
     });
 
-    const seededProducts = new Map((window.BuyniverseDemo?.clone?.().products || []).map((product) => [product.id, product]));
+    const seededProducts = new Map((isDemo ? (global.BuyniverseDemo?.clone?.().products || []) : []).map((product) => [product.id, product]));
     state.products.forEach((product) => {
       const seeded = seededProducts.get(product?.id);
       product.description ||= product.name || product.id;
@@ -146,7 +156,7 @@
       event.audit ||= [];
     });
 
-    const seededCommunication = window.BuyniverseDemo?.clone?.() || {};
+    const seededCommunication = isDemo ? global.BuyniverseDemo?.clone?.() || {} : {};
     const knownUsers = new Set(state.users.map((user) => user.id));
     const validContextTypes = new Set(["project", "sourcing", "auction"]);
     state.conversations = state.conversations
@@ -203,7 +213,7 @@
       .filter(Boolean)
       .slice(0, 200);
 
-    for (const seeded of seededCommunication.conversations || []) {
+    for (const seeded of (isDemo ? seededCommunication.conversations || [] : [])) {
       const contextType = validContextTypes.has(seeded?.contextType)
         ? seeded.contextType
         : seeded?.jobId
@@ -261,7 +271,7 @@
     }
     state.conversations = state.conversations.slice(0, 200);
 
-    if (!state.messageTemplates.length)
+    if (isDemo && !state.messageTemplates.length)
       state.messageTemplates = seededCommunication.messageTemplates || [];
     state.messageTemplates = state.messageTemplates
       .map((template) => {
