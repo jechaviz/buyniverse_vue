@@ -73,7 +73,7 @@ const load = (p) =>
 const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=7");
 const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=9");
 const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=13");
-const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=22");
+const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=23");
 const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=10");
 const Intelligence = load(
   "./app/pages/procurement/ProcurementIntelligence.vue?v=7",

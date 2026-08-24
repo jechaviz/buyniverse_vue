@@ -492,7 +492,9 @@ export default {
     const attachRealtime = () => {
       if (unsubscribeRealtime) { unsubscribeRealtime(); unsubscribeRealtime = null; }
       const room = auction.value?.realtimeRoomRef || auction.value?.id;
-      if (room && window.BuyniverseAuctionRealtime?.subscribe) unsubscribeRealtime = window.BuyniverseAuctionRealtime.subscribe(room, rememberLiveActivity);
+      const serverEnabled = auction.value?.realtimeChannel === "server";
+      if (room && (store.isDemo.value || serverEnabled) && window.BuyniverseAuctionRealtime?.subscribe)
+        unsubscribeRealtime = window.BuyniverseAuctionRealtime.subscribe(room, rememberLiveActivity);
     };
 
     const selectAuction = () => { router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { auction: selectedAuctionId.value }) }); };
