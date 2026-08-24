@@ -55,6 +55,8 @@
         </article>
       </div>
 
+      <MarketplaceValueHub />
+
       <!-- Local demo-state summary and reset controls -->
       <AdminDatabaseCard v-if="store.isDemo.value && store.isAdmin.value" />
 
@@ -225,9 +227,10 @@ const { inject, computed } = Vue;
 const { useRoute } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const AdminDatabaseCard = load("./app/pages/dashboard/AdminDatabaseCard.vue?v=1");
+const MarketplaceValueHub = load("./app/components/commercial/MarketplaceValueHub.vue?v=1");
 
 export default {
-  components: { AdminDatabaseCard },
+  components: { AdminDatabaseCard, MarketplaceValueHub },
   setup() {
     const store = inject("store"),
       route = useRoute(),
@@ -274,6 +277,7 @@ export default {
     const agency = computed(() =>
       store.state.agencies.find((x) => x.id === user.value.agencyId),
     );
+    const commercial = computed(() => window.BuyniverseCommercialMetrics?.portfolio(store.state) || { primary: {}, modules: {} });
     const cards = computed(() => {
       const unread = store.unreadNotifications(user.value.id).length;
       if (store.isSupplier.value)
@@ -285,10 +289,10 @@ export default {
         ];
       if (store.isBuyer.value)
         return [
-          { label: "Active projects", value: contracts.value.length, note: "Current engagements", icon: "fa-folder-open" },
+          { label: "Financial savings", value: store.money(commercial.value.primary.financialSavings || 0, commercial.value.primary.currency || "USD"), note: "Budget to best first offer", icon: "fa-chart-line" },
+          { label: "Buyniverse savings", value: store.money(commercial.value.primary.buyniverseSavings || 0, commercial.value.primary.currency || "USD"), note: "First offer to best final bid", icon: "fa-gavel" },
+          { label: "Live opportunities", value: commercial.value.modules.procurement?.active || 0, note: "Competitive sourcing events", icon: "fa-tower-broadcast" },
           { label: "Committed spend", value: store.money(contracts.value.reduce((n, x) => n + x.amount, 0)), note: "Buyer commitments", icon: "fa-wallet" },
-          { label: "Open requests", value: store.state.purchaseRequests.filter((x) => x.ownerId === user.value.id || x.requesterId === user.value.id).length, note: "Procurement queue", icon: "fa-cart-plus" },
-          { label: "Unread updates", value: unread, note: "Notifications", icon: "fa-bell" },
         ];
       return [
         { label: "Active contracts", value: contracts.value.length, note: "Across workspaces", icon: "fa-briefcase" },
@@ -378,6 +382,7 @@ export default {
       times,
       transactions,
       agency,
+      commercial,
       cards,
       recent,
       quickActions,

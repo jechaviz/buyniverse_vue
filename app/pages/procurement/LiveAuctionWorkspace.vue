@@ -24,6 +24,8 @@
       </article>
     </section>
 
+    <SavingsWaterfall :model="commercial" title="Savings waterfall" kicker="Live commercial value" />
+
     <!-- Main Workspace Container -->
     <section class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2 text-[11px] dark:border-slate-800/80 dark:bg-slate-950/40">
@@ -275,11 +277,12 @@ const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.
 const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=1");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
+const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=2");
 
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
 export default {
-  components: { AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread },
+  components: { AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread, SavingsWaterfall },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
@@ -311,6 +314,13 @@ export default {
     });
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
+    const commercial = computed(() => {
+      const event = auction.value?.eventId ? store.sourcingEvent(auction.value.eventId) : null;
+      return window.BuyniverseCommercialMetrics?.auction(auction.value, event, {
+        successFeeRate: store.state.procurementAnalytics?.commercialModel?.gainShareRate ?? 12,
+        successFeeBasis: store.state.procurementAnalytics?.commercialModel?.successFeeBasis,
+      }) || {};
+    });
     const isOrganizer = computed(() => store.canManageProcurement(auction.value ? store.sourcingEvent(auction.value.eventId) : null));
     const realtimeStatus = computed(() => {
       if (auction.value?.realtimeChannel === "server") return { label: store.t("Secure live channel"), note: store.t("Realtime activity is delivered through the secure auction channel.") };
@@ -355,14 +365,13 @@ export default {
 
     const kpis = computed(() => {
       if (!auction.value) return [];
-      const savings = Math.max(0, auction.value.reserve - auction.value.currentBid);
-      const savingsPct = auction.value.reserve ? Math.round((savings / auction.value.reserve) * 100) : 0;
       return [
-        { label: "Current best", value: store.money(auction.value.currentBid, auction.value.currency), icon: "fa-trophy", note: "Leading lowest quote" },
-        { label: "Reserve", value: store.money(auction.value.reserve, auction.value.currency), icon: "fa-vault", note: "Target ceiling" },
-        { label: "Total savings", value: `${store.money(savings, auction.value.currency)} (${savingsPct}%)`, icon: "fa-piggy-bank", note: "Below target ceiling" },
+        { label: "Current best", value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: "Leading lowest quote" },
+        { label: "Financial savings", value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: "Budget to best first offer" },
+        { label: "Buyniverse savings", value: store.money(commercial.value.buyniverseSavings || 0, auction.value.currency), icon: "fa-gavel", note: "Best first offer to current bid" },
+        { label: "Outcome share", value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: `${commercial.value.successFeeRate || 0}% of validated savings` },
         { label: "Total offers", value: String(auction.value.bids.length), icon: "fa-gavel", note: "Verified bid records" },
-        { label: "Active suppliers", value: `${auction.value.participants.length} invited`, icon: "fa-users", note: "Qualified suppliers" },
+        { label: "Suppliers", value: `${auction.value.participants.length} invited`, icon: "fa-users", note: "Qualified suppliers" },
       ];
     });
 
@@ -551,7 +560,7 @@ export default {
     onBeforeUnmount(() => { if (timer) clearInterval(timer); if (unsubscribeRealtime) unsubscribeRealtime(); });
 
     return {
-      store, router, auction, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
+      store, router, auction, commercial, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
       tabs, tab, rankedParticipants, leader, nextValidBid, kpis, statusClass, statusLabel, timeLeft,
       health, supplierSeries, allSuppliersSelected, visibleSupplierSeries, isSupplierVisible, showAllSuppliers,
       clearSupplierFilters, toggleSupplier, shortName, supplierColor, valueY, pointX, overallPoints,

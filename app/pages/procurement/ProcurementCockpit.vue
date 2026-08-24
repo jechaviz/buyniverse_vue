@@ -16,6 +16,8 @@
       </article>
     </section>
 
+    <SavingsWaterfall :model="commercial.primary" title="Savings waterfall" kicker="Commercial intelligence" />
+
     <section class="grid gap-6 2xl:grid-cols-[minmax(0,1.25fr)_minmax(330px,.75fr)]">
       <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
         <header class="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
@@ -183,15 +185,18 @@
 </template>
 <script>
 const {inject,computed}=Vue;
-export default {setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
+const load=(path)=>Vue.defineAsyncComponent(()=>window['vue3-sfc-loader'].loadModule(path,window.sfcOptions));
+const SavingsWaterfall=load('./app/components/commercial/SavingsWaterfall.vue?v=1');
+export default {components:{SavingsWaterfall},setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
   const requests=computed(()=>store.scopedRecords(store.state.purchaseRequests)), events=computed(()=>store.scopedRecords(store.state.sourcingEvents)), orders=computed(()=>store.scopedRecords(store.state.purchaseOrders));
+  const commercial=computed(()=>window.BuyniverseCommercialMetrics?.portfolio(store.state)||{primary:{}});
   const activeRequests=computed(()=>requests.value.filter(item=>!['Closed','Rejected'].includes(item.status)).length);
   const activeEvents=computed(()=>events.value.filter(item=>!['Closed','Awarded'].includes(item.status)).length);
   const openOrders=computed(()=>orders.value.filter(item=>!['Matched','Closed'].includes(item.status)).length);
   const exceptionCount=computed(()=>orders.value.reduce((sum,item)=>sum+(item.exceptions||[]).filter(exception=>exception.status!=='Resolved').length,0));
   const kpis=computed(()=>[
-    {label:'Addressable spend',value:store.money(analytics.kpis.addressableSpend),delta:'+6.1% coverage',progress:87,icon:'fa-wallet',iconTone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-300',deltaTone:'text-violet-500'},
-    {label:'Realized savings',value:store.money(analytics.kpis.realizedSavings),delta:`${analytics.kpis.savingsRate}% rate`,progress:74,icon:'fa-piggy-bank',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
+    {label:'Financial savings',value:store.money(commercial.value.primary.financialSavings||0,commercial.value.primary.currency||'USD'),delta:'Budget to first offer',progress:Math.min(100,Math.round((commercial.value.primary.financialSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-chart-line',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-sky-500'},
+    {label:'Buyniverse savings',value:store.money(commercial.value.primary.buyniverseSavings||0,commercial.value.primary.currency||'USD'),delta:'First offer to final bid',progress:Math.min(100,Math.round((commercial.value.primary.buyniverseSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-gavel',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
     {label:'Open requests',value:activeRequests.value,delta:'1 due today',progress:58,icon:'fa-inbox',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-amber-500'},
     {label:'Open quotes',value:activeEvents.value,delta:'2 decisions',progress:66,icon:'fa-file-signature',iconTone:'bg-brand-50 text-brand',deltaTone:'text-brand'},
     {label:'Orders in flight',value:openOrders.value,delta:'1 partial',progress:62,icon:'fa-truck-fast',iconTone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',deltaTone:'text-amber-500'},
@@ -225,5 +230,5 @@ export default {setup(){const store=inject('store'),analytics=store.state.procur
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink};}}
+  return{store,analytics,commercial,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink};}}
 </script>
