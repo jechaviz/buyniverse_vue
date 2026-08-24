@@ -85,9 +85,16 @@ check(publication?.auction?.status === "Running", "Publishing an auction creates
 check(event.status === "Running", "The sourcing event transitions into the live stage");
 
 useSupplier("user-freelancer-john", "sup-3");
+publication.auction.closingAt = new Date(Date.now() + 30 * 1000).toISOString();
+publication.auction.endAt = publication.auction.closingAt;
 const bid = store.placeLiveAuctionBid(event.id, publication.auction.currentBid - publication.auction.minStep);
 check(Boolean(bid) && publication.auction.leadingSupplierId === "sup-3", "An invited supplier places a validated reverse bid");
 check(publication.auction.audit.some((item) => item.action === "Bid accepted"), "The bid creates an immutable-style audit entry");
+check(publication.auction.extensionCount === 1 && publication.auction.realtimeEvents.some((item) => item.extended === true), "A late valid bid creates an anti-sniping activity signal");
+check(state.notifications.some((item) => item.userId === "user-client-brenda" && item.title === "New live offer"), "The organizer receives a private live-offer notification");
+check(state.notifications.some((item) => item.userId === "user-freelancer-john" && item.title === "Offer recorded"), "The bidding supplier receives an immediate confirmation");
+const rivalNotice = state.notifications.find((item) => item.userId === "user-freelancer-charlie" && item.title === "Live auction moved");
+check(Boolean(rivalNotice) && !/John Doe|\$|50000/.test(rivalNotice.text), "Rival bidders receive a competitive prompt without bidder identity or amount");
 
 useBuyer();
 const order = store.awardLiveAuction(publication.auction, "Best compliant value with confirmed delivery capacity.");

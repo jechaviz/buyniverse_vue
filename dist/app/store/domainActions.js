@@ -20,6 +20,78 @@
         .map((user) => user.id);
     };
 
+    const auctionParticipantUserIds = (auction, event) => userIds([
+      ...(supplierUserIds((auction?.participants || []).map((participant) => participant.supplierId))),
+      ...(supplierUserIds(event?.invitedSupplierIds || [])),
+    ]);
+
+    const emitAuctionSignal = (store, auction, event, input = {}) => {
+      if (!auction) return null;
+      const at = new Date().toISOString();
+      const supplierId = input.supplierId || null;
+      const actor = state.users.find((user) => user.supplierProfileId === supplierId) || store.currentUser?.value || null;
+      const ownerId = event?.ownerId || auction.hostId || null;
+      const participantIds = auctionParticipantUserIds(auction, event);
+      const extended = input.extended === true;
+      const signal = {
+        id: id("auction-signal"), type: input.type || "bid_activity", at,
+        actorId: actor?.id || null, supplierId, extended, source: input.source || "validated",
+      };
+      if (!Array.isArray(auction.realtimeEvents)) auction.realtimeEvents = [];
+      auction.realtimeEvents.unshift(signal);
+      auction.realtimeEvents = auction.realtimeEvents.slice(0, 50);
+
+      const link = `/procurement/auction?auction=${auction.id}`;
+      if (ownerId && actor) store.addNotification({
+        userId: ownerId, title: "New live offer",
+        text: `${actor.name} submitted a validated offer.`, link, icon: "fa-gavel",
+      });
+      participantIds.forEach((userId) => {
+        if (userId === ownerId) return;
+        if (userId === actor?.id) {
+          store.addNotification({
+            userId, title: "Offer recorded", text: "Your valid offer is now in the live round.", link, icon: "fa-circle-check",
+          });
+        } else {
+          // Rival suppliers receive a competitive prompt only. Identity and
+          // financial terms stay restricted to the organizer's bid record.
+          store.addNotification({
+            userId, title: "Live auction moved", text: "A competing offer was recorded. Improve your offer while the round is open.", link, icon: "fa-bolt",
+          });
+        }
+      });
+      if (extended) {
+        userIds([ownerId, ...participantIds]).forEach((userId) => store.addNotification({
+          userId, title: "Auction extended", text: "A valid late offer extended this live round by 60 seconds.", link, icon: "fa-clock-rotate-left",
+        }));
+      }
+      window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "bid_activity", { extended });
+      return signal;
+    };
+
+    const provisionAuctionSignalRoom = (store, auction, event) => {
+      if (!auction) return;
+      auction.realtimeRoomRef ||= auction.id;
+      auction.realtimeChannel ||= store.isDemo?.value ? "browser" : "pending";
+      const participantPrincipalIds = auctionParticipantUserIds(auction, event)
+        .filter((value) => /^[a-f0-9-]{36}$/i.test(value));
+      if (store.isDemo?.value || participantPrincipalIds.length < 2 || !window.BuyniverseAuctionRealtime?.createRoom) return;
+      window.BuyniverseAuctionRealtime.createRoom({
+        auctionRef: auction.realtimeRoomRef,
+        participantPrincipalIds,
+        closesAt: auction.closingAt || auction.endAt,
+      }).then((room) => {
+        if (!room) return;
+        auction.realtimeChannel = "server";
+        auction.realtimeRoomReady = true;
+      }).catch(() => {
+        // A notification channel outage must never change auction validity or
+        // prevent a locally validated bid. Polling will retry once a room is
+        // provisioned by the organizer.
+        auction.realtimeChannel = "browser";
+      });
+    };
+
     const communicationContext = (type, contextId) => {
       const contextType = ["project", "sourcing", "auction"].includes(type) ? type : null;
       const idValue = clean(contextId, 120);
@@ -560,6 +632,7 @@
         event.status = "Running";
         this.procurementEvent(event, "Live auction opened", auction.id, "success");
         this.procurementEvent(auction, "Live round opened", `${auction.participants.length} qualified suppliers`, "success");
+        provisionAuctionSignalRoom(this, auction, event);
         return auction;
       },
 
@@ -579,17 +652,16 @@
         if (audit) state.procurementAudit.unshift({ ...audit, objectId: auction.id });
         const closeAt = Date.parse(auction.closingAt || auction.endAt);
         const remaining = closeAt - Date.now();
+        let extended = false;
         if (auction.autoExtend !== false && remaining >= 0 && remaining <= Math.max(1, Number(auction.antiSnipingSeconds) || 60) * 1000 && auction.extensionCount < auction.maxExtensions) {
           auction.closingAt = new Date(closeAt + 60000).toISOString();
           auction.endAt = auction.closingAt;
           auction.extensionCount += 1;
+          extended = true;
           this.procurementEvent(auction, "Anti-sniping extension", "+60 seconds after valid offer", "info");
         }
         const event = this.sourcingEvent(auction.eventId);
-        if (event?.ownerId) this.addNotification({
-          userId: event.ownerId, title: "New live offer", text: `${this.currentUser.value.name} submitted ${auction.currentBid}.`,
-          link: `/procurement/auction?auction=${auction.id}`, icon: "fa-gavel",
-        });
+        emitAuctionSignal(this, auction, event, { supplierId, extended });
         this.notice("Bid accepted", "fa-gavel");
         return result.bid;
       },
@@ -604,11 +676,19 @@
         if (operation === "pause" && auction.status === "Running") {
           auction.status = "Paused";
           this.procurementEvent(auction, "Auction paused", "Organizer intervention", "warning");
+          userIds([event.ownerId, ...auctionParticipantUserIds(auction, event)]).forEach((userId) => this.addNotification({
+            userId, title: "Auction paused", text: "The organizer paused this live round.", link: `/procurement/auction?auction=${auction.id}`, icon: "fa-pause",
+          }));
+          window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "auction_paused");
           return true;
         }
         if (operation === "resume" && auction.status === "Paused") {
           auction.status = "Running";
           this.procurementEvent(auction, "Auction resumed", "Bidding live", "success");
+          userIds([event.ownerId, ...auctionParticipantUserIds(auction, event)]).forEach((userId) => this.addNotification({
+            userId, title: "Auction resumed", text: "The organizer resumed this live round. You may submit a new offer.", link: `/procurement/auction?auction=${auction.id}`, icon: "fa-play",
+          }));
+          window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "auction_resumed");
           return true;
         }
         if (operation === "extend" && ["Running", "Paused"].includes(auction.status) && auction.extensionCount < auction.maxExtensions) {
@@ -618,11 +698,19 @@
           auction.endAt = auction.closingAt;
           auction.extensionCount += 1;
           this.procurementEvent(auction, "Time extended", "+60 seconds manual extension", "info");
+          userIds([event.ownerId, ...auctionParticipantUserIds(auction, event)]).forEach((userId) => this.addNotification({
+            userId, title: "Auction extended", text: "The organizer extended this live round by 60 seconds.", link: `/procurement/auction?auction=${auction.id}`, icon: "fa-clock-rotate-left",
+          }));
+          window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "auction_extended");
           return true;
         }
         if (operation === "cancel" && ["Running", "Paused"].includes(auction.status)) {
           auction.status = "Closed";
           this.procurementEvent(auction, "Auction cancelled", "Round terminated early", "warning");
+          userIds([event.ownerId, ...auctionParticipantUserIds(auction, event)]).forEach((userId) => this.addNotification({
+            userId, title: "Auction closed", text: "The organizer closed this live round.", link: `/procurement/auction?auction=${auction.id}`, icon: "fa-ban",
+          }));
+          window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "auction_closed");
           return true;
         }
         this.notice("That live round operation is not available", "fa-circle-info");
@@ -639,6 +727,8 @@
         if (result.ok) {
           const audit = auction.audit?.[0];
           if (audit) state.procurementAudit.unshift({ ...audit, objectId: auction.id });
+          const event = this.sourcingEvent(auction.eventId);
+          emitAuctionSignal(this, auction, event, { supplierId, source: "simulation" });
         }
         return result.ok ? result.bid : null;
       },

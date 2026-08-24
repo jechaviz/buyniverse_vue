@@ -95,9 +95,16 @@
               <p class="mt-1 text-xs text-slate-500">Lower valid offers lead this round.</p>
             </div>
             <div class="flex flex-wrap gap-3 text-[10px]">
+              <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400" :title="realtimeStatus.note"><i class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></i>{{ realtimeStatus.label }}</span>
               <span><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Market movement</span>
               <span><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>Reserve</span>
             </div>
+          </div>
+          <div v-if="liveActivity" class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/25 bg-brand-50/60 px-3 py-2 text-[11px] shadow-sm dark:bg-brand/10" role="status" aria-live="polite">
+            <span class="grid h-6 w-6 place-items-center rounded-lg bg-brand text-white"><i class="fa-solid fa-tower-broadcast text-[10px]"></i></span>
+            <span class="font-800 text-slate-800 dark:text-slate-100">{{ store.t('Live auction activity') }}</span>
+            <span class="min-w-0 flex-1 text-slate-600 dark:text-slate-300">{{ store.t(signalCopy(liveActivity)) }}</span>
+            <button v-if="isSupplier && auction.status === 'Running' && liveActivity.type === 'competitive_offer'" class="btn-brand px-2.5 py-1 text-[10px]" @click="improveOffer"><i class="fa-solid fa-bolt mr-1"></i>{{ store.t('Improve offer') }}</button>
           </div>
           <div v-if="isOrganizer" class="mt-3 flex flex-col gap-2 rounded-xl border border-slate-200/70 bg-slate-50/65 p-2.5 dark:border-slate-700 dark:bg-slate-900/25 sm:flex-row sm:items-center">
             <div class="flex items-center justify-between gap-2 sm:shrink-0">
@@ -175,7 +182,7 @@
                 <span class="mb-1.5 block text-xs font-bold">Offer amount</span>
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-xs text-slate-400">{{ auction.currency }}</span>
-                  <input v-model.number="bidAmount" type="number" :max="nextValidBid" :min="auction.floor" :step="auction.minStep" class="field pl-12 text-lg font-800" required />
+                  <input ref="bidInput" v-model.number="bidAmount" type="number" :max="nextValidBid" :min="auction.floor" :step="auction.minStep" class="field pl-12 text-lg font-800" required />
                 </div>
               </label>
               <p v-if="bidError" class="mt-2 text-xs font-semibold text-rose-500"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ bidError }}</p>
@@ -284,8 +291,8 @@ export default {
     });
 
     const selectedAuctionId = ref(route.query.auction || "");
-    const bidAmount = ref(0), bidError = ref(""), visibleSuppliers = ref([]);
-    let timer = null;
+    const bidAmount = ref(0), bidError = ref(""), visibleSuppliers = ref([]), liveActivity = ref(null), bidInput = ref(null);
+    let timer = null, unsubscribeRealtime = null;
 
     const accessibleAuctions = computed(() => {
       const scopedAuctions = store.scopedRecords(store.state.auctions);
@@ -305,6 +312,10 @@ export default {
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
     const isOrganizer = computed(() => store.canManageProcurement(auction.value ? store.sourcingEvent(auction.value.eventId) : null));
+    const realtimeStatus = computed(() => {
+      if (auction.value?.realtimeChannel === "server") return { label: store.t("Secure live channel"), note: store.t("Realtime activity is delivered through the secure auction channel.") };
+      return { label: store.t("Live activity"), note: store.t("Activity updates instantly across your active workspace tabs.") };
+    });
     // Announcements are a privileged outward-facing action. Keep this narrower than
     // the dashboard's organizer presentation mode; domainActions enforces it too.
     const canAnnounce = computed(() => {
@@ -443,6 +454,46 @@ export default {
     const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
     const sourceLabel = (src) => ({ manual: "Manual operator", auto: "Auto-bid algorithm", system: "Floor calibration" })[src] || src;
     const actionLabel = (act) => act;
+    const signalCopy = (signal) => {
+      if (!signal) return "";
+      if (signal.type === "bid_received") return "A new valid offer was registered.";
+      if (signal.type === "offer_recorded") return "Your valid offer is recorded in this live round.";
+      if (signal.type === "competitive_offer") return "A competing offer was recorded. Improve yours while the round is open.";
+      if (signal.type === "auction_extended") return "A valid late offer extended the round by 60 seconds.";
+      if (signal.type === "auction_paused") return "The organizer paused this live round.";
+      if (signal.type === "auction_resumed") return "The organizer resumed this live round.";
+      if (signal.type === "auction_closed") return "The organizer closed this live round.";
+      return "Live auction activity was updated.";
+    };
+    const signalTitle = (signal) => {
+      if (signal?.type === "competitive_offer") return "Live auction moved";
+      if (signal?.type === "auction_extended") return "Auction extended";
+      if (signal?.type === "offer_recorded") return "Offer recorded";
+      return "Live auction activity";
+    };
+
+    const rememberLiveActivity = (signal) => {
+      if (!auction.value || !signal || signal.roomId !== (auction.value.realtimeRoomRef || auction.value.id)) return;
+      liveActivity.value = signal;
+      if (signal.source !== "server") return;
+      if (!Array.isArray(auction.value.realtimeEvents)) auction.value.realtimeEvents = [];
+      const eventId = String(signal.id || "");
+      if (eventId && !auction.value.realtimeEvents.some((item) => String(item.id) === eventId)) {
+        auction.value.realtimeEvents.unshift({ id: eventId, type: signal.type, at: signal.at, actorId: null, supplierId: null, source: "server" });
+        auction.value.realtimeEvents.splice(50);
+      }
+      const currentUserId = store.currentUser.value?.id;
+      if (currentUserId) store.addNotification({
+        userId: currentUserId, title: store.t(signalTitle(signal)), text: store.t(signalCopy(signal)),
+        link: `/procurement/auction?auction=${auction.value.id}`, icon: signal.type === "auction_extended" ? "fa-clock-rotate-left" : "fa-tower-broadcast",
+      });
+      store.notice(store.t(signalCopy(signal)), signal.type === "competitive_offer" ? "fa-bolt" : "fa-tower-broadcast");
+    };
+    const attachRealtime = () => {
+      if (unsubscribeRealtime) { unsubscribeRealtime(); unsubscribeRealtime = null; }
+      const room = auction.value?.realtimeRoomRef || auction.value?.id;
+      if (room && window.BuyniverseAuctionRealtime?.subscribe) unsubscribeRealtime = window.BuyniverseAuctionRealtime.subscribe(room, rememberLiveActivity);
+    };
 
     const selectAuction = () => { router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { auction: selectedAuctionId.value }) }); };
     const pause = () => { store.manageLiveAuction(auction.value, "pause"); };
@@ -473,9 +524,15 @@ export default {
       if (!bid) { bidError.value = `Bid must be at most ${store.money(nextValidBid.value, auction.value.currency)}`; return; }
       bidAmount.value = Math.max(auction.value.floor, bid.amount - auction.value.minStep);
     };
+    const improveOffer = () => {
+      if (!auction.value || auction.value.status !== "Running") return;
+      bidAmount.value = nextValidBid.value;
+      requestAnimationFrame(() => bidInput.value?.focus?.());
+    };
 
     watch(() => route.query.auction, (v) => { if (v && v !== selectedAuctionId.value) selectedAuctionId.value = v; }, { immediate: true });
     watch(nextValidBid, (v) => { if (!bidAmount.value || bidAmount.value > v) bidAmount.value = v; }, { immediate: true });
+    watch(() => auction.value?.realtimeRoomRef || auction.value?.id, () => { attachRealtime(); }, { immediate: true });
 
     onMounted(() => {
       timer = setInterval(() => {
@@ -489,7 +546,7 @@ export default {
       }, 3000);
     });
 
-    onBeforeUnmount(() => { if (timer) clearInterval(timer); });
+    onBeforeUnmount(() => { if (timer) clearInterval(timer); if (unsubscribeRealtime) unsubscribeRealtime(); });
 
     return {
       store, router, auction, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
@@ -498,7 +555,7 @@ export default {
       clearSupplierFilters, toggleSupplier, shortName, supplierColor, valueY, pointX, overallPoints,
       areaPath, chartSupplierSeries, yTicks, compact, recentBids, historyBids, clock, sourceLabel,
       actionLabel, selectAuction, pause, resume, extend, sendAlert, cancel, award, toggleDisqualified,
-      placeBid, bidAmount, bidError,
+      placeBid, improveOffer, bidAmount, bidError, bidInput, liveActivity, signalCopy, realtimeStatus,
     };
   },
 };

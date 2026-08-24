@@ -64,5 +64,14 @@
     });
   }
 
-  global.BuyniverseWorkspaceState = { load: load, save: save, endpoint: ENDPOINT };
+  // Other same-origin, CSRF-protected adapters (for example the live-auction
+  // activity channel) may reuse the token acquired from this authenticated
+  // bootstrap. It is never persisted and it remains unusable cross-origin.
+  global.BuyniverseWorkspaceState = {
+    load: load,
+    save: save,
+    endpoint: ENDPOINT,
+    csrfToken: function () { return csrf; },
+    setCsrfToken: function (next) { if (typeof next === "string" && /^[a-f0-9]{64}$/i.test(next)) csrf = next; },
+  };
 })(typeof window !== "undefined" ? window : globalThis);

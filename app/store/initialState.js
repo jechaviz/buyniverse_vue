@@ -327,6 +327,12 @@
       auction.participants ||= [];
       auction.bids ||= [];
       auction.audit ||= [];
+      auction.realtimeEvents = (Array.isArray(auction.realtimeEvents) ? auction.realtimeEvents : [])
+        .filter((event) => event && typeof event.id === "string" && typeof event.type === "string")
+        .slice(0, 50);
+      auction.realtimeRoomRef = typeof auction.realtimeRoomRef === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(auction.realtimeRoomRef)
+        ? auction.realtimeRoomRef
+        : auction.id;
       auction.participants.forEach((participant) => {
         const profile = state.suppliers.find((supplier) => supplier.id === participant.supplierId);
         if (profile?.name) participant.name = profile.name;

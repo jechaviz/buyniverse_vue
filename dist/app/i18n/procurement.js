@@ -527,6 +527,23 @@
     "Performance": "Rendimiento",
     "Top Suppliers": "Principales proveedores",
     "Search suppliers": "Buscar proveedores"
+    ,"Live auction activity": "Actividad de subasta en vivo"
+    ,"Live activity": "Actividad en vivo"
+    ,"Secure live channel": "Canal seguro en vivo"
+    ,"Realtime activity is delivered through the secure auction channel.": "La actividad en tiempo real se entrega mediante el canal seguro de subasta."
+    ,"Activity updates instantly across your active workspace tabs.": "La actividad se actualiza al instante entre las pestañas activas de tu espacio de trabajo."
+    ,"Improve offer": "Mejorar oferta"
+    ,"A new valid offer was registered.": "Se registró una nueva oferta válida."
+    ,"Your valid offer is recorded in this live round.": "Tu oferta válida quedó registrada en esta ronda en vivo."
+    ,"A competing offer was recorded. Improve yours while the round is open.": "Se registró una oferta competidora. Mejora la tuya mientras la ronda siga abierta."
+    ,"A valid late offer extended the round by 60 seconds.": "Una oferta válida de último momento extendió la ronda 60 segundos."
+    ,"The organizer paused this live round.": "El organizador pausó esta ronda en vivo."
+    ,"The organizer resumed this live round.": "El organizador reanudó esta ronda en vivo."
+    ,"The organizer closed this live round.": "El organizador cerró esta ronda en vivo."
+    ,"Live auction activity was updated.": "La actividad de la subasta en vivo se actualizó."
+    ,"Live auction moved": "La subasta en vivo cambió"
+    ,"Auction extended": "Subasta extendida"
+    ,"Offer recorded": "Oferta registrada"
   };
 
   if (typeof module !== "undefined" && module.exports) {
