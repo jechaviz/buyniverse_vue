@@ -24,7 +24,7 @@
       </article>
     </section>
 
-    <SavingsWaterfall :model="commercial" title="Savings waterfall" kicker="Live commercial value" />
+    <SavingsWaterfall v-if="isOrganizer" :model="commercial" title="Savings waterfall" kicker="Live commercial value" />
 
     <!-- Main Workspace Container -->
     <section class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
@@ -36,7 +36,7 @@
           <span>/</span>
           <span class="font-bold text-slate-900 dark:text-white">{{ auction.id }}</span>
         </div>
-        <div class="flex items-center gap-3">
+        <div v-if="isOrganizer" class="flex items-center gap-3">
           <span class="text-slate-400">Source:</span>
           <RouterLink :to="`/procurement/sourcing?event=${auction.eventId}`" class="font-bold text-brand hover:underline inline-flex items-center gap-1">
             <i class="fa-solid fa-file-signature text-[10px]"></i>{{ auction.eventId }}
@@ -48,6 +48,11 @@
               {{ store.supplier(auction.awardedSupplierId || leader?.supplierId)?.name || 'Awarded Supplier' }}
             </RouterLink>
           </span>
+        </div>
+        <div v-else class="flex items-center gap-2 font-semibold text-slate-500">
+          <i class="fa-solid fa-shield-halved text-brand"></i>
+          <span>Blind-bid participant view</span>
+          <span v-if="auction.status === 'Awarded'" class="text-emerald-600 dark:text-emerald-400">· Award decision recorded</span>
         </div>
       </div>
 
@@ -98,8 +103,9 @@
             </div>
             <div class="flex flex-wrap gap-3 text-[10px]">
               <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400" :title="realtimeStatus.note"><i class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></i>{{ realtimeStatus.label }}</span>
-              <span><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Market movement</span>
-              <span><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>Reserve</span>
+              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Market movement</span>
+              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>Reserve</span>
+              <span v-else><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Your offer history</span>
             </div>
           </div>
           <div v-if="liveActivity" class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/25 bg-brand-50/60 px-3 py-2 text-[11px] shadow-sm dark:bg-brand/10" role="status" aria-live="polite">
@@ -131,8 +137,8 @@
             <svg viewBox="0 0 900 330" class="h-auto w-full" role="img" aria-label="Live offer graph">
               <defs><linearGradient id="auction-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".18" /><stop offset="1" stop-color="var(--accent)" stop-opacity="0" /></linearGradient></defs>
               <g class="text-slate-300 dark:text-slate-700"><line v-for="y in [50, 110, 170, 230, 290]" :key="y" x1="55" :y1="y" x2="875" :y2="y" stroke="currentColor" stroke-width="1" /></g>
-              <line x1="55" :y1="valueY(auction.reserve)" x2="875" :y2="valueY(auction.reserve)" stroke="#f59e0b" stroke-width="2" stroke-dasharray="8 6" />
-              <text x="60" :y="valueY(auction.reserve) - 8" fill="#d97706" font-size="11">Reserve {{ store.money(auction.reserve, auction.currency) }}</text>
+              <line v-if="isOrganizer" x1="55" :y1="valueY(auction.reserve)" x2="875" :y2="valueY(auction.reserve)" stroke="#f59e0b" stroke-width="2" stroke-dasharray="8 6" />
+              <text v-if="isOrganizer" x="60" :y="valueY(auction.reserve) - 8" fill="#d97706" font-size="11">Reserve {{ store.money(auction.reserve, auction.currency) }}</text>
               <path :d="areaPath" fill="url(#auction-area)" />
               <polyline :points="overallPoints" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-opacity=".42" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
               <g v-if="isOrganizer && allSuppliersSelected">
@@ -146,22 +152,23 @@
                   <title>{{ series.name }} · {{ store.money(point.amount, auction.currency) }} · {{ clock(point.at) }}</title>
                 </circle>
               </g>
-              <text v-for="tick in yTicks" :key="tick.value" x="48" :y="tick.y + 4" text-anchor="end" fill="#94a3b8" font-size="10">{{ compact(tick.value) }}</text>
+              <text v-if="isOrganizer" v-for="tick in yTicks" :key="tick.value" x="48" :y="tick.y + 4" text-anchor="end" fill="#94a3b8" font-size="10">{{ compact(tick.value) }}</text>
             </svg>
           </div>
 
-          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+          <div v-if="recentBids.length" class="mt-4 grid gap-3 sm:grid-cols-3">
             <article v-for="move in recentBids" :key="move.id" class="rounded-xl border border-slate-200/70 p-3 dark:border-slate-700">
               <div class="flex items-center justify-between">
-                <b class="truncate text-xs">{{ store.supplier(move.supplierId)?.name }}</b>
+                <b class="truncate text-xs">{{ isOrganizer ? store.supplier(move.supplierId)?.name : 'Your submitted offer' }}</b>
                 <span class="text-[9px] text-slate-400">{{ clock(move.at) }}</span>
               </div>
               <p class="mt-2 text-lg font-800">{{ store.money(move.amount, auction.currency) }}</p>
               <p class="mt-1 text-[10px]" :class="move.delta < 0 ? 'text-emerald-500' : 'text-slate-400'">
-                {{ move.delta ? store.money(move.delta, auction.currency) : "Opening offer" }} · {{ sourceLabel(move.source) }}
+                {{ move.delta ? store.money(move.delta, auction.currency) : "Opening offer" }}<template v-if="isOrganizer"> · {{ sourceLabel(move.source) }}</template>
               </p>
             </article>
           </div>
+          <p v-else-if="isSupplier" class="mt-4 rounded-xl border border-dashed border-slate-200 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-700">Your submitted offers will appear here. Competitor identities and commercial values are never disclosed.</p>
         </div>
 
         <!-- Side Controls -->
@@ -177,16 +184,17 @@
             <div class="mt-4 rounded-xl bg-slate-950 p-4 text-white">
               <div class="flex justify-between text-xs"><span class="text-slate-400">Your rank</span><b>#{{ bidder?.rank || "—" }}</b></div>
               <div class="mt-3 flex justify-between text-xs"><span class="text-slate-400">Your last offer</span><b>{{ bidder?.lastBid ? store.money(bidder.lastBid, auction.currency) : "No offer" }}</b></div>
-              <div class="mt-3 flex justify-between text-xs"><span class="text-slate-400">Next valid offer</span><b class="text-brand-100">{{ store.money(nextValidBid, auction.currency) }}</b></div>
+              <div class="mt-3 flex justify-between text-xs"><span class="text-slate-400">Bid privacy</span><b class="text-brand-100">Blind ranking</b></div>
             </div>
             <form class="mt-4" @submit.prevent="placeBid">
               <label>
                 <span class="mb-1.5 block text-xs font-bold">Offer amount</span>
                 <div class="relative">
                   <span class="absolute left-3 top-2.5 text-xs text-slate-400">{{ auction.currency }}</span>
-                  <input ref="bidInput" v-model.number="bidAmount" type="number" :max="nextValidBid" :min="auction.floor" :step="auction.minStep" class="field pl-12 text-lg font-800" required />
+                  <input ref="bidInput" v-model.number="bidAmount" type="number" min="1" step="1" class="field pl-12 text-lg font-800" required aria-describedby="blind-bid-help" />
                 </div>
               </label>
+              <p id="blind-bid-help" class="mt-1.5 text-[10px] text-slate-500">Submit your best lower offer. The platform validates the permitted range without disclosing competitor pricing.</p>
               <p v-if="bidError" class="mt-2 text-xs font-semibold text-rose-500"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ bidError }}</p>
               <button class="btn-brand mt-3 w-full" :disabled="auction.status !== 'Running'"><i class="fa-solid fa-gavel mr-1"></i>Send offer</button>
             </form>
@@ -196,7 +204,7 @@
             </label>
             <label v-if="bidder.autoBid" class="mt-3 block">
               <span class="mb-1.5 block text-xs font-bold">Lowest auto-bid</span>
-              <input v-model.number="bidder.cap" class="field" type="number" :min="auction.floor" :max="auction.currentBid" />
+              <input v-model.number="bidder.cap" class="field" type="number" min="1" step="1" />
             </label>
           </div>
           <div v-else>
@@ -232,14 +240,16 @@
         :supplier-name="(id) => store.supplier(id)?.name || id"
         :format-money="store.money"
         :source-label="sourceLabel"
+        :is-organizer="isOrganizer"
       />
 
       <!-- Rank Tab -->
       <AuctionRankTable
         v-else-if="tab === 'rank'"
-        :ranked-participants="rankedParticipants"
-        :leader="leader"
+        :ranked-participants="presentedRankedParticipants"
+        :leader="presentedLeader"
         :is-organizer="isOrganizer"
+        :viewer-supplier-id="currentSupplierId"
         :currency="auction.currency"
         :format-money="store.money"
         :supplier-status="(id) => store.supplier(id)?.status || 'Active'"
@@ -273,8 +283,8 @@
 const { inject, computed, ref, onMounted, onBeforeUnmount, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.vue?v=1");
-const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=1");
+const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.vue?v=2");
+const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=2");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=3");
@@ -343,8 +353,8 @@ export default {
 
     const tabs = computed(() => [
       { key: "live", label: "Live Room", icon: "fa-tower-broadcast" },
-      { key: "rank", label: "Supplier Standings", icon: "fa-users-gear" },
-      { key: "history", label: "Bid Stream", icon: "fa-list-ol" },
+      { key: "rank", label: isOrganizer.value ? "Supplier Standings" : "Your Position", icon: "fa-users-gear" },
+      { key: "history", label: isOrganizer.value ? "Bid Stream" : "Your Offers", icon: "fa-list-ol" },
       { key: "communications", label: "Messages", icon: "fa-comments" },
       ...(isOrganizer.value ? [{ key: "audit", label: "Audit & Anti-Sniping", icon: "fa-shield-halved" }] : []),
     ]);
@@ -361,10 +371,35 @@ export default {
     });
 
     const leader = computed(() => rankedParticipants.value.find((p) => p.rank === 1) || rankedParticipants.value[0]);
-    const nextValidBid = computed(() => auction.value ? Math.max(auction.value.floor, auction.value.currentBid - auction.value.minStep) : 0);
+    // Suppliers get a blind-bid projection.  Do not hand a child component a
+    // rival's name, price, risk score or automated-bid setting and rely on CSS
+    // to conceal it: this view model is safe by construction.
+    const presentedRankedParticipants = computed(() => {
+      if (isOrganizer.value) return rankedParticipants.value;
+      return rankedParticipants.value.map((participant) => {
+        if (participant.supplierId === currentSupplierId.value) return participant;
+        return {
+          supplierId: participant.supplierId,
+          name: "Competing supplier",
+          rank: participant.rank,
+          disqualified: false,
+          lastBid: null,
+          bidCount: null,
+          risk: null,
+          autoBid: null,
+        };
+      });
+    });
+    const presentedLeader = computed(() => isOrganizer.value ? leader.value : bidder.value);
 
     const kpis = computed(() => {
       if (!auction.value) return [];
+      if (!isOrganizer.value) return [
+        { label: "Your offer", value: bidder.value?.lastBid ? store.money(bidder.value.lastBid, auction.value.currency) : "Not submitted", icon: "fa-hand-holding-dollar", note: "Only your submitted amount is shown" },
+        { label: "Your rank", value: bidder.value?.rank ? `#${bidder.value.rank}` : "—", icon: "fa-ranking-star", note: "Rank updates after a valid offer" },
+        { label: "Competition", value: auction.value.status === "Running" ? "Live" : statusLabel(auction.value.status), icon: "fa-tower-broadcast", note: "Competitor identities and prices are private" },
+        { label: "Round", value: auction.value.id, icon: "fa-shield-halved", note: "Blind-bid controls are active" },
+      ];
       return [
         { label: "Current best", value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: "Leading lowest quote" },
         { label: "Financial savings", value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: "Budget to best first offer" },
@@ -424,14 +459,35 @@ export default {
       return idx >= 0 ? COLOR_PALETTE[idx % COLOR_PALETTE.length] : "#64748b";
     };
 
-    const minAmount = computed(() => auction.value ? Math.min(auction.value.floor, ...auction.value.bids.map((b) => b.amount)) * 0.95 : 0);
-    const maxAmount = computed(() => auction.value ? Math.max(auction.value.reserve, ...auction.value.bids.map((b) => b.amount)) * 1.05 : 1000);
+    const visibleBidValues = computed(() => {
+      if (!auction.value) return [];
+      return isOrganizer.value
+        ? auction.value.bids.map((bid) => bid.amount)
+        : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value).map((bid) => bid.amount);
+    });
+    const minAmount = computed(() => {
+      const values = visibleBidValues.value;
+      if (!values.length) return 0;
+      const anchor = isOrganizer.value ? auction.value.floor : Math.min(...values);
+      return Math.max(0, Math.min(anchor, ...values) * 0.95);
+    });
+    const maxAmount = computed(() => {
+      const values = visibleBidValues.value;
+      if (!values.length) return 1000;
+      const anchor = isOrganizer.value ? auction.value.reserve : Math.max(...values);
+      return Math.max(1, Math.max(anchor, ...values) * 1.05);
+    });
     const valueY = (v) => 290 - ((v - minAmount.value) / Math.max(1, maxAmount.value - minAmount.value)) * 240;
-    const pointX = (idx) => 55 + (idx / Math.max(1, (auction.value?.bids.length || 1) - 1)) * 820;
+    const pointX = (idx) => {
+      const total = isOrganizer.value ? auction.value?.bids.length || 0 : visibleBidValues.value.length;
+      return 55 + (idx / Math.max(1, total - 1)) * 820;
+    };
 
     const overallPoints = computed(() => {
       if (!auction.value?.bids.length) return "";
-      return auction.value.bids.map((b, i) => `${pointX(i)},${valueY(b.amount)}`).join(" ");
+      return auction.value.bids
+        .filter((bid) => isOrganizer.value || bid.supplierId === currentSupplierId.value)
+        .map((bid, index) => `${pointX(index)},${valueY(bid.amount)}`).join(" ");
     });
 
     const areaPath = computed(() => {
@@ -443,8 +499,14 @@ export default {
 
     const chartSupplierSeries = computed(() => {
       if (!auction.value || (isOrganizer.value && allSuppliersSelected.value)) return [];
-      return visibleSupplierSeries.value.map((s) => {
-        const points = auction.value.bids.map((b, i) => ({ ...b, idx: i })).filter((b) => b.supplierId === s.supplierId).map((b) => ({ id: b.id, amount: b.amount, at: b.at, x: pointX(b.idx), y: valueY(b.amount) }));
+      const series = isOrganizer.value
+        ? visibleSupplierSeries.value
+        : supplierSeries.value.filter((item) => item.supplierId === currentSupplierId.value);
+      return series.map((s) => {
+        const points = auction.value.bids
+          .map((bid, index) => ({ ...bid, idx: index }))
+          .filter((bid) => bid.supplierId === s.supplierId)
+          .map((bid, index) => ({ id: bid.id, amount: bid.amount, at: bid.at, x: pointX(isOrganizer.value ? bid.idx : index), y: valueY(bid.amount) }));
         return { ...s, points, polyline: points.map((p) => `${p.x},${p.y}`).join(" ") };
       });
     });
@@ -458,8 +520,16 @@ export default {
     });
 
     const compact = (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(Math.round(v));
-    const recentBids = computed(() => auction.value ? [...auction.value.bids].reverse().slice(0, 3) : []);
-    const historyBids = computed(() => auction.value ? [...auction.value.bids].reverse() : []);
+    const recentBids = computed(() => {
+      if (!auction.value) return [];
+      const bids = isOrganizer.value ? auction.value.bids : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value);
+      return [...bids].reverse().slice(0, 3);
+    });
+    const historyBids = computed(() => {
+      if (!auction.value) return [];
+      const bids = isOrganizer.value ? auction.value.bids : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value);
+      return [...bids].reverse();
+    });
     const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
     const sourceLabel = (src) => ({ manual: "Manual operator", auto: "Auto-bid algorithm", system: "Floor calibration" })[src] || src;
     const actionLabel = (act) => act;
@@ -532,17 +602,19 @@ export default {
       bidError.value = "";
       if (!auction.value || auction.value.status !== 'Running') return;
       const bid = store.placeLiveAuctionBid(auction.value, Number(bidAmount.value));
-      if (!bid) { bidError.value = `Bid must be at most ${store.money(nextValidBid.value, auction.value.currency)}`; return; }
+      if (!bid) { bidError.value = "This offer is outside the permitted blind-bid range. Submit a lower valid amount."; return; }
       bidAmount.value = Math.max(auction.value.floor, bid.amount - auction.value.minStep);
     };
     const improveOffer = () => {
       if (!auction.value || auction.value.status !== "Running") return;
-      bidAmount.value = nextValidBid.value;
+      bidAmount.value = bidder.value?.lastBid ? Math.max(1, Number(bidder.value.lastBid) - 1) : 0;
       requestAnimationFrame(() => bidInput.value?.focus?.());
     };
 
     watch(() => route.query.auction, (v) => { if (v && v !== selectedAuctionId.value) selectedAuctionId.value = v; }, { immediate: true });
-    watch(nextValidBid, (v) => { if (!bidAmount.value || bidAmount.value > v) bidAmount.value = v; }, { immediate: true });
+    watch(() => bidder.value?.lastBid, (value) => {
+      if (!bidAmount.value && Number.isFinite(Number(value))) bidAmount.value = Math.max(1, Number(value) - 1);
+    }, { immediate: true });
     watch(() => auction.value?.realtimeRoomRef || auction.value?.id, () => { attachRealtime(); }, { immediate: true });
 
     onMounted(() => {
@@ -561,7 +633,7 @@ export default {
 
     return {
       store, router, auction, commercial, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
-      tabs, tab, rankedParticipants, leader, nextValidBid, kpis, statusClass, statusLabel, timeLeft,
+      tabs, tab, rankedParticipants, presentedRankedParticipants, leader, presentedLeader, kpis, statusClass, statusLabel, timeLeft,
       health, supplierSeries, allSuppliersSelected, visibleSupplierSeries, isSupplierVisible, showAllSuppliers,
       clearSupplierFilters, toggleSupplier, shortName, supplierColor, valueY, pointX, overallPoints,
       areaPath, chartSupplierSeries, yTicks, compact, recentBids, historyBids, clock, sourceLabel,

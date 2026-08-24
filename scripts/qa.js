@@ -61,6 +61,40 @@ for (const token of [
 ]) {
   if (!liveAuctionSource.includes(token)) throw new Error(`Live offer supplier chart is missing ${token}`);
 }
+// A reverse auction must never depend on hiding competitor values with CSS.
+// The supplier presentation receives a redacted projection, own-bid history
+// only, and no numerical bid ceiling that would reveal the leading offer.
+for (const token of [
+  "presentedRankedParticipants",
+  'name: "Competing supplier"',
+  "lastBid: null",
+  "bidCount: null",
+  "risk: null",
+  'v-if="isOrganizer" :model="commercial"',
+  "bid.supplierId === currentSupplierId.value",
+  "outside the permitted blind-bid range",
+]) {
+  if (!liveAuctionSource.includes(token)) throw new Error(`Blind-bid privacy projection is missing ${token}`);
+}
+if (liveAuctionSource.includes(':max="nextValidBid"') || liveAuctionSource.includes('Next valid offer'))
+  throw new Error("Supplier view must not disclose a live market price ceiling");
+const rankTableSource = read("app/pages/procurement/auction/AuctionRankTable.vue");
+const historyTableSource = read("app/pages/procurement/auction/AuctionHistoryTab.vue");
+if (!rankTableSource.includes("viewerSupplierId") || !rankTableSource.includes("Identity protected") || !historyTableSource.includes("isOrganizer"))
+  throw new Error("Auction participant tables are missing role-aware redaction");
+const sourcingSource = read("app/pages/procurement/SourcingWorkspace.vue");
+for (const token of [
+  "supplierColumns",
+  "tableColumns",
+  "Invitation-only response workspace",
+  "Protected sourcing invitation",
+  "tab === 'bidsheet' && canManage(event)",
+  "tab === 'comparison' && canManage(event)",
+  "tab === 'award' && canManage(event)",
+  "wizardOpen && canCreateSourcing",
+]) {
+  if (!sourcingSource.includes(token)) throw new Error(`Supplier RFX privacy gate is missing ${token}`);
+}
 
 for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {
   if (!homeHeroSource.includes(token)) throw new Error(`Home hero responsive grid is missing ${token}`);
@@ -68,6 +102,11 @@ for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {
 for (const token of ["lg:grid-cols-4", "lg:col-span-3", "lg:col-span-1"]) {
   if (!homeIntelligenceSource.includes(token)) throw new Error(`Opportunity layout responsive grid is missing ${token}`);
 }
+const homeSource = read("app/pages/HomePage.vue");
+if (!homeSource.includes('job?.visibility === "public"') || !homeSource.includes("job?.confidential !== true"))
+  throw new Error("Homepage must only promote explicitly published marketplace records");
+if (homeIntelligenceSource.includes(':to="`/profile/${freelancer.id}`"'))
+  throw new Error("Homepage featured profiles must link to the directory, not an internal identity record");
 if (/lg:w-\[420px\]|lg:w-80/.test(homeHeroSource + homeIntelligenceSource))
   throw new Error("Home still relies on broken fixed-width responsive utilities");
 

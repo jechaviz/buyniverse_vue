@@ -5,10 +5,10 @@
         <thead class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800">
           <tr>
             <th class="px-4 py-3">Time</th>
-            <th class="px-4 py-3">Supplier</th>
+            <th class="px-4 py-3">{{ isOrganizer ? 'Supplier' : 'Your company' }}</th>
             <th class="px-4 py-3 text-right">Offer</th>
             <th class="px-4 py-3 text-right">Change</th>
-            <th class="px-4 py-3">From</th>
+            <th v-if="isOrganizer" class="px-4 py-3">From</th>
             <th class="px-4 py-3">Result</th>
           </tr>
         </thead>
@@ -20,7 +20,7 @@
             <td class="px-4 py-3 text-right" :class="bid.delta < 0 ? 'text-emerald-500' : ''">
               {{ bid.delta ? formatMoney(bid.delta, currency) : "—" }}
             </td>
-            <td class="px-4 py-3">{{ sourceLabel(bid.source) }}</td>
+            <td v-if="isOrganizer" class="px-4 py-3">{{ sourceLabel(bid.source) }}</td>
             <td class="px-4 py-3">
               <span class="badge bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Accepted</span>
             </td>
@@ -39,6 +39,7 @@ export default {
     supplierName: Function,
     formatMoney: Function,
     sourceLabel: Function,
+    isOrganizer: Boolean,
   },
 };
 </script>

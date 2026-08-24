@@ -25,7 +25,7 @@ const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 
 const HomeHeroSection = load("./app/pages/home/HomeHeroSection.vue?v=5");
-const HomeIntelligenceSection = load("./app/pages/home/HomeIntelligenceSection.vue?v=4");
+const HomeIntelligenceSection = load("./app/pages/home/HomeIntelligenceSection.vue?v=5");
 const HomeGainShareSection = load("./app/pages/home/HomeGainShareSection.vue?v=1");
 
 export default {
@@ -164,8 +164,16 @@ export default {
       },
     ]);
 
+    // The homepage is discovery, never a shortcut into a tenant's private
+    // backlog. Only deliberately published marketplace opportunities belong
+    // here; RFX and internal projects stay inside their authorized workspace.
     const featuredJobs = computed(() => {
-      return (store.state.jobs || []).slice(0, 5);
+      const jobs = typeof store.scopedRecords === "function"
+        ? store.scopedRecords(store.state.jobs || [])
+        : (store.state.jobs || []);
+      return jobs
+        .filter((job) => job?.status === "OPEN" && job?.visibility === "public" && job?.confidential !== true)
+        .slice(0, 5);
     });
 
     return {

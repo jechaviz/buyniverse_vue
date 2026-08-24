@@ -2,12 +2,15 @@
   <div class="space-y-5">
     <DataTable
       :items="accessibleEvents"
-      :columns="columns"
+      :columns="tableColumns"
       title="Quote rounds"
       table-id="procurement-events"
       group-by="status"
       :group-label="statusLabel"
       :users="store.state.users"
+      :editable="!isSupplierWorkspace"
+      :row-actions="isSupplierWorkspace ? [] : organizerRowActions"
+      :bulk-actions="isSupplierWorkspace ? [] : organizerBulkActions"
       :format="format"
       :link-for="linkFor"
       @update-cell="updateCell"
@@ -28,19 +31,20 @@
         </div>
         <div class="flex items-center gap-3">
           <RouterLink
-            v-if="event.requestId"
+            v-if="canManage(event) && event.requestId"
             :to="`/procurement/queue?request=${event.requestId}`"
             class="font-bold text-brand hover:underline inline-flex items-center gap-1"
           >
             <i class="fa-solid fa-link text-[10px]"></i>PR: {{ event.requestId }}
           </RouterLink>
-          <span v-if="event.awardedSupplierId" class="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+          <span v-if="canManage(event) && event.awardedSupplierId" class="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
             <i class="fa-solid fa-trophy text-[10px]"></i>
             Awarded:
             <RouterLink :to="`/suppliers?supplier=${event.awardedSupplierId}`" class="hover:underline font-extrabold ml-0.5">
               {{ store.supplier(event.awardedSupplierId)?.name || event.awardedSupplierId }}
             </RouterLink>
           </span>
+          <span v-else-if="!canManage(event)" class="inline-flex items-center gap-1 font-bold text-slate-500"><i class="fa-solid fa-shield-halved text-brand"></i> Invitation-only response workspace</span>
         </div>
       </div>
 
@@ -57,17 +61,18 @@
             </div>
             <h2 class="font-head mt-1.5 text-xl sm:text-2xl font-800 tracking-tight text-slate-900 dark:text-white">{{ event.title }}</h2>
             <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-wallet text-slate-400"></i><b class="font-mono text-slate-700 dark:text-slate-300">{{ store.money(event.budget, event.currency) }}</b></span>
+              <span v-if="canManage(event)" class="flex items-center gap-1.5"><i class="fa-solid fa-wallet text-slate-400"></i><b class="font-mono text-slate-700 dark:text-slate-300">{{ store.money(event.budget, event.currency) }}</b></span>
               <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i>{{ store.date(event.deadline) }}</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-users text-slate-400"></i>{{ event.invitedSupplierIds.length }} invited</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up text-slate-400"></i>{{ event.quotes.length }} offers</span>
+              <span v-if="canManage(event)" class="flex items-center gap-1.5"><i class="fa-solid fa-users text-slate-400"></i>{{ event.invitedSupplierIds.length }} invited</span>
+              <span v-if="canManage(event)" class="flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up text-slate-400"></i>{{ event.quotes.length }} offers</span>
+              <span v-else class="flex items-center gap-1.5"><i class="fa-solid fa-eye-slash text-slate-400"></i>Competitor responses protected</span>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button class="btn-muted text-xs py-2 px-3.5" @click="cloneEvent">
+            <button v-if="canManage(event)" class="btn-muted text-xs py-2 px-3.5" @click="cloneEvent">
               <i class="fa-regular fa-copy mr-1.5 text-xs"></i>Copy
             </button>
-            <button v-if="event.status === 'Draft'" class="btn-brand text-xs py-2 px-3.5" @click="publish">
+            <button v-if="canManage(event) && event.status === 'Draft'" class="btn-brand text-xs py-2 px-3.5" @click="publish">
               <i class="fa-solid fa-tower-broadcast mr-1.5 text-xs"></i>Publish
             </button>
             <button v-if="event.type === 'Auction' && store.auction(event.id)" class="btn-brand text-xs py-2 px-3.5" @click="router.push(`/procurement/auction?auction=${event.id}`)">
@@ -94,7 +99,7 @@
       </nav>
 
       <SourcingLotsTab
-        v-if="tab === 'overview'"
+        v-if="tab === 'overview' && canManage(event)"
         :event="event"
         :deadline-date="deadlineDate"
         :readiness="readiness"
@@ -106,8 +111,15 @@
         @next="goNext"
       />
 
+      <section v-else-if="tab === 'overview'" class="p-5">
+        <div class="rounded-2xl border border-brand/20 bg-brand-50/40 p-5 dark:bg-brand/10">
+          <div class="flex items-start gap-3"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-white"><i class="fa-solid fa-shield-halved"></i></span><div><p class="text-[10px] font-800 uppercase tracking-wider text-brand">Protected sourcing invitation</p><h3 class="mt-1 text-base font-800">Your response stays confidential</h3><p class="mt-2 max-w-2xl text-xs leading-5 text-slate-600 dark:text-slate-300">You can review the approved scope and use Messages for clarifications. Supplier identities, pricing, evaluation criteria, bids and award deliberation are visible only to the buying organization.</p></div></div>
+          <div class="mt-4 flex flex-wrap gap-2"><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-regular fa-calendar mr-1"></i>Response deadline {{ store.date(event.deadline) }}</span><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-solid fa-lock mr-1"></i>Blind commercial review</span></div>
+        </div>
+      </section>
+
       <SourcingSuppliersTab
-        v-else-if="tab === 'suppliers'"
+        v-else-if="tab === 'suppliers' && canManage(event)"
         :event="event"
         :suppliers="filteredSuppliers"
         :search="supplierSearch"
@@ -119,7 +131,7 @@
       />
 
       <SourcingBidSheetTab
-        v-else-if="tab === 'bidsheet'"
+        v-else-if="tab === 'bidsheet' && canManage(event)"
         :event="event"
         :supplier-name="(id) => store.supplier(id)?.name || id"
         :format-money="store.money"
@@ -130,7 +142,7 @@
       />
 
       <SourcingComparisonTab
-        v-else-if="tab === 'comparison'"
+        v-else-if="tab === 'comparison' && canManage(event)"
         :event="event"
         :criteria="criteria"
         :scenarios="store.state.procurementAnalytics?.scenarios || []"
@@ -143,7 +155,7 @@
       />
 
       <SourcingAwardTab
-        v-else-if="tab === 'award'"
+        v-else-if="tab === 'award' && canManage(event)"
         :event="event"
         :ranked-quotes="rankedQuotes"
         :award-supplier-id="awardSupplierId"
@@ -166,19 +178,19 @@
       />
 
       <SourcingTimelineTab
-        v-else
+        v-else-if="tab === 'timeline' && canManage(event)"
         :audit="event.audit"
         :format-date="store.date"
       />
     </section>
 
     <SourcingWizardModal
-      :open="wizardOpen"
+      :open="wizardOpen && canCreateSourcing"
       :current-step="wizardStep"
       :steps="wizardSteps"
       :model-value="wizard"
-      :suppliers="store.state.suppliers"
-      :requests="store.scopedRecords(store.state.purchaseRequests)"
+      :suppliers="canCreateSourcing ? store.state.suppliers : []"
+      :requests="canCreateSourcing ? store.scopedRecords(store.state.purchaseRequests) : []"
       :error="wizardError"
       :type-label="typeLabel"
       :format-money="store.money"
@@ -224,7 +236,13 @@ export default {
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
-      get: () => ["overview", "suppliers", "bidsheet", "comparison", "award", "communications", "timeline"].includes(route.query.tab) ? route.query.tab : "overview",
+      get: () => {
+        const isManager = Boolean(event.value && store.canManageProcurement(event.value));
+        const allowed = isManager
+          ? ["overview", "suppliers", "bidsheet", "comparison", "award", "communications", "timeline"]
+          : ["overview", "communications"];
+        return allowed.includes(route.query.tab) ? route.query.tab : "overview";
+      },
       set: (key) => router.push({ path: "/procurement/sourcing", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
     });
     const supplierSearch = ref(""), awardSupplierId = ref(""), awardReason = ref("");
@@ -245,6 +263,13 @@ export default {
       { key: "ownerId", label: "Owner", width: 130, edit: { type: "user" } },
       { key: "operationalScope", label: "Applies to", width: 210 },
     ];
+    const supplierColumns = [
+      { key: "id", label: "Round", width: 145 },
+      { key: "title", label: "Invitation", width: 300 },
+      { key: "type", label: "Type", width: 105 },
+      { key: "status", label: "Status", width: 125 },
+      { key: "deadline", label: "Response deadline", width: 155 },
+    ];
 
     const accessibleEvents = computed(() => {
       const scopedEvents = store.scopedRecords(store.state.sourcingEvents);
@@ -262,15 +287,31 @@ export default {
 
     const canManage = (item) => store.canManageProcurement(item);
     const event = computed(() => accessibleEvents.value.find((item) => item.id === route.query.event) || accessibleEvents.value[0]);
+    const canCreateSourcing = computed(() => Boolean(store.isBuyer.value || store.isAdmin.value));
+    const isSupplierWorkspace = computed(() => store.marketplaceMode.value === "supplier");
+    const tableColumns = computed(() => isSupplierWorkspace.value ? supplierColumns : columns);
+    const organizerRowActions = [
+      { key: "delete", label: "Delete record", icon: "fa-trash-can", tone: "danger" },
+      { key: "edit", label: "Edit record", icon: "fa-pen" },
+    ];
+    const organizerBulkActions = [
+      { key: "archive", label: "Archive selected", icon: "fa-box-archive" },
+      { key: "export", label: "Export selected", icon: "fa-file-csv" },
+    ];
 
     const tabs = computed(() => event.value ? [
-      { key: "overview", label: "Setup", icon: "fa-layer-group" },
-      { key: "suppliers", label: "Suppliers", icon: "fa-users", count: event.value.invitedSupplierIds.length },
-      { key: "bidsheet", label: "Offers", icon: "fa-table-cells", count: event.value.quotes.length },
-      { key: "comparison", label: "Compare", icon: "fa-scale-balanced" },
-      { key: "award", label: "Choose", icon: "fa-trophy" },
-      { key: "communications", label: "Messages", icon: "fa-comments" },
-      { key: "timeline", label: "History", icon: "fa-clock-rotate-left", count: event.value.audit.length },
+      ...(canManage(event.value) ? [
+        { key: "overview", label: "Setup", icon: "fa-layer-group" },
+        { key: "suppliers", label: "Suppliers", icon: "fa-users", count: event.value.invitedSupplierIds.length },
+        { key: "bidsheet", label: "Offers", icon: "fa-table-cells", count: event.value.quotes.length },
+        { key: "comparison", label: "Compare", icon: "fa-scale-balanced" },
+        { key: "award", label: "Choose", icon: "fa-trophy" },
+        { key: "communications", label: "Messages", icon: "fa-comments" },
+        { key: "timeline", label: "History", icon: "fa-clock-rotate-left", count: event.value.audit.length },
+      ] : [
+        { key: "overview", label: "Invitation", icon: "fa-shield-halved" },
+        { key: "communications", label: "Messages", icon: "fa-comments" },
+      ]),
     ] : []);
 
     const rankedQuotes = computed(() => event.value ? window.ProcurementCommon.rankQuotes(event.value.quotes, event.value.weights) : []);
@@ -505,7 +546,7 @@ export default {
       awardSupplierId.value = rankedQuotes.value[0]?.supplierId || "";
       awardReason.value = event.value?.awardReason || "";
     }, { immediate: true });
-    watch(() => route.query.new, (v) => { wizardOpen.value = v === "1"; });
+    watch(() => route.query.new, (v) => { wizardOpen.value = canCreateSourcing.value && v === "1"; });
     watch(() => route.query.step, (v) => { const n = Number(v); if (route.query.new === "1" && [0, 1, 2].includes(n) && n !== wizardStep.value) wizardStep.value = n; });
     watch(event, (item) => {
       if (!item || route.query.new === "1" || route.query.event === item.id) return;
@@ -513,7 +554,7 @@ export default {
     }, { immediate: true });
 
     return {
-      window, store, router, event, accessibleEvents, columns, tabs, tab, criteria, typeLabel, statusLabel,
+      window, store, router, event, accessibleEvents, columns, supplierColumns, tableColumns, isSupplierWorkspace, organizerRowActions, organizerBulkActions, canCreateSourcing, tabs, tab, criteria, typeLabel, statusLabel,
       deadlineDate, readiness, nextAction, filteredSuppliers, supplierSearch, rankedQuotes, awardSupplierId,
       awardReason, selectedAwardQuote, selectedAwardSupplier, wizardOpen, wizardStep, wizardSteps: ["Setup", "Suppliers", "Send"],
       wizard, wizardForm, wizardError, format, linkFor, openEvent, canManage, updateCell, statusClass, saveDeadline, record,

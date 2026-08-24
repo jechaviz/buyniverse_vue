@@ -485,7 +485,7 @@ document.addEventListener("visibilitychange", () => {
 
 // Component Loaders
 const Dashboard = load("./app/pages/DashboardPage.vue?v=32");
-const Home = load("./app/pages/HomePage.vue?v=30");
+const Home = load("./app/pages/HomePage.vue?v=31");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=29");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
@@ -501,7 +501,7 @@ const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=23");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=24");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
@@ -687,12 +687,13 @@ router.beforeEach((to) => {
   if (to.meta.jobAccess) {
     const job = store.job(to.params.jobId),
       user = store.currentUser.value;
+    const publicListing = job?.status === "OPEN" && job?.visibility === "public" && job?.confidential !== true;
     const participant =
       job &&
       (job.clientId === user.id ||
         job.proposals?.some((proposal) => proposal.freelancerId === user.id) ||
         store.contract(job.contractId)?.providerId === user.id);
-    if (!job || (job.status !== "OPEN" && !store.isAdmin.value && !participant)) {
+    if (!job || (!publicListing && !store.isAdmin.value && !participant)) {
       store.securityEvent("Job access denied", clean(to.params.jobId, 120), "warning");
       store.notice("Project access denied", "fa-shield-halved");
       return "/dashboard";

@@ -265,7 +265,7 @@
     </section>
 
     <!-- 5. TWO-COLUMN: LATEST JOBS / RFQs & QUICK SEARCH LINKS -->
-    <section class="space-y-6">
+    <section v-if="featuredJobs.length" class="space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p class="premium-kicker text-xs font-bold uppercase tracking-widest text-brand">{{ store.t("Oportunidades Abiertas") }}</p>
@@ -391,7 +391,7 @@
               <span class="text-[10px] text-slate-400 uppercase font-bold block">{{ store.t("Tarifa") }}</span>
               <b class="font-mono font-800 text-slate-900 dark:text-white">{{ store.money(freelancer.hourlyRate) }}/hr</b>
             </div>
-            <RouterLink :to="`/profile/${freelancer.id}`" class="btn-brand text-xs py-1.5 px-3">
+            <RouterLink to="/find-talent" class="btn-brand text-xs py-1.5 px-3">
               {{ store.t("Contratar") }}
             </RouterLink>
           </div>
