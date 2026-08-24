@@ -62,7 +62,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["mail_enqueue", "email.queued", "auth.welcome", "tenant.invitation"]) {
     if (!phpShim.includes(token)) throw new Error(`Transactional mail integration is missing ${token}`);
   }
-  for (const token of ["mail_render", "mail_encrypt_payload", "aes-256-gcm", "Idempotency-Key", "CURLOPT_SSL_VERIFYPEER", "mail_dispatch_pending"]) {
+  for (const token of ["mail_render", "mail_encrypt_payload", "aes-256-gcm", "Idempotency-Key", "CURLOPT_SSL_VERIFYPEER", "smtp_ssl", "CURLOPT_USERNAME", "mail_dispatch_pending"]) {
     if (!mailService.includes(token)) throw new Error(`Transactional mail security control is missing ${token}`);
   }
   if (/\bmail\s*\(/.test(mailService) || /\bmail\s*\(/.test(phpShim))

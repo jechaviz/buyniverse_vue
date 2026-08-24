@@ -16,13 +16,18 @@ return [
     // provider API key is supplied through this 0600 runtime configuration.
     'email' => [
         'enabled' => false,
-        'provider' => 'resend',
+        'provider' => 'smtp_ssl', // Supported: smtp_ssl (implicit TLS/465) or resend.
         'public_base_url' => 'https://buyniverse.com',
         'from_name' => 'Buyniverse',
-        'from_email' => 'notifications@buyniverse.com',
-        'reply_to' => 'support@buyniverse.com',
-        'api_key' => '', // e.g. getenv('BUYNIVERSE_RESEND_API_KEY') ?: ''
-        'api_key_ref' => 'secret-manager://buyniverse/resend/api-key',
+        'from_email' => 'admin@appniverse.com',
+        'reply_to' => 'admin@appniverse.com',
+        'smtp' => [
+            'host' => 'mail.spacemail.com',
+            'port' => 465,
+            'username' => 'admin@appniverse.com',
+            'password' => '', // e.g. getenv('BUYNIVERSE_SMTP_PASSWORD') ?: ''
+            'password_ref' => 'secret-manager://buyniverse/smtp/admin-appniverse',
+        ],
     ],
 
     // Enterprise identity adapters are server-side only. Keep both disabled

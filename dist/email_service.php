@@ -112,11 +112,20 @@ function mail_enqueue(PDO $pdo, array $config, string $key, array $context, stri
 }
 function mail_delivery_config(array $config): ?array {
     $mail = $config['email'] ?? null;
-    if (!is_array($mail) || ($mail['enabled'] ?? false) !== true || ($mail['provider'] ?? '') !== 'resend') return null;
-    $apiKey = mail_text($mail['api_key'] ?? '', 512); $fromEmail = strtolower(trim(mail_text($mail['from_email'] ?? '', 320))); $fromName = mail_text($mail['from_name'] ?? 'Buyniverse', 100);
-    if ($apiKey === '' || !str_starts_with($apiKey, 're_') || !filter_var($fromEmail, FILTER_VALIDATE_EMAIL) || $fromName === '') return null;
+    if (!is_array($mail) || ($mail['enabled'] ?? false) !== true) return null;
+    $provider = mail_text($mail['provider'] ?? '', 32); $fromEmail = strtolower(trim(mail_text($mail['from_email'] ?? '', 320))); $fromName = mail_text($mail['from_name'] ?? 'Buyniverse', 100);
+    if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL) || $fromName === '') return null;
     $replyTo = strtolower(trim(mail_text($mail['reply_to'] ?? '', 320))); if ($replyTo !== '' && !filter_var($replyTo, FILTER_VALIDATE_EMAIL)) return null;
-    return ['api_key'=>$apiKey, 'from'=>$fromName . ' <' . $fromEmail . '>', 'reply_to'=>$replyTo];
+    if ($provider === 'resend') {
+        $apiKey = mail_text($mail['api_key'] ?? '', 512);
+        if ($apiKey === '' || !str_starts_with($apiKey, 're_')) return null;
+        return ['provider'=>'resend', 'api_key'=>$apiKey, 'from'=>$fromName . ' <' . $fromEmail . '>', 'from_email'=>$fromEmail, 'reply_to'=>$replyTo];
+    }
+    if ($provider !== 'smtp_ssl' || !is_array($mail['smtp'] ?? null)) return null;
+    $host = strtolower(mail_text($mail['smtp']['host'] ?? '', 253)); $port = (int) ($mail['smtp']['port'] ?? 0);
+    $username = strtolower(trim(mail_text($mail['smtp']['username'] ?? '', 320))); $password = mail_text($mail['smtp']['password'] ?? '', 512);
+    if (!preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/', $host) || $port !== 465 || !filter_var($username, FILTER_VALIDATE_EMAIL) || $password === '') return null;
+    return ['provider'=>'smtp_ssl', 'host'=>$host, 'port'=>$port, 'username'=>$username, 'password'=>$password, 'from'=>$fromName . ' <' . $fromEmail . '>', 'from_email'=>$fromEmail, 'reply_to'=>$replyTo];
 }
 function mail_send_resend(array $delivery, array $payload, string $outboxId): array {
     if (!function_exists('curl_init')) return ['ok'=>false, 'code'=>'transport_unavailable'];
@@ -132,6 +141,40 @@ function mail_send_resend(array $delivery, array $payload, string $outboxId): ar
     if ($status >= 200 && $status < 300 && is_array($response) && is_string($response['id'] ?? null)) return ['ok'=>true, 'message_id'=>mail_text($response['id'], 120)];
     return ['ok'=>false, 'code'=>$status === 429 ? 'provider_rate_limited' : ($status >= 500 ? 'provider_unavailable' : 'provider_rejected')];
 }
+function mail_header_encode(string $value): string { return '=?UTF-8?B?' . base64_encode(mail_text($value, 240)) . '?='; }
+function mail_smtp_message(array $delivery, array $payload, string $outboxId): ?array {
+    $to = strtolower(trim(mail_text($payload['to'] ?? '', 320))); $subject = mail_text($payload['subject'] ?? '', 180); $html = $payload['html'] ?? ''; $text = $payload['text'] ?? '';
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL) || $subject === '' || !is_string($html) || !is_string($text) || strlen($html) > 200000 || strlen($text) > 50000) return null;
+    $domain = strtolower((string) substr(strrchr((string) $delivery['from_email'], '@') ?: '', 1));
+    if (!preg_match('/^[a-z0-9.-]{3,253}$/', $domain)) return null;
+    $boundary = '=_bn_' . substr(hash('sha256', $outboxId), 0, 32); $messageId = '<' . str_replace('-', '', $outboxId) . '@' . $domain . '>';
+    $headers = [
+        'From: ' . mail_header_encode((string) preg_replace('/\s*<.*$/', '', (string) $delivery['from'])) . ' <' . $delivery['from_email'] . '>',
+        'To: <' . $to . '>', 'Subject: ' . mail_header_encode($subject), 'Date: ' . gmdate('D, d M Y H:i:s') . ' +0000',
+        'Message-ID: ' . $messageId, 'MIME-Version: 1.0', 'Auto-Submitted: auto-generated', 'X-Auto-Response-Suppress: All',
+        'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
+    ];
+    if (($delivery['reply_to'] ?? '') !== '') $headers[] = 'Reply-To: <' . $delivery['reply_to'] . '>';
+    $body = implode("\r\n", $headers) . "\r\n\r\n--" . $boundary . "\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($text), 76, "\r\n") . "--" . $boundary . "\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($html), 76, "\r\n") . "--" . $boundary . "--\r\n";
+    return ['message'=>$body, 'to'=>$to, 'message_id'=>trim($messageId, '<>')];
+}
+function mail_send_smtp(array $delivery, array $payload, string $outboxId): array {
+    if (!function_exists('curl_init')) return ['ok'=>false, 'code'=>'transport_unavailable'];
+    $encoded = mail_smtp_message($delivery, $payload, $outboxId); if ($encoded === null) return ['ok'=>false, 'code'=>'payload_invalid'];
+    $offset = 0; $message = $encoded['message']; $curl = curl_init('smtps://' . $delivery['host'] . ':' . $delivery['port']);
+    if ($curl === false) return ['ok'=>false, 'code'=>'transport_unavailable'];
+    $options = [
+        CURLOPT_UPLOAD=>true, CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>false, CURLOPT_MAXREDIRS=>0,
+        CURLOPT_TIMEOUT=>20, CURLOPT_CONNECTTIMEOUT=>5, CURLOPT_SSL_VERIFYPEER=>true, CURLOPT_SSL_VERIFYHOST=>2,
+        CURLOPT_USERNAME=>$delivery['username'], CURLOPT_PASSWORD=>$delivery['password'], CURLOPT_MAIL_FROM=>$delivery['from_email'],
+        CURLOPT_MAIL_RCPT=>[$encoded['to']], CURLOPT_INFILESIZE=>strlen($message),
+        CURLOPT_READFUNCTION=>static function ($handle, $stream, int $length) use (&$offset, $message): string { $chunk = substr($message, $offset, $length); $offset += strlen($chunk); return $chunk; },
+    ];
+    if (defined('CURLOPT_PROTOCOLS') && defined('CURLPROTO_SMTPS')) $options[constant('CURLOPT_PROTOCOLS')] = constant('CURLPROTO_SMTPS');
+    curl_setopt_array($curl, $options); $ok = curl_exec($curl) !== false; $errno = curl_errno($curl); curl_close($curl);
+    if ($ok) return ['ok'=>true, 'message_id'=>$encoded['message_id']];
+    return ['ok'=>false, 'code'=>defined('CURLE_LOGIN_DENIED') && $errno === constant('CURLE_LOGIN_DENIED') ? 'smtp_auth_failed' : 'smtp_unavailable'];
+}
 function mail_dispatch_pending(PDO $pdo, array $config, string $key, int $limit = 25): array {
     $delivery = mail_delivery_config($config); if ($delivery === null) return ['processed'=>0, 'sent'=>0, 'disabled'=>true];
     $limit = max(1, min($limit, 100)); $result = ['processed'=>0, 'sent'=>0, 'failed'=>0, 'disabled'=>false];
@@ -142,7 +185,7 @@ function mail_dispatch_pending(PDO $pdo, array $config, string $key, int $limit 
         if (!$row) { $pdo->commit(); break; }
         if (strtotime((string) $row['expires_at']) <= time()) { $pdo->prepare('UPDATE tenant_email_outbox SET status = "expired", locked_at = NULL, lock_token = NULL WHERE id = ?')->execute([$row['id']]); $pdo->commit(); $result['processed']++; continue; }
         $lock = mail_uuid(); $pdo->prepare('UPDATE tenant_email_outbox SET status = "processing", locked_at = UTC_TIMESTAMP(), lock_token = ?, attempts = attempts + 1 WHERE id = ?')->execute([$lock, $row['id']]); $pdo->commit();
-        $payload = mail_decrypt_payload($row, $key); $sent = $payload ? mail_send_resend($delivery, $payload, (string) $row['id']) : ['ok'=>false, 'code'=>'payload_integrity'];
+        $payload = mail_decrypt_payload($row, $key); $sent = $payload ? ($delivery['provider'] === 'smtp_ssl' ? mail_send_smtp($delivery, $payload, (string) $row['id']) : mail_send_resend($delivery, $payload, (string) $row['id'])) : ['ok'=>false, 'code'=>'payload_integrity'];
         $pdo->beginTransaction();
         if (!empty($sent['ok'])) { $pdo->prepare('UPDATE tenant_email_outbox SET status = "sent", sent_at = UTC_TIMESTAMP(), locked_at = NULL, lock_token = NULL, provider_message_id = ?, last_error_code = NULL WHERE id = ? AND lock_token = ?')->execute([$sent['message_id'] ?? null, $row['id'], $lock]); $result['sent']++; }
         else { $attempts = (int) $row['attempts'] + 1; $terminal = $attempts >= 8 || ($sent['code'] ?? '') === 'payload_integrity'; $delay = min(3600, 60 * (2 ** min(6, $attempts - 1))); $pdo->prepare('UPDATE tenant_email_outbox SET status = ?, available_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? SECOND), locked_at = NULL, lock_token = NULL, last_error_code = ? WHERE id = ? AND lock_token = ?')->execute([$terminal ? 'failed' : 'retry', $delay, mail_text($sent['code'] ?? 'delivery_failed', 80), $row['id'], $lock]); $result['failed']++; }

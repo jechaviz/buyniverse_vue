@@ -26,8 +26,8 @@ La creación de una invitación de empresa y una cuenta personal de Google con c
 ## Activación controlada
 
 1. Aplique `ops/migrations/20260823_email_outbox.sql` con una cuenta de migración temporal; luego devuélvala a permisos DML.
-2. En el archivo privado `~/buyniverse-runtime.php`, copie el bloque `email` de `ops/buyniverse-runtime.example.php`. Mantenga `enabled => false` hasta verificar el dominio de envío y cargar la clave desde el gestor de secretos.
-3. Configure SPF, DKIM y DMARC para el dominio `from_email`; valide los dominios y los webhooks de rebote/queja en el proveedor antes de poner `enabled => true`.
+2. En el archivo privado `~/buyniverse-runtime.php`, copie el bloque `email` de `ops/buyniverse-runtime.example.php`. Para SpaceMail se usa `provider => 'smtp_ssl'`, host `mail.spacemail.com` y puerto `465`; la contraseña permanece solamente en ese archivo con modo `0600` o en un gestor de secretos.
+3. Configure SPF, DKIM y DMARC para el dominio `from_email`; valide el buzón, los dominios y el tratamiento de rebotes/quejas antes de poner `enabled => true`.
 4. Cree un cron privado, por ejemplo cada minuto:
 
    ```text
