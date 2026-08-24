@@ -277,7 +277,7 @@ const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.
 const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=1");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
-const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=2");
+const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=3");
 
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
@@ -317,7 +317,7 @@ export default {
     const commercial = computed(() => {
       const event = auction.value?.eventId ? store.sourcingEvent(auction.value.eventId) : null;
       return window.BuyniverseCommercialMetrics?.auction(auction.value, event, {
-        successFeeRate: store.state.procurementAnalytics?.commercialModel?.gainShareRate ?? 12,
+        successFeeRate: store.state.procurementAnalytics?.commercialModel?.gainShareRate ?? 40,
         successFeeBasis: store.state.procurementAnalytics?.commercialModel?.successFeeBasis,
       }) || {};
     });
@@ -369,7 +369,7 @@ export default {
         { label: "Current best", value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: "Leading lowest quote" },
         { label: "Financial savings", value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: "Budget to best first offer" },
         { label: "Buyniverse savings", value: store.money(commercial.value.buyniverseSavings || 0, auction.value.currency), icon: "fa-gavel", note: "Best first offer to current bid" },
-        { label: "Outcome share", value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: `${commercial.value.successFeeRate || 0}% of validated savings` },
+        { label: "Service fee", value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: `${commercial.value.successFeeRate || 40}% of validated savings` },
         { label: "Total offers", value: String(auction.value.bids.length), icon: "fa-gavel", note: "Verified bid records" },
         { label: "Suppliers", value: `${auction.value.participants.length} invited`, icon: "fa-users", note: "Qualified suppliers" },
       ];
@@ -516,7 +516,7 @@ export default {
     };
     const award = async () => {
       if (!leader.value) return;
-      const reason = await store.prompt({ title: "Record award decision", message: `Award ${leader.value.name} for ${store.money(auction.value.currentBid, auction.value.currency)}. Capture the auditable business reason.`, placeholder: "Best compliant value and delivery commitment", confirmText: "Award and create order", multiline: true });
+      const reason = await store.prompt({ title: "Record award decision", message: `Award ${leader.value.name} for ${store.money(auction.value.currentBid, auction.value.currency)}.\n\nValidated savings: ${store.money(commercial.value.totalSavings || 0, auction.value.currency)}\nBuyniverse service fee (${commercial.value.successFeeRate || 40}%): ${store.money(commercial.value.outcomeShare || 0, auction.value.currency)}\nNet buyer savings: ${store.money(commercial.value.netSavings || 0, auction.value.currency)}\n\nCapture the auditable business reason.`, placeholder: "Best compliant value and delivery commitment", confirmText: "Award and create order", multiline: true });
       if (!reason) return;
       const order = store.awardLiveAuction(auction.value, reason);
       if (order) router.push(`/procurement/execution?order=${order.id}`);

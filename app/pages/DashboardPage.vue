@@ -227,7 +227,7 @@ const { inject, computed } = Vue;
 const { useRoute } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const AdminDatabaseCard = load("./app/pages/dashboard/AdminDatabaseCard.vue?v=1");
-const MarketplaceValueHub = load("./app/components/commercial/MarketplaceValueHub.vue?v=1");
+const MarketplaceValueHub = load("./app/components/commercial/MarketplaceValueHub.vue?v=2");
 
 export default {
   components: { AdminDatabaseCard, MarketplaceValueHub },

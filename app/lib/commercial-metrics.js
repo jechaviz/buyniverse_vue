@@ -45,9 +45,15 @@
     const financialSavings = positiveDelta(budget, bestFirst);
     const buyniverseSavings = positiveDelta(bestFirst, bestFinal);
     const totalSavings = positiveDelta(budget, bestFinal);
-    const successFeeRate = Math.min(100, Math.max(0, Number(options.successFeeRate ?? 12) || 0));
-    const successFeeBasis = options.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
+    const lockedTerms = auctionRecord?.commercialSettlement?.serviceFee;
+    const configuredRate = Math.min(100, Math.max(0, Number(options.successFeeRate ?? 40) || 0));
+    const configuredBasis = options.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
+    const lockedRate = amount(lockedTerms?.rate);
+    const successFeeRate = lockedRate === null ? configuredRate : Math.min(100, Math.max(0, lockedRate));
+    const successFeeBasis = lockedTerms?.basis === "buyniverse" ? "buyniverse" : configuredBasis;
     const feeBase = successFeeBasis === "buyniverse" ? buyniverseSavings : totalSavings;
+    const lockedFee = amount(lockedTerms?.amount);
+    const outcomeShare = lockedFee === null ? rounded(feeBase * successFeeRate / 100) : Math.max(0, lockedFee);
 
     return {
       auctionId: auctionRecord?.id || null,
@@ -60,7 +66,9 @@
       totalSavings,
       successFeeRate,
       successFeeBasis,
-      outcomeShare: rounded(feeBase * successFeeRate / 100),
+      outcomeShare,
+      netSavings: rounded(Math.max(0, totalSavings - outcomeShare)),
+      termsLocked: Boolean(lockedTerms && isFinal(auctionRecord?.status || event?.status)),
       status: auctionRecord?.status || event?.status || "",
       state: isFinal(auctionRecord?.status || event?.status) ? "realized" : "live",
       firstOfferCount: firstBySupplier.size,
@@ -104,9 +112,9 @@
 
   function addCurrency(bucket, currency, values) {
     const key = currency || "USD";
-    if (!bucket[key]) bucket[key] = { currency: key, budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0 };
+    if (!bucket[key]) bucket[key] = { currency: key, budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0 };
     const target = bucket[key];
-    ["budget", "financialSavings", "buyniverseSavings", "totalSavings", "outcomeShare"].forEach((field) => {
+    ["budget", "financialSavings", "buyniverseSavings", "totalSavings", "outcomeShare", "netSavings"].forEach((field) => {
       target[field] = rounded(target[field] + (Number(values[field]) || 0));
     });
     target.auctions += 1;
@@ -116,7 +124,7 @@
 
   function portfolio(state, options = {}) {
     const source = state || {};
-    const rate = Number(source.procurementAnalytics?.commercialModel?.gainShareRate ?? options.successFeeRate ?? 12);
+    const rate = Number(source.procurementAnalytics?.commercialModel?.gainShareRate ?? options.successFeeRate ?? 40);
     const successFeeBasis = source.procurementAnalytics?.commercialModel?.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
     const events = Array.isArray(source.sourcingEvents) ? source.sourcingEvents : [];
     const models = (Array.isArray(source.auctions) ? source.auctions : []).map((auctionRecord) =>
@@ -126,8 +134,10 @@
     models.forEach((model) => addCurrency(byCurrency, model.currency, model));
     const currencies = Object.values(byCurrency);
     const primary = currencies.sort((left, right) => right.totalSavings - left.totalSavings)[0] || {
-      currency: options.currency || "USD", budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0,
+      currency: options.currency || "USD", budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0,
     };
+    primary.successFeeRate = Math.min(100, Math.max(0, rate || 0));
+    primary.successFeeBasis = successFeeBasis;
     const jobs = (Array.isArray(source.jobs) ? source.jobs : []).map(job);
     const products = (Array.isArray(source.products) ? source.products : []).map(product);
 

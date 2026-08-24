@@ -16,7 +16,7 @@
       </article>
     </section>
 
-    <SavingsWaterfall :model="commercial.primary" title="Savings waterfall" kicker="Commercial intelligence" />
+    <SavingsWaterfall :model="commercial.primary" title="Savings waterfall" kicker="Commercial intelligence" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
 
     <section class="grid gap-6 2xl:grid-cols-[minmax(0,1.25fr)_minmax(330px,.75fr)]">
       <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
@@ -190,6 +190,7 @@ const SavingsWaterfall=load('./app/components/commercial/SavingsWaterfall.vue?v=
 export default {components:{SavingsWaterfall},setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
   const requests=computed(()=>store.scopedRecords(store.state.purchaseRequests)), events=computed(()=>store.scopedRecords(store.state.sourcingEvents)), orders=computed(()=>store.scopedRecords(store.state.purchaseOrders));
   const commercial=computed(()=>window.BuyniverseCommercialMetrics?.portfolio(store.state)||{primary:{}});
+  const setServiceFee=(rate)=>store.setCommercialTerms({rate,basis:store.state.procurementAnalytics?.commercialModel?.successFeeBasis});
   const activeRequests=computed(()=>requests.value.filter(item=>!['Closed','Rejected'].includes(item.status)).length);
   const activeEvents=computed(()=>events.value.filter(item=>!['Closed','Awarded'].includes(item.status)).length);
   const openOrders=computed(()=>orders.value.filter(item=>!['Matched','Closed'].includes(item.status)).length);
@@ -230,5 +231,5 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,commercial,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink};}}
+  return{store,analytics,commercial,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink,setServiceFee};}}
 </script>

@@ -571,6 +571,8 @@
     ,"First offer to best final bid": "Primera oferta a mejor puja final"
     ,"Competitive sourcing events": "Eventos de compra competitivos"
     ,"of validated savings": "de ahorro validado"
+    ,"Service fee": "Tarifa de servicio"
+    ,"Net buyer savings": "Ahorro neto del comprador"
   };
 
   if (typeof module !== "undefined" && module.exports) {

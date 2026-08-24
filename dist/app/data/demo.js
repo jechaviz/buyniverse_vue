@@ -120,7 +120,7 @@
     { id: 'pa-4', at: iso('2026-07-16T12:30:00Z'), actor: 'Admin User', action: 'Request approved', objectId: 'PR-2399', detail: 'Budget validated', level: 'success' }
   ];
   const procurementAnalytics = {
-    commercialModel: { gainShareRate: 12, financialBaseline: 'Approved budget', successFeeBasis: 'total' },
+    commercialModel: { gainShareRate: 40, financialBaseline: 'Approved budget', successFeeBasis: 'total' },
     kpis: { addressableSpend: 428000, realizedSavings: 39120, savingsRate: 9.4, approvalCycleDays: 1.8, supplierCoverage: 87, exceptionCount: 5 },
     monthly: [{ month: 'Feb', spend: 92000, savings: 7200, events: 8 }, { month: 'Mar', spend: 104000, savings: 9100, events: 11 }, { month: 'Apr', spend: 87000, savings: 7800, events: 9 }, { month: 'May', spend: 128000, savings: 11200, events: 14 }, { month: 'Jun', spend: 116000, savings: 10300, events: 13 }, { month: 'Jul', spend: 128400, savings: 12100, events: 15 }],
     categories: [{ name: 'Technology', spend: 156000, savings: 14800, risk: 22 }, { name: 'Operations', spend: 128400, savings: 12100, risk: 18 }, { name: 'Logistics', spend: 93000, savings: 6400, risk: 42 }, { name: 'Services', spend: 50600, savings: 5820, risk: 24 }],

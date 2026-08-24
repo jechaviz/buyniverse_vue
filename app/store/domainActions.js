@@ -531,6 +531,37 @@
         return [record.ownerId, record.requesterId, record.buyerId].includes(currentUser.id);
       },
 
+      canConfigureCommercialTerms() {
+        const permissions = this.tenantContext?.value?.permissions;
+        return Boolean(this.isAdmin?.value || permissions?.manageTenant || (this.isDemo?.value && this.isBuyer?.value));
+      },
+
+      setCommercialTerms(input = {}) {
+        if (!this.canConfigureCommercialTerms()) {
+          this.notice("Commercial terms update denied", "fa-shield-halved");
+          return false;
+        }
+        const rate = Number(input.rate);
+        if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+          this.notice("Enter a service fee between 0% and 100%", "fa-triangle-exclamation");
+          return false;
+        }
+        state.procurementAnalytics ||= {};
+        state.procurementAnalytics.commercialModel ||= {};
+        const model = state.procurementAnalytics.commercialModel;
+        const previous = Number(model.gainShareRate);
+        model.gainShareRate = Math.round(rate * 100) / 100;
+        model.successFeeBasis = input.basis === "buyniverse" ? "buyniverse" : "total";
+        model.financialBaseline = "Approved budget";
+        state.procurementAudit.unshift({
+          id: id("commercial-terms"), at: new Date().toISOString(), actor: this.currentUser.value.name,
+          action: "Commercial terms updated", objectId: "COMMERCIAL_TERMS",
+          detail: `${Number.isFinite(previous) ? previous : 40}% → ${model.gainShareRate}% of ${model.successFeeBasis === "buyniverse" ? "auction-generated" : "validated total"} savings`, level: "info",
+        });
+        this.notice("Commercial terms saved", "fa-percent");
+        return true;
+      },
+
       createPurchaseOrderFromAward(event, supplierId, quote = {}) {
         if (!event || !supplierId || !this.canManageProcurement(event)) return null;
         const price = positive(quote.price ?? quote.amount);
@@ -745,16 +776,40 @@
         const offer = { price: auction.currentBid, leadDays: 14, terms: "Net 30" };
         const order = this.createPurchaseOrderFromAward(event, winner.supplierId, offer);
         if (!order) return null;
+        const commercialModel = state.procurementAnalytics?.commercialModel || {};
+        const commercial = window.BuyniverseCommercialMetrics?.auction(auction, event, {
+          successFeeRate: commercialModel.gainShareRate ?? 40,
+          successFeeBasis: commercialModel.successFeeBasis,
+        }) || {};
+        const settlement = {
+          calculatedAt: new Date().toISOString(), currency: commercial.currency || event.currency || "USD",
+          financialSavings: Number(commercial.financialSavings) || 0,
+          buyniverseSavings: Number(commercial.buyniverseSavings) || 0,
+          totalSavings: Number(commercial.totalSavings) || 0,
+          buyerRetainedSavings: Number(commercial.netSavings) || 0,
+          serviceFee: {
+            rate: Number(commercial.successFeeRate) || 40,
+            basis: commercial.successFeeBasis === "buyniverse" ? "buyniverse" : "total",
+            basisAmount: commercial.successFeeBasis === "buyniverse" ? Number(commercial.buyniverseSavings) || 0 : Number(commercial.totalSavings) || 0,
+            amount: Number(commercial.outcomeShare) || 0,
+            status: "pending_billing",
+          },
+        };
+        order.commercialSettlement = settlement;
         auction.status = "Awarded";
         auction.awardedSupplierId = winner.supplierId;
         auction.awardReason = decision;
+        auction.commercialSettlement = settlement;
         event.awardedSupplierId = winner.supplierId;
         event.awardReason = decision;
+        event.commercialSettlement = settlement;
         event.status = "Awarded";
         const request = this.purchaseRequest(event.requestId);
         if (request) { request.status = "Awarded"; request.nextAction = `Order ${order.id} awaiting receipt`; }
         this.procurementEvent(auction, "Auction awarded", `${winner.name} · ${decision}`, "success");
         this.procurementEvent(event, "Supplier selected", `${winner.name} · live award`, "success");
+        this.procurementEvent(auction, "Commercial savings locked", `${settlement.serviceFee.rate}% service fee · ${settlement.serviceFee.amount} ${settlement.currency}`, "info");
+        this.procurementEvent(order, "Service fee recorded", `${settlement.serviceFee.rate}% of ${settlement.serviceFee.basis} savings · pending billing`, "info");
         supplierUserIds([winner.supplierId]).forEach((userId) => this.addNotification({
           userId, title: "Auction awarded", text: `${auction.title} was awarded to your company.`,
           link: `/procurement/auction?auction=${auction.id}`, icon: "fa-trophy",

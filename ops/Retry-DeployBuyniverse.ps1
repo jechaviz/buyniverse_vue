@@ -4,7 +4,7 @@ param(
   [int]$InitialDelaySeconds = 120,
   [int]$MaxDelaySeconds = 1800,
   [int]$AttemptTimeoutSeconds = 75,
-  [string]$ExpectedReleaseMarker = 'commercial-metrics.js?v=2'
+  [string]$ExpectedReleaseMarker = 'commercial-metrics.js?v=3'
 )
 
 Set-StrictMode -Version Latest
@@ -38,7 +38,10 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
   if (-not $finished) {
     & taskkill.exe /PID $process.Id /T /F | Out-Null
     Write-RetryLog "Attempt $attempt timed out after $AttemptTimeoutSeconds seconds."
-  } elseif ($process.ExitCode -eq 0) {
+  } else {
+    $process.Refresh()
+    $exitCode = $process.ExitCode
+    if ($exitCode -eq 0) {
     try {
       $html = curl.exe --fail --silent --show-error --max-time 20 https://buyniverse.com/
       if ($LASTEXITCODE -eq 0 -and $html -match [regex]::Escape($ExpectedReleaseMarker)) {
@@ -49,8 +52,9 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     } catch {
       Write-RetryLog "Deploy process completed but public verification failed: $($_.Exception.Message)"
     }
-  } else {
-    Write-RetryLog "Attempt $attempt failed with exit code $($process.ExitCode)."
+    } else {
+      Write-RetryLog "Attempt $attempt failed with exit code $exitCode."
+    }
   }
 
   if ($attempt -lt $MaxAttempts) {

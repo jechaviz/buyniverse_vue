@@ -54,6 +54,19 @@
       state.procurementAnalytics = isDemo && global.BuyniverseDemo
         ? global.BuyniverseDemo.clone().procurementAnalytics
         : {};
+    // Commercial terms are workspace policy, not a visual-only dashboard
+    // preference. The award flow snapshots the active policy for auditability.
+    if (!state.procurementAnalytics.commercialModel || typeof state.procurementAnalytics.commercialModel !== "object")
+      state.procurementAnalytics.commercialModel = {};
+    const commercialModel = state.procurementAnalytics.commercialModel;
+    const configuredGainShare = Number(commercialModel.gainShareRate);
+    commercialModel.gainShareRate = Number.isFinite(configuredGainShare)
+      ? Math.min(100, Math.max(0, configuredGainShare))
+      : 40;
+    commercialModel.successFeeBasis = commercialModel.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
+    commercialModel.financialBaseline = typeof commercialModel.financialBaseline === "string"
+      ? commercialModel.financialBaseline.slice(0, 80)
+      : "Approved budget";
 
     state.jobs = state.jobs.filter((job) => job && typeof job === "object" && typeof job.id === "string" && typeof job.clientId === "string").slice(0, 5000);
     // Operational records inherit the verified tenant context exactly once when

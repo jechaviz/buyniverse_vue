@@ -5,10 +5,18 @@
         <p class="premium-kicker text-[10px] font-800 uppercase tracking-[.15em] text-brand">{{ store.t(kicker) }}</p>
         <h2 class="font-head mt-0.5 text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t(title) }}</h2>
       </div>
-      <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-800" :class="model.state === 'realized' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-brand-50 text-brand dark:bg-brand/15'">
-        <i class="fa-solid" :class="model.state === 'realized' ? 'fa-circle-check' : 'fa-tower-broadcast'"></i>
-        {{ store.t(model.state === 'realized' ? 'Realized at award' : 'Live potential') }}
-      </span>
+      <div class="flex items-center gap-2">
+        <label v-if="configurable" class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <i class="fa-solid fa-percent text-brand"></i><span>{{ store.t('Service fee') }}</span>
+          <select class="cursor-pointer bg-transparent font-mono font-800 text-slate-800 outline-none dark:text-white" :value="model.successFeeRate || 40" @change="updateRate">
+            <option v-for="rate in feeRates" :key="rate" :value="rate">{{ rate }}%</option>
+          </select>
+        </label>
+        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-800" :class="model.state === 'realized' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-brand-50 text-brand dark:bg-brand/15'">
+          <i class="fa-solid" :class="model.state === 'realized' ? 'fa-circle-check' : 'fa-tower-broadcast'"></i>
+          {{ store.t(model.state === 'realized' ? 'Realized at award' : 'Live potential') }}
+        </span>
+      </div>
     </header>
 
     <div class="grid gap-px bg-slate-100 dark:bg-slate-800 sm:grid-cols-3">
@@ -26,8 +34,11 @@
       <span class="font-bold uppercase tracking-wide text-slate-400">{{ store.t('Total savings') }}</span>
       <b class="font-mono text-sm font-800 text-emerald-600 dark:text-emerald-400">{{ display(model.totalSavings) }}</b>
       <span class="h-3 w-px bg-slate-200 dark:bg-slate-700"></span>
-      <span class="text-slate-500 dark:text-slate-400">{{ store.t('Outcome share') }} · {{ model.successFeeRate || 0 }}% {{ store.t('of validated savings') }}</span>
+      <span class="text-slate-500 dark:text-slate-400">{{ store.t('Service fee') }} · {{ model.successFeeRate || 40 }}% {{ store.t('of validated savings') }}</span>
       <b class="font-mono font-800 text-slate-700 dark:text-slate-200">{{ display(model.outcomeShare) }}</b>
+      <span class="h-3 w-px bg-slate-200 dark:bg-slate-700"></span>
+      <span class="text-slate-500 dark:text-slate-400">{{ store.t('Net buyer savings') }}</span>
+      <b class="font-mono font-800 text-emerald-600 dark:text-emerald-400">{{ display(model.netSavings) }}</b>
       <span class="ml-auto text-slate-400">{{ store.t('Auditable from source bids') }}</span>
     </footer>
   </article>
@@ -40,16 +51,23 @@ export default {
     model: { type: Object, default: () => ({}) },
     title: { type: String, default: 'Savings waterfall' },
     kicker: { type: String, default: 'Commercial intelligence' },
+    configurable: { type: Boolean, default: false },
   },
-  setup(props) {
+  emits: ['change-service-fee'],
+  setup(props, { emit }) {
     const store = inject('store');
+    const feeRates = [10, 20, 25, 30, 35, 40, 45, 50];
     const display = (value) => store.money(Number(value) || 0, props.model.currency || 'USD');
+    const updateRate = (event) => {
+      const rate = Number(event?.target?.value);
+      if (Number.isFinite(rate)) emit('change-service-fee', rate);
+    };
     const steps = computed(() => [
       { key: 'budget', label: 'Budget baseline', value: props.model.budget, icon: 'fa-wallet', note: 'Approved commercial ceiling', tone: 'text-slate-400' },
       { key: 'first', label: 'Best first offer', value: props.model.bestFirst, icon: 'fa-handshake', note: `${store.t('Financial savings')} · ${display(props.model.financialSavings)}`, tone: 'text-sky-600 dark:text-sky-400' },
       { key: 'final', label: 'Best final offer', value: props.model.bestFinal, icon: 'fa-gavel', note: `${store.t('Buyniverse savings')} · ${display(props.model.buyniverseSavings)}`, tone: 'text-emerald-600 dark:text-emerald-400' },
     ]);
-    return { store, steps, display };
+    return { store, steps, display, feeRates, updateRate };
   },
 };
 </script>

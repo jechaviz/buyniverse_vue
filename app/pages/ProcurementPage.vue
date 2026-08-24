@@ -70,10 +70,10 @@ const load = (p) =>
   Vue.defineAsyncComponent(() =>
     window["vue3-sfc-loader"].loadModule(p, window.sfcOptions),
   );
-const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=8");
+const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=9");
 const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=9");
 const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=13");
-const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=25");
+const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=26");
 const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=10");
 const Intelligence = load(
   "./app/pages/procurement/ProcurementIntelligence.vue?v=7",
