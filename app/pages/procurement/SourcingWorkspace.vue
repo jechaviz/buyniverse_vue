@@ -70,10 +70,10 @@
             <button v-if="event.status === 'Draft'" class="btn-brand text-xs py-2 px-3.5" @click="publish">
               <i class="fa-solid fa-tower-broadcast mr-1.5 text-xs"></i>Publish
             </button>
-            <button v-if="event.type === 'Auction'" class="btn-brand text-xs py-2 px-3.5" @click="router.push(`/procurement/auction?auction=${event.id}`)">
+            <button v-if="event.type === 'Auction' && store.auction(event.id)" class="btn-brand text-xs py-2 px-3.5" @click="router.push(`/procurement/auction?auction=${event.id}`)">
               <i class="fa-solid fa-gavel mr-1.5 text-xs"></i>Live bids
             </button>
-            <button v-if="['Published', 'Sent'].includes(event.status) && event.quotes.length" class="btn-brand text-xs py-2 px-3.5" @click="event.status = 'Comparing'; tab = 'comparison';">
+            <button v-if="['Published', 'Sent'].includes(event.status) && event.quotes.length && canManage(event)" class="btn-brand text-xs py-2 px-3.5" @click="beginComparison">
               <i class="fa-solid fa-scale-balanced mr-1.5 text-xs"></i>Compare
             </button>
           </div>
@@ -124,6 +124,7 @@
         :supplier-name="(id) => store.supplier(id)?.name || id"
         :format-money="store.money"
         :format-date="store.date"
+        :allow-simulation="store.isDemo.value && canManage(event)"
         @export="exportBidSheet"
         @simulate="simulateQuote"
       />
@@ -197,7 +198,7 @@ const DataTable = load("./app/components/DataTable.vue?v=24");
 const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=1");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
-const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=1");
+const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
 const SourcingComparisonTab = load("./app/pages/procurement/sourcing/SourcingComparisonTab.vue?v=1");
 const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=1");
 const SourcingTimelineTab = load("./app/pages/procurement/sourcing/SourcingTimelineTab.vue?v=1");
@@ -254,12 +255,12 @@ export default {
           if (supplierId) return item.invitedSupplierIds.includes(supplierId) || (item.quotes || []).some((q) => q.supplierId === supplierId);
         }
         const request = store.purchaseRequest(item.requestId);
-        return item.ownerId === store.currentUser.value.id || request?.ownerId === store.currentUser.value.id || request?.requesterId === store.currentUser.value.id || store.isBuyer.value;
+        return item.ownerId === store.currentUser.value.id || request?.ownerId === store.currentUser.value.id || request?.requesterId === store.currentUser.value.id;
       });
-      return list.length ? list : scopedEvents;
+      return list;
     });
 
-    const canManage = (item) => Boolean(item) && (store.isAdmin.value || store.isBuyer.value || item.ownerId === store.currentUser.value.id);
+    const canManage = (item) => store.canManageProcurement(item);
     const event = computed(() => accessibleEvents.value.find((item) => item.id === route.query.event) || accessibleEvents.value[0]);
 
     const tabs = computed(() => event.value ? [
@@ -388,22 +389,22 @@ export default {
     const sendInvites = () => {
       if (!canManage(event.value)) return store.notice("Invitation action denied", "fa-shield-halved");
       if (event.value.invitedSupplierIds.length < 2) return store.notice("Select at least two suppliers", "fa-triangle-exclamation");
-      if (event.value.status === "Draft") event.value.status = "Sent";
       const template = store.renderMessageTemplate("tpl-rfx-invitation", "sourcing", event.value.id);
       if (template) {
         store.sendMessage({ contextType: "sourcing", contextId: event.value.id, kind: "announcement", subject: template.subject, text: template.body });
         store.createMailDraft({ contextType: "sourcing", contextId: event.value.id, templateId: "tpl-rfx-invitation", subject: template.subject, body: template.body });
       }
+      const published = store.publishSourcingEvent(event.value);
+      if (!published) return;
       store.notice("Invitations posted; email draft saved to workspace", "fa-paper-plane");
+      if (published.auction) router.push(`/procurement/auction?auction=${published.auction.id}`);
     };
 
     const publish = () => {
-      if (!canManage(event.value)) return store.notice("Publishing denied", "fa-shield-halved");
-      if (!event.value.lots.length || event.value.invitedSupplierIds.length < 2 || !event.value.deadline)
-        return store.notice("Complete items, deadline and at least two suppliers", "fa-triangle-exclamation");
-      store.procurementTransition(event.value, "Published", `${event.value.invitedSupplierIds.length} suppliers invited`);
-      event.value.publishedAt = new Date().toISOString();
-      tab.value = "suppliers";
+      const published = store.publishSourcingEvent(event.value);
+      if (!published) return;
+      if (published.auction) router.push(`/procurement/auction?auction=${published.auction.id}`);
+      else tab.value = "suppliers";
     };
 
     const cloneEvent = () => {
@@ -444,7 +445,7 @@ export default {
     };
 
     const simulateQuote = () => {
-      if (!canManage(event.value)) return store.notice("Offer simulation denied", "fa-shield-halved");
+      if (!store.isDemo.value || !canManage(event.value)) return store.notice("Offer simulation is available only in the demo workspace", "fa-shield-halved");
       const supplier = store.state.suppliers.find((item) => event.value.invitedSupplierIds.includes(item.id) && !event.value.quotes.some((quote) => quote.supplierId === item.id));
       if (!supplier) return store.notice("All invited suppliers already responded", "fa-circle-info");
       event.value.quotes.push({
@@ -461,24 +462,15 @@ export default {
       if (!canManage(event.value) || !selectedAwardQuote.value || !reason || event.value.awardedSupplierId)
         return store.notice("Supplier selection denied or incomplete", "fa-shield-halved");
       if (!(await store.confirm({ title: "Choose this supplier?", message: "This saves the decision and creates the order. The quote round remains available in history.", confirmText: "Choose supplier" }))) return;
-      event.value.awardedSupplierId = awardSupplierId.value;
-      event.value.awardReason = reason;
-      store.procurementTransition(event.value, "Awarded", `${selectedAwardSupplier.value.name} · ${reason}`);
-      const request = store.purchaseRequest(event.value.requestId);
-      if (request && (store.isAdmin.value || request.ownerId === store.currentUser.value.id || request.requesterId === store.currentUser.value.id)) {
-        request.status = "Approved"; request.nextAction = "Purchase order issued";
-      }
-      let order = store.state.purchaseOrders.find((item) => item.eventId === event.value.id);
-      if (!order) {
-        const qty = Math.max(1, event.value.lots.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
-        order = store.scopeRecord({
-          id: "PO-" + String(7720 + store.state.purchaseOrders.length), title: event.value.title, requestId: event.value.requestId, eventId: event.value.id, projectId: event.value.projectId, supplierId: awardSupplierId.value, buyerId: store.currentUser.value.id, status: "Ordered", total: selectedAwardQuote.value.price, currency: event.value.currency, receivedPercent: 0, matchStatus: "3-way match", shipTo: "Main warehouse", incoterm: "DAP", paymentTerms: selectedAwardQuote.value.terms, eta: new Date(Date.now() + selectedAwardQuote.value.leadDays * 86400000).toISOString(), warehouse: "WH-01", invoiceId: null, exceptions: [], lines: event.value.lots.map((lot) => ({ id: window.ProcurementCommon.uid("po-line"), description: window.WebCommon.sanitizeText(lot.description, 300), ordered: Number(lot.quantity), received: 0, unitPrice: selectedAwardQuote.value.price / qty })), receipts: [], audit: [],
-        });
-        store.state.purchaseOrders.unshift(order);
-        store.procurementEvent(order, "Purchase order created", "Generated from " + event.value.id, "success");
-      }
-      store.notice("Supplier selected and order created", "fa-trophy");
+      const order = store.awardSourcingEvent(event.value, awardSupplierId.value, reason);
+      if (!order) return;
       router.push(`/procurement/execution?order=${order.id}`);
+    };
+
+    const beginComparison = () => {
+      if (!canManage(event.value)) return store.notice("Comparison access denied", "fa-shield-halved");
+      store.procurementTransition(event.value, "Comparing", "Supplier responses ready for evaluation");
+      tab.value = "comparison";
     };
 
     const closeWizard = () => { wizardOpen.value = false; wizardStep.value = 0; wizardError.value = ""; wizard.value = freshWizard(); router.replace("/procurement/sourcing"); };
@@ -525,7 +517,7 @@ export default {
       deadlineDate, readiness, nextAction, filteredSuppliers, supplierSearch, rankedQuotes, awardSupplierId,
       awardReason, selectedAwardQuote, selectedAwardSupplier, wizardOpen, wizardStep, wizardSteps: ["Setup", "Suppliers", "Send"],
       wizard, wizardForm, wizardError, format, linkFor, openEvent, canManage, updateCell, statusClass, saveDeadline, record,
-      addLot, removeLot, goNext, initials, toggleSupplier, sendInvites, publish, cloneEvent, archiveEvent,
+      addLot, removeLot, goNext, initials, toggleSupplier, sendInvites, publish, beginComparison, cloneEvent, archiveEvent,
       archiveEvents, exportBidSheet, simulateQuote, applyScenario, award, closeWizard, toggleWizardSupplier,
       nextWizard, saveWizard,
     };

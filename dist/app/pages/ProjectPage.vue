@@ -74,6 +74,7 @@
       :job="job"
       :contest="contest"
       :is-owner="store.currentUser.value.id === job.clientId"
+      :can-award="canManage && !job.contractId"
       :is-freelancer="store.isSupplier.value"
       :provider-tab="providerTab"
       :provider-search="providerSearch"
@@ -88,6 +89,7 @@
       @update:bid="bid = $event"
       @set-state="({ provider, state }) => setProviderState(provider, state)"
       @propose="propose"
+      @award="awardProposal"
     />
 
     <!-- Milestones Tab -->
@@ -172,7 +174,7 @@
             <article v-for="task in focusedTasks" :key="task.id" class="rounded-xl border border-slate-200 bg-white/60 p-4 dark:border-slate-700 dark:bg-slate-800/50">
               <div class="flex items-start justify-between gap-3">
                 <b>{{ task.title }}</b>
-                <select class="rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs dark:border-slate-600" :value="task.status" @change="task.status = $event.target.value">
+                <select class="rounded-md border border-slate-200 bg-transparent px-2 py-1 text-xs dark:border-slate-600" :value="task.status" @change="updateTask(focusedMilestone, task, $event.target.value)">
                   <option>Todo</option><option>In progress</option><option>Done</option>
                 </select>
               </div>
@@ -194,8 +196,8 @@ const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const ProjectDetailsTab = load("./app/pages/project/ProjectDetailsTab.vue?v=1");
-const ProjectProvidersTab = load("./app/pages/project/ProjectProvidersTab.vue?v=1");
-const ProjectMilestonesTab = load("./app/pages/project/ProjectMilestonesTab.vue?v=1");
+const ProjectProvidersTab = load("./app/pages/project/ProjectProvidersTab.vue?v=2");
+const ProjectMilestonesTab = load("./app/pages/project/ProjectMilestonesTab.vue?v=2");
 const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
@@ -269,14 +271,19 @@ export default {
 
     const propose = () => {
       if (!bid.value) return;
-      store.addProposal(job.value.id, { freelancerId: store.currentUser.value.id, bid: bid.value, status: "SUBMITTED" });
-      bid.value = null;
-      store.notice("Proposal submitted successfully!");
+      if (store.submitProposal(job.value.id, { amount: bid.value })) bid.value = null;
     };
 
     const openMilestone = (m) => { focusedMilestone.value = m; };
     const closeMilestone = () => { focusedMilestone.value = null; };
-    const release = (m) => { store.release(contract.value.id, m.id); store.notice("Milestone funds released"); };
+    const release = (m) => { store.release(contract.value, m); };
+    const updateTask = (milestone, task, status) => { if (contract.value) store.updateMilestoneTask(contract.value, milestone, task, status); };
+    const awardProposal = async (proposal) => {
+      if (!canManage.value || !proposal) return;
+      if (!(await store.confirm({ title: "Award this provider?", message: "The selected proposal creates a contract and funds its first milestone.", confirmText: "Award and fund" }))) return;
+      const awarded = store.awardJobProposal(job.value, proposal);
+      if (awarded) router.push(`/contract/${awarded.id}`);
+    };
 
     const openFile = (f) => { selectedFile.value = f; filePreview.value = f.content || ""; };
     const saveFile = () => { if (selectedFile.value) { selectedFile.value.content = filePreview.value; store.notice("File content saved"); } };
@@ -303,7 +310,7 @@ export default {
       activeTab, providerTab, providerSearch, editing, focusedMilestone, bid, commentDraft, replyTo,
       selectedFile, filePreview, draft, providerRows, tabs, focusedTasks, isPreHiring, launchSteps,
       openProjectTab, openProviderTab, toggleEditing, resetDraft, saveProject, publishProject,
-      providerState, setProviderState, propose, openMilestone, closeMilestone, release, openFile,
+      providerState, setProviderState, propose, awardProposal, openMilestone, closeMilestone, release, updateTask, openFile,
       saveFile, addComment, syncRouteState,
     };
   },

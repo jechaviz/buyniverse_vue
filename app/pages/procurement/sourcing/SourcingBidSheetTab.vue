@@ -9,7 +9,7 @@
         <button class="btn-muted" @click="$emit('export')">
           <i class="fa-solid fa-file-csv mr-1.5"></i>Export CSV
         </button>
-        <button class="btn-brand" @click="$emit('simulate')">
+        <button v-if="allowSimulation" class="btn-brand" @click="$emit('simulate')">
           <i class="fa-solid fa-flask mr-1.5"></i>Add demo offer
         </button>
       </div>
@@ -65,6 +65,7 @@ export default {
     supplierName: Function,
     formatMoney: Function,
     formatDate: Function,
+    allowSimulation: Boolean,
   },
   emits: ["export", "simulate"],
 };

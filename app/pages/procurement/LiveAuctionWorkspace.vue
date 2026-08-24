@@ -296,15 +296,15 @@ export default {
           if (supplierId) return item.participants.some((p) => p.supplierId === supplierId);
         }
         const event = store.sourcingEvent(item.eventId);
-        return item.hostId === store.currentUser.value.id || event?.ownerId === store.currentUser.value.id || store.isBuyer.value;
+        return item.hostId === store.currentUser.value.id || event?.ownerId === store.currentUser.value.id;
       });
       return store.marketplaceMode.value === "supplier"
         ? list
-        : (list.length ? list : scopedAuctions);
+        : list;
     });
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
-    const isOrganizer = computed(() => store.isAdmin.value || store.isBuyer.value || auction.value?.hostId === store.currentUser.value.id);
+    const isOrganizer = computed(() => store.canManageProcurement(auction.value ? store.sourcingEvent(auction.value.eventId) : null));
     // Announcements are a privileged outward-facing action. Keep this narrower than
     // the dashboard's organizer presentation mode; domainActions enforces it too.
     const canAnnounce = computed(() => {
@@ -364,8 +364,9 @@ export default {
 
     const statusLabel = (s) => ({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Closed: "Completed" })[s] || s;
     const timeLeft = computed(() => {
-      if (!auction.value?.closingAt) return "—";
-      const diff = Math.max(0, new Date(auction.value.closingAt).getTime() - Date.now());
+      const closingAt = auction.value?.closingAt || auction.value?.endAt;
+      if (!closingAt) return "—";
+      const diff = Math.max(0, new Date(closingAt).getTime() - Date.now());
       const m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
       return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     });
@@ -444,33 +445,23 @@ export default {
     const actionLabel = (act) => act;
 
     const selectAuction = () => { router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { auction: selectedAuctionId.value }) }); };
-    const pause = () => { if (auction.value) { auction.value.status = "Paused"; store.procurementEvent(auction.value, "Auction paused", "Organizer intervention"); } };
-    const resume = () => { if (auction.value) { auction.value.status = "Running"; store.procurementEvent(auction.value, "Auction resumed", "Bidding live"); } };
-    const extend = () => {
-      if (auction.value) {
-        auction.value.closingAt = new Date(new Date(auction.value.closingAt).getTime() + 60000).toISOString();
-        auction.value.extensionCount++;
-        store.procurementEvent(auction.value, "Time extended", "+60s manual extension");
-      }
-    };
+    const pause = () => { store.manageLiveAuction(auction.value, "pause"); };
+    const resume = () => { store.manageLiveAuction(auction.value, "resume"); };
+    const extend = () => { store.manageLiveAuction(auction.value, "extend"); };
     const sendAlert = () => { tab.value = "communications"; };
     const cancel = async () => {
-      if (await store.confirm({ title: "Cancel live auction?", message: "This stops bidding and closes the room.", confirmText: "Cancel auction", danger: true })) {
-        auction.value.status = "Closed";
-        store.procurementEvent(auction.value, "Auction cancelled", "Round terminated early");
-      }
+      if (await store.confirm({ title: "Cancel live auction?", message: "This stops bidding and closes the room.", confirmText: "Cancel auction", danger: true })) store.manageLiveAuction(auction.value, "cancel");
     };
     const award = async () => {
       if (!leader.value) return;
-      if (await store.confirm({ title: "Award auction to leading supplier?", message: `Award to ${leader.value.name} for ${store.money(auction.value.currentBid, auction.value.currency)}?`, confirmText: "Award contract" })) {
-        auction.value.status = "Awarded";
-        auction.value.awardedSupplierId = leader.value.supplierId;
-        store.procurementEvent(auction.value, "Auction awarded", `Won by ${leader.value.name}`);
-        store.notice("Auction awarded successfully!", "fa-trophy");
-      }
+      const reason = await store.prompt({ title: "Record award decision", message: `Award ${leader.value.name} for ${store.money(auction.value.currentBid, auction.value.currency)}. Capture the auditable business reason.`, placeholder: "Best compliant value and delivery commitment", confirmText: "Award and create order", multiline: true });
+      if (!reason) return;
+      const order = store.awardLiveAuction(auction.value, reason);
+      if (order) router.push(`/procurement/execution?order=${order.id}`);
     };
 
     const toggleDisqualified = (p) => {
+      if (!isOrganizer.value) return store.notice("Supplier review is not allowed", "fa-shield-halved");
       p.disqualified = !p.disqualified;
       store.procurementEvent(auction.value, p.disqualified ? "Supplier disqualified" : "Supplier reinstated", p.name);
     };
@@ -478,16 +469,9 @@ export default {
     const placeBid = () => {
       bidError.value = "";
       if (!auction.value || auction.value.status !== 'Running') return;
-      const amount = Number(bidAmount.value);
-      if (amount > nextValidBid.value) { bidError.value = `Bid must be at most ${store.money(nextValidBid.value, auction.value.currency)}`; return; }
-      if (amount < auction.value.floor) { bidError.value = `Bid cannot be lower than floor of ${store.money(auction.value.floor, auction.value.currency)}`; return; }
-      const delta = amount - auction.value.currentBid;
-      const newBid = { id: window.ProcurementCommon.uid("bid"), supplierId: currentSupplierId.value, amount, delta, at: new Date().toISOString(), source: "manual" };
-      auction.value.bids.push(newBid);
-      auction.value.currentBid = amount;
-      bidAmount.value = Math.max(auction.value.floor, amount - auction.value.minStep);
-      store.procurementEvent(auction.value, "Bid placed", `${bidder.value?.name || 'Supplier'} placed ${store.money(amount, auction.value.currency)}`);
-      store.notice("Bid placed successfully!", "fa-gavel");
+      const bid = store.placeLiveAuctionBid(auction.value, Number(bidAmount.value));
+      if (!bid) { bidError.value = `Bid must be at most ${store.money(nextValidBid.value, auction.value.currency)}`; return; }
+      bidAmount.value = Math.max(auction.value.floor, bid.amount - auction.value.minStep);
     };
 
     watch(() => route.query.auction, (v) => { if (v && v !== selectedAuctionId.value) selectedAuctionId.value = v; }, { immediate: true });
@@ -495,16 +479,11 @@ export default {
 
     onMounted(() => {
       timer = setInterval(() => {
-        if (auction.value?.status === "Running" && Math.random() < 0.08) {
+        if (store.isDemo.value && auction.value?.status === "Running" && Math.random() < 0.08) {
           const others = auction.value.participants.filter((p) => p.supplierId !== currentSupplierId.value && !p.disqualified && p.autoBid);
           if (others.length) {
             const bot = others[Math.floor(Math.random() * others.length)];
-            const target = Math.max(bot.cap || auction.value.floor, auction.value.currentBid - auction.value.minStep);
-            if (target < auction.value.currentBid && target >= (bot.cap || auction.value.floor)) {
-              const delta = target - auction.value.currentBid;
-              auction.value.bids.push({ id: window.ProcurementCommon.uid("bid"), supplierId: bot.supplierId, amount: target, delta, at: new Date().toISOString(), source: "auto" });
-              auction.value.currentBid = target;
-            }
+            store.simulateLiveAuctionBid(auction.value, bot.supplierId);
           }
         }
       }, 3000);

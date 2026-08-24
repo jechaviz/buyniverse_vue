@@ -53,6 +53,7 @@
             <b>{{ formatMoney(prop.bid, job.currency) }}</b>
             <p class="mt-1 text-xs font-bold uppercase text-slate-400">{{ prop.status }}</p>
           </div>
+          <button v-if="canAward && prop.status !== 'Accepted'" class="btn-brand text-xs" @click="$emit('award', prop)"><i class="fa-solid fa-handshake mr-1"></i>Award</button>
         </article>
       </div>
       <p v-else class="p-10 text-center text-sm text-slate-500">No proposals yet.</p>
@@ -69,6 +70,7 @@ export default {
     job: Object,
     contest: Object,
     isOwner: Boolean,
+    canAward: Boolean,
     isFreelancer: Boolean,
     providerTab: String,
     providerSearch: String,
@@ -79,6 +81,6 @@ export default {
     userName: Function,
     formatMoney: Function,
   },
-  emits: ["update:providerTab", "update:providerSearch", "update:bid", "set-state", "propose"],
+  emits: ["update:providerTab", "update:providerSearch", "update:bid", "set-state", "propose", "award"],
 };
 </script>

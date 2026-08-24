@@ -17,7 +17,7 @@
             View tasks <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
           </button>
           <button
-            v-if="isOwner && milestone.status === 'COMPLETED' && !milestone.released"
+            v-if="isOwner && milestone.status === 'Funded'"
             class="btn-brand"
             @click="$emit('release', milestone)"
           >

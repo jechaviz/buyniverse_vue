@@ -69,7 +69,9 @@ export default {
       { key: "operationalScope", label: "Applies to", width: 210 },
     ];
 
-    const scopedRequests = computed(() => store.scopedRecords(store.state.purchaseRequests));
+    const scopedRequests = computed(() => store.scopedRecords(store.state.purchaseRequests).filter((item) =>
+      store.isAdmin.value || [item.ownerId, item.requesterId, item.approverId].includes(store.currentUser.value?.id),
+    ));
     const selected = computed(() => scopedRequests.value.find((item) => item.id === route.query.request) || scopedRequests.value[0]);
     const canOwn = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.ownerId === store.currentUser.value.id));
     const canApprove = computed(() => Boolean(selected.value) && (store.isAdmin.value || selected.value.approverId === store.currentUser.value.id));

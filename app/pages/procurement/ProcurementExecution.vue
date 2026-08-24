@@ -123,7 +123,7 @@
       </div>
 
       <OrderLinesTab v-else-if="tab === 'lines'" :order="order" :format-money="store.money" />
-      <OrderMatchingTab v-else-if="tab === 'matching'" :match-documents="matchDocuments" :match-ready="matchReady" @run-match="runMatch" />
+      <OrderMatchingTab v-else-if="tab === 'matching'" :match-documents="matchDocuments" :match-ready="matchReady" :invoices="eligibleInvoices" :selected-invoice-id="selectedInvoiceId" :format-money="store.money" @update:selected-invoice-id="selectedInvoiceId = $event" @attach-invoice="attachInvoice" @run-match="runMatch" />
       <OrderExceptionsTab v-else-if="tab === 'exceptions'" :order="order" :user-name="(id) => store.user(id)?.name" @add="addException" @resolve="resolveException" />
       <div v-else-if="tab === 'documents'" class="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-4">
         <RouterLink v-if="order.invoiceId" :to="`/invoices/${order.invoiceId}`" class="rounded-xl border border-slate-200/70 p-4 hover:border-brand dark:border-slate-700">
@@ -154,7 +154,7 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const DataTable = load("./app/components/DataTable.vue?v=24");
 const OrderReceiptModal = load("./app/pages/procurement/execution/OrderReceiptModal.vue?v=1");
 const OrderLinesTab = load("./app/pages/procurement/execution/OrderLinesTab.vue?v=1");
-const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=1");
+const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=2");
 const OrderExceptionsTab = load("./app/pages/procurement/execution/OrderExceptionsTab.vue?v=1");
 
 export default {
@@ -188,12 +188,12 @@ export default {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
           if (supplierId) return item.supplierId === supplierId;
         }
-        return item.buyerId === store.currentUser.value.id || store.isBuyer.value;
+        return item.buyerId === store.currentUser.value.id;
       });
-      return list.length ? list : scopedOrders;
+      return list;
     });
 
-    const canManage = (item) => Boolean(item) && (store.isAdmin.value || (store.isBuyer.value && item.buyerId === store.currentUser.value.id) || store.isBuyer.value);
+    const canManage = (item) => store.canManageProcurement(item);
     const order = computed(() => accessibleOrders.value.find((item) => item.id === route.query.order) || accessibleOrders.value[0]);
     const supplier = computed(() => store.supplier(order.value?.supplierId));
     const openExceptions = computed(() => order.value?.exceptions.filter((item) => item.status !== "Resolved") || []);
@@ -231,11 +231,18 @@ export default {
       { label: "Matched", detail: "Invoice reconciliation", icon: "fa-link" },
     ].map((item, index) => ({ ...item, done: index < statusIndex.value, current: index === statusIndex.value })));
 
-    const matchReady = computed(() => order.value?.receivedPercent === 100 && Boolean(order.value.invoiceId) && openExceptions.value.length === 0);
+    const stateInvoices = () => Array.isArray(store.state.invoices) ? store.state.invoices : [];
+    const selectedInvoiceId = ref(order.value?.invoiceId || "");
+    const eligibleInvoices = computed(() => stateInvoices().filter((invoice) => invoice.currency === order.value?.currency));
+    const invoiceVariance = computed(() => {
+      const invoice = stateInvoices().find((item) => item.id === order.value?.invoiceId);
+      return invoice && order.value ? Math.abs(Number(invoice.total) - Number(order.value.total)) : Infinity;
+    });
+    const matchReady = computed(() => order.value?.receivedPercent === 100 && Boolean(order.value.invoiceId) && invoiceVariance.value <= Math.max(0.01, Number(order.value.total) * 0.02) && openExceptions.value.length === 0);
     const matchDocuments = computed(() => order.value ? [
       { label: "Order", detail: `${order.value.id} · ${store.money(order.value.total, order.value.currency)}`, icon: "fa-file-contract", ready: true },
       { label: "Receipt", detail: order.value.receivedPercent === 100 ? "All lines received" : `${order.value.receivedPercent}% received`, icon: "fa-box", ready: order.value.receivedPercent === 100 },
-      { label: "Invoice", detail: order.value.invoiceId || "Waiting for supplier invoice", icon: "fa-file-invoice-dollar", ready: Boolean(order.value.invoiceId) },
+      { label: "Invoice", detail: order.value.invoiceId ? `${order.value.invoiceId} · ${invoiceVariance.value <= Math.max(0.01, Number(order.value.total) * 0.02) ? "within 2%" : "variance above 2%"}` : "Waiting for supplier invoice", icon: "fa-file-invoice-dollar", ready: Boolean(order.value.invoiceId) && invoiceVariance.value <= Math.max(0.01, Number(order.value.total) * 0.02) },
     ] : []);
 
     const matchLabel = (v) => v === "3-way match" ? "Standard check" : v === "2-way match" ? "Basic check" : v;
@@ -282,33 +289,19 @@ export default {
     watch(() => route.query.view, (v) => { receiveOpen.value = v === "receipt"; });
 
     const saveReceipt = () => {
-      if (!canManage(order.value)) return store.notice("Receipt action denied", "fa-shield-halved");
-      let receivedAny = false;
-      receiptLines.value.forEach((input) => {
-        const line = order.value.lines.find((i) => i.id === input.id);
-        const rem = line ? Math.max(0, Number(line.ordered) - Number(line.received)) : 0;
-        const qty = Math.min(rem, Math.max(0, Number(input.receiveNow) || 0));
-        if (line && qty) { line.received += qty; receivedAny = true; }
-      });
-      if (!receivedAny) return store.notice("Enter a receipt quantity", "fa-circle-info");
-      const ord = order.value.lines.reduce((s, l) => s + Number(l.ordered), 0), rec = order.value.lines.reduce((s, l) => s + Number(l.received), 0);
-      order.value.receivedPercent = ord ? Math.round((rec / ord) * 100) : 0;
-      order.value.receipts.push({ id: window.ProcurementCommon.uid("receipt"), at: new Date().toISOString(), warehouse: window.WebCommon.sanitizeText(order.value.warehouse, 80), status: "Posted", lines: receiptLines.value.filter((l) => Number(l.receiveNow) > 0).length });
-      order.value.status = order.value.receivedPercent === 100 ? "Received" : "Partially received";
-      record(order.value.receivedPercent === 100 ? "Receipt completed" : "Partial receipt", order.value.receivedPercent + "% received", order.value.receivedPercent === 100 ? "success" : "warning");
-      receiveOpen.value = false;
-      store.notice("Goods receipt posted", "fa-box");
+      if (store.recordOrderReceipt(order.value, receiptLines.value)) receiveOpen.value = false;
     };
 
     const runMatch = () => {
-      if (!canManage(order.value)) return store.notice("Invoice check denied", "fa-shield-halved");
-      if (openExceptions.value.length) return store.notice("Resolve open issues first", "fa-triangle-exclamation");
-      if (order.value.receivedPercent < 100) return store.notice("All lines must be received", "fa-triangle-exclamation");
-      const inv = store.state.invoices.find((i) => i.id === order.value.invoiceId);
-      if (!inv || Number(inv.total) !== Number(order.value.total)) return store.notice("Attach a matching invoice before confirming", "fa-triangle-exclamation");
-      order.value.matchStatus = "3-way match";
-      store.procurementTransition(order.value, "Matched", `PO, receipt and ${order.value.invoiceId} reconciled`);
-      tab.value = "matching";
+      if (store.runThreeWayMatch(order.value)) tab.value = "matching";
+    };
+
+    const attachInvoice = () => {
+      const result = store.attachOrderInvoice(order.value, selectedInvoiceId.value);
+      if (!result) return;
+      selectedInvoiceId.value = result.invoice.id;
+      if (!result.withinTolerance) store.notice("Invoice attached; variance issue created for review", "fa-triangle-exclamation");
+      else store.notice("Invoice attached within 2% tolerance", "fa-file-invoice-dollar");
     };
 
     const resolveException = (exc) => {
@@ -325,11 +318,7 @@ export default {
     };
 
     const printOrder = () => { if (order.value) { window.print(); record("Print requested", "Order"); } };
-    const closeOrder = () => {
-      if (!canManage(order.value)) return store.notice("Order closure denied", "fa-shield-halved");
-      if (openExceptions.value.length) return store.notice("Resolve open issues first", "fa-triangle-exclamation");
-      store.procurementTransition(order.value, "Closed", "Execution complete");
-    };
+    const closeOrder = () => { store.closePurchaseOrder(order.value); };
 
     const archiveOrder = async (item) => {
       if (!canManage(item)) return store.notice("Archive denied", "fa-shield-halved");
@@ -347,7 +336,7 @@ export default {
       store.notice(`${count} orders archived`);
     };
 
-    watch(() => route.query.order, () => { tab.value = "overview"; });
+    watch(() => route.query.order, () => { tab.value = "overview"; selectedInvoiceId.value = order.value?.invoiceId || ""; });
     watch(order, (item) => {
       if (!item || route.query.order === item.id) return;
       router.replace({ path: "/procurement/execution", query: window.WebCommon.mergeRouteQuery(route.query, { order: item.id }) });
@@ -355,9 +344,9 @@ export default {
 
     return {
       store, order, accessibleOrders, supplier, columns, matchLabel, statusLabel, metrics, tabs, tab,
-      smartButtons, executionStages, openExceptions, matchReady, matchDocuments, format, linkFor, openOrder,
+      smartButtons, executionStages, openExceptions, matchReady, matchDocuments, eligibleInvoices, selectedInvoiceId, format, linkFor, openOrder,
       updateCell, statusClass, record, receiveOpen, receiptLines, saveReceipt, runMatch, resolveException,
-      addException, printOrder, closeOrder, archiveOrder, archiveOrders,
+      attachInvoice, addException, printOrder, closeOrder, archiveOrder, archiveOrders,
     };
   },
 };

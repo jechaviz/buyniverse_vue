@@ -30,6 +30,22 @@
         </div>
         <p class="mt-2 text-[11px] leading-5 text-slate-500">Larger quantity or price differences create an issue for review.</p>
       </div>
+      <div class="mt-4 rounded-xl border border-slate-200/70 p-4 dark:border-slate-700">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h4 class="text-xs font-800">Supplier invoice</h4>
+            <p class="mt-1 text-[11px] text-slate-500">Attach the fiscal invoice before confirming the three-way match.</p>
+          </div>
+          <span class="text-[10px] font-bold text-slate-400">{{ invoices.length }} available</span>
+        </div>
+        <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+          <select :value="selectedInvoiceId" class="field min-w-0 flex-1 text-xs" @change="$emit('update:selected-invoice-id', $event.target.value)">
+            <option value="">Select an invoice</option>
+            <option v-for="invoice in invoices" :key="invoice.id" :value="invoice.id">{{ invoice.id }} · {{ formatMoney(invoice.total, invoice.currency) }}</option>
+          </select>
+          <button class="btn-muted whitespace-nowrap text-xs" :disabled="!selectedInvoiceId" @click="$emit('attach-invoice')"><i class="fa-solid fa-paperclip mr-1"></i>Attach</button>
+        </div>
+      </div>
     </div>
     <aside class="rounded-xl bg-slate-950 p-5 text-white">
       <span class="text-[10px] font-800 uppercase tracking-wide text-brand-100">Check result</span>
@@ -52,7 +68,10 @@ export default {
   props: {
     matchDocuments: Array,
     matchReady: Boolean,
+    invoices: { type: Array, default: () => [] },
+    selectedInvoiceId: String,
+    formatMoney: Function,
   },
-  emits: ["run-match"],
+  emits: ["run-match", "attach-invoice", "update:selected-invoice-id"],
 };
 </script>

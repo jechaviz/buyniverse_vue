@@ -487,10 +487,10 @@ document.addEventListener("visibilitychange", () => {
 const Dashboard = load("./app/pages/DashboardPage.vue?v=30");
 const Home = load("./app/pages/HomePage.vue?v=30");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
-const Project = load("./app/pages/ProjectPage.vue?v=28");
+const Project = load("./app/pages/ProjectPage.vue?v=29");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
 const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=32");
-const JobDetails = load("./app/pages/JobDetailsPage.vue?v=36");
+const JobDetails = load("./app/pages/JobDetailsPage.vue?v=37");
 const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
 const Identity = load("./app/pages/IdentityPage.vue?v=33");

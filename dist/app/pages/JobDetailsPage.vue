@@ -258,28 +258,10 @@ export default {
       store.notice(`Counter-bid updated to ${store.money(amount, job.value.currency)}!`, "fa-bolt");
     };
 
-    const awardCandidate = (proposal) => {
-      proposal.status = "Accepted";
-      job.value.status = "IN_PROGRESS";
-      const newContractId = `contract-${Date.now().toString().slice(-4)}`;
-      store.state.contracts.unshift({
-        id: newContractId,
-        sourceId: job.value.id,
-        clientId: job.value.clientId,
-        providerId: proposal.freelancerId,
-        amount: proposal.bid,
-        status: "In progress",
-        milestones: (proposal.milestones || []).map((m, idx) => ({
-          id: `m-${idx + 1}`,
-          title: m.title || `Milestone ${idx + 1}`,
-          amount: m.amount || Math.round(proposal.bid / (proposal.milestones.length || 1)),
-          status: idx === 0 ? "Funded" : "Pending",
-          dueDate: new Date(Date.now() + 14 * 86400000).toISOString(),
-        })),
-      });
-      job.value.contractId = newContractId;
-      store.notice("Project awarded! Milestone 1 funded into Escrow.", "fa-handshake");
-      router.push(`/contract/${newContractId}`);
+    const awardCandidate = async (proposal) => {
+      if (!(await store.confirm({ title: "Award this proposal?", message: "A contract will be created and the first milestone will be funded.", confirmText: "Award and fund" }))) return;
+      const contract = store.awardJobProposal(job.value, proposal);
+      if (contract) router.push(`/contract/${contract.id}`);
     };
 
     return {
