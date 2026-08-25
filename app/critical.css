@@ -133,6 +133,10 @@ html:not(.dark) #app-boot .boot-card {
   box-shadow: 0 20px 50px -22px rgba(15, 23, 42, 0.18);
 }
 
+/* The base boot rule sets display:grid, so the semantic hidden attribute needs
+   an explicit, higher-priority exit rule once the Vue shell has mounted. */
+#app-boot[hidden] { display: none !important; }
+
 #app-boot .boot-mark {
   display: grid;
   width: 2.5rem;

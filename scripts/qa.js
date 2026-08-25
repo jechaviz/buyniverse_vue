@@ -42,7 +42,7 @@ if (!index.includes('src="app/lib/runtime.js') || !fs.existsSync(path.join(root,
 const dynamicBase = '(function(d,l){var a="/buyniverse_vue/",p=l.pathname,r=p.indexOf(a)>-1?a:"/";d.write(\'<base href="\'+r+\'">\')})(document,location);';
 if (!index.includes(dynamicBase) || !index.includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read(".htaccess").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read("serve.py").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='"))
   throw new Error("Dynamic base bootstrap must stay hash-authorized by every CSP policy");
-if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot"))
+if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot") || !criticalCss.includes("#app-boot[hidden] { display: none !important; }"))
   throw new Error("Missing anti-FOUC boot layer");
 if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready") || !read("app/main.js").includes('boot?.setAttribute("hidden", "")'))
   throw new Error("App reveal is not coordinated with the mounted shell");
