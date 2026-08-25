@@ -1,6 +1,6 @@
 <template>
   <section class="premium-card overflow-hidden rounded-2xl border border-slate-200/80 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap" role="toolbar" :aria-label="`${title} controls`">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap" role="toolbar" :aria-label="t(`${title} controls`)">
       <div class="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
         <div
           class="relative flex h-9 items-center transition-all duration-200"
@@ -8,13 +8,13 @@
           @mouseenter="openSearch(false)"
           @mouseleave="closeSearchIfIdle"
         >
-          <button v-if="!searchOpen && !query" type="button" class="btn-muted h-9 w-9 p-0" aria-label="Search records" title="Search" @click="openSearch">
+          <button v-if="!searchOpen && !query" type="button" class="btn-muted h-9 w-9 p-0" :aria-label="t('Search records')" :title="t('Search')" @click="openSearch">
             <i class="fa-solid fa-search"></i>
           </button>
           <template v-else>
             <i class="fa-solid fa-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input ref="searchInput" v-model="query" class="field h-9 pl-9 pr-9" type="search" inputmode="search" maxlength="160" autocomplete="off" :placeholder="`Search ${title.toLowerCase()}…`" :aria-controls="tableElementId" @input="sanitizeQuery" @blur="closeSearchIfIdle" @keydown.esc="closeSearch" />
-            <button type="button" class="absolute right-1 grid h-7 w-7 place-items-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-white" aria-label="Close search" title="Close search" @click="closeSearch">
+            <input ref="searchInput" v-model="query" class="field h-9 pl-9 pr-9" type="search" inputmode="search" maxlength="160" autocomplete="off" :placeholder="t(`Search ${title.toLowerCase()}…`)" :aria-controls="tableElementId" @input="sanitizeQuery" @blur="closeSearchIfIdle" @keydown.esc="closeSearch" />
+            <button type="button" class="absolute right-1 grid h-7 w-7 place-items-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-white" :aria-label="t('Close search')" :title="t('Close search')" @click="closeSearch">
               <i class="fa-solid fa-xmark text-xs"></i>
             </button>
           </template>
@@ -25,21 +25,21 @@
             :class="searchOpen || query ? 'h-9 w-9 p-0' : 'h-9 max-w-56 px-3'"
             :aria-expanded="viewsOpen"
             aria-haspopup="menu"
-            :title="isViewDirty ? `${currentViewLabel} · Unsaved changes` : `Saved views · ${currentViewLabel}`"
+            :title="isViewDirty ? `${currentViewLabel} · ${t('Unsaved changes')}` : `${t('Saved views')} · ${currentViewLabel}`"
             @click="viewsOpen = !viewsOpen; columnsOpen = false;"
           >
             <i class="fa-solid" :class="activeSavedView ? 'fa-bookmark text-brand' : 'fa-table-list'"></i>
             <span v-if="!searchOpen && !query" class="min-w-0 flex-1 truncate">{{ currentViewLabel }}</span>
-            <span v-if="isViewDirty && !searchOpen && !query" class="h-2 w-2 flex-none rounded-full bg-amber-400" title="Unsaved changes" aria-label="Unsaved changes"></span>
+            <span v-if="isViewDirty && !searchOpen && !query" class="h-2 w-2 flex-none rounded-full bg-amber-400" :title="t('Unsaved changes')" :aria-label="t('Unsaved changes')"></span>
             <i v-if="!searchOpen && !query" class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
           </button>
           <div v-if="viewsOpen" class="glass absolute left-0 top-11 z-40 w-72 rounded-xl p-2 shadow-xl" role="menu">
             <div class="flex items-center justify-between px-2 py-1.5">
-              <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Saved views</p>
+              <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ t('Saved views') }}</p>
               <span class="text-[10px] text-slate-400">{{ savedViews.length }}/12</span>
             </div>
             <button class="w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" :class="!activeView ? 'text-brand font-bold' : 'text-slate-700 dark:text-slate-200'" @click="selectSavedView('')">
-              <i class="fa-solid fa-table-list mr-2 text-[10px]"></i>All records
+              <i class="fa-solid fa-table-list mr-2 text-[10px]"></i>{{ t('All records') }}
             </button>
             <div class="my-1 max-h-48 overflow-y-auto space-y-0.5">
               <button v-for="v in savedViews" :key="v.id" class="w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" :class="activeView === v.id ? 'text-brand font-bold bg-brand-50/50' : 'text-slate-700 dark:text-slate-200'" @click="selectSavedView(v.id)">
@@ -48,14 +48,14 @@
             </div>
             <div class="mt-1 border-t border-slate-200/70 pt-1 dark:border-slate-700">
               <button v-if="isViewDirty" class="w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-bold text-brand hover:bg-brand-50" @click="updateSavedView">
-                <i class="fa-solid fa-floppy-disk mr-2 text-[10px]"></i>Update saved view
+                <i class="fa-solid fa-floppy-disk mr-2 text-[10px]"></i>{{ t('Update saved view') }}
               </button>
               <button class="w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700" @click="openSaveViewDialog">
-                <i class="fa-solid fa-plus mr-2 text-[10px]"></i>Save as new view
+                <i class="fa-solid fa-plus mr-2 text-[10px]"></i>{{ t('Save as new view') }}
               </button>
             </div>
           </div>
-          <button class="btn-muted -ml-px h-9 rounded-l-none px-2" aria-label="Save New View" title="Save current view as new" @click="openSaveViewDialog">
+          <button class="btn-muted -ml-px h-9 rounded-l-none px-2" :aria-label="t('Save New View')" :title="t('Save current view as new')" @click="openSaveViewDialog">
             <i class="fa-solid fa-plus text-[10px]"></i>
           </button>
         </div>
@@ -64,7 +64,7 @@
         </span>
         <button class="btn-muted h-9 px-3" :class="activeFilterCount ? 'border-brand text-brand font-bold' : ''" @click="openFilters('')">
           <i class="fa-solid fa-filter text-xs"></i>
-          <span class="hidden sm:inline">Filters</span>
+          <span class="hidden sm:inline">{{ t('Filters') }}</span>
           <span v-if="activeFilterCount" class="ml-1 rounded-full bg-brand px-1.5 py-0.2 text-[10px] text-white">{{ activeFilterCount }}</span>
         </button>
       </div>
@@ -76,11 +76,11 @@
           </button>
         </div>
         <div class="relative">
-          <button class="btn-muted h-9 px-3" aria-label="Columns" :aria-expanded="columnsOpen" title="Visible columns" @click="columnsOpen = !columnsOpen; viewsOpen = false;">
+          <button class="btn-muted h-9 px-3" :aria-label="t('Columns')" :aria-expanded="columnsOpen" :title="t('Visible columns')" @click="columnsOpen = !columnsOpen; viewsOpen = false;">
             <i class="fa-solid fa-sliders text-xs"></i>
           </button>
           <div v-if="columnsOpen" class="glass absolute right-0 top-11 z-40 w-64 rounded-xl p-3 shadow-xl">
-            <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">Visible columns</p>
+            <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">{{ t('Visible columns') }}</p>
             <div class="max-h-60 overflow-y-auto space-y-1.5">
               <div v-for="(column, index) in configurableColumns" :key="column.key" class="flex items-center justify-between gap-2 rounded-lg px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs">
                 <label class="flex items-center gap-2 flex-1 cursor-pointer truncate">
@@ -97,7 +97,7 @@
                 </span>
               </div>
             </div>
-            <button class="mt-2 w-full rounded-lg px-2 py-1.5 text-left text-xs font-bold text-brand hover:bg-brand-50" @click="resetView">Reset view</button>
+            <button class="mt-2 w-full rounded-lg px-2 py-1.5 text-left text-xs font-bold text-brand hover:bg-brand-50" @click="resetView">{{ t('Reset view') }}</button>
           </div>
         </div>
       </div>
@@ -107,7 +107,7 @@
 
     <div v-if="groupBy" class="flex gap-2 overflow-x-auto border-b border-slate-200/70 px-4 pt-3 dark:border-slate-700">
       <button v-for="group in groups" :key="group.value" class="whitespace-nowrap border-b-2 px-2 pb-3 text-sm font-semibold" :class="activeGroup === group.value ? 'border-brand text-brand' : 'border-transparent text-slate-500'" @click="activeGroup = group.value">
-        <span>{{ group.label }}</span>
+        <span>{{ t(group.label) }}</span>
         <span class="ml-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] dark:bg-slate-700">{{ group.count }}</span>
       </button>
     </div>
@@ -117,18 +117,18 @@
       <table :id="tableElementId" class="w-full min-w-200 table-fixed text-left text-sm">
         <thead class="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/50">
           <tr>
-            <th class="w-12 px-4 py-3"><input :checked="allPageSelected" type="checkbox" aria-label="Select page" @change="togglePage" /></th>
+            <th class="w-12 px-4 py-3"><input :checked="allPageSelected" type="checkbox" :aria-label="t('Select page')" @change="togglePage" /></th>
             <th v-for="column in visibleTableColumns" :key="column.key" scope="col" :aria-sort="ariaSort(column)" :style="{ width: `${widths[column.key] || column.width || 160}px` }" class="table-column-header relative whitespace-nowrap px-4 py-3 font-semibold" @dragover.prevent @drop="dropColumn(column.key)">
               <div class="flex min-w-0 items-center gap-1">
-                <button class="column-control column-drag-handle grid h-5 flex-none cursor-grab place-items-center rounded text-slate-300 hover:bg-slate-200 hover:text-slate-500 dark:hover:bg-slate-700" :title="`Drag ${column.label}`" :aria-label="`Drag ${column.label}`" draggable="true" @dragstart.stop="startColumnDrag($event, column.key)" @dragend="dragColumn = ''">
+                <button class="column-control column-drag-handle grid h-5 flex-none cursor-grab place-items-center rounded text-slate-300 hover:bg-slate-200 hover:text-slate-500 dark:hover:bg-slate-700" :title="t(`Drag ${column.label}`)" :aria-label="t(`Drag ${column.label}`)" draggable="true" @dragstart.stop="startColumnDrag($event, column.key)" @dragend="dragColumn = ''">
                   <i class="fa-solid fa-grip-vertical text-[10px]"></i>
                 </button>
-                <button v-if="!column.isActions" type="button" class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-left hover:text-brand" :aria-label="`Sort by ${column.label}`" @click="sort(column.key)">
-                  <span class="truncate">{{ column.label }}</span>
+                <button v-if="!column.isActions" type="button" class="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-left hover:text-brand" :aria-label="t(`Sort by ${column.label}`)" @click="sort(column.key)">
+                  <span class="truncate">{{ t(column.label) }}</span>
                   <i class="fa-solid column-control flex-none text-[10px]" :class="sortState.key === column.key ? sortState.desc ? 'is-active fa-sort-down text-brand' : 'is-active fa-sort-up text-brand' : 'fa-sort text-slate-300'"></i>
                 </button>
-                <span v-else class="min-w-0 flex-1 truncate">{{ column.label }}</span>
-                <button v-if="!column.isActions" class="column-control grid h-5 w-5 place-items-center rounded hover:bg-slate-200 dark:hover:bg-slate-700" :class="filters[column.key] ? 'is-active text-brand' : 'text-slate-400'" :title="`Filter ${column.label}`" :aria-label="`Filter ${column.label}`" @click="openFilters(column.key)">
+                <span v-else class="min-w-0 flex-1 truncate">{{ t(column.label) }}</span>
+                <button v-if="!column.isActions" class="column-control grid h-5 w-5 place-items-center rounded hover:bg-slate-200 dark:hover:bg-slate-700" :class="filters[column.key] ? 'is-active text-brand' : 'text-slate-400'" :title="t(`Filter ${column.label}`)" :aria-label="t(`Filter ${column.label}`)" @click="openFilters(column.key)">
                   <i class="fa-solid fa-filter text-[10px]"></i>
                 </button>
               </div>
@@ -138,7 +138,7 @@
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
           <tr v-for="item in paged" :key="item.id" class="group transition hover:bg-brand-50/45 dark:hover:bg-brand/8">
-            <td class="px-4 py-3"><input v-model="selection[item.id]" type="checkbox" :aria-label="`Select ${item.id}`" /></td>
+            <td class="px-4 py-3"><input v-model="selection[item.id]" type="checkbox" :aria-label="t(`Select ${item.id}`)" /></td>
             <td v-for="column in visibleTableColumns" :key="column.key" class="relative px-4 py-3" @dblclick="!column.isActions && openEditor(item, column)">
               <RowActionMenu v-if="column.isActions" :actions="actionsFor(item)" :item-label="String(item.title || item.name || item.id)" :align="actionMenuAlign" @action="handleRowAction(item, $event)" />
               <InlineCellEditor v-else-if="editing?.id === item.id && editing?.key === column.key" :value="item[column.key]" :type="column.edit?.type || 'text'" :options="column.edit?.options || []" :users="users" @save="saveEdit(item, column, $event)" @cancel="editing = null" />
@@ -150,12 +150,12 @@
             </td>
           </tr>
           <tr v-if="remoteMode && remote.loading && !paged.length">
-            <td :colspan="visibleTableColumns.length + 1" class="px-5 py-14 text-center text-slate-500"><i class="fa-solid fa-circle-notch animate-spin text-brand"></i><p class="mt-3 font-semibold">Searching records…</p></td>
+            <td :colspan="visibleTableColumns.length + 1" class="px-5 py-14 text-center text-slate-500"><i class="fa-solid fa-circle-notch animate-spin text-brand"></i><p class="mt-3 font-semibold">{{ t('Searching records…') }}</p></td>
           </tr>
           <tr v-else-if="!paged.length">
             <td :colspan="visibleTableColumns.length + 1" class="px-5 py-14 text-center text-slate-500">
               <i class="fa-solid fa-magnifying-glass text-2xl"></i>
-              <p class="mt-3 font-semibold">No matching records</p>
+              <p class="mt-3 font-semibold">{{ t('No matching records') }}</p>
             </td>
           </tr>
         </tbody>
@@ -165,15 +165,15 @@
     <DataTableCardView v-else-if="mode === 'cards'" :items="paged" :visible-columns="visibleColumns" :selection="selection" :display="display" @toggle-select="selection[$event] = !selection[$event]" />
     <DataTableKanbanView v-else-if="mode === 'kanban'" :groups="groups" :visible-columns="visibleColumns" :grouped-items="groupedItems" :display="display" />
     <div v-else class="grid gap-4 p-5 sm:grid-cols-3">
-      <article class="rounded-xl bg-brand-50 p-5 text-brand"><p class="text-xs font-bold uppercase">Visible records</p><p class="mt-2 text-3xl font-800">{{ filtered.length }}</p></article>
-      <article class="rounded-xl bg-slate-100 p-5 dark:bg-slate-700"><p class="text-xs font-bold uppercase text-slate-500">Selected</p><p class="mt-2 text-3xl font-800">{{ selectedCount }}</p></article>
-      <article class="rounded-xl bg-slate-100 p-5 dark:bg-slate-700"><p class="text-xs font-bold uppercase text-slate-500">Groups</p><p class="mt-2 text-3xl font-800">{{ groups.length }}</p></article>
+      <article class="rounded-xl bg-brand-50 p-5 text-brand"><p class="text-xs font-bold uppercase">{{ t('Visible records') }}</p><p class="mt-2 text-3xl font-800">{{ filtered.length }}</p></article>
+      <article class="rounded-xl bg-slate-100 p-5 dark:bg-slate-700"><p class="text-xs font-bold uppercase text-slate-500">{{ t('Selected') }}</p><p class="mt-2 text-3xl font-800">{{ selectedCount }}</p></article>
+      <article class="rounded-xl bg-slate-100 p-5 dark:bg-slate-700"><p class="text-xs font-bold uppercase text-slate-500">{{ t('Groups') }}</p><p class="mt-2 text-3xl font-800">{{ groups.length }}</p></article>
     </div>
 
     <p v-if="remoteMode && remote.error" class="border-t border-rose-100 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300" role="alert"><i class="fa-solid fa-circle-exclamation mr-1"></i>{{ remote.error }}</p>
     <DataTablePagination :page="page" :page-count="pageCount" :page-size="pageSize" :range-label="rangeLabel" :cursor-mode="remoteMode" :has-next="Boolean(remote.nextCursor)" :loading="remote.loading" @update:page="setPage" @update:page-size="pageSize = $event" />
 
-    <TextInputDialog :open="saveDialogOpen" :title="activeSavedView ? 'Save as new view' : 'Save current view'" description="Save the current search, filters, sorting, columns and display mode for quick access later." label="View name" placeholder="e.g. Open projects by budget" hint="Use a short, recognizable name." :confirm-label="activeSavedView ? 'Save as new' : 'Save view'" icon="fa-bookmark" :max-length="40" :error="saveViewError" @input="saveViewError = ''" @close="closeSaveViewDialog" @submit="saveView" />
+    <TextInputDialog :open="saveDialogOpen" :title="t(activeSavedView ? 'Save as new view' : 'Save current view')" :description="t('Save the current search, filters, sorting, columns and display mode for quick access later.')" :label="t('View name')" :placeholder="t('e.g. Open projects by budget')" :hint="t('Use a short, recognizable name.')" :confirm-label="t(activeSavedView ? 'Save as new' : 'Save view')" icon="fa-bookmark" :max-length="40" :error="saveViewError" @input="saveViewError = ''" @close="closeSaveViewDialog" @submit="saveView" />
     <DataTableFilterDrawer :open="filterDrawerOpen" :columns="columns" :filters="filters" :rules="filterRules" :mode="filterMode" :active-count="activeFilterCount" :focus-key="filterFocusKey" :dirty="isViewDirty" :view-name="activeSavedView?.name || ''" @update:filters="filters = $event" @update:rules="filterRules = $event" @update:mode="filterMode = $event" @clear="clearDrawerFilters" @close="closeFilters" />
   </section>
 </template>
@@ -205,15 +205,16 @@ const normalizeView = (raw, columns, editable = true) => {
 const mergeViews = (seeded, stored) => [...seeded.map((s) => stored.find((v) => v.id === s.id) || s), ...stored.filter((v) => !seeded.some((s) => s.id === v.id))].slice(0, 12);
 
 export default {
+  inject: ["store"],
   components: {
-    InlineCellEditor: load("./app/components/InlineCellEditor.vue?v=21"),
-    TextInputDialog: load("./app/components/TextInputDialog.vue?v=2"),
-    RowActionMenu: load("./app/components/RowActionMenu.vue?v=2"),
-    BulkActionBar: load("./app/components/BulkActionBar.vue?v=1"),
-    DataTableFilterDrawer: load("./app/components/DataTableFilterDrawer.vue?v=3"),
-    DataTablePagination: load("./app/components/DataTablePagination.vue?v=2"),
-    DataTableCardView: load("./app/components/DataTableCardView.vue?v=1"),
-    DataTableKanbanView: load("./app/components/DataTableKanbanView.vue?v=1"),
+    InlineCellEditor: load("./app/components/InlineCellEditor.vue?v=22"),
+    TextInputDialog: load("./app/components/TextInputDialog.vue?v=3"),
+    RowActionMenu: load("./app/components/RowActionMenu.vue?v=3"),
+    BulkActionBar: load("./app/components/BulkActionBar.vue?v=2"),
+    DataTableFilterDrawer: load("./app/components/DataTableFilterDrawer.vue?v=4"),
+    DataTablePagination: load("./app/components/DataTablePagination.vue?v=3"),
+    DataTableCardView: load("./app/components/DataTableCardView.vue?v=2"),
+    DataTableKanbanView: load("./app/components/DataTableKanbanView.vue?v=2"),
   },
   props: {
     items: { type: Array, default: () => [] },
@@ -257,7 +258,7 @@ export default {
   },
   computed: {
     activeSavedView() { return this.savedViews.find((v) => v.id === this.activeView) || null; },
-    currentViewLabel() { return this.activeSavedView?.name || "All records"; },
+    currentViewLabel() { return this.activeSavedView?.name || this.t("All records"); },
     isViewDirty() { return Boolean(this.activeSavedView && this.viewSignature(this.currentViewState()) !== this.viewSignature(this.activeSavedView)); },
     activeFilterCount() {
       const c = Object.values(this.filters).filter((v) => String(v ?? "").trim()).length;
@@ -265,12 +266,12 @@ export default {
       return c + r + (this.activeGroup !== "all" ? 1 : 0);
     },
     viewModes() {
-      return [{ key: "table", label: "Table view", icon: "fa-table" }, { key: "cards", label: "Card view", icon: "fa-grip" }, { key: "kanban", label: "Kanban view", icon: "fa-table-columns" }, { key: "dashboard", label: "Dashboard view", icon: "fa-chart-pie" }];
+      return [{ key: "table", label: this.t("Table view"), icon: "fa-table" }, { key: "cards", label: this.t("Card view"), icon: "fa-grip" }, { key: "kanban", label: this.t("Kanban view"), icon: "fa-table-columns" }, { key: "dashboard", label: this.t("Dashboard view"), icon: "fa-chart-pie" }];
     },
     orderedColumns() { return this.order.map((k) => this.columns.find((c) => c.key === k)).filter(Boolean); },
     visibleColumns() { return this.orderedColumns.filter((c) => this.visibility[c.key] !== false); },
     configurableColumns() {
-      return this.order.map((k) => k === ACTION_COLUMN_KEY ? { key: ACTION_COLUMN_KEY, label: "Actions", width: 104, isActions: true } : this.columns.find((c) => c.key === k)).filter(Boolean);
+      return this.order.map((k) => k === ACTION_COLUMN_KEY ? { key: ACTION_COLUMN_KEY, label: this.t("Actions"), width: 104, isActions: true } : this.columns.find((c) => c.key === k)).filter(Boolean);
     },
     visibleTableColumns() { return this.configurableColumns.filter((col) => this.visibility[col.key] !== false); },
     actionMenuAlign() { const i = this.visibleTableColumns.findIndex((c) => c.key === ACTION_COLUMN_KEY); return i >= 0 && i < this.visibleTableColumns.length / 2 ? "left" : "right"; },
@@ -298,11 +299,11 @@ export default {
       if (this.remoteMode) {
         const total = this.remote.total == null ? this.remote.items.length : this.remote.total;
         const facets = Array.isArray(this.remote.facets?.[this.groupBy]) ? this.remote.facets[this.groupBy] : [];
-        return [{ value: "all", label: "All", count: total }, ...facets.map((facet) => ({ value: String(facet.value ?? facet.key ?? ""), label: this.groupLabel(String(facet.value ?? facet.key ?? "")), count: Number(facet.count) || 0 }))];
+        return [{ value: "all", label: this.t("All"), count: total }, ...facets.map((facet) => ({ value: String(facet.value ?? facet.key ?? ""), label: this.groupLabel(String(facet.value ?? facet.key ?? "")), count: Number(facet.count) || 0 }))];
       }
-      if (!this.groupBy) return [{ value: "all", label: "All", count: this.baseFiltered.length }];
-      const vals = [...new Set(this.baseFiltered.map((i) => String(i[this.groupBy] ?? "Unassigned")))];
-      return [{ value: "all", label: "All", count: this.baseFiltered.length }, ...vals.map((v) => ({ value: v, label: this.groupLabel(v), count: this.baseFiltered.filter((i) => String(i[this.groupBy] ?? "Unassigned") === v).length }))];
+      if (!this.groupBy) return [{ value: "all", label: this.t("All"), count: this.baseFiltered.length }];
+      const vals = [...new Set(this.baseFiltered.map((i) => String(i[this.groupBy] ?? this.t("Unassigned"))))];
+      return [{ value: "all", label: this.t("All"), count: this.baseFiltered.length }, ...vals.map((v) => ({ value: v, label: this.groupLabel(v), count: this.baseFiltered.filter((i) => String(i[this.groupBy] ?? this.t("Unassigned")) === v).length }))];
     },
     filtered() { return this.activeGroup === "all" ? this.baseFiltered : this.baseFiltered.filter((i) => String(i[this.groupBy] ?? "Unassigned") === this.activeGroup); },
     sorted() {
@@ -322,22 +323,22 @@ export default {
     allPageSelected() { return this.paged.length > 0 && this.paged.every((i) => this.selection[i.id]); },
     resultSummary() {
       if (this.remoteMode) {
-        const total = this.remote.total == null ? "many" : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
-        return this.remote.loading ? "Searching…" : `${total} records${this.remote.tookMs ? ` · ${this.remote.tookMs} ms` : ""}`;
+        const total = this.remote.total == null ? this.t("many") : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
+        return this.remote.loading ? this.t("Searching…") : this.t(`${total} records${this.remote.tookMs ? ` · ${this.remote.tookMs} ms` : ""}`);
       }
       const total = this.items.length, visible = this.sorted.length;
-      return visible === total ? `${visible} records` : `${visible} of ${total} records`;
+      return visible === total ? this.t(`${visible} records`) : this.t(`${visible} of ${total} records`);
     },
     rangeLabel() {
       if (this.remoteMode) {
-        if (!this.paged.length) return this.remote.loading ? "Searching…" : "0 records";
+        if (!this.paged.length) return this.remote.loading ? this.t("Searching…") : this.t("0 records");
         const first = (this.page - 1) * this.pageSize + 1, last = first + this.paged.length - 1;
-        const total = this.remote.total == null ? "many" : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
-        return `${first}–${last} of ${total}`;
+        const total = this.remote.total == null ? this.t("many") : `${this.remote.totalRelation === "gte" ? ">=" : ""}${this.remote.total}`;
+        return this.t(`${first}–${last} of ${total}`);
       }
-      if (!this.sorted.length) return "0 records";
+      if (!this.sorted.length) return this.t("0 records");
       const s = (Math.min(this.page, this.pageCount) - 1) * this.pageSize + 1;
-      return `${s}–${Math.min(s + this.pageSize - 1, this.sorted.length)} of ${this.sorted.length}`;
+      return this.t(`${s}–${Math.min(s + this.pageSize - 1, this.sorted.length)} of ${this.sorted.length}`);
     },
   },
   watch: {
@@ -361,6 +362,7 @@ export default {
     window.removeEventListener("buyniverse:workspace-hydrated", this.onWorkspaceHydrated);
   },
   methods: {
+    t(key) { void this.store?.locale?.value; return this.store?.t?.(key) || key; },
     resetForTable() {
       const saved = this.readStore(), keys = layoutKeys(this.columns, this.editable), stored = (saved?.order || []).filter((k) => keys.includes(k)), order = [...stored, ...keys.filter((k) => !stored.includes(k))];
       this.query = ""; this.searchOpen = false; this.filters = {}; this.filterRules = []; this.filterDrawerOpen = false; this.filterFocusKey = ""; this.columnsOpen = false; this.viewsOpen = false;
@@ -397,7 +399,7 @@ export default {
         this.remote.totalRelation = result?.totalRelation === "gte" ? "gte" : "eq"; this.remote.nextCursor = result?.nextCursor || null;
         this.remote.facets = result?.facets && typeof result.facets === "object" ? result.facets : {}; this.remote.tookMs = Number(result?.tookMs) || 0;
         this.remote.cursors[this.page] = this.remote.nextCursor;
-      } catch (error) { if (error?.name !== "AbortError" && requestId === this.remote.requestId) this.remote.error = "Search is temporarily unavailable. Try again."; }
+      } catch (error) { if (error?.name !== "AbortError" && requestId === this.remote.requestId) this.remote.error = this.t("Search is temporarily unavailable. Try again."); }
       finally { if (requestId === this.remote.requestId) this.remote.loading = false; }
     },
     setPage(next) {

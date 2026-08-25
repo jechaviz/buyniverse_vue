@@ -89,7 +89,7 @@ const configs = {
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=53");
+const DataTable = load("./app/components/DataTable.vue?v=56");
 const WorkspaceMessagesView = load("./app/pages/workspace/WorkspaceMessagesView.vue?v=1");
 const WorkspaceNewInvoiceModal = load("./app/pages/workspace/WorkspaceNewInvoiceModal.vue?v=1");
 

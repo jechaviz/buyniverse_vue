@@ -4,10 +4,10 @@
     <section class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
       <article
         class="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-xl bg-brand p-2.5 text-white shadow-soft"
-        :title="`${auction.extensionCount}/${auction.maxExtensions} extensions`"
+        :title="store.t(`${auction.extensionCount}/${auction.maxExtensions} extensions`)"
       >
         <span class="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/20 text-[11px]"><i class="fa-regular fa-clock"></i></span>
-        <span class="min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-white/80">Remaining</span>
+        <span class="min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-white/80">{{ store.t('Remaining') }}</span>
         <b class="ml-auto font-head font-mono text-xs tracking-tight">{{ timeLeft }}</b>
       </article>
       <article
@@ -24,35 +24,35 @@
       </article>
     </section>
 
-    <SavingsWaterfall v-if="isOrganizer" :model="commercial" title="Savings waterfall" kicker="Live commercial value" />
+    <SavingsWaterfall v-if="isOrganizer" :model="commercial" :title="store.t('Savings waterfall')" :kicker="store.t('Live commercial value')" />
 
     <!-- Main Workspace Container -->
     <section class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2 text-[11px] dark:border-slate-800/80 dark:bg-slate-950/40">
         <div class="flex items-center gap-1.5 text-slate-500">
-          <RouterLink to="/procurement" class="font-semibold hover:text-brand">Procurement</RouterLink>
+          <RouterLink to="/procurement" class="font-semibold hover:text-brand">{{ store.t('Procurement') }}</RouterLink>
           <span>/</span>
-          <RouterLink to="/procurement/auction" class="font-semibold hover:text-brand">Live Auctions</RouterLink>
+          <RouterLink to="/procurement/auction" class="font-semibold hover:text-brand">{{ store.t('Live Auctions') }}</RouterLink>
           <span>/</span>
           <span class="font-bold text-slate-900 dark:text-white">{{ auction.id }}</span>
         </div>
         <div v-if="isOrganizer" class="flex items-center gap-3">
-          <span class="text-slate-400">Source:</span>
+          <span class="text-slate-400">{{ store.t('Source') }}:</span>
           <RouterLink :to="`/procurement/sourcing?event=${auction.eventId}`" class="font-bold text-brand hover:underline inline-flex items-center gap-1">
             <i class="fa-solid fa-file-signature text-[10px]"></i>{{ auction.eventId }}
           </RouterLink>
           <span v-if="auction.awardedSupplierId || auction.status === 'Awarded'" class="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
             <i class="fa-solid fa-trophy text-[10px]"></i>
-            Winner:
+            {{ store.t('Winner') }}:
             <RouterLink :to="`/suppliers?supplier=${auction.awardedSupplierId || leader?.supplierId}`" class="hover:underline font-extrabold ml-0.5">
-              {{ store.supplier(auction.awardedSupplierId || leader?.supplierId)?.name || 'Awarded Supplier' }}
+              {{ store.supplier(auction.awardedSupplierId || leader?.supplierId)?.name || store.t('Awarded Supplier') }}
             </RouterLink>
           </span>
         </div>
         <div v-else class="flex items-center gap-2 font-semibold text-slate-500">
           <i class="fa-solid fa-shield-halved text-brand"></i>
-          <span>Blind-bid participant view</span>
-          <span v-if="auction.status === 'Awarded'" class="text-emerald-600 dark:text-emerald-400">· Award decision recorded</span>
+          <span>{{ store.t('Blind-bid participant view') }}</span>
+          <span v-if="auction.status === 'Awarded'" class="text-emerald-600 dark:text-emerald-400">· {{ store.t('Award decision recorded') }}</span>
         </div>
       </div>
 
@@ -64,7 +64,7 @@
               <span class="mr-1.5 h-1.5 w-1.5 rounded-full" :class="auction.status === 'Running' ? 'animate-pulse bg-emerald-500' : 'bg-current'"></span>
               {{ statusLabel(auction.status) }}
             </span>
-            <span class="badge rounded-lg bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">Reverse Auction</span>
+            <span class="badge rounded-lg bg-slate-100 px-2.5 py-0.5 text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ store.t('Reverse Auction') }}</span>
           </div>
           <h1 class="font-head text-xl font-800 tracking-tight text-slate-900 dark:text-white">{{ auction.title }}</h1>
         </div>
@@ -73,10 +73,10 @@
             <option v-for="item in accessibleAuctions" :key="item.id" :value="item.id">{{ item.id }} · {{ item.title }}</option>
           </select>
           <template v-if="isOrganizer">
-            <button v-if="auction.status === 'Paused'" class="btn-brand text-xs py-1.5 px-3" @click="resume"><i class="fa-solid fa-play mr-1"></i>Resume</button>
-            <button v-else-if="auction.status === 'Running'" class="btn-muted text-xs py-1.5 px-3" @click="pause"><i class="fa-solid fa-pause mr-1"></i>Pause</button>
-            <button v-if="auction.status !== 'Awarded'" class="btn-brand text-xs py-1.5 px-3" @click="award"><i class="fa-solid fa-trophy mr-1"></i>Award</button>
-            <button v-if="auction.status !== 'Awarded'" class="btn-muted text-xs py-1.5 px-3 text-rose-500 hover:text-rose-600" @click="cancel"><i class="fa-solid fa-ban mr-1"></i>Cancel</button>
+            <button v-if="auction.status === 'Paused'" class="btn-brand text-xs py-1.5 px-3" @click="resume"><i class="fa-solid fa-play mr-1"></i>{{ store.t('Resume') }}</button>
+            <button v-else-if="auction.status === 'Running'" class="btn-muted text-xs py-1.5 px-3" @click="pause"><i class="fa-solid fa-pause mr-1"></i>{{ store.t('Pause') }}</button>
+            <button v-if="auction.status !== 'Awarded'" class="btn-brand text-xs py-1.5 px-3" @click="award"><i class="fa-solid fa-trophy mr-1"></i>{{ store.t('Award') }}</button>
+            <button v-if="auction.status !== 'Awarded'" class="btn-muted text-xs py-1.5 px-3 text-rose-500 hover:text-rose-600" @click="cancel"><i class="fa-solid fa-ban mr-1"></i>{{ store.t('Cancel') }}</button>
           </template>
         </div>
       </header>
@@ -89,7 +89,7 @@
           :class="tab === item.key ? 'border-brand text-brand font-extrabold' : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
           @click="tab = item.key"
         >
-          <i class="fa-solid mr-1.5" :class="item.icon"></i>{{ item.label }}
+          <i class="fa-solid mr-1.5" :class="item.icon"></i>{{ store.t(item.label) }}
         </button>
       </nav>
 
@@ -98,14 +98,14 @@
         <div class="border-b border-slate-200/70 p-5 dark:border-slate-700 2xl:border-b-0 2xl:border-r">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 class="text-sm font-800">Offer movement</h3>
-              <p class="mt-1 text-xs text-slate-500">Lower valid offers lead this round.</p>
+              <h3 class="text-sm font-800">{{ store.t('Offer movement') }}</h3>
+              <p class="mt-1 text-xs text-slate-500">{{ store.t('Lower valid offers lead this round.') }}</p>
             </div>
             <div class="flex flex-wrap gap-3 text-[10px]">
               <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400" :title="realtimeStatus.note"><i class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></i>{{ realtimeStatus.label }}</span>
-              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Market movement</span>
-              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>Reserve</span>
-              <span v-else><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>Your offer history</span>
+              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>{{ store.t('Market movement') }}</span>
+              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>{{ store.t('Reserve') }}</span>
+              <span v-else><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>{{ store.t('Your offer history') }}</span>
             </div>
           </div>
           <div v-if="liveActivity" class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/25 bg-brand-50/60 px-3 py-2 text-[11px] shadow-sm dark:bg-brand/10" role="status" aria-live="polite">
@@ -116,20 +116,20 @@
           </div>
           <div v-if="isOrganizer" class="mt-3 flex flex-col gap-2 rounded-xl border border-slate-200/70 bg-slate-50/65 p-2.5 dark:border-slate-700 dark:bg-slate-900/25 sm:flex-row sm:items-center">
             <div class="flex items-center justify-between gap-2 sm:shrink-0">
-              <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">Providers</span>
-              <span class="text-[10px] text-slate-400">{{ visibleSupplierSeries.length }} of {{ supplierSeries.length }}</span>
+              <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">{{ store.t('Providers') }}</span>
+              <span class="text-[10px] text-slate-400">{{ visibleSupplierSeries.length }} {{ store.t('of') }} {{ supplierSeries.length }}</span>
             </div>
             <div class="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 sm:pl-2" role="group" aria-label="Filter offer chart by supplier">
-              <button class="min-w-max rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition" :class="allSuppliersSelected ? 'border-brand bg-brand text-white' : 'border-slate-200 bg-white text-slate-500 hover:border-brand hover:text-brand dark:border-slate-700 dark:bg-slate-800'" :aria-pressed="allSuppliersSelected" title="Show all supplier lines" @click="showAllSuppliers">All suppliers</button>
+              <button class="min-w-max rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition" :class="allSuppliersSelected ? 'border-brand bg-brand text-white' : 'border-slate-200 bg-white text-slate-500 hover:border-brand hover:text-brand dark:border-slate-700 dark:bg-slate-800'" :aria-pressed="allSuppliersSelected" :title="store.t('Show all supplier lines')" @click="showAllSuppliers">{{ store.t('All suppliers') }}</button>
               <button v-for="series in supplierSeries" :key="series.supplierId" class="flex min-w-max items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition" :class="isSupplierVisible(series.supplierId) ? 'border-slate-300 bg-white text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100' : 'border-transparent bg-slate-100/80 text-slate-400 opacity-60 hover:opacity-100 dark:bg-slate-800/50'" :aria-pressed="isSupplierVisible(series.supplierId)" :aria-label="series.name" @click="toggleSupplier(series.supplierId)">
                 <i class="h-2 w-2 rounded-full" :style="{ background: series.color }"></i><span>{{ shortName(series.name) }}</span>
                 <span v-if="series.improvement > 0" class="font-normal text-emerald-600 dark:text-emerald-400">↓ {{ store.money(series.improvement, auction.currency) }}</span>
               </button>
-              <button v-if="visibleSupplierSeries.length" class="min-w-max rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-400 hover:text-brand" title="Hide all supplier lines" @click="clearSupplierFilters">Clear</button>
+              <button v-if="visibleSupplierSeries.length" class="min-w-max rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-400 hover:text-brand" :title="store.t('Hide all supplier lines')" @click="clearSupplierFilters">{{ store.t('Clear') }}</button>
             </div>
           </div>
           <div v-else class="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-slate-50/65 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/25">
-            <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">Your company offer</span>
+            <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">{{ store.t('Your company offer') }}</span>
             <b class="text-xs">{{ bidder?.name }} · #{{ bidder?.rank || "—" }}</b>
           </div>
 
@@ -395,18 +395,18 @@ export default {
     const kpis = computed(() => {
       if (!auction.value) return [];
       if (!isOrganizer.value) return [
-        { label: "Your offer", value: bidder.value?.lastBid ? store.money(bidder.value.lastBid, auction.value.currency) : "Not submitted", icon: "fa-hand-holding-dollar", note: "Only your submitted amount is shown" },
-        { label: "Your rank", value: bidder.value?.rank ? `#${bidder.value.rank}` : "—", icon: "fa-ranking-star", note: "Rank updates after a valid offer" },
-        { label: "Competition", value: auction.value.status === "Running" ? "Live" : statusLabel(auction.value.status), icon: "fa-tower-broadcast", note: "Competitor identities and prices are private" },
-        { label: "Round", value: auction.value.id, icon: "fa-shield-halved", note: "Blind-bid controls are active" },
+        { label: store.t("Your offer"), value: bidder.value?.lastBid ? store.money(bidder.value.lastBid, auction.value.currency) : store.t("Not submitted"), icon: "fa-hand-holding-dollar", note: store.t("Only your submitted amount is shown") },
+        { label: store.t("Your rank"), value: bidder.value?.rank ? `#${bidder.value.rank}` : "—", icon: "fa-ranking-star", note: store.t("Rank updates after a valid offer") },
+        { label: store.t("Competition"), value: auction.value.status === "Running" ? store.t("Live") : statusLabel(auction.value.status), icon: "fa-tower-broadcast", note: store.t("Competitor identities and prices are private") },
+        { label: store.t("Round"), value: auction.value.id, icon: "fa-shield-halved", note: store.t("Blind-bid controls are active") },
       ];
       return [
-        { label: "Current best", value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: "Leading lowest quote" },
-        { label: "Financial savings", value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: "Budget to best first offer" },
-        { label: "Buyniverse savings", value: store.money(commercial.value.buyniverseSavings || 0, auction.value.currency), icon: "fa-gavel", note: "Best first offer to current bid" },
-        { label: "Service fee", value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: `${commercial.value.successFeeRate || 40}% of validated savings` },
-        { label: "Total offers", value: String(auction.value.bids.length), icon: "fa-gavel", note: "Verified bid records" },
-        { label: "Suppliers", value: `${auction.value.participants.length} invited`, icon: "fa-users", note: "Qualified suppliers" },
+        { label: store.t("Current best"), value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: store.t("Leading lowest quote") },
+        { label: store.t("Financial savings"), value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: store.t("Budget to best first offer") },
+        { label: store.t("Buyniverse savings"), value: store.money(commercial.value.buyniverseSavings || 0, auction.value.currency), icon: "fa-gavel", note: store.t("Best first offer to current bid") },
+        { label: store.t("Service fee"), value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: store.t(`${commercial.value.successFeeRate || 40}% of validated savings`) },
+        { label: store.t("Total offers"), value: String(auction.value.bids.length), icon: "fa-gavel", note: store.t("Verified bid records") },
+        { label: store.t("Suppliers"), value: store.t(`${auction.value.participants.length} invited`), icon: "fa-users", note: store.t("Qualified suppliers") },
       ];
     });
 
@@ -417,7 +417,7 @@ export default {
       Closed: "bg-slate-100 text-slate-600 dark:bg-slate-700",
     })[auction.value?.status] || "bg-slate-100 text-slate-600");
 
-    const statusLabel = (s) => ({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Closed: "Completed" })[s] || s;
+    const statusLabel = (s) => store.t(({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Closed: "Completed" })[s] || s);
     const timeLeft = computed(() => {
       const closingAt = auction.value?.closingAt || auction.value?.endAt;
       if (!closingAt) return "—";
@@ -427,10 +427,10 @@ export default {
     });
 
     const health = computed(() => {
-      if (!auction.value) return { label: "Unknown", tone: "bg-slate-100" };
-      if (auction.value.bids.length >= 8) return { label: "High Competition", tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10" };
-      if (auction.value.bids.length >= 3) return { label: "Active Bidding", tone: "bg-sky-50 text-sky-700 dark:bg-sky-500/10" };
-      return { label: "Low Activity", tone: "bg-amber-50 text-amber-700 dark:bg-amber-500/10" };
+      if (!auction.value) return { label: store.t("Unknown"), tone: "bg-slate-100" };
+      if (auction.value.bids.length >= 8) return { label: store.t("High Competition"), tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10" };
+      if (auction.value.bids.length >= 3) return { label: store.t("Active Bidding"), tone: "bg-sky-50 text-sky-700 dark:bg-sky-500/10" };
+      return { label: store.t("Low Activity"), tone: "bg-amber-50 text-amber-700 dark:bg-amber-500/10" };
     });
 
     const supplierSeries = computed(() => {
@@ -531,7 +531,7 @@ export default {
       return [...bids].reverse();
     });
     const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
-    const sourceLabel = (src) => ({ manual: "Manual operator", auto: "Auto-bid algorithm", system: "Floor calibration" })[src] || src;
+    const sourceLabel = (src) => store.t(({ manual: "Manual operator", auto: "Auto-bid algorithm", system: "Floor calibration" })[src] || src);
     const actionLabel = (act) => act;
     const signalCopy = (signal) => {
       if (!signal) return "";

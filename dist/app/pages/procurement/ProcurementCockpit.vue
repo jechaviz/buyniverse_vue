@@ -16,16 +16,16 @@
       </article>
     </section>
 
-    <SavingsWaterfall :model="commercial.primary" title="Savings waterfall" kicker="Commercial intelligence" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
+    <SavingsWaterfall :model="commercial.primary" :title="store.t('Savings waterfall')" :kicker="store.t('Commercial intelligence')" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
 
     <section class="grid gap-6 2xl:grid-cols-[minmax(0,1.25fr)_minmax(330px,.75fr)]">
       <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
         <header class="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">Open activity</h2>
-            <p class="mt-0.5 text-xs text-slate-400">Every number opens the records behind it.</p>
+            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">{{ store.t('Open activity') }}</h2>
+            <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Every number opens the records behind it.') }}</p>
           </div>
-          <RouterLink to="/procurement/queue" class="text-xs font-bold text-brand hover:underline">View requests <i class="fa-solid fa-arrow-right ml-1"></i></RouterLink>
+          <RouterLink to="/procurement/queue" class="text-xs font-bold text-brand hover:underline">{{ store.t('View requests') }} <i class="fa-solid fa-arrow-right ml-1"></i></RouterLink>
         </header>
         <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
           <RouterLink v-for="step in pipeline" :key="step.label" :to="step.to" class="group p-5 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
@@ -41,8 +41,8 @@
         </div>
         <div class="border-t border-slate-100 p-5 dark:border-slate-800">
           <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-head font-bold text-xs uppercase tracking-wider text-slate-400">Spend & savings pulse</h3>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Last 6 months</span>
+            <h3 class="font-head font-bold text-xs uppercase tracking-wider text-slate-400">{{ store.t('Spend & savings pulse') }}</h3>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ store.t('Last 6 months') }}</span>
           </div>
           <div class="flex h-44 items-end gap-3 sm:gap-5 pt-4">
             <div v-for="point in analytics.monthly" :key="point.month" class="group flex h-full min-w-0 flex-1 flex-col justify-end">
@@ -54,8 +54,8 @@
             </div>
           </div>
           <div class="mt-4 flex gap-5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></i>Spend</span>
-            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-brand"></i>Savings</span>
+            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></i>{{ store.t('Spend') }}</span>
+            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-brand"></i>{{ store.t('Savings') }}</span>
           </div>
         </div>
       </article>
@@ -64,8 +64,8 @@
         <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
           <header class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
             <div>
-              <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">Needs action</h2>
-              <p class="mt-0.5 text-[11px] text-slate-400">Issues and decisions assigned to you</p>
+              <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t('Needs action') }}</h2>
+              <p class="mt-0.5 text-[11px] text-slate-400">{{ store.t('Issues and decisions assigned to you') }}</p>
             </div>
             <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">{{ workQueue.length }}</span>
           </header>
@@ -88,8 +88,8 @@
 
         <article class="panel p-5 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
           <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">Top Suppliers</h2>
-            <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">Performance</RouterLink>
+            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t('Top Suppliers') }}</h2>
+            <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('Performance') }}</RouterLink>
           </div>
           <div class="mt-4 space-y-2">
             <RouterLink
@@ -156,10 +156,10 @@
       <article class="panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">Recent activity</h2>
-            <p class="mt-0.5 text-xs text-slate-400">Requests, offers, orders and invoice checks in one history.</p>
+            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">{{ store.t('Recent activity') }}</h2>
+            <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Requests, offers, orders and invoice checks in one history.') }}</p>
           </div>
-          <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">View insights</RouterLink>
+          <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('View insights') }}</RouterLink>
         </div>
         <div class="mt-5 grid gap-3 md:grid-cols-2">
           <div v-for="event in store.state.procurementAudit.slice(0,6)" :key="event.id" class="flex gap-3.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 dark:border-slate-800 dark:bg-slate-800/30">
@@ -196,17 +196,17 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
   const openOrders=computed(()=>orders.value.filter(item=>!['Matched','Closed'].includes(item.status)).length);
   const exceptionCount=computed(()=>orders.value.reduce((sum,item)=>sum+(item.exceptions||[]).filter(exception=>exception.status!=='Resolved').length,0));
   const kpis=computed(()=>[
-    {label:'Financial savings',value:store.money(commercial.value.primary.financialSavings||0,commercial.value.primary.currency||'USD'),delta:'Budget to first offer',progress:Math.min(100,Math.round((commercial.value.primary.financialSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-chart-line',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-sky-500'},
-    {label:'Buyniverse savings',value:store.money(commercial.value.primary.buyniverseSavings||0,commercial.value.primary.currency||'USD'),delta:'First offer to final bid',progress:Math.min(100,Math.round((commercial.value.primary.buyniverseSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-gavel',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
-    {label:'Open requests',value:activeRequests.value,delta:'1 due today',progress:58,icon:'fa-inbox',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-amber-500'},
-    {label:'Open quotes',value:activeEvents.value,delta:'2 decisions',progress:66,icon:'fa-file-signature',iconTone:'bg-brand-50 text-brand',deltaTone:'text-brand'},
-    {label:'Orders in flight',value:openOrders.value,delta:'1 partial',progress:62,icon:'fa-truck-fast',iconTone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',deltaTone:'text-amber-500'},
-    {label:'Open issues',value:exceptionCount.value,delta:'1 high',progress:24,icon:'fa-triangle-exclamation',iconTone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300',deltaTone:'text-rose-500'}]);
+    {label:store.t('Financial savings'),value:store.money(commercial.value.primary.financialSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('Budget to first offer'),progress:Math.min(100,Math.round((commercial.value.primary.financialSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-chart-line',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-sky-500'},
+    {label:store.t('Buyniverse savings'),value:store.money(commercial.value.primary.buyniverseSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('First offer to final bid'),progress:Math.min(100,Math.round((commercial.value.primary.buyniverseSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-gavel',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
+    {label:store.t('Open requests'),value:activeRequests.value,delta:store.t('1 due today'),progress:58,icon:'fa-inbox',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-amber-500'},
+    {label:store.t('Open quotes'),value:activeEvents.value,delta:store.t('2 decisions'),progress:66,icon:'fa-file-signature',iconTone:'bg-brand-50 text-brand',deltaTone:'text-brand'},
+    {label:store.t('Orders in flight'),value:openOrders.value,delta:store.t('1 partial'),progress:62,icon:'fa-truck-fast',iconTone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',deltaTone:'text-amber-500'},
+    {label:store.t('Open issues'),value:exceptionCount.value,delta:store.t('1 high'),progress:24,icon:'fa-triangle-exclamation',iconTone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300',deltaTone:'text-rose-500'}]);
   const pipeline=computed(()=>[
-    {label:'Requests',value:activeRequests.value,note:'Intake and approvals waiting',icon:'fa-inbox',to:'/procurement/queue'},
-    {label:'Quotes',value:activeEvents.value,note:'Invitations, offers and comparison',icon:'fa-file-signature',to:'/procurement/sourcing'},
-    {label:'Orders',value:openOrders.value,note:'Commitment, receipt and follow-up',icon:'fa-cart-shopping',to:'/procurement/execution'},
-    {label:'Invoice checks',value:exceptionCount.value,note:'Issues that still need review',icon:'fa-link',to:'/procurement/execution'}]);
+    {label:store.t('Requests'),value:activeRequests.value,note:store.t('Intake and approvals waiting'),icon:'fa-inbox',to:'/procurement/queue'},
+    {label:store.t('Quotes'),value:activeEvents.value,note:store.t('Invitations, offers and comparison'),icon:'fa-file-signature',to:'/procurement/sourcing'},
+    {label:store.t('Orders'),value:openOrders.value,note:store.t('Commitment, receipt and follow-up'),icon:'fa-cart-shopping',to:'/procurement/execution'},
+    {label:store.t('Invoice checks'),value:exceptionCount.value,note:store.t('Issues that still need review'),icon:'fa-link',to:'/procurement/execution'}]);
   const workQueue=computed(()=>[
     ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):'Today',action:'Review decision',to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
     ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,action:'Resolve issue',to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),

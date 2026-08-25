@@ -390,6 +390,13 @@ const replaceWorkspaceState = (nextState, context = ui.tenantContext) => {
     demo: runtimeMode.value === "demo",
   });
 };
+// The shell starts before a production session is known. This state is created
+// locally (never accepted from the network), so it intentionally has no user.
+const resetWorkspaceState = () => {
+  Object.keys(state).forEach((key) => { delete state[key]; });
+  Object.assign(state, emptyWorkspaceState());
+  window.BuyniverseInitialState?.normalizeState(state, null, { demo: false });
+};
 const productionWorkspaceState = (context) => {
   const principal = context?.principal || {};
   const name = clean(principal.displayName || "Workspace user", 180) || "Workspace user";
@@ -475,7 +482,7 @@ const initializeRuntime = async () => {
   if (runtimeMode.value === "demo") {
     replaceWorkspaceState(window.BuyniverseDemo.clone(), null);
   } else {
-    replaceWorkspaceState(emptyWorkspaceState(), null);
+    resetWorkspaceState();
   }
 };
 window.addEventListener("pagehide", () => { void persistState(); });
@@ -486,10 +493,10 @@ document.addEventListener("visibilitychange", () => {
 // Component Loaders
 const Dashboard = load("./app/pages/DashboardPage.vue?v=32");
 const Home = load("./app/pages/HomePage.vue?v=31");
-const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
+const Workspace = load("./app/pages/WorkspacePage.vue?v=56");
 const Project = load("./app/pages/ProjectPage.vue?v=29");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
-const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=33");
+const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=34");
 const JobDetails = load("./app/pages/JobDetailsPage.vue?v=37");
 const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
@@ -501,7 +508,7 @@ const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=27");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=31");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
@@ -781,7 +788,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=45"));
+  const app = createApp(load("./app/App.vue?v=46"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

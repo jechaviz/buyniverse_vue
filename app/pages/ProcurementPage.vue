@@ -70,16 +70,16 @@ const load = (p) =>
   Vue.defineAsyncComponent(() =>
     window["vue3-sfc-loader"].loadModule(p, window.sfcOptions),
   );
-const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=9");
-const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=10");
-const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=17");
-const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=27");
-const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=10");
+const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=11");
+const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=13");
+const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=21");
+const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=29");
+const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=13");
 const Intelligence = load(
   "./app/pages/procurement/ProcurementIntelligence.vue?v=7",
 );
 const Governance = load(
-  "./app/pages/procurement/ProcurementGovernance.vue?v=8",
+  "./app/pages/procurement/ProcurementGovernance.vue?v=10",
 );
 const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
 export default {

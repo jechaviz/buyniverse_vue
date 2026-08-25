@@ -46,6 +46,11 @@ if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#a
   throw new Error("Missing anti-FOUC boot layer");
 if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready"))
   throw new Error("App reveal is not coordinated with the mounted shell");
+if (
+  read("app/main.js").includes("replaceWorkspaceState(emptyWorkspaceState(), null)") ||
+  !read("app/main.js").includes("const resetWorkspaceState = () =>")
+)
+  throw new Error("Production boot must render a trusted empty shell before remote workspace hydration");
 
 const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 
@@ -100,6 +105,19 @@ for (const token of [
 ]) {
   if (!sourcingSource.includes(token)) throw new Error(`Supplier RFX privacy gate is missing ${token}`);
 }
+for (const [file, token] of [
+  ["app/components/DataTableFilterDrawer.vue", "t('Filters')"],
+  ["app/components/DataTable.vue", 'currentViewLabel() { return this.activeSavedView?.name || this.t("All records"); }'],
+  ["app/components/InlineCellEditor.vue", 'inject: ["store"]'],
+  ["app/pages/procurement/LiveAuctionWorkspace.vue", 'store.t("Financial savings")'],
+  ["app/pages/procurement/ProcurementCockpit.vue", "store.t('Open activity')"],
+  ["app/pages/procurement/governance/GovernanceAuditTab.vue", "t('History')"],
+  ["app/pages/procurement/ProcurementGovernance.vue", "Production workspace state is stored server-side by session"],
+]) {
+  if (!read(file).includes(token)) throw new Error(`Bilingual procurement UI coverage is incomplete: ${file} (${token})`);
+}
+if (read("app/pages/procurement/ProcurementGovernance.vue").includes("All persistent state stored in browser LocalStorage"))
+  throw new Error("Governance must not misrepresent production persistence as browser LocalStorage");
 const domainActionsSource = read("app/store/domainActions.js");
 for (const token of ["submitSourcingResponse", "invitedSupplierIds", "this.isSupplier?.value", "Supplier response submitted"]) {
   if (!domainActionsSource.includes(token)) throw new Error(`Supplier RFX response guard is missing ${token}`);

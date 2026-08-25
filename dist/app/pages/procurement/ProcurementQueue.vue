@@ -50,7 +50,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=24");
+const DataTable = load("./app/components/DataTable.vue?v=27");
 const QueueDetailPanel = load("./app/pages/procurement/queue/QueueDetailPanel.vue?v=1");
 const QueueCreateModal = load("./app/pages/procurement/queue/QueueCreateModal.vue?v=2");
 

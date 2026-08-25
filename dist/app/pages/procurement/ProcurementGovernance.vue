@@ -68,12 +68,12 @@
 const { inject, computed, ref, reactive, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const GovernanceAutomationTab = load("./app/pages/procurement/governance/GovernanceAutomationTab.vue?v=1");
-const GovernanceRulesTab = load("./app/pages/procurement/governance/GovernanceRulesTab.vue?v=1");
-const GovernanceRolesTab = load("./app/pages/procurement/governance/GovernanceRolesTab.vue?v=1");
-const GovernanceConfigTab = load("./app/pages/procurement/governance/GovernanceConfigTab.vue?v=1");
-const GovernanceAuditTab = load("./app/pages/procurement/governance/GovernanceAuditTab.vue?v=1");
-const GovernanceWorkflowModal = load("./app/pages/procurement/governance/GovernanceWorkflowModal.vue?v=1");
+const GovernanceAutomationTab = load("./app/pages/procurement/governance/GovernanceAutomationTab.vue?v=2");
+const GovernanceRulesTab = load("./app/pages/procurement/governance/GovernanceRulesTab.vue?v=2");
+const GovernanceRolesTab = load("./app/pages/procurement/governance/GovernanceRolesTab.vue?v=2");
+const GovernanceConfigTab = load("./app/pages/procurement/governance/GovernanceConfigTab.vue?v=2");
+const GovernanceAuditTab = load("./app/pages/procurement/governance/GovernanceAuditTab.vue?v=2");
+const GovernanceWorkflowModal = load("./app/pages/procurement/governance/GovernanceWorkflowModal.vue?v=2");
 
 export default {
   components: { GovernanceAutomationTab, GovernanceRulesTab, GovernanceRolesTab, GovernanceConfigTab, GovernanceAuditTab, GovernanceWorkflowModal },
@@ -86,11 +86,11 @@ export default {
 
     const openTab = (key) => { tab.value = key; };
     const tabs = [
-      { key: "automation", label: "Automations", icon: "fa-bolt" },
-      { key: "rules", label: "Rules", icon: "fa-scale-balanced" },
-      { key: "roles", label: "Roles", icon: "fa-users-gear" },
-      { key: "configuration", label: "Configuration", icon: "fa-sliders" },
-      { key: "audit", label: "History", icon: "fa-clock-rotate-left" },
+      { key: "automation", label: store.t("Automations"), icon: "fa-bolt" },
+      { key: "rules", label: store.t("Rules"), icon: "fa-scale-balanced" },
+      { key: "roles", label: store.t("Roles"), icon: "fa-users-gear" },
+      { key: "configuration", label: store.t("Configuration"), icon: "fa-sliders" },
+      { key: "audit", label: store.t("History"), icon: "fa-clock-rotate-left" },
     ];
 
     const ruleDraft = reactive({ name: "", type: "Approval", condition: "", action: "" });
@@ -133,21 +133,21 @@ export default {
     ];
 
     const nativeChecks = [
-      "No external build step required (Vue 3 CDN/SFC runtime).",
-      "All persistent state stored in browser LocalStorage with automatic schema migration.",
-      "Zero-latency simulation for demo workflows with full audit coverage.",
+      store.t("Vue 3 CDN/SFC runtime is delivered as an AOT-built static release."),
+      store.t("Production workspace state is stored server-side by session; demo state is explicit and isolated."),
+      store.t("Audit events cover the demo lifecycle; production controls remain server-authoritative."),
     ];
 
     const toggleWorkflow = (wf) => {
       wf.status = wf.status === "Active" ? "Paused" : "Active";
-      store.procurementEvent(wf, "Workflow status updated", wf.status);
-      store.notice(`Workflow ${wf.name} is now ${wf.status}`);
+      store.procurementEvent(wf, store.t("Workflow status updated"), store.t(wf.status));
+      store.notice(`${store.t("Workflow")} ${wf.name}: ${store.t(wf.status)}`);
     };
 
     const toggleRule = (r) => {
       r.enabled = !r.enabled;
-      store.procurementEvent(r, "Rule toggled", r.enabled ? "Enabled" : "Disabled");
-      store.notice(`Rule ${r.name} ${r.enabled ? "enabled" : "disabled"}`);
+      store.procurementEvent(r, store.t("Rule toggled"), store.t(r.enabled ? "Enabled" : "Disabled"));
+      store.notice(`${store.t("Rule")} ${r.name}: ${store.t(r.enabled ? "Enabled" : "Disabled")}`);
     };
 
     const addRule = () => {
@@ -156,7 +156,7 @@ export default {
         name: ruleDraft.name, type: ruleDraft.type, condition: ruleDraft.condition, action: ruleDraft.action,
         owner: store.currentUser.value.name, enabled: true,
       });
-      store.notice("Rule added successfully");
+      store.notice(store.t("Rule added successfully"));
       ruleDraft.name = ""; ruleDraft.condition = ""; ruleDraft.action = "";
     };
 
@@ -168,13 +168,13 @@ export default {
         status: "Active", runs: 0, successRate: 100,
       });
       workflowOpen.value = false;
-      store.notice("Workflow created");
+      store.notice(store.t("Workflow created"));
       workflowDraft.name = ""; workflowDraft.trigger = ""; workflowDraft.stepsText = "";
     };
 
-    const configChanged = (f) => { store.notice(`${f.label} updated`); };
+    const configChanged = (f) => { store.notice(`${store.t(f.label)} ${store.t("updated")}`); };
     const ruleIcon = (type) => ({ Approval: "fa-user-check", Exclusion: "fa-ban", Auction: "fa-gavel", Matching: "fa-link", "Supplier limit": "fa-building", "Price threshold": "fa-money-bill-wave" })[type] || "fa-gear";
-    const ruleTypeLabel = (t) => ({ Auction: "Live bid", Matching: "Invoice check" })[t] || t;
+    const ruleTypeLabel = (t) => store.t(({ Auction: "Live bid", Matching: "Invoice check" })[t] || t);
 
     const filteredAudit = computed(() => {
       const q = auditSearch.value.toLowerCase();
@@ -183,7 +183,7 @@ export default {
 
     const exportAudit = () => {
       window.ProcurementCommon.download("procurement-audit-log.csv", window.ProcurementCommon.csv(filteredAudit.value), "text/csv");
-      store.notice("Audit log exported", "fa-download");
+      store.notice(store.t("Audit log exported"), "fa-download");
     };
 
     return {

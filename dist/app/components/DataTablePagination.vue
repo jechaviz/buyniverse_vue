@@ -3,7 +3,7 @@
     class="flex flex-col gap-3 border-t border-slate-200/70 bg-slate-50/45 p-4 text-sm dark:border-slate-700 dark:bg-slate-800/25 sm:flex-row sm:items-center sm:justify-between"
   >
     <label class="flex items-center gap-2 text-slate-500"
-      >Rows
+      >{{ t('Rows') }}
       <select
         :value="pageSize"
         class="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-700"
@@ -21,12 +21,16 @@
         <button
           class="btn-muted h-8 w-8 p-0"
           v-if="!cursorMode" :disabled="page === 1"
+          :title="t('First page')"
+          :aria-label="t('First page')"
           @click="$emit('update:page', 1)"
         >
           «</button
         ><button
           class="btn-muted h-8 w-8 p-0"
           :disabled="page === 1"
+          :title="t('Previous page')"
+          :aria-label="t('Previous page')"
           @click="$emit('update:page', page - 1)"
         >
           ‹</button
@@ -35,12 +39,16 @@
         ><button
           class="btn-muted h-8 w-8 p-0"
           :disabled="loading || (cursorMode ? !hasNext : page === pageCount)"
+          :title="t('Next page')"
+          :aria-label="t('Next page')"
           @click="$emit('update:page', page + 1)"
         >
           ›</button
         ><button
           class="btn-muted h-8 w-8 p-0"
           v-if="!cursorMode" :disabled="page === pageCount"
+          :title="t('Last page')"
+          :aria-label="t('Last page')"
           @click="$emit('update:page', pageCount)"
         >
           »
@@ -51,6 +59,7 @@
 </template>
 <script>
 export default {
+  inject: ["store"],
   props: {
     page: { type: Number, required: true },
     pageCount: { type: Number, required: true },
@@ -61,5 +70,11 @@ export default {
     loading: Boolean,
   },
   emits: ["update:page", "update:pageSize"],
+  methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
+  },
 };
 </script>

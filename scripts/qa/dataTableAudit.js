@@ -50,8 +50,8 @@ function runDataTableAudit(root, read, vueFiles) {
     "isViewDirty",
     "updateSavedView",
     "Save as new view",
-    'aria-label="Save New View"',
-    'aria-label="Search records"',
+    ':aria-label="t(\'Save New View\')"',
+    ':aria-label="t(\'Search records\')"',
     "searchOpen",
     "openSearch",
     "openSearch(false)",
@@ -59,14 +59,14 @@ function runDataTableAudit(root, read, vueFiles) {
     "closeSearch",
     "Save New View",
     "openSaveViewDialog",
-    'aria-label="Columns"',
+    ':aria-label="t(\'Columns\')"',
     "column-drag-handle",
     "safeLinkFor",
     "sanitizeQuery",
     "aria-sort",
     "resultSummary",
     'maxlength="160"',
-    'class="truncate">{{ column.label }}',
+    'class="truncate">{{ t(column.label) }}',
   ]) {
     if (!dataTableFile.includes(token))
       throw new Error(`Dense saved-view toolbar is missing ${token}`);
@@ -128,8 +128,8 @@ function runDataTableAudit(root, read, vueFiles) {
     !rowActionSource.includes("group-hover:opacity-100") ||
     !rowActionSource.includes('v-for="action in actions"') ||
     rowActionSource.includes("More actions") ||
-    !bulkActionSource.includes("Select all {{ totalCount }} matching") ||
-    !bulkActionSource.includes("Bulk actions")
+    !bulkActionSource.includes("{{ t(`Select all ${totalCount} matching`) }}") ||
+    !bulkActionSource.includes("{{ t('Bulk actions') }}")
   )
     throw new Error("Contextual row actions or bulk actions are incomplete");
 

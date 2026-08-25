@@ -14,7 +14,7 @@
         <button
           class="absolute inset-0 bg-slate-950/65 backdrop-blur-sm"
           type="button"
-          aria-label="Close dialog"
+          :aria-label="t('Close dialog')"
           @click="close"
         ></button>
         <form
@@ -46,7 +46,7 @@
             <button
               type="button"
               class="grid h-9 w-9 flex-none place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
-              aria-label="Close dialog"
+              :aria-label="t('Close dialog')"
               @click="close"
             >
               <i class="fa-solid fa-xmark"></i>
@@ -62,7 +62,7 @@
               <span
                 v-if="required"
                 class="rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 dark:bg-rose-500/10"
-                >Required</span
+                >{{ t('Required') }}</span
               >
             </label>
             <input
@@ -106,7 +106,7 @@
             class="flex justify-end gap-2 border-t border-slate-200/70 bg-slate-50/45 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/30"
           >
             <button type="button" class="btn-muted" @click="close">
-              Cancel
+              {{ t('Cancel') }}
             </button>
             <button type="submit" class="btn-brand" :disabled="!canSubmit">
               <i class="fa-solid fa-check"></i>{{ confirmLabel }}
@@ -122,6 +122,7 @@
 const { nextTick } = Vue;
 
 export default {
+  inject: ["store"],
   props: {
     open: Boolean,
     title: { type: String, default: "Enter a value" },
@@ -153,7 +154,7 @@ export default {
     validationError() {
       if (this.error) return this.error;
       if (this.touched && this.required && !this.draft.trim())
-        return `${this.label} is required.`;
+        return `${this.label} ${this.t('is required')}.`;
       return "";
     },
   },
@@ -178,6 +179,10 @@ export default {
     window.BuyniverseOverlay?.release(this.overlayId);
   },
   methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
     close() {
       this.$emit("close");
     },

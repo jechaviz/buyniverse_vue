@@ -1,7 +1,7 @@
 <template>
   <SideDrawer
     :open="open"
-    title="Filters"
+    :title="t('Filters')"
     :subtitle="subtitle"
     icon="fa-filter"
     @close="$emit('close')"
@@ -12,16 +12,16 @@
     >
       <i class="fa-solid fa-circle-info mt-0.5"></i>
       <p class="text-xs leading-5">
-        These filters differ from <b>{{ viewName }}</b
-        >. Update it or save a new view from the view menu.
+        {{ t('These filters differ from') }} <b>{{ viewName }}</b
+        >. {{ t('Update it or save a new view from the view menu.') }}
       </p>
     </div>
 
     <div class="space-y-3">
       <CollapsibleSection
         v-model="rulesOpen"
-        title="Filter rules"
-        subtitle="Combine conditions across any available column."
+        :title="t('Filter rules')"
+        :subtitle="t('Combine conditions across any available column.')"
         icon="fa-code-branch"
         :count="activeRuleCount"
       >
@@ -31,7 +31,7 @@
             class="btn-muted h-8 px-2.5 text-xs"
             @click="addRule"
           >
-            <i class="fa-solid fa-plus"></i>Add
+            <i class="fa-solid fa-plus"></i>{{ t('Add') }}
           </button>
         </div>
 
@@ -40,7 +40,7 @@
         >
           <span
             class="pl-2 text-[10px] font-bold uppercase tracking-wide text-slate-400"
-            >Match</span
+            >{{ t('Match') }}</span
           >
           <div class="flex gap-1">
             <button
@@ -55,7 +55,7 @@
               "
               @click="$emit('update:mode', option.value)"
             >
-              {{ option.label }}
+              {{ t(option.label) }}
             </button>
           </div>
         </div>
@@ -70,7 +70,7 @@
               <select
                 class="field min-w-0 py-1.5 text-xs"
                 :value="rule.key"
-                aria-label="Filter column"
+                :aria-label="t('Filter column')"
                 @change="updateRule(index, 'key', $event.target.value)"
               >
                 <option
@@ -84,7 +84,7 @@
               <select
                 class="field min-w-0 py-1.5 text-xs"
                 :value="rule.operator"
-                aria-label="Filter operator"
+                :aria-label="t('Filter operator')"
                 @change="updateRule(index, 'operator', $event.target.value)"
               >
                 <option
@@ -92,14 +92,14 @@
                   :key="operator.value"
                   :value="operator.value"
                 >
-                  {{ operator.label }}
+                  {{ t(operator.label) }}
                 </option>
               </select>
               <button
                 type="button"
                 class="grid h-9 w-8 place-items-center rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10"
-                title="Remove rule"
-                aria-label="Remove rule"
+                :title="t('Remove rule')"
+                :aria-label="t('Remove rule')"
                 @click="removeRule(index)"
               >
                 <i class="fa-solid fa-trash-can text-xs"></i>
@@ -108,9 +108,9 @@
             <input
               class="field mt-2 py-1.5 text-xs"
               :value="rule.value"
-              :placeholder="`Value for ${columnLabel(rule.key)}`"
+              :placeholder="t(`Value for ${columnLabel(rule.key)}`)"
               maxlength="160"
-              aria-label="Filter value"
+              :aria-label="t('Filter value')"
               @input="updateRule(index, 'value', $event.target.value)"
             />
           </article>
@@ -121,15 +121,15 @@
             @click="addRule"
           >
             <i class="fa-solid fa-plus mb-2 block text-base"></i>
-            Add the first compound rule
+            {{ t('Add the first compound rule') }}
           </button>
         </div>
       </CollapsibleSection>
 
       <CollapsibleSection
         v-model="columnsOpen"
-        title="Column filters"
-        subtitle="Narrow a specific column without adding another rule."
+        :title="t('Column filters')"
+        :subtitle="t('Narrow a specific column without adding another rule.')"
         icon="fa-table-columns"
         :count="activeColumnFilterCount"
       >
@@ -148,7 +148,7 @@
                 :id="inputId(column.key)"
                 class="field py-1.5 pr-8 text-xs"
                 :value="filters[column.key] || ''"
-                :placeholder="`Filter ${column.label}`"
+                :placeholder="t(`Filter ${column.label}`)"
                 maxlength="160"
                 @input="updateColumn(column.key, $event.target.value)"
               />
@@ -156,7 +156,7 @@
                 v-if="filters[column.key]"
                 type="button"
                 class="absolute right-1 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-rose-500 dark:hover:bg-slate-700"
-                :aria-label="`Clear ${column.label} filter`"
+                :aria-label="t(`Clear ${column.label} filter`)"
                 @click="updateColumn(column.key, '')"
               >
                 <i class="fa-solid fa-xmark text-[10px]"></i>
@@ -174,12 +174,12 @@
         :disabled="!activeCount"
         @click="$emit('clear')"
       >
-        <i class="fa-solid fa-eraser"></i>Clear all
+        <i class="fa-solid fa-eraser"></i>{{ t('Clear all') }}
       </button>
       <div class="flex items-center gap-3">
-        <span class="text-[10px] text-slate-400">Changes apply live</span>
+        <span class="text-[10px] text-slate-400">{{ t('Changes apply live') }}</span>
         <button type="button" class="btn-brand" @click="$emit('close')">
-          Done
+          {{ t('Done') }}
         </button>
       </div>
     </template>
@@ -193,6 +193,7 @@ const load = (path) =>
   );
 
 export default {
+  inject: ["store"],
   components: {
     SideDrawer: load("./app/components/SideDrawer.vue?v=2"),
     CollapsibleSection: load("./app/components/CollapsibleSection.vue?v=1"),
@@ -232,8 +233,8 @@ export default {
   },
   computed: {
     subtitle() {
-      if (!this.activeCount) return "No filters applied";
-      return `${this.activeCount} active ${this.activeCount === 1 ? "filter" : "filters"}`;
+      if (!this.activeCount) return this.t("No filters applied");
+      return this.t(`${this.activeCount} active ${this.activeCount === 1 ? "filter" : "filters"}`);
     },
     activeRuleCount() {
       return this.rules.filter((rule) => String(rule.value ?? "").trim())
@@ -259,6 +260,7 @@ export default {
     },
   },
   methods: {
+    t(key) { void this.store?.locale?.value; return this.store?.t?.(key) || key; },
     inputId(key) {
       const safeKey = String(key).replace(/[^a-zA-Z0-9_-]/g, "-");
       return `column-filter-${this.instanceId}-${safeKey}`;
@@ -271,7 +273,7 @@ export default {
     },
     columnLabel(key) {
       return (
-        this.columns.find((column) => column.key === key)?.label || "column"
+        this.columns.find((column) => column.key === key)?.label || this.t("column")
       );
     },
     updateColumn(key, value) {

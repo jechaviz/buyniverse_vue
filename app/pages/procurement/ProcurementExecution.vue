@@ -151,7 +151,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=24");
+const DataTable = load("./app/components/DataTable.vue?v=27");
 const OrderReceiptModal = load("./app/pages/procurement/execution/OrderReceiptModal.vue?v=1");
 const OrderLinesTab = load("./app/pages/procurement/execution/OrderLinesTab.vue?v=1");
 const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=2");

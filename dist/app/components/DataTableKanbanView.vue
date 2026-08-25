@@ -6,7 +6,7 @@
       class="rounded-xl bg-slate-100/70 p-3 dark:bg-slate-800/55"
     >
       <h2 class="mb-3 text-sm font-bold">
-        {{ group.label }}
+        {{ t(group.label) }}
         <span class="text-slate-400">{{ group.count }}</span>
       </h2>
       <div class="space-y-2">
@@ -26,11 +26,18 @@
 </template>
 <script>
 export default {
+  inject: ["store"],
   props: {
     groups: { type: Array, required: true },
     visibleColumns: { type: Array, required: true },
     groupedItems: { type: Function, required: true },
     display: { type: Function, required: true },
+  },
+  methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
   },
 };
 </script>

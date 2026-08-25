@@ -15,7 +15,7 @@
         <input
           :checked="selection[item.id]"
           type="checkbox"
-          :aria-label="`Select ${item.id}`"
+          :aria-label="`${t('Select')} ${item.id}`"
           @change="$emit('toggle-select', item.id)"
         />
       </div>
@@ -25,7 +25,7 @@
           :key="col.key"
           class="rounded bg-slate-100 px-2 py-0.5 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
         >
-          {{ col.label }}: {{ display(item, col.key) }}
+          {{ t(col.label) }}: {{ display(item, col.key) }}
         </span>
       </div>
     </article>
@@ -33,6 +33,7 @@
 </template>
 <script>
 export default {
+  inject: ["store"],
   props: {
     items: { type: Array, required: true },
     visibleColumns: { type: Array, required: true },
@@ -40,5 +41,11 @@ export default {
     display: { type: Function, required: true },
   },
   emits: ["toggle-select"],
+  methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
+  },
 };
 </script>

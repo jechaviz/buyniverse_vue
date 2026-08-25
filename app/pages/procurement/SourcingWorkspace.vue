@@ -23,9 +23,9 @@
       <!-- Breadcrumb Bar -->
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-4 py-2 text-[11px] dark:border-slate-800/80 dark:bg-slate-950/40">
         <div class="flex items-center gap-1.5 text-slate-500">
-          <RouterLink to="/procurement" class="font-semibold hover:text-brand">Procurement</RouterLink>
+          <RouterLink to="/procurement" class="font-semibold hover:text-brand">{{ store.t('Procurement') }}</RouterLink>
           <span>/</span>
-          <RouterLink to="/procurement/sourcing" class="font-semibold hover:text-brand">Sourcing RFX</RouterLink>
+          <RouterLink to="/procurement/sourcing" class="font-semibold hover:text-brand">{{ store.t('Sourcing RFX') }}</RouterLink>
           <span>/</span>
           <span class="font-bold text-slate-900 dark:text-white">{{ event.id }}</span>
         </div>
@@ -65,7 +65,7 @@
               <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i>{{ store.date(event.deadline) }}</span>
               <span v-if="canManage(event)" class="flex items-center gap-1.5"><i class="fa-solid fa-users text-slate-400"></i>{{ event.invitedSupplierIds.length }} invited</span>
               <span v-if="canManage(event)" class="flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up text-slate-400"></i>{{ event.quotes.length }} offers</span>
-              <span v-else class="flex items-center gap-1.5"><i class="fa-solid fa-eye-slash text-slate-400"></i>Competitor responses protected</span>
+              <span v-else class="flex items-center gap-1.5"><i class="fa-solid fa-eye-slash text-slate-400"></i>{{ store.t('Competitor responses protected') }}</span>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -113,8 +113,8 @@
 
       <section v-else-if="tab === 'overview'" class="p-5">
         <div class="rounded-2xl border border-brand/20 bg-brand-50/40 p-5 dark:bg-brand/10">
-          <div class="flex items-start gap-3"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-white"><i class="fa-solid fa-shield-halved"></i></span><div><p class="text-[10px] font-800 uppercase tracking-wider text-brand">Protected sourcing invitation</p><h3 class="mt-1 text-base font-800">Your response stays confidential</h3><p class="mt-2 max-w-2xl text-xs leading-5 text-slate-600 dark:text-slate-300">You can review the approved scope and use Messages for clarifications. Supplier identities, pricing, evaluation criteria, bids and award deliberation are visible only to the buying organization.</p></div></div>
-          <div class="mt-4 flex flex-wrap gap-2"><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-regular fa-calendar mr-1"></i>Response deadline {{ store.date(event.deadline) }}</span><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-solid fa-lock mr-1"></i>Blind commercial review</span></div>
+          <div class="flex items-start gap-3"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-white"><i class="fa-solid fa-shield-halved"></i></span><div><p class="text-[10px] font-800 uppercase tracking-wider text-brand">{{ store.t('Protected sourcing invitation') }}</p><h3 class="mt-1 text-base font-800">{{ store.t('Your response stays confidential') }}</h3><p class="mt-2 max-w-2xl text-xs leading-5 text-slate-600 dark:text-slate-300">{{ store.t('You can review the approved scope and use Messages for clarifications. Supplier identities, pricing, evaluation criteria, bids and award deliberation are visible only to the buying organization.') }}</p></div></div>
+          <div class="mt-4 flex flex-wrap gap-2"><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-regular fa-calendar mr-1"></i>{{ store.t('Response deadline') }} {{ store.date(event.deadline) }}</span><span class="badge bg-white/85 text-slate-600 dark:bg-slate-900/80 dark:text-slate-300"><i class="fa-solid fa-lock mr-1"></i>{{ store.t('Blind commercial review') }}</span></div>
         </div>
       </section>
 
@@ -213,8 +213,8 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=24");
-const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=2");
+const DataTable = load("./app/components/DataTable.vue?v=27");
+const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=3");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
 const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
@@ -277,7 +277,7 @@ export default {
       { key: "title", label: "Invitation", width: 300 },
       { key: "type", label: "Type", width: 105 },
       { key: "status", label: "Status", width: 125 },
-      { key: "deadline", label: "Response deadline", width: 155 },
+      { key: "deadline", label: store.t("Response deadline"), width: 155 },
     ];
 
     const accessibleEvents = computed(() => {
@@ -438,7 +438,7 @@ export default {
 
     const addLot = () => {
       if (!canManage(event.value)) return store.notice("Quote round update denied", "fa-shield-halved");
-      event.value.lots.push({ id: window.ProcurementCommon.uid("lot"), description: "New item group", quantity: 1, unit: "unit", ceiling: 0 });
+      event.value.lots.push({ id: window.ProcurementCommon.uid("lot"), description: store.t("New item group"), quantity: 1, unit: store.t("unit"), ceiling: 0 });
       record("Item group added", "New item group");
     };
 

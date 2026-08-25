@@ -3,7 +3,7 @@
     <a href="#main-content" class="skip-link">{{ store.t("Skip to workspace content") }}</a>
     <!-- Global Command Palette & System Modals -->
     <CommandPalette :open="commandOpen" @close="commandOpen = false" />
-    <AppModals :ui="ui" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
+    <AppModals :ui="ui" :locale="store.locale" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
     <AuthModal :open="authOpen" :initial-mode="authMode" @close="authOpen = false" />
 
     <!-- ========================================================================= -->
@@ -395,7 +395,7 @@ const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const CommandPalette = load("./app/components/CommandPalette.vue?v=4");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
-const AppModals = load("./app/components/layout/AppModals.vue?v=3");
+const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
 const AuthModal = load("./app/components/AuthModal.vue?v=4");
 const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=2");

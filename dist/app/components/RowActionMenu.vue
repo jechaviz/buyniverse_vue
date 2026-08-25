@@ -14,8 +14,8 @@
         toneClass(primaryAction),
         railOpen ? 'border-brand text-brand' : '',
       ]"
-      :title="`${primaryAction.label} · Show actions`"
-      :aria-label="`Actions for ${itemLabel}; primary action ${primaryAction.label}`"
+      :title="`${t(primaryAction.label)} · ${t('Show actions')}`"
+      :aria-label="`${t('Actions')} · ${itemLabel} · ${t(primaryAction.label)}`"
       :aria-expanded="railOpen"
       @click="railOpen = !railOpen"
     >
@@ -30,7 +30,7 @@
         railOpen ? 'pointer-events-auto opacity-100' : '',
       ]"
       role="toolbar"
-      :aria-label="`Actions for ${itemLabel}`"
+      :aria-label="`${t('Actions')} · ${itemLabel}`"
     >
       <button
         v-for="action in actions"
@@ -38,8 +38,8 @@
         type="button"
         class="grid h-8 w-8 flex-none place-items-center rounded-lg transition hover:bg-slate-100 dark:hover:bg-slate-700"
         :class="toneClass(action)"
-        :title="action.label"
-        :aria-label="action.label"
+        :title="t(action.label)"
+        :aria-label="t(action.label)"
         :disabled="action.disabled"
         @click="run(action)"
       >
@@ -51,6 +51,7 @@
 
 <script>
 export default {
+  inject: ["store"],
   props: {
     actions: { type: Array, default: () => [] },
     itemLabel: { type: String, default: "record" },
@@ -66,6 +67,10 @@ export default {
     },
   },
   methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
     toneClass(action) {
       if (action?.tone === "danger") return "text-rose-500";
       if (action?.tone === "success") return "text-emerald-600";

@@ -9,7 +9,7 @@
         <i class="fa-solid fa-check-double"></i>
       </span>
       <span class="whitespace-nowrap"
-        ><b>{{ selectedCount }}</b> selected</span
+        >{{ t(`${selectedCount} selected`) }}</span
       >
       <button
         v-if="selectedCount < totalCount"
@@ -17,10 +17,10 @@
         class="hidden text-xs font-semibold text-brand hover:underline sm:block"
         @click="$emit('select-all')"
       >
-        Select all {{ totalCount }} matching
+        {{ t(`Select all ${totalCount} matching`) }}
       </button>
       <span v-else class="hidden text-xs text-slate-500 sm:block"
-        >All matching selected</span
+        >{{ t('All matching selected') }}</span
       >
     </div>
 
@@ -37,7 +37,7 @@
         aria-haspopup="menu"
         @click="menuOpen = !menuOpen"
       >
-        <i class="fa-solid fa-bolt"></i>Bulk actions
+        <i class="fa-solid fa-bolt"></i>{{ t('Bulk actions') }}
         <span
           class="rounded-full bg-slate-200/80 px-1.5 py-0.5 text-[9px] dark:bg-slate-700"
         >
@@ -48,8 +48,8 @@
       <button
         type="button"
         class="btn-muted -ml-px h-8 w-8 rounded-l-none p-0"
-        title="Clear selection"
-        aria-label="Clear selection"
+        :title="t('Clear selection')"
+        :aria-label="t('Clear selection')"
         @click="$emit('clear')"
       >
         <i class="fa-solid fa-xmark"></i>
@@ -62,7 +62,7 @@
         <p
           class="px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-400"
         >
-          Apply to {{ selectedCount }} records
+          {{ t(`Apply to ${selectedCount} records`) }}
         </p>
         <template v-for="(action, index) in actions" :key="action.key">
           <div
@@ -87,12 +87,12 @@
               <i class="fa-solid text-xs" :class="action.icon"></i>
             </span>
             <span class="min-w-0 flex-1">
-              <b class="block truncate text-xs">{{ action.label }}</b>
+              <b class="block truncate text-xs">{{ t(action.label) }}</b>
               <small
                 v-if="action.description"
                 class="mt-0.5 block truncate text-[9px] opacity-65"
               >
-                {{ action.description }}
+                {{ t(action.description) }}
               </small>
             </span>
           </button>
@@ -104,6 +104,7 @@
 
 <script>
 export default {
+  inject: ["store"],
   props: {
     selectedCount: { type: Number, required: true },
     totalCount: { type: Number, required: true },
@@ -114,6 +115,10 @@ export default {
     return { menuOpen: false };
   },
   methods: {
+    t(key) {
+      void this.store?.locale?.value;
+      return this.store?.t?.(key) || key;
+    },
     run(action) {
       if (!action || action.disabled) return;
       this.menuOpen = false;
