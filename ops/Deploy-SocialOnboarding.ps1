@@ -43,7 +43,7 @@ echo "MIGRATION_OK\\n";
 '@
 $encodedPhp = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($php))
 $sshOptions = @('-o', 'BatchMode=yes', '-o', 'ConnectTimeout=25', '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=3')
-$remote = "set -eu; cd -- $RemoteDir; git fetch --prune origin main; git show ${ReleaseRef}:dist/index.php > /tmp/buyniverse-social-onboarding.php; php -l /tmp/buyniverse-social-onboarding.php; git show ${ReleaseRef}:ops/migrations/20260825_social_onboarding_fiscal.sql > /tmp/buyniverse-social-onboarding.sql; echo $encodedPhp | base64 -d | php; rm -f /tmp/buyniverse-social-onboarding.php /tmp/buyniverse-social-onboarding.sql"
+$remote = "set -eu; cd -- $RemoteDir; git fetch --prune origin main; git show ${ReleaseRef}:dist/index.php > /tmp/buyniverse-social-onboarding.php; git show ${ReleaseRef}:ops/migrations/20260825_social_onboarding_fiscal.sql > /tmp/buyniverse-social-onboarding.sql; if test -x /opt/alt/php84/usr/bin/php; then /opt/alt/php84/usr/bin/php -l /tmp/buyniverse-social-onboarding.php; echo $encodedPhp | base64 -d | /opt/alt/php84/usr/bin/php; else php -l /tmp/buyniverse-social-onboarding.php; echo $encodedPhp | base64 -d | php; fi; rm -f /tmp/buyniverse-social-onboarding.php /tmp/buyniverse-social-onboarding.sql"
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
   Write-DeployLog "Attempt $attempt/${MaxAttempts}: remote lint and controlled fiscal migration."
