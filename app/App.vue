@@ -196,7 +196,7 @@
           </div>
 
           <div class="flex items-center gap-3 sm:gap-4">
-            <span class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="store.t('Workspace changes are encrypted and saved on the server.')" role="status" aria-live="polite">
+            <span class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="saveStatusTitle" role="status" aria-live="polite">
               <i class="fa-solid text-[10px]" :class="saveStatus.icon"></i>
               {{ saveStatus.label }}
             </span>
@@ -494,6 +494,9 @@ export default {
       if (store.ui.saveState === "demo") return { label: store.t("Local demo · not synced"), icon: "fa-flask", tone: "text-amber-600 dark:text-amber-400" };
       return { label: store.t("Saved to workspace"), icon: "fa-shield-halved", tone: "text-emerald-600 dark:text-emerald-400" };
     });
+    const saveStatusTitle = computed(() => store.isDemo.value
+      ? store.t("The public demo uses fictional data and never connects to a production workspace.")
+      : store.t("Workspace changes are encrypted and saved on the server."));
 
     const setAccent = (opt) => {
       if (!opt || !accents.some((item) => item.key === opt.key)) return;
@@ -605,7 +608,7 @@ export default {
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
+      accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, showDemoControls, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };

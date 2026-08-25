@@ -761,7 +761,9 @@ const revealApp = () => {
   const reveal = () => window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
     document.documentElement.dataset.appReady = "true";
     document.getElementById("app")?.setAttribute("data-ready", "true");
-    document.getElementById("app-boot")?.setAttribute("aria-hidden", "true");
+    const boot = document.getElementById("app-boot");
+    boot?.setAttribute("aria-hidden", "true");
+    boot?.setAttribute("hidden", "");
   }));
   const fontReady = document.fonts?.ready;
   if (fontReady?.then) {
@@ -788,7 +790,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=47"));
+  const app = createApp(load("./app/App.vue?v=48"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

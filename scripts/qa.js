@@ -44,7 +44,7 @@ if (!index.includes(dynamicBase) || !index.includes("'sha256-Gq7EzIVYpfwoSm3b31s
   throw new Error("Dynamic base bootstrap must stay hash-authorized by every CSP policy");
 if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot"))
   throw new Error("Missing anti-FOUC boot layer");
-if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready"))
+if (!read("app/main.js").includes("buyniverse:app-shell-ready") || !read("app/App.vue").includes("buyniverse:app-shell-ready") || !read("app/main.js").includes('boot?.setAttribute("hidden", "")'))
   throw new Error("App reveal is not coordinated with the mounted shell");
 if (
   read("app/main.js").includes("replaceWorkspaceState(emptyWorkspaceState(), null)") ||

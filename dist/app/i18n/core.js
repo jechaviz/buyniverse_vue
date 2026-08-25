@@ -82,6 +82,7 @@
     "Payments": "Pagos",
     "Discover": "Descubrir",
     "Find Talent": "Buscar talento",
+    "Browse Services": "Explorar servicios",
     "Find talent": "Buscar talento",
     "Find Work": "Buscar trabajo",
     "Find work": "Buscar trabajo",
