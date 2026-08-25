@@ -50,6 +50,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             return True
         spa_prefixes = (
             "/buyniverse_vue/dashboard",
+            "/buyniverse_vue/onboarding",
             "/buyniverse_vue/procurement",
             "/buyniverse_vue/clients",
             "/buyniverse_vue/suppliers",
@@ -98,6 +99,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
         raw_path = unquote(urlsplit(self.path).path)
         spa_prefixes = (
             "/buyniverse_vue/dashboard",
+            "/buyniverse_vue/onboarding",
             "/buyniverse_vue/procurement",
             "/buyniverse_vue/clients",
             "/buyniverse_vue/suppliers",

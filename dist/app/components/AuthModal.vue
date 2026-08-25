@@ -62,7 +62,7 @@
       <!-- ================================================================= -->
       <div v-if="socialProviders.length && mode !== 'forgot'" class="space-y-2.5">
         <p class="text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-          <i class="fa-solid fa-user-shield mr-1 text-brand"></i>{{ store.t("Acceso personal seguro; tu espacio se crea sin RFC hasta que agregues una empresa.") }}
+          <i class="fa-solid fa-user-shield mr-1 text-brand"></i>{{ store.t("Secure personal sign-in; then complete your buyer or provider profile as an individual or company.") }}
         </p>
         <div class="grid grid-cols-2 gap-2">
           <button

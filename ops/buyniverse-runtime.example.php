@@ -76,4 +76,22 @@ return [
             'group_role_map' => [],
         ],
     ],
+
+    // Fiscal issuance is an explicit, company-scoped server integration. The
+    // application never sends CSD/PAC material from the browser, and it does
+    // not activate this connector merely because a company uploaded a CSD.
+    // Map a Buyniverse legal-entity UUID to an Odoo company only after Finance
+    // validates ownership, fiscal data and the controlled FIAx deployment.
+    'fiscal_connectors' => [
+        'odoo_fiax' => [
+            'enabled' => false,
+            'base_url' => 'https://odoo.example.invalid',
+            'database' => 'REPLACE_ODOO_DATABASE',
+            'service_identity' => 'buyniverse-fiscal-bridge',
+            'service_secret' => '', // e.g. getenv('BUYNIVERSE_ODOO_FIAX_SECRET') ?: ''
+            'service_secret_ref' => 'secret-manager://buyniverse/odoo-fiax/service-secret',
+            'company_map' => [], // ['<buyniverse-legal-entity-uuid>' => <odoo_company_id>]
+            'environment' => 'staging', // Change only through a controlled release.
+        ],
+    ],
 ];

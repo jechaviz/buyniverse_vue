@@ -206,9 +206,32 @@ for (const token of ["tenantContext", "switchTenantContext", "refreshTenantConte
 for (const file of ["app/components/TenantContextMenu.vue", "app/components/OperationalScopeBadge.vue", "app/pages/TenantAdminPage.vue", "app/lib/tenant-context.js", "app/lib/tenant-scope.js", "ops/migrations/20260823_multitenancy.sql"]) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Multi-tenant runtime artifact is missing ${file}`);
 }
+for (const file of ["app/lib/onboarding.js", "app/pages/OnboardingPage.vue", "ops/migrations/20260825_social_onboarding_fiscal.sql"]) {
+  if (!fs.existsSync(path.join(root, file))) throw new Error(`Social onboarding artifact is missing ${file}`);
+}
+const onboardingSource = read("app/pages/OnboardingPage.vue");
+const serverSource = read("index.php");
+for (const [file, token] of [
+  ["app/main.js", 'r("/onboarding", Onboarding, { onboarding: true })'],
+  ["app/App.vue", "route.meta.onboarding === true"],
+  ["app/main.js", "marketplaceModes: marketplaceModes.length"],
+  ["index.html", "app/lib/onboarding.js"],
+]) {
+  if (!read(file).includes(token)) throw new Error(`Social onboarding client contract is missing ${file} (${token})`);
+}
+for (const token of [
+  "tenant_onboarding_principal", "tenant_fiscal_credential_require_write",
+  "tenant_fiscal_credentials", "tenant_fiscal_profiles",
+  "social_redirect(social_base_path() . '/#/onboarding?login='",
+  "workspace_encrypt($certificate", "is_uploaded_file",
+]) {
+  if (!serverSource.includes(token)) throw new Error(`Social onboarding server contract is missing ${token}`);
+}
+if (/localStorage|sessionStorage/.test(onboardingSource))
+  throw new Error("Fiscal onboarding may not persist browser storage");
 
 const requiredRoutes = [
-  "/", "/find-work", "/dashboard/:section?", "/clients", "/suppliers", "/leads", "/projects", "/project/:id",
+  "/", "/onboarding", "/find-work", "/dashboard/:section?", "/clients", "/suppliers", "/leads", "/projects", "/project/:id",
   "/project/:id/contest", "/invoices", "/invoices/new", "/invoices/:invoiceId/edit",
   "/invoices/:invoiceId", "/estimates", "/payments", "/payments/new", "/payments/:paymentId/edit",
   "/products", "/expenses", "/messages", "/post-job/:id?", "/job/:jobId", "/client/job/:jobId",

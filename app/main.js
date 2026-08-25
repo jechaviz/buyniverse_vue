@@ -380,7 +380,8 @@ const isSafeTenantContext = (context) => Boolean(
   context && isSafeId(context?.tenant?.id) && isSafeId(context?.company?.id) &&
   typeof context.company.legalName === "string" && context.company.legalName.length <= 220 &&
   (!context.location || isSafeId(context.location.id)) &&
-  Array.isArray(context.companies) && context.companies.length > 0 && context.companies.length <= 100,
+  Array.isArray(context.companies) && context.companies.length > 0 && context.companies.length <= 100 &&
+  (!context.marketplaceModes || (Array.isArray(context.marketplaceModes) && context.marketplaceModes.length > 0 && context.marketplaceModes.length <= 3 && context.marketplaceModes.every((mode) => ["buyer", "supplier", "admin"].includes(mode)))),
 );
 const replaceWorkspaceState = (nextState, context = ui.tenantContext) => {
   if (!isSafeRemoteState(nextState)) throw new Error("Remote workspace payload was rejected");
@@ -401,14 +402,15 @@ const productionWorkspaceState = (context) => {
   const principal = context?.principal || {};
   const name = clean(principal.displayName || "Workspace user", 180) || "Workspace user";
   const avatar = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || "BU";
-  const canAdmin = context?.permissions?.manageTenant === true;
+  const marketplaceModes = [...new Set((Array.isArray(context?.marketplaceModes) ? context.marketplaceModes : []).filter((mode) => ["buyer", "supplier", "admin"].includes(mode)))];
+  const canAdmin = context?.permissions?.manageTenant === true || marketplaceModes.includes("admin");
   const user = {
     id: context?.principalId || "workspace-user",
     name,
     email: "",
     avatar,
     type: canAdmin ? "Admin" : "Client",
-    marketplaceModes: canAdmin ? ["buyer", "supplier", "admin"] : ["buyer", "supplier"],
+    marketplaceModes: marketplaceModes.length ? marketplaceModes : (canAdmin ? ["buyer", "supplier", "admin"] : ["buyer"]),
   };
   return { ...emptyWorkspaceState(), currentUserId: user.id, users: [user] };
 };
@@ -509,6 +511,7 @@ const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
 const Procurement = load("./app/pages/ProcurementPage.vue?v=31");
+const Onboarding = load("./app/pages/OnboardingPage.vue?v=1");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
@@ -517,6 +520,7 @@ const NotFound = {
 const r = (path, component, meta = {}) => ({ path, component, meta });
 const routes = [
   r("/", Home),
+  r("/onboarding", Onboarding, { onboarding: true }),
   r("/find-work", Home, { modes: ["supplier"] }),
   r("/dashboard/:section?", Dashboard, { view: "dashboard", to: "/dashboard/timesheets" }),
   r("/clients", Workspace, { kind: "clients", modes: ["supplier", "admin"] }),
@@ -601,7 +605,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  if (runtimeMode.value !== "demo" && !store.currentUser.value && to.path !== "/") {
+  if (runtimeMode.value !== "demo" && !store.currentUser.value && to.path !== "/" && !to.meta.onboarding) {
     return { path: "/", query: { auth: "login", returnTo: to.fullPath } };
   }
   const roles = Array.isArray(to.meta.roles) ? to.meta.roles : null;
@@ -731,7 +735,7 @@ router.afterEach((to) => {
   if (window.BuyniverseSeo?.updateSeoMetadata) {
     window.BuyniverseSeo.updateSeoMetadata(to, store);
   }
-  if (to.query.new === "1") return;
+  if (to.meta.onboarding || to.query.new === "1" || !store.currentUser.value) return;
   const path = window.WebCommon.safeInternalPath(to.fullPath, "/dashboard");
   if (path === "/" || path.startsWith("/post-job/")) return;
   const entry = {
@@ -782,7 +786,8 @@ const startApplication = async () => {
   if (
     runtimeMode.value !== "demo" &&
     ui.workspaceAccess === "identity-required" &&
-    router.currentRoute.value.path !== "/"
+    router.currentRoute.value.path !== "/" &&
+    !router.currentRoute.value.meta.onboarding
   ) {
     await router.replace({
       path: "/",
@@ -790,7 +795,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=48"));
+  const app = createApp(load("./app/App.vue?v=49"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

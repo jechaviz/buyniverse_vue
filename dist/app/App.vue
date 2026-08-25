@@ -154,6 +154,11 @@
       </footer>
     </div>
 
+    <!-- Social onboarding has a dedicated, uncluttered secure flow. -->
+    <div v-else-if="isOnboarding" class="min-h-screen">
+      <RouterView />
+    </div>
+
     <!-- ========================================================================= -->
     <!-- 2. AUTHENTICATED WORKSPACE SHELL (For all app routes)                    -->
     <!-- ========================================================================= -->
@@ -437,6 +442,7 @@ export default {
     });
 
     const isLanding = computed(() => route.path === "/");
+    const isOnboarding = computed(() => route.meta.onboarding === true);
 
     const openAuth = (mode = "login") => {
       authMode.value = mode;
@@ -607,7 +613,7 @@ export default {
 
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
-      route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
+      route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, showDemoControls, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),

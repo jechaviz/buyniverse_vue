@@ -55,7 +55,7 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const token of ["tenant_accounts", "tenant_legal_entities", "tenant_locations", "tenant_memberships", "tenant_invitations", "tenant_workspace_state", "tenant_audit_events", "tenant_audit_events_no_update", "tenant_audit_events_no_delete"]) {
     if (!tenancyMigration.includes(token)) throw new Error(`Tenant migration is missing ${token}`);
   }
-  if (!htaccess.includes("runtime|auth|workspace-state|tenant-context|tenant-companies")) throw new Error("Apache does not route runtime, identity and tenant APIs to the authorization boundary");
+  if (!htaccess.includes("runtime|auth|workspace-state|tenant-context|tenant-companies|onboarding")) throw new Error("Apache does not route runtime, identity and tenant APIs to the authorization boundary");
   for (const token of ["social_provider_config", "social_rate_limit", "code_challenge_method", "session_regenerate_id", "google_oidc", "facebook_oauth", "identity.social_authenticated"]) {
     if (!phpShim.includes(token)) throw new Error(`Social identity security control is missing ${token}`);
   }
