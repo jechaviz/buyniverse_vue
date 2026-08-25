@@ -66,6 +66,25 @@ function check(condition, message) {
 
 console.log("=== FULL PROCUREMENT + PROJECT LIFECYCLE ===");
 
+// Supplier invitation -> private response. Only the invited supplier may
+// create/update its own quote; no buyer-only evaluation fields are accepted.
+const rfx = {
+  id: "RFX-DEMO-LIFECYCLE", title: "Secure branch connectivity", type: "RFQ", status: "Published",
+  ownerId: "user-client-brenda", budget: 18000, currency: "USD",
+  deadline: new Date(Date.now() + 20 * 60000).toISOString(),
+  invitedSupplierIds: ["sup-2", "sup-3"], lots: [{ id: "lot-rfx", description: "Connectivity package", quantity: 1 }],
+  quotes: [], audit: [],
+};
+state.sourcingEvents.unshift(rfx);
+useSupplier("user-freelancer-john", "sup-3");
+const firstResponse = store.submitSourcingResponse(rfx, { price: 16200, leadDays: 12, terms: "Net 30", notes: "Includes monitored deployment." });
+check(Boolean(firstResponse) && rfx.quotes.length === 1 && firstResponse.supplierId === "sup-3", "An invited supplier submits a private RFX response");
+const revisedResponse = store.submitSourcingResponse(rfx, { price: 15800, leadDays: 10, terms: "Net 30", notes: "Updated delivery commitment." });
+check(rfx.quotes.length === 1 && revisedResponse?.price === 15800 && revisedResponse?.quality === state.suppliers.find((item) => item.id === "sup-3").score, "A supplier updates only its own response while evaluation data stays server-derived");
+useSupplier("user-client-brenda", "sup-1");
+check(!store.submitSourcingResponse(rfx, { price: 15000, leadDays: 8, terms: "Net 30" }) && rfx.quotes.length === 1, "A non-invited supplier cannot add a response");
+useBuyer();
+
 // Purchase request -> approved auction -> supplier bid -> award -> order.
 const request = {
   id: "PR-DEMO-LIFECYCLE", title: "Warehouse automation rollout", ownerId: "user-client-brenda",

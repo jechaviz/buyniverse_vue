@@ -501,7 +501,7 @@ const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=24");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=26");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',

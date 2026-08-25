@@ -634,6 +634,69 @@
         return { event, auction: null };
       },
 
+      // A supplier may submit or amend only its own commercial response.  The
+      // server implementation applies the same tenant/invitation checks; this
+      // client-side guard keeps the demo and the optimistic UI on that exact
+      // contract and, importantly, never reads or derives a rival response.
+      submitSourcingResponse(eventRef, input = {}) {
+        const event = typeof eventRef === "string" ? this.sourcingEvent(eventRef) : eventRef;
+        const currentUser = this.currentUser?.value;
+        const supplierId = this.currentSupplierId?.value;
+        const deadline = Date.parse(event?.deadline);
+        const price = positive(input.price ?? input.amount);
+        const leadDays = Number(input.leadDays);
+        const terms = clean(input.terms, 80);
+        const notes = clean(input.notes, 1200);
+        const invited = Boolean(supplierId && (event?.invitedSupplierIds || []).includes(supplierId));
+        const open = ["Published", "Sent"].includes(event?.status) && Number.isFinite(deadline) && deadline > Date.now();
+
+        if (!event || !currentUser || !supplierId || !this.isSupplier?.value || !invited || !open ||
+          !window.WebCommon.isSafeAmount(price, 0.01) || !Number.isInteger(leadDays) || leadDays < 1 || leadDays > 3650 || !terms) {
+          this.notice("This sourcing response cannot be submitted", "fa-shield-halved");
+          return null;
+        }
+
+        const supplier = state.suppliers.find((item) => item.id === supplierId);
+        if (!supplier) {
+          this.notice("Supplier profile is unavailable", "fa-shield-halved");
+          return null;
+        }
+        event.quotes ||= [];
+        const existing = event.quotes.find((item) => item.supplierId === supplierId);
+        const now = new Date().toISOString();
+        const quote = existing || { id: id("quote"), supplierId, createdAt: now };
+        Object.assign(quote, {
+          supplierId,
+          price,
+          leadDays,
+          terms,
+          notes,
+          // Supplier-controlled commercial fields are intentionally limited.
+          // Evaluation inputs are sourced from the qualified supplier profile.
+          quality: Number(supplier.score) || 0,
+          risk: Number(supplier.risk) || 0,
+          esg: Number(supplier.esg) || 0,
+          compliant: Number(supplier.risk) < 40,
+          submittedAt: now,
+          updatedAt: now,
+        });
+        if (!existing) event.quotes.push(quote);
+
+        const action = existing ? "Supplier response updated" : "Supplier response submitted";
+        this.procurementEvent(event, action, supplier.name || supplierId, "success");
+        if (event.ownerId && event.ownerId !== currentUser.id) {
+          this.addNotification({
+            userId: event.ownerId,
+            title: existing ? "Supplier response updated" : "Supplier response received",
+            text: `${supplier.name || "An invited supplier"} responded to ${event.title}.`,
+            link: `/procurement/sourcing?event=${event.id}&tab=bidsheet`,
+            icon: "fa-file-circle-check",
+          });
+        }
+        this.notice(existing ? "Response updated" : "Response submitted", "fa-circle-check");
+        return quote;
+      },
+
       startLiveAuction(eventRef) {
         const event = typeof eventRef === "string" ? this.sourcingEvent(eventRef) : eventRef;
         if (!event || event.type !== "Auction" || !this.canManageProcurement(event)) return null;

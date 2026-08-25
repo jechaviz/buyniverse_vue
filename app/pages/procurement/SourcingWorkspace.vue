@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <DataTable
-      :items="accessibleEvents"
+      :items="tableItems"
       :columns="tableColumns"
       title="Quote rounds"
       table-id="procurement-events"
@@ -118,6 +118,13 @@
         </div>
       </section>
 
+      <SourcingSupplierResponseTab
+        v-else-if="tab === 'response' && !canManage(event)"
+        :invitation="supplierResponseContext"
+        :format-date="store.date"
+        @submit="submitSupplierResponse"
+      />
+
       <SourcingSuppliersTab
         v-else-if="tab === 'suppliers' && canManage(event)"
         :event="event"
@@ -214,6 +221,7 @@ const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSh
 const SourcingComparisonTab = load("./app/pages/procurement/sourcing/SourcingComparisonTab.vue?v=1");
 const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=1");
 const SourcingTimelineTab = load("./app/pages/procurement/sourcing/SourcingTimelineTab.vue?v=1");
+const SourcingSupplierResponseTab = load("./app/pages/procurement/sourcing/SourcingSupplierResponseTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 const freshWizard = () => ({
@@ -231,6 +239,7 @@ export default {
     SourcingComparisonTab,
     SourcingAwardTab,
     SourcingTimelineTab,
+    SourcingSupplierResponseTab,
     CommunicationThread,
   },
   setup() {
@@ -240,7 +249,7 @@ export default {
         const isManager = Boolean(event.value && store.canManageProcurement(event.value));
         const allowed = isManager
           ? ["overview", "suppliers", "bidsheet", "comparison", "award", "communications", "timeline"]
-          : ["overview", "communications"];
+          : ["overview", "response", "communications"];
         return allowed.includes(route.query.tab) ? route.query.tab : "overview";
       },
       set: (key) => router.push({ path: "/procurement/sourcing", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
@@ -290,6 +299,28 @@ export default {
     const canCreateSourcing = computed(() => Boolean(store.isBuyer.value || store.isAdmin.value));
     const isSupplierWorkspace = computed(() => store.marketplaceMode.value === "supplier");
     const tableColumns = computed(() => isSupplierWorkspace.value ? supplierColumns : columns);
+    // The generic table receives a projection for supplier mode rather than an
+    // event record that happens to hide columns. This prevents table features
+    // (saved views, export, search) from retaining commercial competitor data.
+    const tableItems = computed(() => isSupplierWorkspace.value
+      ? accessibleEvents.value.map((item) => ({ id: item.id, title: item.title, type: item.type, status: item.status, deadline: item.deadline }))
+      : accessibleEvents.value);
+    const supplierResponseContext = computed(() => {
+      if (!event.value) return null;
+      const supplierId = store.currentSupplierId?.value;
+      const ownQuote = event.value.quotes?.find((item) => item.supplierId === supplierId);
+      return {
+        id: event.value.id,
+        title: event.value.title,
+        status: event.value.status,
+        deadline: event.value.deadline,
+        currency: event.value.currency || "USD",
+        ownQuote: ownQuote ? {
+          price: ownQuote.price, leadDays: ownQuote.leadDays, terms: ownQuote.terms,
+          notes: ownQuote.notes, submittedAt: ownQuote.submittedAt, updatedAt: ownQuote.updatedAt,
+        } : null,
+      };
+    });
     const organizerRowActions = [
       { key: "delete", label: "Delete record", icon: "fa-trash-can", tone: "danger" },
       { key: "edit", label: "Edit record", icon: "fa-pen" },
@@ -310,6 +341,7 @@ export default {
         { key: "timeline", label: "History", icon: "fa-clock-rotate-left", count: event.value.audit.length },
       ] : [
         { key: "overview", label: "Invitation", icon: "fa-shield-halved" },
+        { key: "response", label: "Your response", icon: "fa-paper-plane" },
         { key: "communications", label: "Messages", icon: "fa-comments" },
       ]),
     ] : []);
@@ -361,6 +393,11 @@ export default {
 
     const linkFor = (item, key) => ["id", "title"].includes(key) ? `/procurement/sourcing?event=${item.id}` : null;
     const openEvent = (item) => router.push(`/procurement/sourcing?event=${item.id}`);
+
+    const submitSupplierResponse = (input) => {
+      if (!event.value) return null;
+      return store.submitSourcingResponse(event.value.id, input);
+    };
 
     const updateCell = ({ id, key, value }) => {
       const item = accessibleEvents.value.find((entry) => entry.id === id);
@@ -554,13 +591,13 @@ export default {
     }, { immediate: true });
 
     return {
-      window, store, router, event, accessibleEvents, columns, supplierColumns, tableColumns, isSupplierWorkspace, organizerRowActions, organizerBulkActions, canCreateSourcing, tabs, tab, criteria, typeLabel, statusLabel,
+      window, store, router, event, accessibleEvents, tableItems, supplierResponseContext, columns, supplierColumns, tableColumns, isSupplierWorkspace, organizerRowActions, organizerBulkActions, canCreateSourcing, tabs, tab, criteria, typeLabel, statusLabel,
       deadlineDate, readiness, nextAction, filteredSuppliers, supplierSearch, rankedQuotes, awardSupplierId,
       awardReason, selectedAwardQuote, selectedAwardSupplier, wizardOpen, wizardStep, wizardSteps: ["Setup", "Suppliers", "Send"],
       wizard, wizardForm, wizardError, format, linkFor, openEvent, canManage, updateCell, statusClass, saveDeadline, record,
       addLot, removeLot, goNext, initials, toggleSupplier, sendInvites, publish, beginComparison, cloneEvent, archiveEvent,
       archiveEvents, exportBidSheet, simulateQuote, applyScenario, award, closeWizard, toggleWizardSupplier,
-      nextWizard, saveWizard,
+      nextWizard, saveWizard, submitSupplierResponse,
     };
   },
 };

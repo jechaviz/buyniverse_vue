@@ -86,14 +86,27 @@ const sourcingSource = read("app/pages/procurement/SourcingWorkspace.vue");
 for (const token of [
   "supplierColumns",
   "tableColumns",
+  "tableItems",
+  "SourcingSupplierResponseTab",
+  "supplierResponseContext",
+  "submitSupplierResponse",
   "Invitation-only response workspace",
   "Protected sourcing invitation",
+  "tab === 'response' && !canManage(event)",
   "tab === 'bidsheet' && canManage(event)",
   "tab === 'comparison' && canManage(event)",
   "tab === 'award' && canManage(event)",
   "wizardOpen && canCreateSourcing",
 ]) {
   if (!sourcingSource.includes(token)) throw new Error(`Supplier RFX privacy gate is missing ${token}`);
+}
+const domainActionsSource = read("app/store/domainActions.js");
+for (const token of ["submitSourcingResponse", "invitedSupplierIds", "this.isSupplier?.value", "Supplier response submitted"]) {
+  if (!domainActionsSource.includes(token)) throw new Error(`Supplier RFX response guard is missing ${token}`);
+}
+const procurementPageSource = read("app/pages/ProcurementPage.vue");
+for (const token of ["[\"sourcing\", \"auction\"]", "Invited quote rounds", "Respond securely to the requests"]) {
+  if (!procurementPageSource.includes(token)) throw new Error(`Supplier procurement route is incomplete: ${token}`);
 }
 
 for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {

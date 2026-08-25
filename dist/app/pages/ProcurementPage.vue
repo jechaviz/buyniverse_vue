@@ -72,7 +72,7 @@ const load = (p) =>
   );
 const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=9");
 const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=9");
-const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=14");
+const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=16");
 const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=27");
 const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=10");
 const Intelligence = load(
@@ -147,7 +147,7 @@ export default {
     );
     const accessibleSections = computed(() =>
       store.marketplaceMode.value === "supplier"
-        ? allSections.filter((item) => item.key === "auction")
+        ? allSections.filter((item) => ["sourcing", "auction"].includes(item.key))
         : store.marketplaceMode.value === "admin"
           ? allSections
           : allSections.filter((item) => item.key !== "governance"),
@@ -168,6 +168,13 @@ export default {
         : defaultSection.value,
     );
     const current = computed(() => {
+      if (store.marketplaceMode.value === "supplier" && section.value === "sourcing")
+        return {
+          ...allSections.find((item) => item.key === "sourcing"),
+          title: "Invited quote rounds",
+          description:
+            "Respond securely to the requests where your company was invited.",
+        };
       if (store.marketplaceMode.value === "supplier")
         return {
           ...allSections.find((item) => item.key === "auction"),
