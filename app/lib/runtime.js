@@ -5,10 +5,18 @@
   // public deployment into a demo; only local previews can fall back to it.
   var basePath = global.location.pathname.startsWith("/buyniverse_vue/") ? "/buyniverse_vue" : "";
   var localHost = /^(?:localhost|127\.0\.0\.1|\[::1\]|::1)$/i.test(global.location.hostname || "");
-  var fallbackMode = global.location.protocol === "file:" || localHost ? "demo" : "production";
+  // A public demo is deliberately opt-in. It runs only from the sanitized
+  // client fixture and never grants a production server session or persistence.
+  var explicitDemo = false;
+  try { explicitDemo = new URLSearchParams(global.location.search || "").get("demo") === "1"; } catch (_) {}
+  var fallbackMode = global.location.protocol === "file:" || localHost || explicitDemo ? "demo" : "production";
   var runtime = { mode: fallbackMode, endpoint: basePath + "/api/v1/runtime" };
 
   runtime.load = function () {
+    if (explicitDemo) {
+      runtime.mode = "demo";
+      return Promise.resolve({ mode: runtime.mode, serverAuth: false, explicitDemo: true });
+    }
     return fetch(runtime.endpoint, {
       credentials: "same-origin",
       cache: "no-store",

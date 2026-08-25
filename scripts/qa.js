@@ -51,6 +51,14 @@ if (
   !read("app/main.js").includes("const resetWorkspaceState = () =>")
 )
   throw new Error("Production boot must render a trusted empty shell before remote workspace hydration");
+for (const [file, token] of [
+  ["app/lib/runtime.js", 'get("demo") === "1"'],
+  ["app/lib/runtime.js", "never grants a production server session or persistence"],
+  ["app/components/AuthModal.vue", 'store.t("Explore demo")'],
+  ["app/components/CommandPalette.vue", "if (!current) return [];"],
+]) {
+  if (!read(file).includes(token)) throw new Error(`Public access recovery coverage is incomplete: ${file} (${token})`);
+}
 
 const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 

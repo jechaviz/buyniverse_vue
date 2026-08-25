@@ -549,6 +549,8 @@
     "is required": "es obligatorio",
     "Select all": "Seleccionar todo",
     "Clear selection": "Limpiar selección",
+    "Explore demo": "Explorar demostración",
+    "The public demo uses fictional data and never connects to a production workspace.": "La demostración pública usa datos ficticios y nunca se conecta a un espacio de producción.",
     "Move column": "Mover columna",
     "Sort column": "Ordenar columna",
     "Filter column": "Filtrar columna",

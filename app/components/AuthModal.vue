@@ -83,6 +83,10 @@
         <span class="mx-auto grid h-9 w-9 place-items-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200"><i class="fa-solid fa-shield-halved text-sm"></i></span>
         <p class="mt-2 text-xs font-bold text-slate-800 dark:text-slate-100">{{ store.t("Identity access is being configured") }}</p>
         <p class="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{{ store.t("This production workspace accepts only server-configured identity providers. Ask your administrator to enable your organization or a personal sign-in provider.") }}</p>
+        <button type="button" class="btn-muted mt-3 text-xs" @click="launchDemo">
+          <i class="fa-solid fa-flask mr-1.5"></i>{{ store.t("Explore demo") }}
+        </button>
+        <p class="mt-2 text-[10px] leading-4 text-slate-400">{{ store.t("The public demo uses fictional data and never connects to a production workspace.") }}</p>
       </div>
 
       <!-- ================================================================= -->
@@ -406,6 +410,10 @@ export default {
       if (!providerAppearance[id] || socialLoading.value) return;
       window.location.assign(`${basePath}/api/v1/auth/${encodeURIComponent(id)}/start`);
     };
+    const launchDemo = () => {
+      const root = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
+      window.location.assign(`${root}?demo=1#/dashboard`);
+    };
     const handleEmailLogin = unavailable;
     const handleEmailRegister = unavailable;
     const openForgot = unavailable;
@@ -448,6 +456,7 @@ export default {
       newPassword,
       confirmPassword,
       loginAs,
+      launchDemo,
       handleSocialAuth,
       handleEmailLogin,
       handleEmailRegister,

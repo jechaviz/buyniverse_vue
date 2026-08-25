@@ -113,21 +113,29 @@ export default {
       panel = ref(null),
       overlayId = `command-palette-${Math.random().toString(36).slice(2, 9)}`,
       user = store.currentUser;
-    const allowedJob = (job) =>
-      user.value.type === "Admin" ||
-      job.clientId === user.value.id ||
-      store.contract(job.contractId)?.providerId === user.value.id ||
+    const allowedJob = (job) => {
+      const current = user.value;
+      return Boolean(current && (
+        current.type === "Admin" ||
+        job.clientId === current.id ||
+        store.contract(job.contractId)?.providerId === current.id ||
       job.proposals?.some(
-        (proposal) => proposal.freelancerId === user.value.id,
-      );
-    const allowedInvoice = (invoice) =>
-      user.value.type === "Admin" ||
-      [invoice.clientId, invoice.providerId].includes(user.value.id);
-    const allowedContract = (contract) =>
-      user.value.type === "Admin" ||
-      [contract.clientId, contract.providerId].includes(user.value.id);
+          (proposal) => proposal.freelancerId === current.id,
+        )
+      ));
+    };
+    const allowedInvoice = (invoice) => {
+      const current = user.value;
+      return Boolean(current && (current.type === "Admin" || [invoice.clientId, invoice.providerId].includes(current.id)));
+    };
+    const allowedContract = (contract) => {
+      const current = user.value;
+      return Boolean(current && (current.type === "Admin" || [contract.clientId, contract.providerId].includes(current.id)));
+    };
     const canonicalPath = (path) => String(path || "").split("?")[0];
     const staticItems = computed(() => {
+      const current = user.value;
+      if (!current) return [];
       const common = [
         [
           "/dashboard",
@@ -149,7 +157,7 @@ export default {
           "fa-file-invoice-dollar",
         ],
       ];
-      if (user.value.type !== "Freelancer")
+      if (current.type !== "Freelancer")
         common.push(
           [
             "/procurement",
@@ -165,7 +173,7 @@ export default {
           ],
           ["/clients", "Clients", "Customer relationships", "fa-user-tie"],
         );
-      if (user.value.type === "Freelancer")
+      if (current.type === "Freelancer")
         common.push(
           [
             "/saved-jobs",
@@ -175,7 +183,7 @@ export default {
           ],
           ["/browse-services", "Services", "Marketplace offerings", "fa-store"],
         );
-      if (user.value.type === "Admin")
+      if (current.type === "Admin")
         common.push([
           "/admin/issuers",
           "Issuers",
@@ -220,8 +228,10 @@ export default {
       };
     };
     const items = computed(() => {
+      const current = user.value;
+      if (!current) return [];
       const recent = (store.state.recentViews || [])
-        .filter((item) => item.userId === user.value.id)
+        .filter((item) => item.userId === current.id)
         .slice(0, 6)
         .map(resolveRecent);
       const jobs = store.state.jobs.filter(allowedJob).map((job) => ({
@@ -250,15 +260,15 @@ export default {
           group: "Contract",
         }));
       const requests =
-        user.value.type === "Freelancer"
+        current.type === "Freelancer"
           ? []
           : store.state.purchaseRequests
               .filter(
                 (request) =>
-                  user.value.type === "Admin" ||
-                  request.ownerId === user.value.id ||
-                  request.requesterId === user.value.id ||
-                  request.approverId === user.value.id,
+                  current.type === "Admin" ||
+                  request.ownerId === current.id ||
+                  request.requesterId === current.id ||
+                  request.approverId === current.id,
               )
               .map((request) => ({
                 path: `/procurement/queue?request=${encodeURIComponent(request.id)}`,

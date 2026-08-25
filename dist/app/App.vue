@@ -77,6 +77,14 @@
 
             <button
               type="button"
+              class="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-brand-200 bg-brand-50/70 px-3 py-2 text-xs font-bold text-brand hover:bg-brand-100/70 dark:border-brand-900/40 dark:bg-brand-950/40 transition"
+              @click="launchDemo"
+            >
+              <i class="fa-solid fa-flask text-xs"></i>{{ store.t("Explore demo") }}
+            </button>
+
+            <button
+              type="button"
               class="btn-brand text-xs py-2 px-4 shadow-sm"
               @click="openAuth('register')"
             >
@@ -393,11 +401,11 @@
 const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const CommandPalette = load("./app/components/CommandPalette.vue?v=4");
+const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
-const AuthModal = load("./app/components/AuthModal.vue?v=4");
+const AuthModal = load("./app/components/AuthModal.vue?v=5");
 const TenantContextMenu = load("./app/components/TenantContextMenu.vue?v=2");
 
 export default {
@@ -433,6 +441,10 @@ export default {
     const openAuth = (mode = "login") => {
       authMode.value = mode;
       authOpen.value = true;
+    };
+    const launchDemo = () => {
+      const root = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
+      window.location.assign(`${root}?demo=1#/dashboard`);
     };
     watch(() => route.query.auth, (requested) => {
       if (!["login", "register"].includes(requested)) return;
@@ -537,7 +549,7 @@ export default {
     const touchSession = () => { if (!store.ui.locked) lastActivity = Date.now(); };
     const keyHandler = (e) => {
       touchSession();
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); commandOpen.value = !commandOpen.value; }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && store.currentUser.value) { e.preventDefault(); commandOpen.value = !commandOpen.value; }
       else if (e.key === "Escape") commandOpen.value = false;
     };
     const lockNow = () => { accountOpen.value = false; commandOpen.value = false; store.lockSession("Manual privacy lock"); };
@@ -593,7 +605,7 @@ export default {
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
       route, isLanding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, openAuth, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
+      accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus,
       unreadNotifications, openNotification, switchUser, showDemoControls, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };
