@@ -109,6 +109,46 @@ for (const token of ["[\"sourcing\", \"auction\"]", "Invited quote rounds", "Res
   if (!procurementPageSource.includes(token)) throw new Error(`Supplier procurement route is incomplete: ${token}`);
 }
 
+// The operating map is intentionally kept internal (docs/ is denied by the
+// production static-file policy).  Keep it aligned with the application flows
+// and assert the required UI contracts instead of allowing either to drift.
+const functionalFlowsDocument = read("docs/functional-flows.html");
+for (const token of [
+  "Modelo canónico",
+  "Identidad, empresa y acceso",
+  "Talento → proyecto → contrato → hitos",
+  "Solicitud de compra → aprobación → RFX",
+  "RFX protegido",
+  "Subasta inversa en vivo",
+  "Orden, recepción, factura y conciliación",
+  "Operación diaria: dashboard, búsqueda y workspace",
+  "Marketplace: talento, servicios y productos",
+  "Documentos, aceptación y comunicaciones",
+  "Diccionario mínimo de campos y estados",
+  "Cobertura de verificación",
+  "operationalScope",
+  "tenantId, companyId, locationId",
+  "invitedSupplierIds ≥2",
+  "40% configurable",
+]) {
+  if (!functionalFlowsDocument.includes(token)) throw new Error(`Functional-flow document is incomplete: ${token}`);
+}
+const procurementQueueSource = read("app/pages/procurement/ProcurementQueue.vue");
+const queueModalSource = read("app/pages/procurement/queue/QueueCreateModal.vue");
+const sourcingWizardSource = read("app/pages/procurement/sourcing/SourcingWizardModal.vue");
+const postJobSource = read("app/pages/PostJobWizard.vue");
+for (const [name, source, token] of [
+  ["purchase request", procurementQueueSource, 'currency: "MXN"'],
+  ["purchase request validation", procurementQueueSource, '["MXN", "USD", "EUR"].includes(d.currency)'],
+  ["purchase request form", queueModalSource, 'v-model="draft.currency"'],
+  ["RFX form", sourcingWizardSource, 'v-model="modelValue.currency"'],
+  ["RFX validation", sourcingSource, '["MXN", "USD", "EUR"].includes(data.currency)'],
+  ["RFP validation", postJobSource, '["MXN", "USD", "EUR"].includes(project.value.currency)'],
+  ["RFP date ordering", postJobSource, 'hiringLimit > delivery'],
+]) {
+  if (!source.includes(token)) throw new Error(`Field contract is incomplete for ${name}: ${token}`);
+}
+
 for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {
   if (!homeHeroSource.includes(token)) throw new Error(`Home hero responsive grid is missing ${token}`);
 }

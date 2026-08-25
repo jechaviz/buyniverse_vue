@@ -90,7 +90,7 @@ const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const WizardStep0Strategy = load("./app/pages/wizard/WizardStep0Strategy.vue?v=3");
-const WizardStep1Details = load("./app/pages/wizard/WizardStep1Details.vue?v=5");
+const WizardStep1Details = load("./app/pages/wizard/WizardStep1Details.vue?v=6");
 const WizardStep3Files = load("./app/pages/wizard/WizardStep3Files.vue?v=3");
 const WizardStep4Team = load("./app/pages/wizard/WizardStep4Team.vue?v=3");
 const WizardStep5Approvers = load("./app/pages/wizard/WizardStep5Approvers.vue?v=3");
@@ -172,6 +172,17 @@ export default {
         return;
       }
       project.value.skills = skillsText.value.split(",").map((s) => s.trim()).filter(Boolean);
+      if (project.value.sourcingType === "RFP") {
+        const delivery = Date.parse(project.value.dueDate), hiringLimit = Date.parse(project.value.hiringLimitDate);
+        const validCurrency = ["MXN", "USD", "EUR"].includes(project.value.currency);
+        if (!project.value.category || !project.value.projectLevel || !project.value.duration || !project.value.visibility ||
+          !validCurrency || !window.WebCommon.isSafeAmount(project.value.budget, 0.01) || !project.value.skills.length ||
+          Number.isNaN(delivery) || Number.isNaN(hiringLimit) || hiringLimit > delivery) {
+          wizardError.value = "Complete the commercial brief, skills and valid hiring and delivery dates.";
+          step.value = 1;
+          return;
+        }
+      }
       if (existing.value) {
         Object.assign(existing.value, project.value);
         store.notice("Project draft saved");

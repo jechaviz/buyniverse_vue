@@ -72,6 +72,14 @@
             <input v-model.number="modelValue.budget" class="field" type="number" min="1" required />
           </label>
           <label>
+            <span class="mb-1.5 block text-xs font-bold">Currency</span>
+            <select v-model="modelValue.currency" class="field" required>
+              <option value="MXN">MXN ($)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </label>
+          <label>
             <span class="mb-1.5 block text-xs font-bold">Deadline</span>
             <input v-model="modelValue.deadline" class="field" type="date" required />
           </label>
@@ -132,7 +140,7 @@
               </div>
               <div class="flex justify-between">
                 <dt class="text-slate-400">Budget</dt>
-                <dd>{{ formatMoney(modelValue.budget) }}</dd>
+                <dd>{{ formatMoney(modelValue.budget, modelValue.currency) }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-slate-400">Starts as</dt>

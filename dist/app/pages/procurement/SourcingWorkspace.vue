@@ -214,7 +214,7 @@ const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DataTable = load("./app/components/DataTable.vue?v=24");
-const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=1");
+const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=2");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
 const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
@@ -226,7 +226,7 @@ const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1")
 
 const freshWizard = () => ({
   title: "", type: "RFQ", requestId: "", budget: 10000, deadline: "2026-07-31",
-  description: "", suppliers: [], visibility: "Private", autoExtend: false,
+  currency: "MXN", description: "", suppliers: [], visibility: "Private", autoExtend: false,
 });
 
 export default {
@@ -565,10 +565,19 @@ export default {
       if (wizard.value.suppliers.length < 2) { wizardStep.value = 1; wizardError.value = "Select at least two suppliers."; return; }
       const data = wizard.value, request = store.purchaseRequest(data.requestId);
       const title = window.WebCommon.sanitizeText(data.title, 160).trim(), description = window.WebCommon.sanitizeText(data.description, 2000).trim(), budget = Number(data.budget), deadline = new Date(data.deadline + "T17:00:00Z");
+      const currency = ["MXN", "USD", "EUR"].includes(data.currency) ? data.currency : "";
+      const validTypes = ["RFI", "RFQ", "RFP", "Auction", "Negotiation"];
+      const validVisibility = ["Private", "Restricted", "Public"];
+      if (!title || !description || !validTypes.includes(data.type) || !validVisibility.includes(data.visibility) ||
+        !currency || !window.WebCommon.isSafeAmount(budget, 0.01) || Number.isNaN(deadline.getTime()) || deadline <= new Date()) {
+        wizardStep.value = 0;
+        wizardError.value = "Complete the required fields with a valid future deadline.";
+        return;
+      }
       const supplierIds = new Set(store.state.suppliers.map((item) => item.id));
       const item = store.scopeRecord({
         id: (data.type === "Auction" ? "AUC" : "RFX") + "-" + new Date().getFullYear() + "-" + String(130 + store.state.sourcingEvents.length),
-        title, type: data.type, status: "Draft", requestId: request?.id || null, projectId: request?.projectId || null, ownerId: store.currentUser.value.id, budget, currency: "USD", round: 1, deadline: deadline.toISOString(), visibility: data.visibility, autoExtend: Boolean(data.autoExtend), publishedAt: null, invitedSupplierIds: [...new Set(data.suppliers)].filter((id) => supplierIds.has(id)).slice(0, 50), messagesOpen: 0, savingsTarget: 8, awardReason: "", awardedSupplierId: null, weights: { price: 40, quality: 25, delivery: 15, risk: 15, esg: 5 }, lots: [{ id: window.ProcurementCommon.uid("lot"), description, quantity: 1, unit: "lot", ceiling: budget }], quotes: [], files: [], audit: [],
+        title, type: data.type, status: "Draft", requestId: request?.id || null, projectId: request?.projectId || null, ownerId: store.currentUser.value.id, budget, currency, round: 1, deadline: deadline.toISOString(), visibility: data.visibility, autoExtend: Boolean(data.autoExtend), publishedAt: null, invitedSupplierIds: [...new Set(data.suppliers)].filter((id) => supplierIds.has(id)).slice(0, 50), messagesOpen: 0, savingsTarget: 8, awardReason: "", awardedSupplierId: null, weights: { price: 40, quality: 25, delivery: 15, risk: 15, esg: 5 }, lots: [{ id: window.ProcurementCommon.uid("lot"), description, quantity: 1, unit: "lot", ceiling: budget }], quotes: [], files: [], audit: [],
       });
       store.state.sourcingEvents.unshift(item);
       store.procurementEvent(item, "Quote round created", typeLabel(data.type) + " draft", "success");

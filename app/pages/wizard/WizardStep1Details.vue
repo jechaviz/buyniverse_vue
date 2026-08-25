@@ -195,12 +195,12 @@
 
         <label class="block text-xs font-bold">
           <span class="mb-1.5 block">{{ store.t("Delivery date") }}</span>
-          <input v-model="project.dueDate" class="field" type="date" />
+          <input v-model="project.dueDate" class="field" type="date" required />
         </label>
 
         <label class="block text-xs font-bold">
           <span class="mb-1.5 block">{{ store.t("Hiring limit") }}</span>
-          <input v-model="project.hiringLimitDate" class="field" type="date" />
+          <input v-model="project.hiringLimitDate" class="field" type="date" required />
         </label>
 
         <label class="block text-xs font-bold">
@@ -230,6 +230,7 @@
           <input
             :value="skillsText"
             class="field"
+            required
             :placeholder="store.t('Vue, UX research, Accessibility')"
             @input="$emit('update:skillsText', $event.target.value)"
           />

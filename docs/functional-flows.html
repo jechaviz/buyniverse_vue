@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Buyniverse · Flujos funcionales y contrato de datos</title>
+  <style>
+    :root { color-scheme: dark; --bg:#07101f; --surface:#0d1a2d; --surface-2:#12243d; --line:#29415f; --text:#e8effa; --muted:#9db0ca; --brand:#ff5a63; --good:#37d39a; --warn:#f4bf57; --blue:#6fb6ff; --purple:#b69cff; }
+    * { box-sizing:border-box } html { scroll-behavior:smooth } body { margin:0; background:var(--bg); color:var(--text); font:14px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color:#a9ccff; text-decoration:none } a:hover { text-decoration:underline } code { color:#ffd2d5; font:12px ui-monospace, SFMono-Regular, Consolas, monospace }
+    .shell { max-width:1440px; margin:0 auto; padding:28px clamp(18px,4vw,56px) 72px }
+    .hero { display:grid; grid-template-columns:1fr auto; gap:24px; align-items:start; padding:28px; border:1px solid var(--line); border-radius:22px; background:linear-gradient(120deg,#10213a,#0c182a 62%,#151d37); }
+    .kicker { margin:0 0 8px; color:var(--brand); font-size:11px; font-weight:800; letter-spacing:.13em; text-transform:uppercase }.hero h1 { margin:0; font-size:clamp(27px,4vw,42px); letter-spacing:-.04em; line-height:1.05 }.hero p { max-width:800px; margin:14px 0 0; color:var(--muted) }.stamp { min-width:175px; padding:13px 15px; border:1px solid #425b7d; border-radius:12px; background:#071422; color:var(--muted); font-size:12px }.stamp b { color:var(--good); display:block; font-size:13px }.stamp span { display:block; margin-top:5px }
+    .nav { display:flex; flex-wrap:wrap; gap:8px; margin:18px 0 28px }.nav a { padding:6px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px }.nav a:hover { border-color:var(--brand); color:var(--text); text-decoration:none }
+    section { margin-top:34px; scroll-margin-top:16px }.section-heading { display:flex; align-items:baseline; gap:12px; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:16px }.section-heading h2 { margin:0; font-size:23px; letter-spacing:-.025em }.section-heading span { color:var(--muted); font-size:12px }
+    .grid { display:grid; gap:14px }.grid.two { grid-template-columns:repeat(2,minmax(0,1fr)) }.grid.three { grid-template-columns:repeat(3,minmax(0,1fr)) }.card { border:1px solid var(--line); border-radius:15px; background:var(--surface); padding:17px }.card h3 { margin:0 0 8px; font-size:15px }.card p { margin:0; color:var(--muted) }.card ul { margin:10px 0 0; padding-left:18px; color:var(--muted) }.card li+li { margin-top:5px }
+    .notice { padding:13px 15px; border-left:3px solid var(--brand); background:#30182a; color:#ffdce0; border-radius:0 10px 10px 0 }.notice strong { color:#fff }.notice.good { border-left-color:var(--good); background:#0e2a2a; color:#c8f8e8 }.notice.warn { border-left-color:var(--warn); background:#2b2516; color:#ffefc7 }
+    .flow { display:flex; align-items:stretch; gap:0; overflow-x:auto; padding:12px 0 8px }.step { position:relative; flex:1 0 150px; min-height:118px; padding:15px 17px; border:1px solid var(--line); background:var(--surface-2) }.step:first-child { border-radius:12px 0 0 12px }.step:last-child { border-radius:0 12px 12px 0 }.step:not(:last-child)::after { content:"→"; position:absolute; z-index:2; right:-11px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--brand); color:white; font-weight:800 }.step b { display:block; font-size:13px }.step small { display:block; margin-top:6px; color:var(--muted); line-height:1.35 }.step .tag { display:inline-block; margin-bottom:8px; color:var(--brand); font:700 10px ui-monospace, monospace; letter-spacing:.06em; text-transform:uppercase }.step.good .tag{color:var(--good)}.step.blue .tag{color:var(--blue)}.step.purple .tag{color:var(--purple)}
+    .branch { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:14px; border:1px dashed #405879; border-radius:14px; background:#091629 }.branch > div { padding:12px; border-radius:10px; background:var(--surface) }.branch b { color:#fff }.branch p { margin:5px 0 0; color:var(--muted); font-size:12px }
+    table { width:100%; border-collapse:collapse; font-size:12px } th { color:#b6c9e5; font-weight:750; text-align:left; background:#13243c } th,td { padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top } td { color:var(--muted) } td strong { color:var(--text) }.table-wrap { overflow:auto; border:1px solid var(--line); border-radius:14px } .state { display:inline-block; padding:2px 6px; margin:1px; border:1px solid #4b6382; border-radius:999px; color:#d4e4ff; font:700 10px ui-monospace,monospace; white-space:nowrap }.state.go { border-color:#317863; color:#7cf0c2 }.state.wait { border-color:#866f36; color:#ffd77e }.state.stop { border-color:#864959; color:#ffb2bc }
+    .field-list { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px }.field { padding:12px; border:1px solid var(--line); border-radius:11px; background:#0a1729 }.field b { display:block; font-size:12px; color:#fff }.field small { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.35 }.req { color:#ffb1b8 }.derived { color:#8cc9ff }.protected { color:#95efd0 }
+    .mermaidish { width:100%; min-height:250px; padding:8px; border:1px solid var(--line); border-radius:15px; background:#081426 }.mermaidish svg { width:100%; height:auto; display:block }.mermaidish text { fill:#e8effa; font:600 14px Inter, sans-serif }.mermaidish .sub { fill:#9db0ca; font:400 11px Inter, sans-serif }.mermaidish .node { fill:#132641; stroke:#426184; stroke-width:1.4 }.mermaidish .node.good { fill:#103a37; stroke:#37d39a }.mermaidish .node.warn { fill:#3b3020; stroke:#f4bf57 }.mermaidish .node.red { fill:#3b1d2a; stroke:#ff5a63 }.mermaidish line { stroke:#8098b9; stroke-width:1.5; marker-end:url(#arrow) }.mermaidish .dashed { stroke-dasharray:5 5 }
+    .checklist { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px }.check { padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--surface) }.check::before { content:"✓"; color:var(--good); font-weight:900; margin-right:8px }.check b { color:#fff }.check span { color:var(--muted); font-size:12px }
+    footer { margin-top:40px; padding-top:15px; border-top:1px solid var(--line); color:var(--muted); font-size:12px }
+    @media (max-width:850px) { .hero,.grid.two,.grid.three,.branch,.checklist { grid-template-columns:1fr }.hero { padding:22px }.stamp { min-width:0 }.field-list { grid-template-columns:repeat(2,minmax(0,1fr)) } .step { min-width:175px } }
+    @media print { body{background:white;color:#12233b}.shell{max-width:none;padding:20px}.hero,.card,.field,.step,.branch,.branch>div,.notice,.mermaidish{background:white;color:#12233b;border-color:#9baec6}.hero p,.card p,.card li,td,.step small,.branch p,.field small,footer{color:#42536c}.kicker,.step .tag{color:#a72831}.mermaidish text{fill:#12233b}.mermaidish .node{fill:#eef4fb}.nav{display:none}.section-heading{break-after:avoid}.flow,.table-wrap,.card{break-inside:avoid} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="kicker">Documento interno · contrato funcional</p>
+        <h1>Buyniverse: flujos operativos, datos y controles</h1>
+        <p>Mapa único para revisar qué sucede desde identidad, empresa y solicitud hasta propuesta, adjudicación, orden, recepción, CFDI y comunicación. Cada transición indica quién puede actuar, qué campos sustentan la decisión y qué información permanece restringida.</p>
+      </div>
+      <aside class="stamp"><b>Release v127+</b><span>Fuente: rutas Vue, acciones de dominio, formularios y auditorías QA.</span><span>Clasificación: operación interna. Este archivo se mantiene fuera del sitio público.</span></aside>
+    </header>
+
+    <nav class="nav" aria-label="Secciones"><a href="#modelo">Modelo</a><a href="#identidad">Identidad</a><a href="#talento">Talento y proyectos</a><a href="#compras">Compras</a><a href="#rfx">RFX</a><a href="#subasta">Subasta</a><a href="#ejecucion">Ejecución fiscal</a><a href="#operacion">Operación diaria</a><a href="#marketplace">Marketplace</a><a href="#contenido">Documentos y comunicación</a><a href="#datos">Campos y consistencia</a><a href="#qa">Verificación</a></nav>
+
+    <section id="modelo">
+      <div class="section-heading"><h2>1. Modelo canónico</h2><span>Un mismo contexto operacional atraviesa todas las entidades</span></div>
+      <div class="mermaidish" role="img" aria-label="Relación entre tenant, empresa, ubicación, usuario y dominios operativos">
+        <svg viewBox="0 0 1120 290" aria-hidden="true">
+          <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8098b9" /></marker></defs>
+          <rect class="node good" x="26" y="104" rx="12" width="148" height="72"/><text x="49" y="133">Tenant</text><text class="sub" x="49" y="155">contrato SaaS</text>
+          <rect class="node" x="246" y="55" rx="12" width="176" height="72"/><text x="270" y="84">Empresa legal</text><text class="sub" x="270" y="106">razón social · RFC</text>
+          <rect class="node" x="246" y="170" rx="12" width="176" height="72"/><text x="271" y="199">Membresía</text><text class="sub" x="271" y="221">usuario · rol · alcance</text>
+          <rect class="node blue" x="494" y="55" rx="12" width="176" height="72"/><text x="516" y="84">Sucursal / bodega</text><text class="sub" x="516" y="106">código · tipo · nombre</text>
+          <rect class="node purple" x="494" y="170" rx="12" width="176" height="72"/><text x="516" y="199">Scope activo</text><text class="sub" x="516" y="221">tenant · empresa · ubicación</text>
+          <rect class="node" x="742" y="24" rx="12" width="156" height="55"/><text x="765" y="56">Marketplace</text>
+          <rect class="node" x="742" y="116" rx="12" width="156" height="55"/><text x="778" y="148">Compras</text>
+          <rect class="node" x="742" y="208" rx="12" width="156" height="55"/><text x="777" y="240">Fiscal</text>
+          <rect class="node red" x="970" y="104" rx="12" width="125" height="72"/><text x="993" y="133">Audit log</text><text class="sub" x="985" y="155">actor · acción · fecha</text>
+          <line x1="174" y1="128" x2="246" y2="92"/><line x1="174" y1="148" x2="246" y2="206"/><line x1="422" y1="91" x2="494" y2="91"/><line x1="422" y1="206" x2="494" y2="206"/><line x1="670" y1="206" x2="742" y2="51"/><line x1="670" y1="206" x2="742" y2="143"/><line x1="670" y1="206" x2="742" y2="235"/><line class="dashed" x1="898" y1="51" x2="970" y2="124"/><line class="dashed" x1="898" y1="143" x2="970" y2="143"/><line class="dashed" x1="898" y1="235" x2="970" y2="158"/>
+        </svg>
+      </div>
+      <div class="grid three" style="margin-top:14px">
+        <article class="card"><h3>Alcance obligatorio</h3><p>Registros operativos llevan <code>operationalScope</code>: <strong>tenantId, companyId, locationId</strong>. El selector cambia contexto; no reescribe el historial.</p></article>
+        <article class="card"><h3>Roles operativos</h3><p>Una misma persona puede alternar Buyer/Supplier cuando tiene membresía; Admin requiere tipo administrativo. Las rutas restringen modo y rol antes de cargar la vista.</p></article>
+        <article class="card"><h3>Persistencia</h3><p>Producción carga y guarda el estado cifrado a través de sesión HttpOnly, CSRF y versión optimista. Demo es explícito y local.</p></article>
+      </div>
+    </section>
+
+    <section id="identidad">
+      <div class="section-heading"><h2>2. Identidad, empresa y acceso</h2><span>Entrada al producto y delimitación de datos</span></div>
+      <div class="flow" aria-label="Flujo de identidad y tenant">
+        <div class="step blue"><span class="tag">1 · identidad</span><b>Sesión</b><small>SSO configurado o email/contraseña según runtime. Recuperación usa email, OTP de 6 dígitos y nueva contraseña.</small></div>
+        <div class="step"><span class="tag">2 · alta</span><b>Cuenta / empresa</b><small>Nombre o razón social, email, contraseña y aceptación. RFC y régimen se completan al crear entidad legal.</small></div>
+        <div class="step"><span class="tag">3 · organización</span><b>Empresa y ubicación</b><small>Crear razón social/RFC; después sucursal o bodega con tipo, código y nombre.</small></div>
+        <div class="step"><span class="tag">4 · acceso</span><b>Invitación con scope</b><small>Email, rol y alcance: tenant, empresa o ubicación. La ubicación se vuelve obligatoria cuando se elige ese scope.</small></div>
+        <div class="step good"><span class="tag">5 · contexto</span><b>Workspace activo</b><small>Las colecciones se filtran por contexto; cada escritura recibe el scope vigente y queda auditada.</small></div>
+      </div>
+      <div class="field-list" style="margin-top:14px">
+        <div class="field"><b>Empresa <span class="req">requerido</span></b><small>Razón social, RFC. Régimen fiscal opcional. RFC es la llave de negocio en México.</small></div>
+        <div class="field"><b>Ubicación <span class="req">requerido</span></b><small>Tipo <code>branch|warehouse</code>, código 2–40 alfanumérico y nombre.</small></div>
+        <div class="field"><b>Invitación <span class="req">requerido</span></b><small>Email corporativo, rol, scope; <span class="protected">locationId</span> obligatorio si scope=location.</small></div>
+        <div class="field"><b>Sesión <span class="protected">protegido</span></b><small>Cookie HttpOnly, CSRF por sesión y callback federado del servidor; no se persiste un token en navegador.</small></div>
+      </div>
+    </section>
+
+    <section id="talento">
+      <div class="section-heading"><h2>3. Talento → proyecto → contrato → hitos</h2><span>Pipeline de demanda de trabajo especializado</span></div>
+      <div class="flow" aria-label="Flujo de proyecto y talento">
+        <div class="step"><span class="tag">Buyer</span><b>Brief RFP/RFI</b><small>Título, alcance, categoría, nivel, presupuesto, moneda, fechas, visibilidad y skills; documentos pueden ser obligatorios.</small></div>
+        <div class="step blue"><span class="tag">Marketplace</span><b>Publicar</b><small>Solo registros explícitamente <code>public</code> y no confidenciales aparecen en portada. Privado/invitación queda en contexto.</small></div>
+        <div class="step"><span class="tag">Supplier</span><b>Propuesta</b><small>Importe, plazo, carta, hitos y extras. Si hay documento requerido debe registrar aceptación clickwrap de versión concreta.</small></div>
+        <div class="step"><span class="tag">Buyer</span><b>Adjudicar</b><small>Una propuesta aceptada; las demás quedan no seleccionadas. Se crea contrato y se financia el primer hito.</small></div>
+        <div class="step good"><span class="tag">Delivery</span><b>Entregar y liberar</b><small>Proveedor actualiza tareas asignadas; Buyer/Admin libera solamente hitos fundados y listos.</small></div>
+      </div>
+      <div class="branch" style="margin-top:14px"><div><b>RFP comercial</b><p>Antes de crear: título, descripción, categoría, nivel, presupuesto &gt; 0, moneda válida, duración, skills, fecha límite de contratación y fecha de entrega. La contratación no puede ser posterior a entrega.</p></div><div><b>RFI exploratorio</b><p>Sirve para descubrir información. Debe convertirse en brief comercial antes de usarlo como base de adjudicación financiera; no mezclar hallazgos con una orden vinculante.</p></div></div>
+      <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Entidad</th><th>Estados</th><th>Llaves y relaciones</th><th>Control</th></tr></thead><tbody><tr><td><strong>Job / project</strong></td><td><span class="state go">OPEN</span><span class="state go">IN_PROGRESS</span></td><td>clientId, proposals[], contractId, skills[], requiredDocuments[], scope</td><td>Buyer crea; proveedor solo propone en OPEN; acceso al detalle por participante.</td></tr><tr><td><strong>Proposal</strong></td><td><span class="state wait">Submitted</span><span class="state go">Accepted</span><span class="state stop">Not selected</span></td><td>freelancerId, bid, coverLetter, completionTime, milestones[]</td><td>Una propuesta activa por proveedor y proyecto.</td></tr><tr><td><strong>Contract</strong></td><td><span class="state go">In progress</span></td><td>sourceId, clientId, providerId, amount, milestones[]</td><td>Primer hito Funded; tareas sólo actualizables por asignado; liberación Buyer/Admin.</td></tr></tbody></table></div>
+    </section>
+
+    <section id="compras">
+      <div class="section-heading"><h2>4. Solicitud de compra → aprobación → RFX</h2><span>Pipeline de procurement antes de la competencia</span></div>
+      <div class="flow" aria-label="Flujo de solicitud de compra">
+        <div class="step"><span class="tag">1 · requester</span><b>Crear solicitud</b><small>Título, departamento, categoría, prioridad, moneda, fecha requerida, partida inicial, cantidad, precio unitario y justificación.</small></div>
+        <div class="step"><span class="tag">2 · owner</span><b>Enviar</b><small><code>Draft → Pending approval</code>. Se conserva requester, owner, aprobador, budgetCode y bitácora.</small></div>
+        <div class="step warn"><span class="tag">3 · approver</span><b>Decidir</b><small>Aprueba, rechaza o pide aclaración. La solicitud sigue trazable y la siguiente acción queda explícita.</small></div>
+        <div class="step blue"><span class="tag">4 · buyer</span><b>Crear RFX</b><small>Solo Approved sin evento previo. Hereda importe, moneda, partidas, scope y vínculo <code>requestId</code>.</small></div>
+        <div class="step good"><span class="tag">5 · sourcing</span><b>Competir / adjudicar</b><small>La solicitud progresa a RFQ in progress y finalmente Awarded al crearse la orden.</small></div>
+      </div>
+      <div class="notice good" style="margin-top:14px"><strong>Coherencia multimoneda:</strong> la moneda es obligatoria en la nueva solicitud y se propaga a RFX, respuestas, orden, recepción y comprobación fiscal. No se usa USD implícito en estos dos puntos de creación.</div>
+    </section>
+
+    <section id="rfx">
+      <div class="section-heading"><h2>5. RFX protegido</h2><span>Información, cotización, propuesta, negociación o subasta</span></div>
+      <div class="flow" aria-label="Flujo RFX">
+        <div class="step"><span class="tag">Buyer/Admin</span><b>Draft</b><small>Título, tipo, solicitud opcional, presupuesto, moneda, fecha futura, primer lote/alcance y dos o más proveedores.</small></div>
+        <div class="step"><span class="tag">Buyer/Admin</span><b>Configurar</b><small>Lotes, unidades, criterios/pesos, visibilidad, documentos, mensajes y extensión automática. Pesos documentan la selección.</small></div>
+        <div class="step blue"><span class="tag">Publicar</span><b>Published</b><small>Requiere lote, deadline válido y ≥2 invitados. La invitación no divulga presupuesto, criterio, competidores ni respuestas.</small></div>
+        <div class="step purple"><span class="tag">Supplier</span><b>Respuesta propia</b><small>Importe total, lead time 1–3650 días, términos y nota. Puede actualizar sólo su oferta antes de cierre.</small></div>
+        <div class="step"><span class="tag">Buyer/Admin</span><b>Comparar</b><small>Ranking de precio/calidad/entrega/riesgo/ESG y justificación obligatoria de adjudicación.</small></div>
+        <div class="step good"><span class="tag">Award</span><b>PO</b><small><code>Awarded</code>, proveedor elegido, razón de decisión y orden creada desde lote/quote.</small></div>
+      </div>
+      <div class="grid two" style="margin-top:14px"><article class="card"><h3>Vista Supplier: proyección mínima</h3><ul><li>Ronda, título, tipo, estado y deadline.</li><li>Su propia respuesta y mensajes autorizados.</li><li>Sin presupuesto, pesos, proveedores, conteo de ofertas, ranking, precio rival ni deliberación.</li></ul></article><article class="card"><h3>Vista Buyer/Admin</h3><ul><li>Setup, proveedores, bid sheet, comparación, selección, timeline y comunicaciones.</li><li>El proveedor seleccionado debe ser invitado y tener respuesta compliant.</li><li>La orden adopta precio, terms y leadDays del quote ganador.</li></ul></article></div>
+      <div class="field-list" style="margin-top:14px"><div class="field"><b>RFX <span class="req">requerido</span></b><small>title, type, budget &gt;0, currency, deadline futuro, descripción/lote, invitedSupplierIds ≥2, visibility.</small></div><div class="field"><b>Respuesta <span class="req">requerido</span></b><small>price &gt;0, leadDays entero, terms. <span class="derived">quality/risk/ESG</span> se derivan del perfil calificado.</small></div><div class="field"><b>Selección <span class="req">requerido</span></b><small>supplierId compliant + awardReason. Una sola adjudicación por evento.</small></div><div class="field"><b>Confidencialidad <span class="protected">protegido</span></b><small>El DataTable Supplier recibe una proyección, no sólo columnas ocultas; evita filtros/vistas/exportaciones con datos de competencia.</small></div></div>
+    </section>
+
+    <section id="subasta">
+      <div class="section-heading"><h2>6. Subasta inversa en vivo</h2><span>RFX tipo Auction: competencia privada y señales en tiempo real</span></div>
+      <div class="flow" aria-label="Flujo de subasta inversa">
+        <div class="step"><span class="tag">Publicar Auction</span><b>Apertura</b><small>Desde RFX con presupuesto e invitados. Genera room, precio inicial, reserve/floor, minStep, cierre y anti-sniping.</small></div>
+        <div class="step purple"><span class="tag">Supplier</span><b>Puja válida</b><small>Envía importe menor por el paso mínimo; sólo se valida contra reglas internas. No recibe techo ni precio de un rival.</small></div>
+        <div class="step blue"><span class="tag">Realtime</span><b>Señal</b><small>Owner ve oferta válida; postor confirma; rivales sólo reciben estímulo competitivo sin identidad ni importe.</small></div>
+        <div class="step warn"><span class="tag">Anti-sniping</span><b>Extender</b><small>Oferta tardía válida agrega 60 s hasta máximo configurado. Organizer puede pausar, reanudar, extender o cancelar.</small></div>
+        <div class="step good"><span class="tag">Buyer/Admin</span><b>Adjudicar</b><small>Ganador vigente + motivo. Congela ahorro financiero, ahorro Buyniverse, tarifa de servicio y ahorro neto; crea PO. La tarifa inicia en <strong>40% configurable</strong> del ahorro validado, con límite de 0–100% y registro de auditoría.</small></div>
+      </div>
+      <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Dato</th><th>Organizer</th><th>Proveedor participante</th><th>Regla</th></tr></thead><tbody><tr><td><strong>Participantes y ranking</strong></td><td>Identidad, actividad, riesgo y ranking</td><td>Propia posición; rivales como “Competing supplier”</td><td>Identidad rival, bids, riesgo, auto-bid y último importe se redactan.</td></tr><tr><td><strong>Movimiento</strong></td><td>Serie completa y métricas de ahorro</td><td>Su serie/puntos; no ceiling ni next valid offer</td><td>Una puja no revela la siguiente cifra válida al mercado.</td></tr><tr><td><strong>Resultado</strong></td><td>Justificación y settlement</td><td>Notificación si fue ganador</td><td>La adjudicación crea PO y auditoría; una ronda no se decide dos veces.</td></tr></tbody></table></div>
+    </section>
+
+    <section id="ejecucion">
+      <div class="section-heading"><h2>7. Orden, recepción, factura y conciliación</h2><span>Del award a cierre de orden con tres vías</span></div>
+      <div class="flow" aria-label="Flujo de ejecución de orden">
+        <div class="step"><span class="tag">Award</span><b>Orden de compra</b><small>eventId, requestId, supplierId, buyerId, líneas, total, moneda, incoterm, terms, ETA, ship-to y warehouse.</small></div>
+        <div class="step blue"><span class="tag">Warehouse/Buyer</span><b>Recepción</b><small>Cada línea registra receiveNow dentro de su remanente. Resultado: parcialmente recibida o Received.</small></div>
+        <div class="step"><span class="tag">Supplier/Admin</span><b>CFDI / invoice</b><small>Se adjunta una factura fiscal al PO. Emisor, receptor, moneda, conceptos, impuestos e importe deben ser coherentes.</small></div>
+        <div class="step warn"><span class="tag">Control</span><b>Three-way match</b><small>PO + recepción completa + invoice; diferencia ≤2%. Desviaciones generan excepción hasta resolución.</small></div>
+        <div class="step good"><span class="tag">Close</span><b>Cierre</b><small>Solo <code>Matched</code> y sin excepciones abiertas. Se mantiene la bitácora completa de PO, receipt e invoice.</small></div>
+      </div>
+      <div class="grid two" style="margin-top:14px"><article class="card"><h3>CFDI / factura</h3><p>El emisor es Supplier/Admin. Requiere receptor válido, moneda MXN/USD/EUR, total seguro &gt;0 y al menos un concepto con descripción, cantidad y precio unitario &gt;0. El pago no puede exceder el total.</p></article><article class="card"><h3>Controles financieros</h3><p>Montos pasan <code>isSafeAmount</code>; comprobación usa tolerancia 2%; las acciones de receipt, attach, match y close exigen el contexto comprador/Admin dueño de la orden.</p></article></div>
+    </section>
+
+    <section id="operacion">
+      <div class="section-heading"><h2>8. Operación diaria: dashboard, búsqueda y workspace</h2><span>La misma experiencia densa para cada dominio, sin eludir permisos ni scope</span></div>
+      <div class="flow" aria-label="Flujo de operación diaria del workspace">
+        <div class="step"><span class="tag">Contexto</span><b>Empresa / sucursal</b><small>Elegir tenant, razón social y ubicación antes de consultar o crear. El scope vigente filtra el dashboard, las tablas y la escritura.</small></div>
+        <div class="step blue"><span class="tag">Encontrar</span><b>Quick access</b><small>Busca rutas y registros permitidos por rol. La navegación rápida no debe resolver un detalle al que el usuario no tiene acceso.</small></div>
+        <div class="step"><span class="tag">Operar</span><b>Tabla y detalle</b><small>Clientes, proveedores, leads, proyectos, estimates, facturas, pagos, gastos, mensajes y jobs guardados comparten búsqueda, filtros, columnas, edición validada y acciones autorizadas.</small></div>
+        <div class="step purple"><span class="tag">Personalizar</span><b>Vista guardada</b><small>Una vista registra filtro, orden, columnas y paginación con owner/scope. Cambiar filtros ofrece actualizar la vista vigente o guardar una nueva; no se comparte accidentalmente.</small></div>
+        <div class="step good"><span class="tag">Persistir</span><b>Servidor + auditoría</b><small>Drafts, preferencias y acciones se guardan por sesión en el estado de workspace. El indicador confirma persistencia remota, no sólo local.</small></div>
+      </div>
+      <div class="grid three" style="margin-top:14px">
+        <article class="card"><h3>Dashboard</h3><p>Resume trabajo del scope actual: tareas, pipeline, facturación, compras y señales. Un KPI enlaza una lista filtrada, nunca una cifra sin navegación ni contexto.</p></article>
+        <article class="card"><h3>Relación comercial</h3><p>Client, supplier, lead y agency mantienen identidad, contactos, estado y actividad. Las relaciones comerciales no reemplazan la membresía ni extienden permisos.</p></article>
+        <article class="card"><h3>Finanzas operativas</h3><p>Estimate precede el acuerdo; invoice y payment quedan enlazados; expense pertenece al scope. Billing expone sólo el plan y la relación de facturación del tenant activo.</p></article>
+        <article class="card"><h3>Fiscal y administración</h3><p>Admin gestiona emisores fiscales y configuración organizacional. Certificados, contraseñas, API keys y credenciales son write-only y viven del lado servidor; nunca aparecen en una tabla, exportación o estado persistido del navegador.</p></article>
+      </div>
+      <div class="notice warn" style="margin-top:14px"><strong>Regla de UI:</strong> filtros, columnas, exports, breadcrumbs y búsqueda global parten de la proyección autorizada. Ocultar una celda no es un control de acceso; el registro no autorizado nunca debe llegar al cliente.</div>
+    </section>
+
+    <section id="marketplace">
+      <div class="section-heading"><h2>9. Marketplace: talento, servicios y productos</h2><span>Descubrimiento sin filtraciones entre el ámbito público y el workspace</span></div>
+      <div class="flow" aria-label="Flujo marketplace">
+        <div class="step"><span class="tag">Descubrir</span><b>Find talent / services</b><small>Buyer busca perfiles, agencias o gigs. Los filtros no entregan una ficha interna de otro usuario por URL directa.</small></div>
+        <div class="step"><span class="tag">Comparar</span><b>Valor comercial</b><small>Productos muestran ofertas de proveedores, referencia, mejor precio y ahorro por unidad; el buyer compara antes de pedir.</small></div>
+        <div class="step blue"><span class="tag">Solicitar</span><b>Intento de compra</b><small>Buyer solicita servicio a proveedor; se crea service request con buyerId, gigId, estado Requested y scope.</small></div>
+        <div class="step"><span class="tag">Convertir</span><b>Proyecto o compra</b><small>El trabajo complejo continúa por brief/propuesta/contrato; producto o servicio recurrente puede iniciar solicitud de compra.</small></div>
+        <div class="step good"><span class="tag">Medir</span><b>Ahorro y entrega</b><small>Compras concentra gasto, competencia, adjudicación y órdenes; el marketplace no mezcla datos confidenciales con listado público.</small></div>
+      </div>
+      <div class="notice" style="margin-top:14px"><strong>Regla de publicación:</strong> una oportunidad solo es pública cuando <code>status=OPEN</code>, <code>visibility=public</code> y <code>confidential=false</code>. Los enlaces de portada dirigen a directorios/acciones, no a identidades internas.</div>
+    </section>
+
+    <section id="contenido">
+      <div class="section-heading"><h2>10. Documentos, aceptación y comunicaciones</h2><span>Contenido reutilizable con evidencia y audiencia autorizada</span></div>
+      <div class="flow" aria-label="Flujo de documento y comunicación">
+        <div class="step"><span class="tag">Library</span><b>Crear/reutilizar</b><small>Editor WYSIWYG/Markdown gestiona secciones, portada, fin, variables, encabezado/pie por sección y biblioteca personal.</small></div>
+        <div class="step"><span class="tag">Brief</span><b>Adjuntar requisito</b><small>Proyecto añade documento único por sourceId, con versionHash, secciones, requiredForProposal y signatureRequired.</small></div>
+        <div class="step purple"><span class="tag">Candidate</span><b>Aceptar</b><small>Lee contenido, marca revisión, escribe nombre completo. Registra signerId, versionHash, fecha y método clickwrap.</small></div>
+        <div class="step blue"><span class="tag">Contexto</span><b>Mensajes</b><small>Thread por project, sourcing o auction. Participantes se derivan del contexto y el propietario puede anunciar.</small></div>
+        <div class="step good"><span class="tag">Mailing</span><b>Borrador transaccional</b><small>Plantilla + audiencia autorizada → draft server-side; la entrega transaccional usa outbox cifrado/idempotente.</small></div>
+      </div>
+      <div class="grid three" style="margin-top:14px"><article class="card"><h3>Límite de estructura</h3><p>Máximo una portada y un fin de sección por sección; biblioteca limita documentos duplicados por fuente y secciones a un máximo seguro.</p></article><article class="card"><h3>Firma adecuada</h3><p>Clickwrap acredita aceptación de plataforma. Firma regulada requiere proveedor de identidad/firma configurado; no debe venderse como firma avanzada sin ese conector.</p></article><article class="card"><h3>Correo</h3><p>El mensaje interno notifica al participante. El correo es un borrador/encolado, no un <em>alert</em> de navegador ni un envío directo desde cliente.</p></article></div>
+    </section>
+
+    <section id="datos">
+      <div class="section-heading"><h2>11. Diccionario mínimo de campos y estados</h2><span>Campos que no se deben inferir ni dejar implícitos</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Dominio</th><th>Campos requeridos al cambio de estado</th><th>Campos derivados / auditables</th><th>Visibilidad</th></tr></thead><tbody>
+        <tr><td><strong>Tenant</strong></td><td>legalName, rfc; location.kind/code/name; invite.email/role/scope</td><td>context company/location, membership permissions, immutable audit</td><td>Miembros de scope; gestión Tenant/Company.</td></tr>
+        <tr><td><strong>Brief RFP</strong></td><td>title, description, category, level, budget, currency, duration, skills, hiringLimitDate, dueDate, visibility</td><td>clientId, status, createdAt, proposalsCount, operationalScope</td><td>Publicación explícita; privado/invitación se restringe.</td></tr>
+        <tr><td><strong>Proposal</strong></td><td>amount, completionTime/carta según propuesta, hitos si aplica</td><td>freelancerId, status, createdAt, acceptance del documento</td><td>Buyer dueño/Admin y proveedor autor.</td></tr>
+        <tr><td><strong>Purchase request</strong></td><td>title, department, priority, currency, dueDate, partida, quantity, unitPrice</td><td>amount, requester/owner/approver, budgetCode, audit</td><td>Dueño, aprobador y Admin en scope.</td></tr>
+        <tr><td><strong>RFX</strong></td><td>title, type, budget, currency, deadline futuro, lote, 2 invitados, visibility</td><td>weights, round, responseCount, audit, awardReason</td><td>Supplier sólo recibe proyección/invitación y su response.</td></tr>
+        <tr><td><strong>Reverse auction</strong></td><td>Participante invitado + importe menor válido</td><td>starting/current price, minStep, floor/reserve, rank, extensionCount, signals</td><td>Organizer completo; supplier sin datos numéricos/identidad rival.</td></tr>
+        <tr><td><strong>PO / match</strong></td><td>supplier, total, currency, líneas; receipt por línea; factura adjunta</td><td>receivedPercent, exceptions, tolerance, status, audit</td><td>Buyer/Admin autorizado; fiscal por emisor/receptor relacionado.</td></tr>
+        <tr><td><strong>Workspace view</strong></td><td>tenant/context activo; filtros, orden y columnas válidos</td><td>savedView ownerId, version, timestamps, audit</td><td>Se aplica a la proyección ya autorizada; compartir requiere acción explícita.</td></tr>
+        <tr><td><strong>Issuer fiscal</strong></td><td>razón social/RFC/régimen; configuración de PAC cuando proceda</td><td>issuerId, scope, audit; secretos write-only</td><td>Admin autorizado; secretos nunca regresan en la respuesta al cliente.</td></tr>
+        <tr><td><strong>Documento</strong></td><td>sourceId, name, versionHash, sections; nombre escrito si hay acknowledgment</td><td>signerId, acceptedAt, method, compilation Markdown</td><td>Proyecto/contexto autorizado; biblioteca por usuario.</td></tr>
+      </tbody></table></div>
+      <div class="grid two" style="margin-top:14px"><article class="card"><h3>Estados que no se saltan</h3><p><code>Draft → Pending approval → Approved → RFQ in progress → Awarded</code>; <code>Draft → Published → Comparing → Awarded</code>; para Auction: <code>Draft → Running → Awarded|Closed</code>; PO: <code>Awaiting receipt → Partially received|Received → Matched → Closed</code>.</p></article><article class="card"><h3>Relaciones que deben permanecer íntegras</h3><p>requestId enlaza RFX; eventId enlaza PO; invoiceId enlaza match; sourceId enlaza contrato; supplierId debe estar invitado; company/location del scope se preservan en cada objeto operacional.</p></article></div>
+      <div class="notice warn" style="margin-top:14px"><strong>Separación de responsabilidades:</strong> el navegador puede validar experiencia y presentar proyecciones, pero tenant, autorización, montos, cambios de estado, firma regulada y envío de correo deben validarse de nuevo por el servidor. El contrato backend es la autoridad de producción.</div>
+    </section>
+
+    <section id="qa">
+      <div class="section-heading"><h2>12. Cobertura de verificación</h2><span>Qué pruebas sostienen este mapa</span></div>
+      <div class="checklist"><div class="check"><b>Rutas y roles</b><br><span>Guardas de modo, Admin, proyecto, contrato, invoice e identidad; contexto tenant y scope operacional.</span></div><div class="check"><b>Relaciones demo</b><br><span>Referencias entre job, request, RFX, auction, PO, invoice, conversation y mailing resuelven.</span></div><div class="check"><b>Privacidad de competencia</b><br><span>QA exige proyección RFX Supplier y redacción de auction: sin rival, techo ni importe.</span></div><div class="check"><b>Ciclo completo</b><br><span>Solicitud/auction/puja/adjudicación/PO/receipt/match/cierre y propuesta/contrato/hito se ejecutan en QA.</span></div><div class="check"><b>Campos críticos</b><br><span>Las nuevas solicitudes y RFX validan moneda; RFP valida brief comercial, fechas ordenadas y skills.</span></div><div class="check"><b>Build y distribución</b><br><span>El paquete genera UnoCSS AOT, preserva CSP/anti-FOUC y no publica documentación interna ni secretos.</span></div></div>
+      <p class="notice good" style="margin-top:14px"><strong>Uso recomendado:</strong> revisar este documento en cada cambio que añada una entidad, una transición, una audiencia o un campo obligatorio; actualizar el diagrama, diccionario y prueba de lifecycle en el mismo commit.</p>
+    </section>
+
+    <footer>Buyniverse · documentación funcional interna · fuente de verificación: <code>app/main.js</code>, <code>app/store/domainActions.js</code>, formularios Vue y <code>scripts/qa</code>. El archivo se conserva bajo <code>docs/</code> y la configuración de producción niega su publicación directa.</footer>
+  </main>
+</body>
+</html>

@@ -52,7 +52,7 @@ const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DataTable = load("./app/components/DataTable.vue?v=24");
 const QueueDetailPanel = load("./app/pages/procurement/queue/QueueDetailPanel.vue?v=1");
-const QueueCreateModal = load("./app/pages/procurement/queue/QueueCreateModal.vue?v=1");
+const QueueCreateModal = load("./app/pages/procurement/queue/QueueCreateModal.vue?v=2");
 
 export default {
   components: { DataTable, QueueDetailPanel, QueueCreateModal },
@@ -120,7 +120,7 @@ export default {
     const freshDraft = () => ({
       title: "", department: "Engineering", category: "Technology", priority: "Medium",
       dueDate: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
-      amount: 15000, itemDescription: "", quantity: 1, unitPrice: 15000, budgetCode: "CAPEX-2026", notes: "",
+      amount: 15000, currency: "MXN", itemDescription: "", quantity: 1, unitPrice: 15000, budgetCode: "CAPEX-2026", notes: "",
     });
     const draft = ref(freshDraft());
 
@@ -131,6 +131,7 @@ export default {
 
     const saveRequest = () => {
       const d = draft.value, amt = Number(d.amount), qty = Number(d.quantity), up = Number(d.unitPrice);
+      const currency = ["MXN", "USD", "EUR"].includes(d.currency) ? d.currency : "";
       const title = window.WebCommon.sanitizeText(d.title, 160).trim();
       const dept = window.WebCommon.sanitizeText(d.department, 80).trim();
       const desc = window.WebCommon.sanitizeText(d.itemDescription, 300).trim();
@@ -139,11 +140,11 @@ export default {
         !title || !dept || !desc ||
         !window.WebCommon.isSafeAmount(amt, 0) || amt <= 0 ||
         !window.WebCommon.isSafeAmount(qty, 1, 1000000) || !Number.isInteger(qty) ||
-        !window.WebCommon.isSafeAmount(up, 0) || up <= 0 || Number.isNaN(dueDate.getTime())
+        !window.WebCommon.isSafeAmount(up, 0) || up <= 0 || !currency || Number.isNaN(dueDate.getTime())
       ) return store.notice("Complete required fields with valid values", "fa-triangle-exclamation");
       const id = "PR-" + String(2410 + store.state.purchaseRequests.length);
       const req = store.scopeRecord({
-        id, title, requesterId: store.currentUser.value.id, department: dept, amount: amt, currency: "USD",
+        id, title, requesterId: store.currentUser.value.id, department: dept, amount: amt, currency,
         status: "Draft", approverId: "user-admin-admin", ownerId: store.currentUser.value.id,
         priority: ["Low", "Medium", "High"].includes(d.priority) ? d.priority : "Medium",
         category: window.WebCommon.sanitizeText(d.category, 80).trim(), dueDate: dueDate.toISOString(),

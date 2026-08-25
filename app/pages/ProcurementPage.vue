@@ -71,8 +71,8 @@ const load = (p) =>
     window["vue3-sfc-loader"].loadModule(p, window.sfcOptions),
   );
 const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=9");
-const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=9");
-const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=16");
+const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=10");
+const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=17");
 const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=27");
 const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=10");
 const Intelligence = load(

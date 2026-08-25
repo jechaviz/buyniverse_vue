@@ -24,7 +24,7 @@
             <input v-model.trim="draft.department" class="field mt-1" required placeholder="Engineering" />
           </label>
         </div>
-        <div class="grid gap-3 sm:grid-cols-3">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label class="block text-xs font-bold">
             Category
             <select v-model="draft.category" class="field mt-1">
@@ -41,6 +41,14 @@
               <option>Low</option>
               <option>Medium</option>
               <option>High</option>
+            </select>
+          </label>
+          <label class="block text-xs font-bold">
+            Currency
+            <select v-model="draft.currency" class="field mt-1" required>
+              <option value="MXN">MXN ($)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
             </select>
           </label>
           <label class="block text-xs font-bold">

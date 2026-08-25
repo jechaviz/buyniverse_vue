@@ -489,7 +489,7 @@ const Home = load("./app/pages/HomePage.vue?v=31");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=53");
 const Project = load("./app/pages/ProjectPage.vue?v=29");
 const Detail = load("./app/pages/DetailPage.vue?v=35");
-const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=32");
+const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=33");
 const JobDetails = load("./app/pages/JobDetailsPage.vue?v=37");
 const Fiscal = load("./app/pages/FiscalPage.vue?v=32");
 const ContractPage = load("./app/pages/ContractPage.vue?v=33");
@@ -501,7 +501,7 @@ const Contest = load("./app/pages/ContestPage.vue?v=33");
 const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=36");
 const Directory = load("./app/pages/DirectoryPage.vue?v=39");
 const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=1");
-const Procurement = load("./app/pages/ProcurementPage.vue?v=26");
+const Procurement = load("./app/pages/ProcurementPage.vue?v=27");
 const NotFound = {
   template:
     '<section class="panel p-8 text-center"><h1 class="text-2xl font-bold">Ruta no encontrada</h1><p class="mt-2 text-slate-500">La pantalla que buscas no existe o ya no está disponible.</p><RouterLink class="btn-brand mt-5" to="/">Ir al inicio</RouterLink></section>',
