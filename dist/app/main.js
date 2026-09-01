@@ -493,7 +493,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 // Component Loaders
-const Dashboard = load("./app/pages/DashboardPage.vue?v=32");
+const Dashboard = load("./app/pages/DashboardPage.vue?v=33");
 const Home = load("./app/pages/HomePage.vue?v=31");
 const Workspace = load("./app/pages/WorkspacePage.vue?v=56");
 const Project = load("./app/pages/ProjectPage.vue?v=29");

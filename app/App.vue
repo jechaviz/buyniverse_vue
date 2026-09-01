@@ -191,9 +191,9 @@
             <button
               type="button"
               class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300"
-              :title="store.t('Open purchasing workspace')"
-              :aria-label="store.t('Open purchasing workspace')"
-              @click="openPurchasingWorkspace"
+              :title="workspaceShortcutLabel"
+              :aria-label="workspaceShortcutLabel"
+              @click="openWorkspaceShortcut"
             >
               <i class="fa-solid text-brand text-xs" :class="marketplaceMode === 'buyer' ? 'fa-cart-shopping' : marketplaceMode === 'supplier' ? 'fa-store' : 'fa-shield-halved'"></i>
               {{ activeModeLabel }}
@@ -211,6 +211,9 @@
             </RouterLink>
             <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/find-work" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
               <i class="fa-solid fa-briefcase text-xs mr-1.5"></i>{{ store.t("Find Work") }}
+            </RouterLink>
+            <RouterLink v-else-if="marketplaceMode === 'admin'" to="/settings/organizations" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
+              <i class="fa-solid fa-building-shield text-xs mr-1.5"></i>{{ store.t("Manage access") }}
             </RouterLink>
 
             <!-- Notifications -->
@@ -546,6 +549,16 @@ export default {
       router.push("/procurement");
       if (switched) store.notice("Buyer workspace active");
     };
+    const workspaceShortcutLabel = computed(() => marketplaceMode.value === "admin"
+      ? store.t("Open administration control center")
+      : store.t("Open purchasing workspace"));
+    const openWorkspaceShortcut = () => {
+      if (marketplaceMode.value === "admin") {
+        router.push("/settings/organizations");
+        return;
+      }
+      openPurchasingWorkspace();
+    };
 
     const toggleNav = () => { if (window.innerWidth < 768) mobileOpen.value = !mobileOpen.value; else collapsed.value = !collapsed.value; };
     const toggleTheme = () => {
@@ -600,8 +613,8 @@ export default {
       ]);
       if (marketplaceMode.value === "admin") return localize([
         core,
-        { title: "Management", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, purchases, { to: "/clients", icon: "fa-solid fa-user-tie", label: "Clients" }, { to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }] },
-        { title: "Settings", items: [{ to: "/admin/issuers", icon: "fa-solid fa-building-columns", label: "Issuers" }] },
+        { title: "Identity & control", items: [{ to: "/settings/organizations", icon: "fa-solid fa-building-shield", label: "Companies & access" }, { to: "/admin/issuers", icon: "fa-solid fa-file-invoice-dollar", label: "Fiscal issuers" }, { to: "/procurement/governance", icon: "fa-solid fa-scale-balanced", label: "Policies & audit" }] },
+        { title: "Operational oversight", items: [{ to: "/procurement/cockpit", icon: "fa-solid fa-binoculars", label: "Procurement oversight" }, { to: "/projects", icon: "fa-solid fa-folder-tree", label: "Project oversight" }, { to: "/invoices", icon: "fa-solid fa-receipt", label: "Invoice oversight" }] },
       ]);
       return localize([
         core,
@@ -612,7 +625,7 @@ export default {
     });
 
     return {
-      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace,
+      store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace, openWorkspaceShortcut, workspaceShortcutLabel,
       route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, showDemoControls, lockNow, resumeSession,

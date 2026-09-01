@@ -1,5 +1,6 @@
 <template>
-  <section class="space-y-6">
+  <AdminControlCenter v-if="store.isAdmin.value" />
+  <section v-else class="space-y-6">
     <header class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
       <div class="space-y-1">
         <p class="premium-kicker text-[11px] font-bold uppercase tracking-widest text-brand">
@@ -227,10 +228,11 @@ const { inject, computed } = Vue;
 const { useRoute } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const AdminDatabaseCard = load("./app/pages/dashboard/AdminDatabaseCard.vue?v=1");
+const AdminControlCenter = load("./app/pages/dashboard/AdminControlCenter.vue?v=1");
 const MarketplaceValueHub = load("./app/components/commercial/MarketplaceValueHub.vue?v=2");
 
 export default {
-  components: { AdminDatabaseCard, MarketplaceValueHub },
+  components: { AdminDatabaseCard, AdminControlCenter, MarketplaceValueHub },
   setup() {
     const store = inject("store"),
       route = useRoute(),
