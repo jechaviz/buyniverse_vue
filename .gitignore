@@ -3,3 +3,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.log
+backend/v-service/bin/
+backend/v-service/*.exe
+backend/v-service/*.c
+backend/v-service/*.pdb

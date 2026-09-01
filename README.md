@@ -7,7 +7,8 @@ Réplica estática del frontend Buyniverse que se ejecuta sin Node, bundler ni c
 - La interfaz funciona en inglés y español; el selector `EN / ES` persiste la preferencia y localiza contenido dinámico, fechas y monedas.
 - `../lib/web-common/browser.js` comparte persistencia defensiva, sanitización y validación accesible de formularios.
 - `../lib/procurement-common/browser.js` comparte lifecycle, roles, auditoría, scoring, subastas y exportación CSV segura.
-- El estado demo se persiste en servidor cifrado y separado por cuenta SaaS, razón social/RFC, sucursal y bodega. No hay login empresarial configurado todavía y no deben guardarse credenciales o secretos operativos.
+- El gateway PHP en `index.php` entrega la API segura, persistencia cifrada y aislamiento por tenant; las migraciones viven en `ops/migrations/`. Consulta `backend/README.md` para el mapa completo, incluido el sidecar V interno no desplegable.
+- El estado demo se persiste en servidor cifrado y separado por cuenta SaaS, razón social/RFC, sucursal y bodega. No deben guardarse credenciales o secretos operativos.
 
 ## Ejecutar sin Node
 

@@ -19,6 +19,7 @@ Revisión actualizada el 22 de agosto de 2026 contra OWASP Top 10 para el alcanc
 - El despliegue prepara un directorio temporal construido desde `dist` y sólo después reemplaza el webroot. No copia el artefacto encima de un checkout: así no sobreviven `package.json`, `scripts/`, dumps, semillas ni archivos de automatización de una versión anterior.
 - Apache y el shim PHP aplican la misma CSP con hash para el único bootstrap inline, HSTS, `Permissions-Policy` compatible con navegadores actuales, `nosniff`, aislamiento de origen, anti-framing y bloqueo explícito de rutas de código, dependencias y operación.
 - El modal público ya no acepta correo, contraseña, OTP ni proveedores SSO simulados. Sólo permite elegir perfiles ficticios y advierte que no se ingresen credenciales reales.
+- El código de backend que no pertenece al runtime público reside en `backend/` y el build lo excluye explícitamente de `dist`. El sidecar V recuperado del proyecto histórico queda limitado a loopback, sin base de datos ni rutas de negocio; consulta `backend/legacy-source-review.md`.
 
 ## Endurecimiento operacional
 
