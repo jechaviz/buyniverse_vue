@@ -89,9 +89,19 @@
       scrollBehavior: () => ({ top: 0 }),
     });
 
+    function isPublicRoute(path) {
+      if (path === "/" || path.startsWith("/procurement/auction") || path.startsWith("/procurement/sourcing")) return true;
+      if (path === "/find-talent" || path === "/browse-services") return true;
+      if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
+      return false;
+    }
+
     router.beforeEach((to) => {
-      if (runtimeMode.value !== "demo" && !store.currentUser.value && to.path !== "/" && !to.meta.onboarding) {
-        return { path: "/", query: { auth: "login", returnTo: to.fullPath } };
+      if (!store.currentUser.value) {
+        if (to.meta.onboarding || isPublicRoute(to.path)) return true;
+        if (runtimeMode.value !== "demo") {
+          return { path: "/", query: { auth: "login", returnTo: to.fullPath } };
+        }
       }
       const roles = Array.isArray(to.meta.roles) ? to.meta.roles : null;
       if (roles && !roles.includes(store.currentUser.value?.type)) {

@@ -140,7 +140,7 @@ export default {
       authOpen.value = false;
     });
 
-    const isLanding = computed(() => route.path === "/");
+    const isLanding = computed(() => !route.meta.onboarding && (!store.currentUser.value || route.path === "/"));
     const isOnboarding = computed(() => route.meta.onboarding === true);
 
     const openAuth = (mode = "login") => {
@@ -149,7 +149,9 @@ export default {
     };
     const launchDemo = () => {
       const root = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
-      window.location.assign(`${root}?demo=1#/dashboard`);
+      const target = (route.query && route.query.returnTo) ? String(route.query.returnTo) : "/dashboard";
+      const hash = target.startsWith("/") ? `#${target}` : `#/${target}`;
+      window.location.assign(`${root}?demo=1${hash}`);
     };
     watch(() => route.query.auth, (requested) => {
       if (!["login", "register"].includes(requested)) return;

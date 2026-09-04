@@ -137,4 +137,3 @@ function handle_auction_realtime(string $uri, array $config, array $session, PDO
         $pdo->commit(); workspace_json(['accepted'=>true, 'duplicate'=>$affected === 0, 'csrf'=>$session['csrf']]);
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Live auction channel is unavailable'); }
 }
-}

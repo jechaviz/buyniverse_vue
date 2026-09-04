@@ -83,8 +83,8 @@
         <span class="mx-auto grid h-9 w-9 place-items-center rounded-xl bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200"><i class="fa-solid fa-shield-halved text-sm"></i></span>
         <p class="mt-2 text-xs font-bold text-slate-800 dark:text-slate-100">{{ store.t("Identity access is being configured") }}</p>
         <p class="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{{ store.t("This production workspace accepts only server-configured identity providers. Ask your administrator to enable your organization or a personal sign-in provider.") }}</p>
-        <button type="button" class="btn-muted mt-3 text-xs" @click="launchDemo">
-          <i class="fa-solid fa-flask mr-1.5"></i>{{ store.t("Explore demo") }}
+        <button type="button" class="btn-brand mt-3 text-xs inline-flex items-center gap-1.5" @click="launchDemo">
+          <i class="fa-solid fa-flask mr-1.5"></i>{{ returnTargetLabel || store.t("Explore demo") }}
         </button>
         <p class="mt-2 text-[10px] leading-4 text-slate-400">{{ store.t("The public demo uses fictional data and never connects to a production workspace.") }}</p>
       </div>
@@ -298,7 +298,7 @@
 
 <script>
 const { inject, ref, computed, onMounted, watch } = Vue;
-const { useRouter } = VueRouter;
+const { useRouter, useRoute } = VueRouter;
 
 export default {
   props: {
@@ -309,7 +309,15 @@ export default {
   setup(props, { emit }) {
     const store = inject("store");
     const router = useRouter();
+    const route = useRoute();
     const mode = ref(props.initialMode || "login");
+    const returnTarget = computed(() => (route.query && route.query.returnTo) ? String(route.query.returnTo) : "");
+    const returnTargetLabel = computed(() => {
+      if (!returnTarget.value) return "";
+      if (returnTarget.value.includes("auction")) return store.t("Explorar Subasta en Vivo (Demo)");
+      if (returnTarget.value.includes("sourcing")) return store.t("Explorar Cotizaciones (Demo)");
+      return store.t("Continuar en Modo Demo");
+    });
     // This public build intentionally never collects real credentials. A
     // federated production session is established only by the server callback.
     const socialProviders = ref([]);
@@ -398,7 +406,8 @@ export default {
       activateUser(userId);
       store.notice(store.t("Sesión iniciada correctamente"), "fa-circle-check");
       emit("close");
-      router.push("/dashboard");
+      const target = returnTarget.value || "/dashboard";
+      router.push(target);
     };
 
     const unavailable = () => {
@@ -412,7 +421,9 @@ export default {
     };
     const launchDemo = () => {
       const root = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
-      window.location.assign(`${root}?demo=1#/dashboard`);
+      const target = returnTarget.value || "/dashboard";
+      const hash = target.startsWith("/") ? `#${target}` : `#/${target}`;
+      window.location.assign(`${root}?demo=1${hash}`);
     };
     const handleEmailLogin = unavailable;
     const handleEmailRegister = unavailable;
@@ -457,6 +468,8 @@ export default {
       confirmPassword,
       loginAs,
       launchDemo,
+      returnTarget,
+      returnTargetLabel,
       handleSocialAuth,
       handleEmailLogin,
       handleEmailRegister,

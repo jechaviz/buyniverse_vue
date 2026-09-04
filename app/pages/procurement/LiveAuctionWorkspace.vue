@@ -261,14 +261,16 @@ export default {
 
     const accessibleAuctions = computed(() => {
       const scopedAuctions = store.scopedRecords(store.state.auctions);
+      const user = store.currentUser.value;
+      if (!user) return scopedAuctions;
       return scopedAuctions.filter((item) => {
         if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
-          const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
+          const supplierId = store.currentSupplierId?.value || store.userSupplierId(user.id);
           if (supplierId) return item.participants.some((p) => p.supplierId === supplierId);
         }
         const event = store.sourcingEvent(item.eventId);
-        return item.hostId === store.currentUser.value.id || event?.ownerId === store.currentUser.value.id;
+        return item.hostId === user.id || event?.ownerId === user.id;
       });
     });
 
@@ -293,7 +295,9 @@ export default {
     const isSupplier = computed(() => store.marketplaceMode.value === "supplier" || (!isOrganizer.value && Boolean(bidder.value)));
 
     const currentSupplierId = computed(() => {
-      return store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id) || (isSupplier.value ? auction.value?.participants[0]?.supplierId : null);
+      const user = store.currentUser.value;
+      const userSid = user ? store.userSupplierId(user.id) : null;
+      return store.currentSupplierId?.value || userSid || (isSupplier.value ? auction.value?.participants[0]?.supplierId : null);
     });
 
     const bidder = computed(() => {
@@ -438,6 +442,7 @@ export default {
       const bids = isOrganizer.value ? auction.value.bids : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value);
       return [...bids].reverse();
     });
+    const recentBids = computed(() => historyBids.value.slice(0, 5));
     const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
     const sourceLabel = (src) => ({ auto: "Auto-bid bot", manual: "Supplier manual bid" }[src] || "Supplier bid");
     const actionLabel = (act) => act;

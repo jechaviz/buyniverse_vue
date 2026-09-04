@@ -282,6 +282,10 @@ function tenant_workspace_scopes_are_valid(array $state, array $context): bool {
 
 function handle_tenant_admin(string $uri, array $config, array $session, PDO $pdo, string $key): void {
     $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    if (!in_array($method, ['GET','PUT','POST'], true)) fail_response(405, 'Method not allowed');
+    try {
+        if ($uri === '/api/v1/tenant-context' || $uri === '/api/v1/tenant-context/') {
+            if ($method === 'GET') { $context = tenant_context($pdo, $config, $session, $key); workspace_json(['context'=>$context, 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config)]); }
             if ($method !== 'PUT') fail_response(405, 'Method not allowed');
             tenant_require_write($session); $input = tenant_request_body();
             $current = tenant_context($pdo, $config, $session, $key);
@@ -346,5 +350,4 @@ function handle_tenant_admin(string $uri, array $config, array $session, PDO $pd
             $pdo->commit(); workspace_json(['invitationId'=>$id,'delivery'=>'queued','csrf'=>$session['csrf']]);
         } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); fail_response(503, 'Tenant service is unavailable'); }
-}
 }

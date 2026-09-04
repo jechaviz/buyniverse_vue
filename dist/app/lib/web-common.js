@@ -534,18 +534,12 @@
       if (!node || node.nodeType !== 1) return;
       var forms = [];
       if (node.matches?.("form")) forms.push(node);
-      node.querySelectorAll?.("form").forEach(function (form) {
-        forms.push(form);
-      });
+      node.querySelectorAll?.("form").forEach(function (form) { forms.push(form); });
       forms.forEach(function (form) {
         if (form.hasAttribute("novalidate") || form.hasAttribute("data-no-validate") || form.querySelector("[required]")) return;
-        form
-          .querySelectorAll(
-            'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea',
-          )
+        form.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea')
           .forEach(function (control) {
-            if (!control.disabled && !control.hasAttribute("data-optional") && !control.hasAttribute("data-no-validate"))
-              control.required = true;
+            if (!control.disabled && !control.hasAttribute("data-optional") && !control.hasAttribute("data-no-validate")) control.required = true;
           });
       });
       if (node.matches?.("input, select, textarea")) decorate(node);
@@ -553,9 +547,7 @@
     }
 
     scan(scope.documentElement || scope);
-    var invalid = function (event) {
-      showError(event.target);
-    };
+    var invalid = function (event) { showError(event.target); };
     var changed = function (event) {
       var control = event.target;
       if (!control.matches?.("input, select, textarea")) return;
@@ -575,20 +567,15 @@
         firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     };
-    ["invalid", "input", "change", "submit"].forEach(function (ev, idx) {
-      document.addEventListener(ev, [invalid, changed, changed, submitted][idx], true);
-    });
+    var listeners = [invalid, changed, changed, submitted];
+    ["invalid", "input", "change", "submit"].forEach(function (ev, idx) { document.addEventListener(ev, listeners[idx], true); });
     var observer = new MutationObserver(function (mutations) {
-      mutations.forEach(function (mutation) {
-        mutation.addedNodes.forEach(scan);
-      });
+      mutations.forEach(function (mutation) { mutation.addedNodes.forEach(scan); });
     });
     observer.observe(scope.documentElement || scope, { childList: true, subtree: true });
     return function () {
       observer.disconnect();
-      ["invalid", "input", "change", "submit"].forEach(function (ev, idx) {
-        document.removeEventListener(ev, [invalid, changed, changed, submitted][idx], true);
-      });
+      ["invalid", "input", "change", "submit"].forEach(function (ev, idx) { document.removeEventListener(ev, listeners[idx], true); });
       delete document.documentElement.dataset.formUxInstalled;
     };
   }
