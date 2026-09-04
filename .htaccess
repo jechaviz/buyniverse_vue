@@ -6,7 +6,7 @@ Options -Indexes -MultiViews
 <FilesMatch "(?i)^(?:(?:db_|deploy_sync|temp_sync)|package(?:-lock)?\.json|bun\.lockb?|tsconfig(?:\..+)?\.json|(?:vite|uno)\.config\..+|serve\.py)$">
   Require all denied
 </FilesMatch>
-<FilesMatch "(?i)^(?:email_service\.php|email_worker\.php|email_templates\.json)$">
+<FilesMatch "(?i)^(?:email_service\.php|email_worker\.php|email_templates\.json|tenant_service\.php|auction_service\.php)$">
   Require all denied
 </FilesMatch>
 

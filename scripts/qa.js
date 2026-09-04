@@ -62,8 +62,8 @@ for (const [file, token] of [
 
 const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 
-const main = read("app/main.js");
-const liveAuctionSource = read("app/pages/procurement/LiveAuctionWorkspace.vue");
+const main = read("app/main.js") + "\n" + read("app/router.js");
+const liveAuctionSource = read("app/pages/procurement/LiveAuctionWorkspace.vue") + "\n" + read("app/pages/procurement/auction/AuctionLiveChart.vue");
 const homeHeroSource = read("app/pages/home/HomeHeroSection.vue");
 const homeIntelligenceSource = read("app/pages/home/HomeIntelligenceSection.vue");
 for (const token of [
@@ -126,7 +126,7 @@ for (const [file, token] of [
 }
 if (read("app/pages/procurement/ProcurementGovernance.vue").includes("All persistent state stored in browser LocalStorage"))
   throw new Error("Governance must not misrepresent production persistence as browser LocalStorage");
-const domainActionsSource = read("app/store/domainActions.js");
+const domainActionsSource = read("app/store/domainActions.js") + read("app/store/procurementDomainActions.js");
 for (const token of ["submitSourcingResponse", "invitedSupplierIds", "this.isSupplier?.value", "Supplier response submitted"]) {
   if (!domainActionsSource.includes(token)) throw new Error(`Supplier RFX response guard is missing ${token}`);
 }
@@ -212,7 +212,7 @@ for (const file of ["app/lib/onboarding.js", "app/pages/OnboardingPage.vue", "op
 const onboardingSource = read("app/pages/OnboardingPage.vue");
 const serverSource = read("index.php");
 for (const [file, token] of [
-  ["app/main.js", 'r("/onboarding", Onboarding, { onboarding: true })'],
+  ["app/router.js", 'r("/onboarding", Onboarding, { onboarding: true })'],
   ["app/App.vue", "route.meta.onboarding === true"],
   ["app/main.js", "marketplaceModes: marketplaceModes.length"],
   ["index.html", "app/lib/onboarding.js"],

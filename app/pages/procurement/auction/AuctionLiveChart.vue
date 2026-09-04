@@ -12,7 +12,7 @@
     </div>
     <div
       v-if="isOrganizer"
-      class="mt-3 flex flex-col gap-2 rounded-xl border border-slate-200/70 bg-slate-50/65 p-2.5 dark:border-slate-700 dark:bg-slate-900/25 sm:flex-row sm:items-center"
+      class="premium-card flex min-h-11 items-center mt-3 flex-col gap-2 rounded-xl border border-slate-200/70 bg-slate-50/65 p-2.5 dark:border-slate-700 dark:bg-slate-900/25 sm:flex-row"
     >
       <div class="flex items-center justify-between gap-2 sm:shrink-0">
         <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">Providers</span>

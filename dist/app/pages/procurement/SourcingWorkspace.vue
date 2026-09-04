@@ -192,20 +192,10 @@
     </section>
 
     <SourcingWizardModal
-      :open="wizardOpen && canCreateSourcing"
-      :current-step="wizardStep"
-      :steps="wizardSteps"
-      :model-value="wizard"
-      :suppliers="canCreateSourcing ? store.state.suppliers : []"
-      :requests="canCreateSourcing ? store.scopedRecords(store.state.purchaseRequests) : []"
-      :error="wizardError"
-      :type-label="typeLabel"
-      :format-money="store.money"
-      @close="closeWizard"
-      @prev="wizardStep--; wizardError = '';"
-      @next="nextWizard"
-      @submit="saveWizard"
-      @toggle-supplier="toggleWizardSupplier"
+      :open="wizardOpen && canCreateSourcing" :current-step="wizardStep" :steps="wizardSteps" :model-value="wizard"
+      :suppliers="canCreateSourcing ? store.state.suppliers : []" :requests="canCreateSourcing ? store.scopedRecords(store.state.purchaseRequests) : []"
+      :error="wizardError" :type-label="typeLabel" :format-money="store.money"
+      @close="closeWizard" @prev="wizardStep--; wizardError = '';" @next="nextWizard" @submit="saveWizard" @toggle-supplier="toggleWizardSupplier"
     />
   </div>
 </template>
@@ -230,18 +220,7 @@ const freshWizard = () => ({
 });
 
 export default {
-  components: {
-    DataTable,
-    SourcingWizardModal,
-    SourcingLotsTab,
-    SourcingSuppliersTab,
-    SourcingBidSheetTab,
-    SourcingComparisonTab,
-    SourcingAwardTab,
-    SourcingTimelineTab,
-    SourcingSupplierResponseTab,
-    CommunicationThread,
-  },
+  components: { DataTable, SourcingWizardModal, SourcingLotsTab, SourcingSuppliersTab, SourcingBidSheetTab, SourcingComparisonTab, SourcingAwardTab, SourcingTimelineTab, SourcingSupplierResponseTab, CommunicationThread },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({

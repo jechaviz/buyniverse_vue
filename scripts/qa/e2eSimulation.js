@@ -28,12 +28,14 @@ new Function("window", read("../lib/procurement-common/browser.js"))(windowScope
 new Function("window", read("app/components/dataTableCore.js"))(windowScope);
 new Function("window", read("app/components/dataTableStorage.js"))(windowScope);
 new Function("window", read("app/i18n/core.js"))(windowScope);
+new Function("window", read("app/i18n/common.js"))(windowScope);
 new Function("window", read("app/i18n/marketplace.js"))(windowScope);
 new Function("window", read("app/i18n/fiscal.js"))(windowScope);
 new Function("window", read("app/i18n/procurement.js"))(windowScope);
 new Function("window", read("app/i18n.js"))(windowScope);
 new Function("window", read("app/services/seo.js"))(windowScope);
 new Function("window", read("app/store/initialState.js"))(windowScope);
+new Function("window", read("app/store/procurementDomainActions.js"))(windowScope);
 new Function("window", read("app/store/domainActions.js"))(windowScope);
 new Function("window", read("app/data/demo.js"))(windowScope);
 

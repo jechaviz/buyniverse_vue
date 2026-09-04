@@ -1,26 +1,38 @@
 <template>
-  <header class="z-20 flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 sm:px-6 lg:px-8">
+  <header class="z-20 flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80 sm:px-6 lg:px-8">
     <div class="flex items-center gap-3">
       <button class="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 md:hidden" :aria-label="store.t('Toggle navigation')" @click="$emit('toggle-nav')">
-        <i class="fa-solid fa-bars text-xl"></i>
+        <i class="fa-solid fa-bars text-lg"></i>
       </button>
+
       <button class="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 md:hidden dark:border-slate-800 dark:bg-slate-800" :aria-label="store.t('Quick access')" @click="$emit('open-command')">
         <i class="fa-solid fa-magnifying-glass text-xs"></i>
       </button>
-      <button class="hidden items-center gap-2.5 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900/90 px-3.5 py-2 text-xs font-semibold text-slate-500 hover:border-brand hover:text-brand md:flex shadow-xs transition" @click="$emit('open-command')">
+
+      <button class="hidden items-center gap-2.5 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900/90 px-3.5 py-2 text-xs font-semibold text-slate-500 hover:border-brand hover:text-brand md:flex shadow-xs transition active:scale-98" @click="$emit('open-command')">
         <i class="fa-solid fa-magnifying-glass text-xs"></i>
         <span>{{ store.t("Quick access") }}</span>
         <kbd class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Ctrl K</kbd>
       </button>
-      <span class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300" :title="store.t('Active company workspace')">
+
+      <TenantContextMenu v-if="tenantContext" :context="tenantContext" :switching="ui?.tenantSwitching" @switch="$emit('switch-tenant', $event)" />
+
+      <button
+        type="button"
+        class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300"
+        :title="workspaceShortcutLabel"
+        :aria-label="workspaceShortcutLabel"
+        @click="$emit('open-workspace-shortcut')"
+      >
         <i class="fa-solid text-brand text-xs" :class="marketplaceMode === 'buyer' ? 'fa-cart-shopping' : marketplaceMode === 'supplier' ? 'fa-store' : 'fa-shield-halved'"></i>
         {{ store.t(activeModeLabel) }}
-      </span>
+      </button>
     </div>
 
-      <span class="hidden items-center gap-1.5 text-[11px] font-semibold text-sky-600 dark:text-sky-300 lg:flex" :title="store.t('Workspace data is protected by server-side storage')">
-        <span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
-        {{ store.t("Workspace sync") }}
+    <div class="flex items-center gap-3 sm:gap-4">
+      <span v-if="saveStatus" class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="saveStatusTitle" role="status" aria-live="polite">
+        <i class="fa-solid text-[10px]" :class="saveStatus.icon"></i>
+        {{ saveStatus.label }}
       </span>
 
       <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
@@ -29,11 +41,14 @@
       <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/find-work" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
         <i class="fa-solid fa-briefcase text-xs mr-1.5"></i>{{ store.t("Find Work") }}
       </RouterLink>
+      <RouterLink v-else-if="marketplaceMode === 'admin'" to="/settings/organizations" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
+        <i class="fa-solid fa-building-shield text-xs mr-1.5"></i>{{ store.t("Manage access") }}
+      </RouterLink>
 
       <!-- Notifications -->
       <div class="relative">
         <button
-          class="relative hidden h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400 sm:grid shadow-xs transition"
+          class="relative hidden h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400 sm:grid shadow-xs transition active:scale-95"
           :title="store.t('Notifications')"
           :aria-label="store.t('Notifications')"
           :aria-expanded="notificationsOpen"
@@ -69,7 +84,7 @@
               <span class="min-w-0">
                 <b class="block text-xs font-bold text-slate-900 dark:text-slate-100">{{ notification.title }}</b>
                 <span class="mt-0.5 block text-xs leading-5 text-slate-500 dark:text-slate-400">{{ notification.text }}</span>
-                <time class="mt-1 block text-[10px] text-slate-400">{{ formatDate(notification.at) }}</time>
+                <time class="mt-1 block text-[10px] text-slate-400">{{ formatDate ? formatDate(notification.at) : notification.at }}</time>
               </span>
             </RouterLink>
             <div v-if="!visibleNotifications.length" class="p-8 text-center text-sm text-slate-500">
@@ -83,8 +98,8 @@
       <!-- Account Menu -->
       <div class="relative">
         <button
-          class="grid h-9 w-9 place-items-center rounded-xl bg-brand-100 text-xs font-bold text-brand ring-2 ring-transparent hover:ring-brand/30 dark:bg-brand/20 dark:text-brand-200 transition"
-          :aria-label="store.t('Account menu')"
+          class="grid h-9 w-9 place-items-center rounded-xl bg-brand-100 text-xs font-bold text-brand ring-2 ring-transparent hover:ring-brand/30 dark:bg-brand/20 dark:text-brand-200 transition active:scale-95"
+          aria-label="Account menu"
           :aria-expanded="accountOpen"
           @click="$emit('toggle-overlay', 'account')"
         >
@@ -130,7 +145,7 @@
             <h2 id="user-preferences-title" class="mb-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Preferences") }}</h2>
             <div class="flex items-center justify-between gap-3">
               <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Language") }}</span>
-              <div class="flex rounded-lg bg-slate-100 p-0.5 text-[10px] font-800 dark:bg-slate-800/60" role="group" :aria-label="store.t('Language')">
+              <div class="flex rounded-lg bg-slate-100 p-0.5 text-[10px] font-800 dark:bg-slate-800/60" role="group" aria-label="Language">
                 <button
                   v-for="code in ['en', 'es']"
                   :key="code"
@@ -138,7 +153,7 @@
                   :class="locale === code ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
                   :aria-pressed="locale === code"
                   :title="store.t(code === 'en' ? 'Switch to English' : 'Switch to Spanish')"
-                  @click="$emit('set-locale', code)"
+                  @click="setLocale(code)"
                 >
                   {{ code.toUpperCase() }}
                 </button>
@@ -185,6 +200,9 @@
 </template>
 <script>
 export default {
+  components: {
+    TenantContextMenu: window.vue3SfcLoader?.loadComponent ? Vue.defineAsyncComponent(() => window.vue3SfcLoader.loadComponent("app/components/TenantContextMenu.vue")) : null,
+  },
   props: {
     ui: Object,
     user: Object,
@@ -193,6 +211,10 @@ export default {
     marketplaceMode: String,
     marketplaceModeOptions: Array,
     activeModeLabel: String,
+    workspaceShortcutLabel: String,
+    tenantContext: Object,
+    saveStatus: Object,
+    saveStatusTitle: String,
     notificationsOpen: Boolean,
     visibleNotifications: Array,
     unreadNotifications: Array,
@@ -207,9 +229,15 @@ export default {
     "toggle-nav", "open-command", "toggle-overlay", "mark-all-read",
     "open-notification", "close-account", "lock-now", "switch-mode",
     "set-locale", "toggle-theme", "set-accent", "switch-user",
+    "switch-tenant", "open-workspace-shortcut",
   ],
   setup() {
     return { store: Vue.inject("store") };
+  },
+  methods: {
+    setLocale(code) {
+      this.$emit("set-locale", code);
+    },
   },
 };
 </script>

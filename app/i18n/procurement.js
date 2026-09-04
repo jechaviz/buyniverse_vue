@@ -2,22 +2,12 @@
   "use strict";
 
   var dict = {
-    // Procurement navigation, workspaces, and records
-    "Requests": "Solicitudes",
-    "Quotes": "Cotizaciones",
-    "Live bids": "Ofertas en vivo",
-    "Current best": "Mejor oferta",
-    "Total savings": "Ahorro total",
-    "Total offers": "Ofertas totales",
-    "Active suppliers": "Proveedores activos",
-    "CURRENT BEST": "MEJOR OFERTA",
-    "TOTAL SAVINGS": "AHORRO TOTAL",
-    "TOTAL OFFERS": "OFERTAS TOTALES",
-    "ACTIVE SUPPLIERS": "PROVEEDORES ACTIVOS",
-    "Live Room": "Sala en vivo",
-    "Supplier Standings": "Clasificación de proveedores",
-    "Bid Stream": "Flujo de ofertas",
-    "Audit & Anti-Sniping": "Auditoría y anti-sniping",
+    "Requests": "Solicitudes", "Quotes": "Cotizaciones", "Live bids": "Ofertas en vivo",
+    "Current best": "Mejor oferta", "Total savings": "Ahorro total", "Total offers": "Ofertas totales",
+    "Active suppliers": "Proveedores activos", "CURRENT BEST": "MEJOR OFERTA", "TOTAL SAVINGS": "AHORRO TOTAL",
+    "TOTAL OFFERS": "OFERTAS TOTALES", "ACTIVE SUPPLIERS": "PROVEEDORES ACTIVOS",
+    "Live Room": "Sala en vivo", "Supplier Standings": "Clasificación de proveedores",
+    "Bid Stream": "Flujo de ofertas", "Audit & Anti-Sniping": "Auditoría y anti-sniping",
     "Source:": "Origen:",
     "Providers": "Proveedores",
     "All suppliers": "Todos los proveedores",

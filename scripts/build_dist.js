@@ -237,6 +237,8 @@ async function build() {
   // outside the document root and are handled by controlled operations tooling.
   const runtimeFiles = [
     "index.php",
+    "tenant_service.php",
+    "auction_service.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",

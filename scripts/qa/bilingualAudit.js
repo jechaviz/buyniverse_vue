@@ -70,7 +70,7 @@ function runBilingualAudit(root, read, vueFiles) {
   if (!indexSource.includes("app/i18n.js") || indexSource.indexOf("app/i18n.js") > indexSource.indexOf("app/main.js"))
     throw new Error("The bilingual catalogue must load before the application");
 
-  const appSource = read("app/App.vue");
+  const appSource = `${read("app/App.vue")}\n${read("app/components/layout/AppHeader.vue")}`;
   for (const token of ['aria-label="Language"', "buyniverse-vue-locale", "setLocale(code)", "BuyniverseI18n.install", 'aria-labelledby="user-preferences-title"'])
     if (!`${appSource}\n${read("app/i18n.js")}`.includes(token))
       throw new Error(`Bilingual UI coverage is missing ${token}`);

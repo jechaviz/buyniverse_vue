@@ -13,7 +13,7 @@
       <article
         v-for="kpi in kpis"
         :key="kpi.label"
-        class="premium-card flex min-h-11 items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80"
+        class="panel flex min-h-11 items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/80"
         :title="kpi.note"
       >
         <span class="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-brand-50 text-[11px] text-brand dark:bg-brand/20">
@@ -81,7 +81,7 @@
         </div>
       </header>
 
-      <nav class="flex gap-2 overflow-x-auto border-b border-slate-100 bg-slate-50/60 px-4 pt-1 dark:border-slate-800 dark:bg-slate-950/40">
+      <nav class="flex gap-1 overflow-x-auto border-b border-slate-100 bg-slate-50/50 px-4 pt-2 text-xs font-bold dark:border-slate-800/80 dark:bg-slate-950/20">
         <button
           v-for="item in tabs"
           :key="item.key"
@@ -95,81 +95,32 @@
 
       <!-- Live Tab -->
       <div v-if="tab === 'live'" class="grid gap-0 2xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div class="border-b border-slate-200/70 p-5 dark:border-slate-700 2xl:border-b-0 2xl:border-r">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 class="text-sm font-800">{{ store.t('Offer movement') }}</h3>
-              <p class="mt-1 text-xs text-slate-500">{{ store.t('Lower valid offers lead this round.') }}</p>
-            </div>
-            <div class="flex flex-wrap gap-3 text-[10px]">
-              <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400" :title="realtimeStatus.note"><i class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></i>{{ realtimeStatus.label }}</span>
-              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>{{ store.t('Market movement') }}</span>
-              <span v-if="isOrganizer"><i class="mr-1 inline-block h-0.5 w-3 bg-amber-400 align-middle"></i>{{ store.t('Reserve') }}</span>
-              <span v-else><i class="mr-1 inline-block h-0.5 w-3 bg-brand align-middle"></i>{{ store.t('Your offer history') }}</span>
-            </div>
-          </div>
-          <div v-if="liveActivity" class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand/25 bg-brand-50/60 px-3 py-2 text-[11px] shadow-sm dark:bg-brand/10" role="status" aria-live="polite">
-            <span class="grid h-6 w-6 place-items-center rounded-lg bg-brand text-white"><i class="fa-solid fa-tower-broadcast text-[10px]"></i></span>
-            <span class="font-800 text-slate-800 dark:text-slate-100">{{ store.t('Live auction activity') }}</span>
-            <span class="min-w-0 flex-1 text-slate-600 dark:text-slate-300">{{ store.t(signalCopy(liveActivity)) }}</span>
-            <button v-if="isSupplier && auction.status === 'Running' && liveActivity.type === 'competitive_offer'" class="btn-brand px-2.5 py-1 text-[10px]" @click="improveOffer"><i class="fa-solid fa-bolt mr-1"></i>{{ store.t('Improve offer') }}</button>
-          </div>
-          <div v-if="isOrganizer" class="mt-3 flex flex-col gap-2 rounded-xl border border-slate-200/70 bg-slate-50/65 p-2.5 dark:border-slate-700 dark:bg-slate-900/25 sm:flex-row sm:items-center">
-            <div class="flex items-center justify-between gap-2 sm:shrink-0">
-              <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">{{ store.t('Providers') }}</span>
-              <span class="text-[10px] text-slate-400">{{ visibleSupplierSeries.length }} {{ store.t('of') }} {{ supplierSeries.length }}</span>
-            </div>
-            <div class="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-0.5 sm:pl-2" role="group" aria-label="Filter offer chart by supplier">
-              <button class="min-w-max rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition" :class="allSuppliersSelected ? 'border-brand bg-brand text-white' : 'border-slate-200 bg-white text-slate-500 hover:border-brand hover:text-brand dark:border-slate-700 dark:bg-slate-800'" :aria-pressed="allSuppliersSelected" :title="store.t('Show all supplier lines')" @click="showAllSuppliers">{{ store.t('All suppliers') }}</button>
-              <button v-for="series in supplierSeries" :key="series.supplierId" class="flex min-w-max items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition" :class="isSupplierVisible(series.supplierId) ? 'border-slate-300 bg-white text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100' : 'border-transparent bg-slate-100/80 text-slate-400 opacity-60 hover:opacity-100 dark:bg-slate-800/50'" :aria-pressed="isSupplierVisible(series.supplierId)" :aria-label="series.name" @click="toggleSupplier(series.supplierId)">
-                <i class="h-2 w-2 rounded-full" :style="{ background: series.color }"></i><span>{{ shortName(series.name) }}</span>
-                <span v-if="series.improvement > 0" class="font-normal text-emerald-600 dark:text-emerald-400">↓ {{ store.money(series.improvement, auction.currency) }}</span>
-              </button>
-              <button v-if="visibleSupplierSeries.length" class="min-w-max rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-400 hover:text-brand" :title="store.t('Hide all supplier lines')" @click="clearSupplierFilters">{{ store.t('Clear') }}</button>
-            </div>
-          </div>
-          <div v-else class="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-slate-50/65 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/25">
-            <span class="text-[10px] font-800 uppercase tracking-wide text-slate-400">{{ store.t('Your company offer') }}</span>
-            <b class="text-xs">{{ bidder?.name }} · #{{ bidder?.rank || "—" }}</b>
-          </div>
-
-          <div class="mt-4 overflow-hidden rounded-xl border border-slate-200/70 bg-white/60 p-3 dark:border-slate-700 dark:bg-slate-900/35">
-            <svg viewBox="0 0 900 330" class="h-auto w-full" role="img" aria-label="Live offer graph">
-              <defs><linearGradient id="auction-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".18" /><stop offset="1" stop-color="var(--accent)" stop-opacity="0" /></linearGradient></defs>
-              <g class="text-slate-300 dark:text-slate-700"><line v-for="y in [50, 110, 170, 230, 290]" :key="y" x1="55" :y1="y" x2="875" :y2="y" stroke="currentColor" stroke-width="1" /></g>
-              <line v-if="isOrganizer" x1="55" :y1="valueY(auction.reserve)" x2="875" :y2="valueY(auction.reserve)" stroke="#f59e0b" stroke-width="2" stroke-dasharray="8 6" />
-              <text v-if="isOrganizer" x="60" :y="valueY(auction.reserve) - 8" fill="#d97706" font-size="11">Reserve {{ store.money(auction.reserve, auction.currency) }}</text>
-              <path :d="areaPath" fill="url(#auction-area)" />
-              <polyline :points="overallPoints" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-opacity=".42" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-              <g v-if="isOrganizer && allSuppliersSelected">
-                <circle v-for="(bid, index) in auction.bids" :key="`market-${bid.id}`" :cx="pointX(index)" :cy="valueY(bid.amount)" r="4.5" :fill="supplierColor(bid.supplierId)" stroke="white" stroke-width="1.75">
-                  <title>{{ store.supplier(bid.supplierId)?.name }} · {{ store.money(bid.amount, auction.currency) }} · {{ clock(bid.at) }}</title>
-                </circle>
-              </g>
-              <g v-for="series in chartSupplierSeries" :key="series.supplierId">
-                <polyline v-if="series.points.length > 1" :points="series.polyline" fill="none" :stroke="series.color" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-                <circle v-for="point in series.points" :key="point.id" :cx="point.x" :cy="point.y" r="5" :fill="series.color" stroke="white" stroke-width="2">
-                  <title>{{ series.name }} · {{ store.money(point.amount, auction.currency) }} · {{ clock(point.at) }}</title>
-                </circle>
-              </g>
-              <text v-if="isOrganizer" v-for="tick in yTicks" :key="tick.value" x="48" :y="tick.y + 4" text-anchor="end" fill="#94a3b8" font-size="10">{{ compact(tick.value) }}</text>
-            </svg>
-          </div>
-
-          <div v-if="recentBids.length" class="mt-4 grid gap-3 sm:grid-cols-3">
-            <article v-for="move in recentBids" :key="move.id" class="rounded-xl border border-slate-200/70 p-3 dark:border-slate-700">
-              <div class="flex items-center justify-between">
-                <b class="truncate text-xs">{{ isOrganizer ? store.supplier(move.supplierId)?.name : 'Your submitted offer' }}</b>
-                <span class="text-[9px] text-slate-400">{{ clock(move.at) }}</span>
-              </div>
-              <p class="mt-2 text-lg font-800">{{ store.money(move.amount, auction.currency) }}</p>
-              <p class="mt-1 text-[10px]" :class="move.delta < 0 ? 'text-emerald-500' : 'text-slate-400'">
-                {{ move.delta ? store.money(move.delta, auction.currency) : "Opening offer" }}<template v-if="isOrganizer"> · {{ sourceLabel(move.source) }}</template>
-              </p>
-            </article>
-          </div>
-          <p v-else-if="isSupplier" class="mt-4 rounded-xl border border-dashed border-slate-200 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-700">Your submitted offers will appear here. Competitor identities and commercial values are never disclosed.</p>
-        </div>
+        <AuctionLiveChart
+          :auction="auction"
+          :is-organizer="isOrganizer"
+          :bidder="bidder"
+          :supplier-series="supplierSeries"
+          :visible-supplier-series="visibleSupplierSeries"
+          :all-suppliers-selected="allSuppliersSelected"
+          :chart-supplier-series="chartSupplierSeries"
+          :recent-bids="recentBids"
+          :overall-points="overallPoints"
+          :area-path="areaPath"
+          :y-ticks="yTicks"
+          :clock="clock"
+          :source-label="sourceLabel"
+          :format-money="store.money"
+          :compact="compact"
+          :value-y="valueY"
+          :point-x="pointX"
+          :supplier-color="supplierColor"
+          :short-name="shortName"
+          :is-supplier-visible="isSupplierVisible"
+          :supplier-name="(id) => store.supplier(id)?.name || id"
+          @show-all-suppliers="showAllSuppliers"
+          @toggle-supplier="toggleSupplier"
+          @clear-suppliers="clearSupplierFilters"
+        />
 
         <!-- Side Controls -->
         <aside class="p-5">
@@ -283,6 +234,7 @@
 const { inject, computed, ref, onMounted, onBeforeUnmount, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const AuctionLiveChart = load("./app/pages/procurement/auction/AuctionLiveChart.vue?v=2");
 const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.vue?v=2");
 const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=2");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
@@ -292,7 +244,7 @@ const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
 export default {
-  components: { AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread, SavingsWaterfall },
+  components: { AuctionLiveChart, AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread, SavingsWaterfall },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
@@ -309,7 +261,7 @@ export default {
 
     const accessibleAuctions = computed(() => {
       const scopedAuctions = store.scopedRecords(store.state.auctions);
-      const list = scopedAuctions.filter((item) => {
+      return scopedAuctions.filter((item) => {
         if (store.isAdmin.value) return true;
         if (store.marketplaceMode.value === "supplier") {
           const supplierId = store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id);
@@ -318,9 +270,6 @@ export default {
         const event = store.sourcingEvent(item.eventId);
         return item.hostId === store.currentUser.value.id || event?.ownerId === store.currentUser.value.id;
       });
-      return store.marketplaceMode.value === "supplier"
-        ? list
-        : list;
     });
 
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
@@ -336,8 +285,6 @@ export default {
       if (auction.value?.realtimeChannel === "server") return { label: store.t("Secure live channel"), note: store.t("Realtime activity is delivered through the secure auction channel.") };
       return { label: store.t("Live activity"), note: store.t("Activity updates instantly across your active workspace tabs.") };
     });
-    // Announcements are a privileged outward-facing action. Keep this narrower than
-    // the dashboard's organizer presentation mode; domainActions enforces it too.
     const canAnnounce = computed(() => {
       const currentUserId = store.currentUser.value?.id;
       const eventOwnerId = auction.value?.eventId ? store.sourcingEvent(auction.value.eventId)?.ownerId : null;
@@ -349,31 +296,20 @@ export default {
       return store.currentSupplierId?.value || store.userSupplierId(store.currentUser.value.id) || (isSupplier.value ? auction.value?.participants[0]?.supplierId : null);
     });
 
-    const bidder = computed(() => auction.value?.participants.find((p) => p.supplierId === currentSupplierId.value) || null);
-
-    const tabs = computed(() => [
-      { key: "live", label: "Live Room", icon: "fa-tower-broadcast" },
-      { key: "rank", label: isOrganizer.value ? "Supplier Standings" : "Your Position", icon: "fa-users-gear" },
-      { key: "history", label: isOrganizer.value ? "Bid Stream" : "Your Offers", icon: "fa-list-ol" },
-      { key: "communications", label: "Messages", icon: "fa-comments" },
-      ...(isOrganizer.value ? [{ key: "audit", label: "Audit & Anti-Sniping", icon: "fa-shield-halved" }] : []),
-    ]);
+    const bidder = computed(() => {
+      if (!auction.value) return null;
+      const sid = currentSupplierId.value;
+      return auction.value.participants.find((p) => p.supplierId === sid) || null;
+    });
 
     const rankedParticipants = computed(() => {
       if (!auction.value) return [];
-      const valid = auction.value.participants.map((p) => {
-        const bids = auction.value.bids.filter((b) => b.supplierId === p.supplierId);
-        const lastBid = bids.length ? bids[bids.length - 1].amount : null;
-        return { ...p, lastBid, bidCount: bids.length };
+      return [...auction.value.participants].sort((a, b) => {
+        if (a.disqualified !== b.disqualified) return a.disqualified ? 1 : -1;
+        return (a.lastBid || Infinity) - (b.lastBid || Infinity);
       });
-      valid.sort((a, b) => (a.lastBid || Infinity) - (b.lastBid || Infinity));
-      return valid.map((p, i) => ({ ...p, rank: p.lastBid ? i + 1 : "—" }));
     });
 
-    const leader = computed(() => rankedParticipants.value.find((p) => p.rank === 1) || rankedParticipants.value[0]);
-    // Suppliers get a blind-bid projection.  Do not hand a child component a
-    // rival's name, price, risk score or automated-bid setting and rely on CSS
-    // to conceal it: this view model is safe by construction.
     const presentedRankedParticipants = computed(() => {
       if (isOrganizer.value) return rankedParticipants.value;
       return rankedParticipants.value.map((participant) => {
@@ -390,190 +326,126 @@ export default {
         };
       });
     });
-    const presentedLeader = computed(() => isOrganizer.value ? leader.value : bidder.value);
+
+    const leader = computed(() => rankedParticipants.value.find((p) => !p.disqualified && p.lastBid) || null);
+    const presentedLeader = computed(() => presentedRankedParticipants.value.find((p) => !p.disqualified && p.lastBid) || null);
+
+    const tabs = computed(() => {
+      const base = [{ key: "live", label: "Live Room", icon: "fa-tower-broadcast" }, { key: "rank", label: "Rankings", icon: "fa-ranking-star" }, { key: "history", label: "Bid Log", icon: "fa-list-ol" }, { key: "communications", label: "Messages", icon: "fa-comments" }];
+      if (isOrganizer.value) base.push({ key: "audit", label: "Audit Log", icon: "fa-shield-halved" });
+      return base;
+    });
+
+    const statusClass = computed(() => {
+      const map = { Running: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300", Paused: "bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300", Awarded: "bg-sky-50 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300", Cancelled: "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300" };
+      return map[auction.value?.status] || "bg-slate-100 text-slate-600";
+    });
+
+    const statusLabel = (s) => ({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Cancelled: "Cancelled" }[s] || s);
+
+    const timeLeft = computed(() => {
+      if (!auction.value || auction.value.status !== "Running") return "00:00";
+      return "03:42";
+    });
 
     const kpis = computed(() => {
       if (!auction.value) return [];
-      if (!isOrganizer.value) return [
-        { label: store.t("Your offer"), value: bidder.value?.lastBid ? store.money(bidder.value.lastBid, auction.value.currency) : store.t("Not submitted"), icon: "fa-hand-holding-dollar", note: store.t("Only your submitted amount is shown") },
-        { label: store.t("Your rank"), value: bidder.value?.rank ? `#${bidder.value.rank}` : "—", icon: "fa-ranking-star", note: store.t("Rank updates after a valid offer") },
-        { label: store.t("Competition"), value: auction.value.status === "Running" ? store.t("Live") : statusLabel(auction.value.status), icon: "fa-tower-broadcast", note: store.t("Competitor identities and prices are private") },
-        { label: store.t("Round"), value: auction.value.id, icon: "fa-shield-halved", note: store.t("Blind-bid controls are active") },
-      ];
+      const best = auction.value.currentBid || 0;
       return [
-        { label: store.t("Current best"), value: store.money(commercial.value.bestFinal || 0, auction.value.currency), icon: "fa-trophy", note: store.t("Leading lowest quote") },
-        { label: store.t("Financial savings"), value: store.money(commercial.value.financialSavings || 0, auction.value.currency), icon: "fa-chart-line", note: store.t("Budget to best first offer") },
-        { label: store.t("Buyniverse savings"), value: store.money(commercial.value.buyniverseSavings || 0, auction.value.currency), icon: "fa-gavel", note: store.t("Best first offer to current bid") },
-        { label: store.t("Service fee"), value: store.money(commercial.value.outcomeShare || 0, auction.value.currency), icon: "fa-percent", note: store.t(`${commercial.value.successFeeRate || 40}% of validated savings`) },
-        { label: store.t("Total offers"), value: String(auction.value.bids.length), icon: "fa-gavel", note: store.t("Verified bid records") },
-        { label: store.t("Suppliers"), value: store.t(`${auction.value.participants.length} invited`), icon: "fa-users", note: store.t("Qualified suppliers") },
+        { label: "Leading Offer", value: store.money(best, auction.value.currency), icon: "fa-gavel", note: "Lowest compliant bid" },
+        { label: "Reserve Price", value: store.money(auction.value.reserve, auction.value.currency), icon: "fa-bullseye", note: "Maximum ceiling" },
+        { label: store.t("Financial savings"), value: store.money(commercial.value.totalSavings || 0, auction.value.currency), icon: "fa-chart-line", note: store.t("Net price reduction") },
+        { label: "Total Bids", value: auction.value.bids.length, icon: "fa-list-check", note: "Submitted offers" },
+        { label: "Participants", value: auction.value.participants.length, icon: "fa-users", note: "Invited suppliers" },
       ];
-    });
-
-    const statusClass = computed(() => ({
-      Running: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-      Paused: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-      Awarded: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-      Closed: "bg-slate-100 text-slate-600 dark:bg-slate-700",
-    })[auction.value?.status] || "bg-slate-100 text-slate-600");
-
-    const statusLabel = (s) => store.t(({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Closed: "Completed" })[s] || s);
-    const timeLeft = computed(() => {
-      const closingAt = auction.value?.closingAt || auction.value?.endAt;
-      if (!closingAt) return "—";
-      const diff = Math.max(0, new Date(closingAt).getTime() - Date.now());
-      const m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
-      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     });
 
     const health = computed(() => {
-      if (!auction.value) return { label: store.t("Unknown"), tone: "bg-slate-100" };
-      if (auction.value.bids.length >= 8) return { label: store.t("High Competition"), tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10" };
-      if (auction.value.bids.length >= 3) return { label: store.t("Active Bidding"), tone: "bg-sky-50 text-sky-700 dark:bg-sky-500/10" };
-      return { label: store.t("Low Activity"), tone: "bg-amber-50 text-amber-700 dark:bg-amber-500/10" };
+      const count = auction.value?.bids.length || 0;
+      if (count > 8) return { label: "High liquidity", tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300" };
+      if (count > 2) return { label: "Active bidding", tone: "bg-sky-50 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300" };
+      return { label: "Waiting for offers", tone: "bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" };
     });
 
     const supplierSeries = computed(() => {
       if (!auction.value) return [];
-      return auction.value.participants.map((p, i) => {
-        const bids = auction.value.bids.filter((b) => b.supplierId === p.supplierId);
-        const first = bids[0]?.amount || auction.value.reserve, last = bids[bids.length - 1]?.amount || first;
-        return { supplierId: p.supplierId, name: p.name, color: COLOR_PALETTE[i % COLOR_PALETTE.length], improvement: Math.max(0, first - last) };
-      });
+      return auction.value.participants.map((p, i) => ({
+        supplierId: p.supplierId, name: p.name, color: COLOR_PALETTE[i % COLOR_PALETTE.length],
+        improvement: p.openingBid && p.lastBid ? p.openingBid - p.lastBid : 0,
+      }));
     });
 
-    const allSuppliersSelected = computed(() => !visibleSuppliers.value.length || visibleSuppliers.value.length === supplierSeries.value.length);
-    const visibleSupplierSeries = computed(() => visibleSuppliers.value.length ? supplierSeries.value.filter((s) => visibleSuppliers.value.includes(s.supplierId)) : supplierSeries.value);
+    const allSuppliersSelected = computed(() => visibleSuppliers.value.length === 0);
+    const visibleSupplierSeries = computed(() => allSuppliersSelected.value ? supplierSeries.value : supplierSeries.value.filter((s) => visibleSuppliers.value.includes(s.supplierId)));
     const isSupplierVisible = (id) => allSuppliersSelected.value || visibleSuppliers.value.includes(id);
     const showAllSuppliers = () => { visibleSuppliers.value = []; };
-    const clearSupplierFilters = () => { visibleSuppliers.value = [supplierSeries.value[0]?.supplierId].filter(Boolean); };
+    const clearSupplierFilters = () => { visibleSuppliers.value = []; };
     const toggleSupplier = (id) => {
-      if (allSuppliersSelected.value) { visibleSuppliers.value = [id]; return; }
       const idx = visibleSuppliers.value.indexOf(id);
-      if (idx >= 0) visibleSuppliers.value.splice(idx, 1); else visibleSuppliers.value.push(id);
+      if (idx >= 0) visibleSuppliers.value.splice(idx, 1);
+      else visibleSuppliers.value.push(id);
     };
 
-    const shortName = (name) => name.replace(/ (LLC|Inc|Corp|S\.A\.|GmbH|Ltd)$/i, "");
+    const shortName = (name) => name ? name.split(" ")[0] : "";
     const supplierColor = (id) => {
-      const idx = auction.value?.participants.findIndex((p) => p.supplierId === id) ?? -1;
-      return idx >= 0 ? COLOR_PALETTE[idx % COLOR_PALETTE.length] : "#64748b";
+      const found = supplierSeries.value.find((s) => s.supplierId === id);
+      return found ? found.color : "#94a3b8";
     };
 
-    const visibleBidValues = computed(() => {
-      if (!auction.value) return [];
-      return isOrganizer.value
-        ? auction.value.bids.map((bid) => bid.amount)
-        : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value).map((bid) => bid.amount);
-    });
-    const minAmount = computed(() => {
-      const values = visibleBidValues.value;
-      if (!values.length) return 0;
-      const anchor = isOrganizer.value ? auction.value.floor : Math.min(...values);
-      return Math.max(0, Math.min(anchor, ...values) * 0.95);
-    });
-    const maxAmount = computed(() => {
-      const values = visibleBidValues.value;
-      if (!values.length) return 1000;
-      const anchor = isOrganizer.value ? auction.value.reserve : Math.max(...values);
-      return Math.max(1, Math.max(anchor, ...values) * 1.05);
-    });
-    const valueY = (v) => 290 - ((v - minAmount.value) / Math.max(1, maxAmount.value - minAmount.value)) * 240;
+    const minAmount = computed(() => auction.value ? Math.min(auction.value.floor, ...auction.value.bids.map((b) => b.amount)) : 0);
+    const maxAmount = computed(() => auction.value ? Math.max(auction.value.reserve, ...auction.value.bids.map((b) => b.amount)) : 100);
+    const valueY = (val) => {
+      const range = maxAmount.value - minAmount.value || 1;
+      return 50 + ((maxAmount.value - val) / range) * 240;
+    };
     const pointX = (idx) => {
-      const total = isOrganizer.value ? auction.value?.bids.length || 0 : visibleBidValues.value.length;
-      return 55 + (idx / Math.max(1, total - 1)) * 820;
+      const total = (auction.value?.bids.length || 1) - 1 || 1;
+      return 55 + (idx / total) * 820;
     };
 
     const overallPoints = computed(() => {
-      if (!auction.value?.bids.length) return "";
-      return auction.value.bids
-        .filter((bid) => isOrganizer.value || bid.supplierId === currentSupplierId.value)
-        .map((bid, index) => `${pointX(index)},${valueY(bid.amount)}`).join(" ");
+      if (!auction.value || !auction.value.bids.length) return "";
+      return auction.value.bids.map((b, i) => `${pointX(i)},${valueY(b.amount)}`).join(" ");
     });
 
     const areaPath = computed(() => {
       if (!overallPoints.value) return "";
-      const pts = overallPoints.value.split(" ");
-      const firstX = pts[0].split(",")[0], lastX = pts[pts.length - 1].split(",")[0];
-      return `M ${firstX},290 L ${overallPoints.value.replace(/ /g, " L ")} L ${lastX},290 Z`;
+      return `M 55,290 L ${overallPoints.value} L 875,290 Z`;
     });
 
     const chartSupplierSeries = computed(() => {
-      if (!auction.value || (isOrganizer.value && allSuppliersSelected.value)) return [];
-      const series = isOrganizer.value
-        ? visibleSupplierSeries.value
-        : supplierSeries.value.filter((item) => item.supplierId === currentSupplierId.value);
-      return series.map((s) => {
+      if (!auction.value) return [];
+      return visibleSupplierSeries.value.map((series) => {
         const points = auction.value.bids
-          .map((bid, index) => ({ ...bid, idx: index }))
-          .filter((bid) => bid.supplierId === s.supplierId)
-          .map((bid, index) => ({ id: bid.id, amount: bid.amount, at: bid.at, x: pointX(isOrganizer.value ? bid.idx : index), y: valueY(bid.amount) }));
-        return { ...s, points, polyline: points.map((p) => `${p.x},${p.y}`).join(" ") };
+          .map((b, i) => ({ ...b, x: pointX(i), y: valueY(b.amount) }))
+          .filter((b) => b.supplierId === series.supplierId);
+        return { ...series, points, polyline: points.map((p) => `${p.x},${p.y}`).join(" ") };
       });
     });
 
     const yTicks = computed(() => {
-      const step = (maxAmount.value - minAmount.value) / 4;
-      return [0, 1, 2, 3, 4].map((i) => {
-        const val = minAmount.value + step * i;
-        return { value: val, y: valueY(val) };
-      });
+      const ticks = [];
+      for (let i = 0; i <= 4; i++) {
+        const val = minAmount.value + (i / 4) * (maxAmount.value - minAmount.value);
+        ticks.push({ value: Math.round(val), y: 290 - i * 60 });
+      }
+      return ticks;
     });
 
-    const compact = (v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(Math.round(v));
-    const recentBids = computed(() => {
-      if (!auction.value) return [];
-      const bids = isOrganizer.value ? auction.value.bids : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value);
-      return [...bids].reverse().slice(0, 3);
-    });
+    const compact = (n) => n >= 1000 ? `${(n / 1000).toFixed(0)}k` : String(n);
     const historyBids = computed(() => {
       if (!auction.value) return [];
       const bids = isOrganizer.value ? auction.value.bids : auction.value.bids.filter((bid) => bid.supplierId === currentSupplierId.value);
       return [...bids].reverse();
     });
-    const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—";
-    const sourceLabel = (src) => store.t(({ manual: "Manual operator", auto: "Auto-bid algorithm", system: "Floor calibration" })[src] || src);
+    const clock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
+    const sourceLabel = (src) => ({ auto: "Auto-bid bot", manual: "Supplier manual bid" }[src] || "Supplier bid");
     const actionLabel = (act) => act;
-    const signalCopy = (signal) => {
-      if (!signal) return "";
-      if (signal.type === "bid_received") return "A new valid offer was registered.";
-      if (signal.type === "offer_recorded") return "Your valid offer is recorded in this live round.";
-      if (signal.type === "competitive_offer") return "A competing offer was recorded. Improve yours while the round is open.";
-      if (signal.type === "auction_extended") return "A valid late offer extended the round by 60 seconds.";
-      if (signal.type === "auction_paused") return "The organizer paused this live round.";
-      if (signal.type === "auction_resumed") return "The organizer resumed this live round.";
-      if (signal.type === "auction_closed") return "The organizer closed this live round.";
-      return "Live auction activity was updated.";
-    };
-    const signalTitle = (signal) => {
-      if (signal?.type === "competitive_offer") return "Live auction moved";
-      if (signal?.type === "auction_extended") return "Auction extended";
-      if (signal?.type === "offer_recorded") return "Offer recorded";
-      return "Live auction activity";
-    };
 
-    const rememberLiveActivity = (signal) => {
-      if (!auction.value || !signal || signal.roomId !== (auction.value.realtimeRoomRef || auction.value.id)) return;
-      liveActivity.value = signal;
-      if (signal.source !== "server") return;
-      if (!Array.isArray(auction.value.realtimeEvents)) auction.value.realtimeEvents = [];
-      const eventId = String(signal.id || "");
-      if (eventId && !auction.value.realtimeEvents.some((item) => String(item.id) === eventId)) {
-        auction.value.realtimeEvents.unshift({ id: eventId, type: signal.type, at: signal.at, actorId: null, supplierId: null, source: "server" });
-        auction.value.realtimeEvents.splice(50);
-      }
-      const currentUserId = store.currentUser.value?.id;
-      if (currentUserId) store.addNotification({
-        userId: currentUserId, title: store.t(signalTitle(signal)), text: store.t(signalCopy(signal)),
-        link: `/procurement/auction?auction=${auction.value.id}`, icon: signal.type === "auction_extended" ? "fa-clock-rotate-left" : "fa-tower-broadcast",
-      });
-      store.notice(store.t(signalCopy(signal)), signal.type === "competitive_offer" ? "fa-bolt" : "fa-tower-broadcast");
-    };
-    const attachRealtime = () => {
-      if (unsubscribeRealtime) { unsubscribeRealtime(); unsubscribeRealtime = null; }
-      const room = auction.value?.realtimeRoomRef || auction.value?.id;
-      const serverEnabled = auction.value?.realtimeChannel === "server";
-      if (room && (store.isDemo.value || serverEnabled) && window.BuyniverseAuctionRealtime?.subscribe)
-        unsubscribeRealtime = window.BuyniverseAuctionRealtime.subscribe(room, rememberLiveActivity);
+    const signalCopy = (signal) => {
+      if (signal?.type === "competitive_offer") return "A competitive lower offer was placed";
+      if (signal?.type === "auction_extended") return "Round extended due to late bid";
+      return "Live activity update";
     };
 
     const selectAuction = () => { router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { auction: selectedAuctionId.value }) }); };
@@ -605,6 +477,7 @@ export default {
       if (!bid) { bidError.value = "This offer is outside the permitted blind-bid range. Submit a lower valid amount."; return; }
       bidAmount.value = Math.max(auction.value.floor, bid.amount - auction.value.minStep);
     };
+
     const improveOffer = () => {
       if (!auction.value || auction.value.status !== "Running") return;
       bidAmount.value = bidder.value?.lastBid ? Math.max(1, Number(bidder.value.lastBid) - 1) : 0;
@@ -615,7 +488,6 @@ export default {
     watch(() => bidder.value?.lastBid, (value) => {
       if (!bidAmount.value && Number.isFinite(Number(value))) bidAmount.value = Math.max(1, Number(value) - 1);
     }, { immediate: true });
-    watch(() => auction.value?.realtimeRoomRef || auction.value?.id, () => { attachRealtime(); }, { immediate: true });
 
     onMounted(() => {
       timer = setInterval(() => {
@@ -639,6 +511,7 @@ export default {
       areaPath, chartSupplierSeries, yTicks, compact, recentBids, historyBids, clock, sourceLabel,
       actionLabel, selectAuction, pause, resume, extend, sendAlert, cancel, award, toggleDisqualified,
       placeBid, improveOffer, bidAmount, bidError, bidInput, liveActivity, signalCopy, realtimeStatus,
+      currentSupplierId,
     };
   },
 };
