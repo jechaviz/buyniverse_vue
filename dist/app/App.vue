@@ -110,7 +110,7 @@ const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
 const AppPublicNavbar = load("./app/components/layout/AppPublicNavbar.vue?v=1");
 const AppPublicFooter = load("./app/components/layout/AppPublicFooter.vue?v=1");
-const AuthModal = load("./app/components/AuthModal.vue?v=5");
+const AuthModal = load("./app/components/AuthModal.vue?v=6");
 
 export default {
   components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, AppPublicNavbar, AppPublicFooter, AuthModal },
