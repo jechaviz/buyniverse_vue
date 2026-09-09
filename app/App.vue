@@ -106,10 +106,10 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
-const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=2");
+const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=3");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
-const AppPublicNavbar = load("./app/components/layout/AppPublicNavbar.vue?v=1");
-const AppPublicFooter = load("./app/components/layout/AppPublicFooter.vue?v=1");
+const AppPublicNavbar = load("./app/components/layout/AppPublicNavbar.vue?v=3");
+const AppPublicFooter = load("./app/components/layout/AppPublicFooter.vue?v=2");
 const AuthModal = load("./app/components/AuthModal.vue?v=6");
 
 export default {

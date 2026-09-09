@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto grid gap-8 sm:grid-cols-2 lg:grid-cols-5 text-xs">
       <div class="lg:col-span-2 space-y-3">
         <div class="flex items-center gap-2.5">
-          <span class="grid h-8 w-8 place-items-center rounded-xl bg-brand font-head font-bold text-white text-sm shadow-sm shadow-brand/30">B</span>
+          <BrandMark :size="32" />
           <span class="font-head text-base font-800 text-slate-900 dark:text-white">Buyniverse</span>
         </div>
         <p class="text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
@@ -52,7 +52,12 @@
   </footer>
 </template>
 <script>
+const { defineAsyncComponent } = Vue;
+const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const BrandMark = load("./app/components/ui/BrandMark.vue?v=1");
+
 export default {
+  components: { BrandMark },
   setup() {
     return { store: Vue.inject("store") };
   },

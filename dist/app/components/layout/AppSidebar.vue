@@ -11,9 +11,7 @@
     <!-- Brand Header -->
     <div class="flex h-16 items-center justify-between border-b border-slate-200/80 px-4 dark:border-slate-800/80 flex-none">
       <RouterLink to="/" class="flex items-center gap-3 overflow-hidden group" @click="$emit('close-mobile')">
-        <span class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-brand text-base font-800 text-white shadow-md shadow-brand/30 group-hover:scale-105 transition-transform">
-          B
-        </span>
+        <BrandMark :size="36" class="flex-none group-hover:scale-105 transition-transform" />
         <div v-show="!collapsed" class="min-w-0">
           <span class="font-head text-base font-800 tracking-tight text-slate-900 dark:text-white block">Buyniverse</span>
           <span class="text-[9px] font-bold uppercase tracking-wider text-brand -mt-1 block">{{ store.t("Enterprise") }}</span>
@@ -72,7 +70,12 @@
   </aside>
 </template>
 <script>
+const { defineAsyncComponent } = Vue;
+const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const BrandMark = load("./app/components/ui/BrandMark.vue?v=1");
+
 export default {
+  components: { BrandMark },
   props: {
     menu: Array,
     collapsed: Boolean,

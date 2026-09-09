@@ -3,9 +3,7 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
       <!-- Logo & Brand -->
       <RouterLink to="/" class="flex items-center gap-3 group">
-        <span class="grid h-10 w-10 place-items-center rounded-2xl bg-brand font-head text-lg font-bold text-white shadow-md shadow-brand/30 group-hover:scale-105 transition-transform">
-          B
-        </span>
+        <BrandMark :size="40" class="group-hover:scale-105 transition-transform" />
         <div>
           <span class="font-head text-lg font-800 tracking-tight text-slate-900 dark:text-white block">Buyniverse</span>
           <span class="text-[10px] font-bold uppercase tracking-wider text-brand -mt-1 block">{{ store.t("B2B Sourcing & Talent") }}</span>
@@ -90,7 +88,12 @@
   </nav>
 </template>
 <script>
+const { defineAsyncComponent } = Vue;
+const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
+const BrandMark = load("./app/components/ui/BrandMark.vue?v=1");
+
 export default {
+  components: { BrandMark },
   props: {
     locale: String,
     dark: Boolean,
