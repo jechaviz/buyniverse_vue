@@ -24,7 +24,7 @@ const { inject, ref, computed, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 
-const HomeHeroSection = load("./app/pages/home/HomeHeroSection.vue?v=5");
+const HomeHeroSection = load("./app/pages/home/HomeHeroSection.vue?v=6");
 const HomeIntelligenceSection = load("./app/pages/home/HomeIntelligenceSection.vue?v=5");
 const HomeGainShareSection = load("./app/pages/home/HomeGainShareSection.vue?v=1");
 

@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-6">
-    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+    <section class="grid gap-4 sm:grid-cols-2">
       <article v-for="kpi in kpis" :key="kpi.label" class="premium-card group rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
         <div class="flex items-start justify-between gap-3">
           <span class="grid h-10 w-10 place-items-center rounded-xl text-xs font-bold" :class="kpi.iconTone">
@@ -27,18 +27,36 @@
           </div>
           <RouterLink to="/procurement/queue" class="text-xs font-bold text-brand hover:underline">{{ store.t('View requests') }} <i class="fa-solid fa-arrow-right ml-1"></i></RouterLink>
         </header>
-        <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
-          <RouterLink v-for="step in pipeline" :key="step.label" :to="step.to" class="group p-5 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
-            <div class="flex items-center justify-between">
-              <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-brand group-hover:text-white dark:bg-slate-800 dark:text-slate-400">
-                <i class="fa-solid text-xs" :class="step.icon"></i>
+        <!-- Dense flow rail: stages read left to right as one chain, with the
+             chevron carrying the hand-off instead of four separate cards. -->
+        <ol class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 sm:flex-row sm:divide-x sm:divide-y-0">
+          <li v-for="(step, index) in pipeline" :key="step.label" class="relative min-w-0 flex-1">
+            <RouterLink :to="step.to" class="group flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500 transition group-hover:bg-brand group-hover:text-white dark:bg-slate-800 dark:text-slate-400">
+                <i class="fa-solid text-[11px]" :class="step.icon"></i>
               </span>
-              <span class="font-head font-mono text-2xl font-800 text-slate-900 dark:text-white">{{ step.value }}</span>
-            </div>
-            <b class="font-head mt-4 block text-xs font-bold text-slate-800 dark:text-slate-200">{{ step.label }}</b>
-            <p class="mt-1 text-[11px] leading-relaxed text-slate-400">{{ step.note }}</p>
-          </RouterLink>
-        </div>
+              <span class="min-w-0 flex-1">
+                <span class="flex items-baseline gap-1.5">
+                  <b class="font-head font-mono text-xl font-800 leading-none tabular-nums text-slate-900 dark:text-white">{{ step.value }}</b>
+                  <b class="font-head truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ step.label }}</b>
+                </span>
+                <span class="mt-0.5 flex items-center gap-1.5 text-[11px] leading-tight">
+                  <span class="truncate text-slate-400">{{ step.note }}</span>
+                  <span class="shrink-0 font-bold" :class="step.flagTone">· {{ step.flag }}</span>
+                </span>
+              </span>
+              <!-- Kept in flow rather than absolutely positioned behind a
+                   responsive variant: only the AOT base layer is guaranteed
+                   ordered, so `hidden sm:block` can lose the cascade race and
+                   silently drop the hand-off arrow. -->
+              <i
+                v-if="index < pipeline.length - 1"
+                class="fa-solid fa-chevron-right shrink-0 text-[10px] text-slate-300 dark:text-slate-600"
+                aria-hidden="true"
+              ></i>
+            </RouterLink>
+          </li>
+        </ol>
         <div class="border-t border-slate-100 p-5 dark:border-slate-800">
           <div class="mb-4 flex items-center justify-between">
             <h3 class="font-head font-bold text-xs uppercase tracking-wider text-slate-400">{{ store.t('Spend & savings pulse') }}</h3>
@@ -198,15 +216,15 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
   const kpis=computed(()=>[
     {label:store.t('Financial savings'),value:store.money(commercial.value.primary.financialSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('Budget to first offer'),progress:Math.min(100,Math.round((commercial.value.primary.financialSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-chart-line',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-sky-500'},
     {label:store.t('Buyniverse savings'),value:store.money(commercial.value.primary.buyniverseSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('First offer to final bid'),progress:Math.min(100,Math.round((commercial.value.primary.buyniverseSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-gavel',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
-    {label:store.t('Open requests'),value:activeRequests.value,delta:store.t('1 due today'),progress:58,icon:'fa-inbox',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-amber-500'},
-    {label:store.t('Open quotes'),value:activeEvents.value,delta:store.t('2 decisions'),progress:66,icon:'fa-file-signature',iconTone:'bg-brand-50 text-brand',deltaTone:'text-brand'},
-    {label:store.t('Orders in flight'),value:openOrders.value,delta:store.t('1 partial'),progress:62,icon:'fa-truck-fast',iconTone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',deltaTone:'text-amber-500'},
-    {label:store.t('Open issues'),value:exceptionCount.value,delta:store.t('1 high'),progress:24,icon:'fa-triangle-exclamation',iconTone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300',deltaTone:'text-rose-500'}]);
+  ]);
+  // One rail, one number per stage. The operational counts used to be repeated
+  // as standalone KPI cards above; the rail is now their only home so the fold
+  // carries commercial outcome plus flow instead of the same figure twice.
   const pipeline=computed(()=>[
-    {label:store.t('Requests'),value:activeRequests.value,note:store.t('Intake and approvals waiting'),icon:'fa-inbox',to:'/procurement/queue'},
-    {label:store.t('Quotes'),value:activeEvents.value,note:store.t('Invitations, offers and comparison'),icon:'fa-file-signature',to:'/procurement/sourcing'},
-    {label:store.t('Orders'),value:openOrders.value,note:store.t('Commitment, receipt and follow-up'),icon:'fa-cart-shopping',to:'/procurement/execution'},
-    {label:store.t('Invoice checks'),value:exceptionCount.value,note:store.t('Issues that still need review'),icon:'fa-link',to:'/procurement/execution'}]);
+    {label:store.t('Requests'),value:activeRequests.value,note:store.t('Intake and approvals'),flag:store.t('1 due today'),flagTone:'text-amber-600 dark:text-amber-400',icon:'fa-inbox',to:'/procurement/queue'},
+    {label:store.t('Quotes'),value:activeEvents.value,note:store.t('Offers and comparison'),flag:store.t('2 decisions'),flagTone:'text-brand',icon:'fa-file-signature',to:'/procurement/sourcing'},
+    {label:store.t('Orders'),value:openOrders.value,note:store.t('Commitment and receipt'),flag:store.t('1 partial'),flagTone:'text-amber-600 dark:text-amber-400',icon:'fa-cart-shopping',to:'/procurement/execution'},
+    {label:store.t('Invoice checks'),value:exceptionCount.value,note:store.t('3-way match review'),flag:store.t('1 high'),flagTone:'text-rose-600 dark:text-rose-400',icon:'fa-link',to:'/procurement/execution'}]);
   const workQueue=computed(()=>[
     ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):'Today',action:'Review decision',to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
     ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,action:'Resolve issue',to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
