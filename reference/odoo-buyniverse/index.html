@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GigFinder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+      :root {
+        --color-primary-50: 254 242 242;
+        --color-primary-100: 254 226 226;
+        --color-primary-200: 254 202 202;
+        --color-primary-300: 252 165 165;
+        --color-primary-400: 248 113 113;
+        --color-primary-500: 239 68 68;
+        --color-primary-600: 220 38 38;
+        --color-primary-700: 185 28 28;
+        --color-primary-800: 153 27 27;
+        --color-primary-900: 127 29 29;
+        --color-primary-950: 69 10 10;
+      }
+       /* For custom scrollbars */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+         background: #94a3b8;
+      }
+       html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+      }
+      /* For DataTable column resizing */
+      .resizer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        cursor: col-resize;
+        user-select: none;
+        height: 100%;
+        z-index: 10;
+      }
+      .resizer:hover, .resizing {
+        background: rgb(var(--color-primary-500));
+        opacity: 0.5;
+      }
+      th {
+        position: relative;
+      }
+    </style>
+    <script>
+      // Set theme on initial load
+      (function() {
+        const theme = localStorage.getItem('app-theme') || 'dark';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: 'rgb(var(--color-primary-600) / <alpha-value>)',
+                '50': 'rgb(var(--color-primary-50) / <alpha-value>)',
+                '100': 'rgb(var(--color-primary-100) / <alpha-value>)',
+                '200': 'rgb(var(--color-primary-200) / <alpha-value>)',
+                '300': 'rgb(var(--color-primary-300) / <alpha-value>)',
+                '400': 'rgb(var(--color-primary-400) / <alpha-value>)',
+                '500': 'rgb(var(--color-primary-500) / <alpha-value>)',
+                '600': 'rgb(var(--color-primary-600) / <alpha-value>)',
+                '700': 'rgb(var(--color-primary-700) / <alpha-value>)',
+                '800': 'rgb(var(--color-primary-800) / <alpha-value>)',
+                '900': 'rgb(var(--color-primary-900) / <alpha-value>)',
+                '950': 'rgb(var(--color-primary-950) / <alpha-value>)'
+              },
+              'dashboard-bg': '#f7f8fa',
+              'stat-green': '#26c6b9',
+              'stat-blue': '#4e8af1',
+              'stat-orange': '#f4a65a',
+              'stat-red': '#e86364',
+              'lead-new': '#e5e7eb',
+              'lead-disqualified': '#ef4444',
+              'lead-qualified': '#3b82f6',
+              'lead-contacted': '#f97316',
+              'lead-proposal': '#8bcf65',
+              'lead-converted': '#26c6b9',
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+              'fade-in-up': 'fadeInUp 0.6s ease-in-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 },
+              },
+              fadeInUp: {
+                '0%': { opacity: 0, transform: 'translateY(20px)' },
+                '100%': { opacity: 1, transform: 'translateY(0)' },
+              },
+            },
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.6.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.8.0",
+    "react-router": "https://esm.sh/react-router@^7.6.3",
+    "recharts": "https://esm.sh/recharts@^2.12.7",
+    "recharts/": "https://esm.sh/recharts@^2.12.7/",
+    "prop-types": "https://esm.sh/prop-types@^15.8.1",
+    "@/": "./",
+    "react-dom": "https://esm.sh/react-dom@^19.1.0",
+    "react-window": "https://esm.sh/react-window@^1.8.10"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-100 dark:bg-slate-900">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>

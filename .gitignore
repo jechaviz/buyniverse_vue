@@ -6,4 +6,8 @@ Thumbs.db
 backend/v-service/bin/
 backend/v-service/*.exe
 backend/v-service/*.c
+backend/v-service/src/*.c
 backend/v-service/*.pdb
+archive/*.zip
+archive/*.tar.gz
+archive/browser_profiles/

@@ -1,0 +1,21 @@
+export default {
+    "inviteToJob": "Invite to Job",
+    "availability": "Availability",
+    "available": "Available",
+    "notAvailable": "Not Available",
+    "stats": "Stats",
+    "jobSuccess": "Job Success",
+    "jobSuccessDesc": "Based on client feedback",
+    "totalEarned": "Total earned",
+    "identityVerified": "Identity Verified",
+    "skills": "Skills",
+    "portfolio": "Portfolio",
+    "workHistory": "Work History & Reviews",
+    "noReviews": "No reviews yet.",
+    "clientStats": "Client Stats",
+    "jobsPosted": "Jobs Posted",
+    "openJobs": "Open Jobs",
+    "memberSince": "Member Since",
+    "noOpenJobsClient": "This client has no open jobs right now.",
+    "reviewsFromFreelancers": "Reviews From Freelancers"
+}

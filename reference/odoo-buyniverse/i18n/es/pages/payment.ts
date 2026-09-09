@@ -1,0 +1,93 @@
+export default {
+    "title": "Recibos de Pago",
+    "add": "Nuevo Pago",
+    "headers": {
+        "folio": "Folio",
+        "date": "Fecha de Pago",
+        "receiver": "Cliente",
+        "amount": "Monto",
+        "status": "Estado",
+        "uuid": "UUID",
+        "actions": "Acciones"
+    },
+    "stats": {
+        "totalCollected": "Total Cobrado",
+        "last30days": "Últimos 30 días"
+    },
+    "statuses": {
+        "vigente": "Vigente",
+        "cancelado": "Cancelado"
+    },
+    "form": {
+        "createTitle": "Nuevo Recibo de Pago",
+        "editTitle": "Editar Recibo de Pago",
+        "issuerReceiver": "Emisor y Receptor",
+        "issuer": "Emisor (Quien recibe el pago)",
+        "receiver": "Receptor (Quien realiza el pago)",
+        "paymentDetails": "Detalles del Pago",
+        "additionalInfo": "Información Adicional del Pago",
+        "relatedDocs": "Documentos Relacionados",
+        "paymentTaxes": "Impuestos del Pago",
+        "totals": "Totales del Pago",
+        "options": "Opciones",
+        "paymentDate": "Fecha de Pago",
+        "paymentType": "Forma de Pago",
+        "currency": "Moneda del Pago",
+        "amount": "Monto del Pago",
+        "exchangeRate": "Tipo de Cambio P",
+        "exchangeRateTooltip": "El tipo de cambio del día en que se recibe el pago. Requerido si la moneda del pago no es MXN.",
+        "numOperacion": "Número de Operación",
+        "ctaOrdenante": "Cuenta Ordenante",
+        "ctaBeneficiario": "Cuenta Beneficiario",
+        "rfcEmisorCtaOrd": "RFC Banco Ordenante",
+        "nomBancoOrdExt": "Nombre Banco Ord. Ext.",
+        "rfcEmisorCtaBen": "RFC Banco Beneficiario",
+        "ctaOrdenanteTooltip": "La cuenta desde la cual se realizó el pago.",
+        "ctaBeneficiarioTooltip": "La cuenta que recibió el pago.",
+        "rfcEmisorCtaOrdTooltip": "RFC del banco que gestiona la cuenta del ordenante.",
+        "nomBancoOrdExtTooltip": "Nombre del banco extranjero si la transferencia fue internacional.",
+        "rfcEmisorCtaBenTooltip": "RFC del banco que gestiona la cuenta del beneficiario.",
+        "selectPpdInvoices": "Seleccionar facturas PPD para aplicar el pago...",
+        "noPpdInvoices": "Este cliente no tiene facturas PPD pendientes de pago.",
+        "relatedInvoice": "Factura Relacionada",
+        "invoiceInfo": "Folio {{folio}} ({{uuid}})",
+        "prevBalance": "Saldo Anterior",
+        "amountToApply": "Monto a Aplicar ({{currency}})",
+        "amountPaidInDocCurrency": "Equivale a {{amount}} {{currency}}",
+        "newBalance": "Nuevo Saldo",
+        "paymentNumber": "# Parcialidad",
+        "addInvoice": "Añadir Factura",
+        "equivalenciaDR": "Equivalencia DR",
+        "equivalenciaDRTooltip": "Requerido si la moneda del pago y la factura son diferentes. Es el número de unidades de la moneda de la factura por una unidad de la moneda del pago.",
+        "financials": "Datos Financieros",
+        "impPagado": "Importe Pagado",
+        "impSaldoInsoluto": "Saldo Insoluto",
+        "validation": {
+            "amountMismatch": "El Monto del Pago debe ser igual a la suma de los montos pagados en los documentos relacionados.",
+            "overpayment": "El monto a pagar no puede ser mayor que el saldo anterior de la factura.",
+            "equivalenciaRequired": "La Equivalencia DR es requerida cuando las monedas son diferentes."
+        },
+        "taxSections": {
+            "original": "Impuestos Originales (DR)",
+            "payment": "Impuestos de este Pago (P)",
+            "type": "Tipo",
+            "rate": "Tasa",
+            "base": "Base",
+            "amount": "Importe"
+        },
+        "totalsSection": {
+            "title": "Resumen de Impuestos del Pago",
+            "montoTotalPagos": "Monto Total Pagos",
+            "totalRetencionesIVA": "Total Retenciones IVA",
+            "totalRetencionesISR": "Total Retenciones ISR",
+            "totalRetencionesIEPS": "Total Retenciones IEPS",
+            "totalTrasladosBaseIVA16": "Total Traslados Base IVA 16%",
+            "totalTrasladosImpuestoIVA16": "Total Traslados Impuesto IVA 16%",
+            "totalTrasladosBaseIVA8": "Total Traslados Base IVA 8%",
+            "totalTrasladosImpuestoIVA8": "Total Traslados Impuesto IVA 8%",
+            "totalTrasladosBaseIVA0": "Total Traslados Base IVA 0%",
+            "totalTrasladosImpuestoIVA0": "Total Traslados Impuesto IVA 0%",
+            "totalTrasladosBaseIVAExento": "Total Traslados Base IVA Exento"
+        }
+    }
+}

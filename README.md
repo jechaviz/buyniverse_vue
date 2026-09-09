@@ -1,41 +1,70 @@
-# Buyniverse Vue (CDN + SFC)
+# Buyniverse Enterprise B2B Platform
 
-Réplica estática del frontend Buyniverse que se ejecuta sin Node, bundler ni compilación en el navegador. `package.json` y Bun se usan exclusivamente para QA local y para generar el artefacto `dist` precompilado.
+Plataforma integral de compras B2B, subastas inversas en tiempo real, gestión de proveedores y facturación electrónica CFDI 4.0 / SAT.
 
-- Vue 3, Vue Router, `vue3-sfc-loader` y UnoCSS se consumen desde CDN con versiones fijas e integridad SRI.
-- Los componentes SFC se compilan en el navegador.
-- La interfaz funciona en inglés y español; el selector `EN / ES` persiste la preferencia y localiza contenido dinámico, fechas y monedas.
-- `../lib/web-common/browser.js` comparte persistencia defensiva, sanitización y validación accesible de formularios.
-- `../lib/procurement-common/browser.js` comparte lifecycle, roles, auditoría, scoring, subastas y exportación CSV segura.
-- El gateway PHP en `index.php` entrega la API segura, persistencia cifrada y aislamiento por tenant; las migraciones viven en `ops/migrations/`. Consulta `backend/README.md` para el mapa completo, incluido el sidecar V interno no desplegable.
-- El estado demo se persiste en servidor cifrado y separado por cuenta SaaS, razón social/RFC, sucursal y bodega. No deben guardarse credenciales o secretos operativos.
+## Arquitectura del Producto
 
-## Ejecutar sin Node
+- **Frontend (Vue 3 CDN/SFC + UnoCSS AOT)**: Interfaz de usuario de alto desempeño, bilingüe (EN/ES), carga inmediata sin parpadeo (Anti-FOUC) y compilación AOT de estilos CSS en dist/app/uno.css.
+- **Backend SaaS (PHP LiteSpeed/Apache)**: Gateway fail-closed (index.php, 	enant_service.php, uction_service.php, email_service.php) con autenticación federada, cifrado AES-256-GCM y multi-tenancy corporativo estricto.
+- **Subistema Nativo (V-Language)**: Microservicio en V (ackend/v-service/) para procesamiento ultrarrápido y lógica autónoma.
+- **Motor de Video Lifecycle**: Generador audiovisual Hyperframes en 	ools/lifecycle-video/ con renders completos en ssets/media/.
 
-El servidor incluido usa únicamente la librería estándar de Python, agrega cabeceras OWASP y evita caché obsoleta. Desde esta carpeta:
+## Estructura Consolidada del Repositorio
 
-```powershell
+`
+buyniverse_vue/
+├── app/                  # Código fuente Vue 3 (páginas, componentes, store, router, i18n)
+├── assets/               # Medios, identidad de marca, renders 3D y showcase
+│   ├── brand/            # Identidad visual, showcase y visualizador 3D interactivo
+│   └── media/            # Renders de video (buyniverse-full-lifecycle.mp4)
+├── backend/              # Kernel nativo V-Language y especificaciones de backend
+│   └── v-service/        # Código fuente V, binarios y mod
+├── dist/                 # Artefacto productivo optimizado para despliegue AOT
+├── docs/                 # Documentación técnica, manuales y auditorías de UI/Shell
+│   ├── audits/           # Reportes de auditoría UI y shell
+│   ├── specs/            # Especificaciones y memorias de arquitectura
+│   └── PRODUCTION_RUNBOOK.md # Manual de operaciones en producción
+├── ops/                  # Herramientas de despliegue y configuración de producción
+│   ├── Deploy-Buyniverse.ps1 # Script de despliegue en Spaceship / LiteSpeed
+│   ├── buyniverse-runtime.example.php # Plantilla de runtime productivo con MySQL
+│   └── migrations/       # Esquema de base de datos y migraciones SQL
+├── reference/            # Implementación de referencia (React + TypeScript / Odoo)
+├── tools/                # Herramientas de generación de video lifecycle
+├── archive/              # Paquetes históricos consolidados y perfiles de prueba
+└── scripts/              # Suite de pruebas QA, auditoría profunda y build AOT
+`
+
+## Ejecución y Desarrollo Local
+
+Servidor local ligero en Python (sin requerir dependencias pesadas):
+`powershell
 uv run serve.py --port 4178
-```
+`
+Abre http://127.0.0.1:4178/buyniverse_vue/.
 
-Abre `http://127.0.0.1:4178/buyniverse_vue/`. El servidor resuelve desde `C:\git\websites`, pero su allowlist expone únicamente esta aplicación y los dos scripts compartidos requeridos de `/lib/`; no lista carpetas ni sirve proyectos vecinos.
+## Suite de Calidad y Pruebas (QA)
 
-El CSP conserva `unsafe-eval` y estilos inline porque son requisitos técnicos del compilador SFC y de UnoCSS en runtime. Para producción pública, la siguiente evolución debe precompilar SFC/CSS, eliminar esas excepciones y trasladar autenticación, autorización y validación de negocio a una API.
-
-## Operación diaria
-
-- `Ctrl+K` abre acceso rápido a vistas y objetos permitidos para la cuenta activa.
-- El dashboard conserva accesos recientes por cuenta y ofrece acciones frecuentes.
-- El estado muestra cuándo está guardado; proyectos, documentos fiscales y solicitudes recuperan borradores efímeros tras un refresh.
-- El menú de cuenta permite bloquear la pantalla y también se bloquea tras 15 minutos sin actividad.
-- La variante actual es una demo endurecida con aislamiento multiempresa, no una arquitectura bancaria certificada completa; consulta `SECURITY.md` y `docs/MULTITENANCY.md` para el límite y la ruta de producción.
-
-## QA opcional
-
-La aplicación no necesita Bun. Si está disponible, se usa únicamente para auditoría estática:
-
-```powershell
+`powershell
+# Auditoría general de componentes, rutas, seguridad e i18n
 bun scripts/qa.js
-```
 
-El QA comprueba rutas, sintaxis SFC, relaciones demo, CSP/SRI, sinks DOM, redacción de secretos, prototype pollution, CSV injection, uploads, guardas de acceso y cobertura interactiva de formularios obligatorios. El detalle del modelo de seguridad está en `SECURITY.md`.
+# Auditoría profunda de sintaxis y referencias
+bun scripts/qa/deepReview.js
+
+# Verificación de ciclo completo de compras y subastas
+bun scripts/qa/fullProcurementLifecycle.js
+bun scripts/qa/e2eSimulation.js
+`
+
+## Compilación y Despliegue Productivo
+
+Para compilar el bundle AOT y desplegar en producción:
+`powershell
+# 1. Compilación AOT de estilos y artefacto dist/
+node scripts/build_dist.js
+
+# 2. Despliegue con cero tiempo de inactividad a Spaceship
+powershell -ExecutionPolicy Bypass -File ops/Deploy-Buyniverse.ps1
+`
+
+Consulta docs/PRODUCTION_RUNBOOK.md para el manual operativo completo.

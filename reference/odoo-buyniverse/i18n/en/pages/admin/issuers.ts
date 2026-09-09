@@ -1,0 +1,30 @@
+export default {
+    "title": "Issuers Management",
+    "add": "Add Issuer",
+    "headers": {
+        "name": "Name",
+        "rfc": "RFC",
+        "taxRegime": "Tax Regime",
+        "branches": "Branches",
+    },
+    "form": {
+        "createTitle": "Create New Issuer",
+        "editTitle": "Edit Issuer",
+        "details": "Issuer Details",
+        "name": "Full Name or Company Name",
+        "rfc": "Tax ID (RFC)",
+        "taxRegime": "Tax Regime",
+        "branches": "Branches (Places of Issuance)",
+        "addBranch": "Add Branch",
+        "csdTitle": "Digital Seal Certificates (CSD)",
+        "securityWarning": "Security Warning",
+        "securityMessage": "Private keys and passwords should be stored and managed securely on the backend. This interface is for simulation purposes only.",
+        "certFile": "Certificate File (.cer)",
+        "keyFile": "Private Key File (.key)",
+        "password": "Private Key Password",
+        "pacTitle": "Stamping Provider (PAC)",
+        "pacProvider": "Provider Name",
+        "pacUser": "API User",
+        "pacApiKey": "API Key",
+    }
+}

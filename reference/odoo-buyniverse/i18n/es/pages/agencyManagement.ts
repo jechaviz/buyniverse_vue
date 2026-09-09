@@ -1,0 +1,21 @@
+export default {
+    "createTitle": "Crea Tu Agencia",
+    "createDesc": "Comienza dándole un nombre a tu agencia. Puedes completar el resto de los detalles más tarde.",
+    "name": "Nombre de la Agencia",
+    "namePlaceholder": "Ej: Pixel Perfect Inc.",
+    "tagline": "Lema",
+    "taglinePlaceholder": "Ej: Creando Experiencias Digitales",
+    "createButton": "Crear Agencia",
+    "manageTitle": "Gestionar Agencia",
+    "profile": "Perfil de la Agencia",
+    "editProfile": "Editar Perfil",
+    "saveChanges": "Guardar Cambios",
+    "location": "Ubicación",
+    "logoUrl": "URL del Logo",
+    "bio": "Biografía",
+    "genBio": "Generar Biografía con IA",
+    "genBioPlaceholder": "Ej: una agencia de diseño web enfocada en e-commerce",
+    "genBioFailed": "Error al generar la biografía.",
+    "teamMembers": "Miembros del Equipo",
+    "teamMembersSoon": "La gestión de miembros del equipo llegará pronto."
+}

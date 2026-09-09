@@ -1,0 +1,93 @@
+export default {
+    "title": "Payment Receipts",
+    "add": "New Payment",
+    "headers": {
+        "folio": "Folio",
+        "date": "Payment Date",
+        "receiver": "Client",
+        "amount": "Amount",
+        "status": "Status",
+        "uuid": "UUID",
+        "actions": "Actions"
+    },
+    "stats": {
+        "totalCollected": "Total Collected",
+        "last30days": "Last 30 days"
+    },
+    "statuses": {
+        "vigente": "Active",
+        "cancelado": "Cancelled"
+    },
+    "form": {
+        "createTitle": "New Payment Receipt",
+        "editTitle": "Edit Payment Receipt",
+        "issuerReceiver": "Issuer & Receiver",
+        "issuer": "Issuer (Who receives the payment)",
+        "receiver": "Receiver (Who makes the payment)",
+        "paymentDetails": "Payment Details",
+        "additionalInfo": "Additional Payment Information",
+        "relatedDocs": "Related Documents",
+        "paymentTaxes": "Payment Taxes",
+        "totals": "Payment Totals",
+        "options": "Options",
+        "paymentDate": "Payment Date",
+        "paymentType": "Payment Method",
+        "currency": "Payment Currency",
+        "amount": "Payment Amount",
+        "exchangeRate": "Exchange Rate P",
+        "exchangeRateTooltip": "The exchange rate on the day the payment is received. Required if payment currency is not MXN.",
+        "numOperacion": "Operation Number",
+        "ctaOrdenante": "Payer Account",
+        "ctaBeneficiario": "Beneficiary Account",
+        "rfcEmisorCtaOrd": "Payer's Bank RFC",
+        "nomBancoOrdExt": "Payer's Foreign Bank Name",
+        "rfcEmisorCtaBen": "Beneficiary's Bank RFC",
+        "ctaOrdenanteTooltip": "The account from which the payment was made.",
+        "ctaBeneficiarioTooltip": "The account that received the payment.",
+        "rfcEmisorCtaOrdTooltip": "RFC of the bank that manages the payer's account.",
+        "nomBancoOrdExtTooltip": "Name of the foreign bank if the transfer was international.",
+        "rfcEmisorCtaBenTooltip": "RFC of the bank that manages the beneficiary's account.",
+        "selectPpdInvoices": "Select PPD invoices to apply payment to...",
+        "noPpdInvoices": "This client has no pending PPD invoices.",
+        "relatedInvoice": "Related Invoice",
+        "invoiceInfo": "Folio {{folio}} ({{uuid}})",
+        "prevBalance": "Previous Balance",
+        "amountToApply": "Amount to Apply ({{currency}})",
+        "amountPaidInDocCurrency": "Equals to {{amount}} {{currency}}",
+        "newBalance": "New Balance",
+        "paymentNumber": "Installment #",
+        "addInvoice": "Add Invoice",
+        "equivalenciaDR": "Equivalencia DR",
+        "equivalenciaDRTooltip": "Required if payment and invoice currencies differ. It's the number of units of the invoice currency for one unit of the payment currency.",
+        "financials": "Financials",
+        "impPagado": "Amount Paid",
+        "impSaldoInsoluto": "New Balance",
+        "validation": {
+            "amountMismatch": "The Payment Amount must equal the sum of the amounts paid in the related documents.",
+            "overpayment": "Amount to pay cannot be greater than the invoice's previous balance.",
+            "equivalenciaRequired": "Equivalencia DR is required when currencies are different."
+        },
+        "taxSections": {
+            "original": "Original Invoice Taxes (DR)",
+            "payment": "Taxes for this Payment (P)",
+            "type": "Type",
+            "rate": "Rate",
+            "base": "Base",
+            "amount": "Amount"
+        },
+        "totalsSection": {
+            "title": "Payment Tax Summary",
+            "montoTotalPagos": "Total Payment Amount",
+            "totalRetencionesIVA": "Total VAT Retentions",
+            "totalRetencionesISR": "Total ISR Retentions",
+            "totalRetencionesIEPS": "Total IEPS Retentions",
+            "totalTrasladosBaseIVA16": "Total Transfers Base VAT 16%",
+            "totalTrasladosImpuestoIVA16": "Total Transfers Tax VAT 16%",
+            "totalTrasladosBaseIVA8": "Total Transfers Base VAT 8%",
+            "totalTrasladosImpuestoIVA8": "Total Transfers Tax VAT 8%",
+            "totalTrasladosBaseIVA0": "Total Transfers Base VAT 0%",
+            "totalTrasladosImpuestoIVA0": "Total Transfers Tax VAT 0%",
+            "totalTrasladosBaseIVAExento": "Total Transfers Base VAT Exempt"
+        }
+    }
+}

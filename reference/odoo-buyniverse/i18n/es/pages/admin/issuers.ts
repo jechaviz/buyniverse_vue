@@ -1,0 +1,30 @@
+export default {
+    "title": "Gestión de Emisores",
+    "add": "Añadir Emisor",
+    "headers": {
+        "name": "Nombre",
+        "rfc": "RFC",
+        "taxRegime": "Régimen Fiscal",
+        "branches": "Sucursales",
+    },
+    "form": {
+        "createTitle": "Crear Nuevo Emisor",
+        "editTitle": "Editar Emisor",
+        "details": "Detalles del Emisor",
+        "name": "Nombre o Razón Social",
+        "rfc": "RFC",
+        "taxRegime": "Régimen Fiscal",
+        "branches": "Sucursales (Lugares de Expedición)",
+        "addBranch": "Añadir Sucursal",
+        "csdTitle": "Certificados de Sello Digital (CSD)",
+        "securityWarning": "Advertencia de Seguridad",
+        "securityMessage": "Las claves privadas y contraseñas deben ser almacenadas y manejadas de forma segura en el backend. Esta interfaz es solo para fines de simulación.",
+        "certFile": "Archivo de Certificado (.cer)",
+        "keyFile": "Archivo de Clave Privada (.key)",
+        "password": "Contraseña de Clave Privada",
+        "pacTitle": "Proveedor de Timbrado (PAC)",
+        "pacProvider": "Nombre del Proveedor",
+        "pacUser": "Usuario API",
+        "pacApiKey": "Clave API",
+    }
+}
