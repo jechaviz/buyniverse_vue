@@ -112,11 +112,19 @@
 
   function addCurrency(bucket, currency, values) {
     const key = currency || "USD";
-    if (!bucket[key]) bucket[key] = { currency: key, budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0 };
+    if (!bucket[key]) bucket[key] = { currency: key, budget: 0, bestFirst: 0, bestFinal: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0 };
     const target = bucket[key];
     ["budget", "financialSavings", "buyniverseSavings", "totalSavings", "outcomeShare", "netSavings"].forEach((field) => {
       target[field] = rounded(target[field] + (Number(values[field]) || 0));
     });
+    // The waterfall reads budget -> best first offer -> best final offer, so the
+    // offer levels have to aggregate alongside the savings. An auction with no
+    // offers yet contributes its own budget at each step, which keeps every
+    // step-to-step delta equal to the savings totals summed just above.
+    const first = values.bestFirst === null || values.bestFirst === undefined ? values.budget : values.bestFirst;
+    const final = values.bestFinal === null || values.bestFinal === undefined ? first : values.bestFinal;
+    target.bestFirst = rounded(target.bestFirst + (Number(first) || 0));
+    target.bestFinal = rounded(target.bestFinal + (Number(final) || 0));
     target.auctions += 1;
     if (values.state === "realized") target.realizedAuctions += 1;
     else target.liveAuctions += 1;
@@ -134,7 +142,7 @@
     models.forEach((model) => addCurrency(byCurrency, model.currency, model));
     const currencies = Object.values(byCurrency);
     const primary = currencies.sort((left, right) => right.totalSavings - left.totalSavings)[0] || {
-      currency: options.currency || "USD", budget: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0,
+      currency: options.currency || "USD", budget: 0, bestFirst: 0, bestFinal: 0, financialSavings: 0, buyniverseSavings: 0, totalSavings: 0, outcomeShare: 0, netSavings: 0, auctions: 0, realizedAuctions: 0, liveAuctions: 0,
     };
     primary.successFeeRate = Math.min(100, Math.max(0, rate || 0));
     primary.successFeeBasis = successFeeBasis;
