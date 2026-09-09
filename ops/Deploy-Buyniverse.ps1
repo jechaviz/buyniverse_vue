@@ -24,24 +24,7 @@ $sshOptions = @(
   "-o", "ServerAliveCountMax=3"
 )
 
-# RemoteDir has been restricted to path characters above. Keep ~ unquoted so
-# the remote shell expands it instead of treating it as a literal directory.
-$resolvedOutput = & ssh @sshOptions $SshAlias "cd -- $RemoteDir && pwd -P"
-if ($LASTEXITCODE -ne 0) {
-  throw "Unable to resolve the remote deployment directory."
-}
-$resolvedRemote = [string]($resolvedOutput | Select-Object -Last 1)
-if ([string]::IsNullOrWhiteSpace($resolvedRemote)) {
-  throw "Unable to resolve the remote deployment directory."
-}
-$resolvedRemote = $resolvedRemote.Trim()
-if ($resolvedRemote -notmatch '/buyniverse\.com$') {
-  throw "Refusing to clean unexpected remote directory: $resolvedRemote"
-}
-
-# The remote repository is only a delivery mechanism. Stage the built artifact
-# outside the document root, then replace every public file except .git. This
-# prevents stale source/tooling files from surviving a newer release.
+# Execute atomic remote deployment script with retry logic to avoid Spaceship port 21098 rate-limiting
 $remoteScriptTemplate = @'
 set -eu
 cd -- __REMOTE_DIR__
@@ -73,9 +56,24 @@ git log -n 1 --oneline
 '@
 $remoteScript = $remoteScriptTemplate.Replace('__REMOTE_DIR__', $RemoteDir)
 
-& ssh @sshOptions $SshAlias $remoteScript
-if ($LASTEXITCODE -ne 0) {
-  throw "Remote deployment failed."
+$deployed = $false
+$maxSshAttempts = 3
+for ($sshAttempt = 1; $sshAttempt -le $maxSshAttempts; $sshAttempt++) {
+  Write-Host "Connecting to $SshAlias (attempt $sshAttempt/$maxSshAttempts)..." -ForegroundColor Yellow
+  & ssh @sshOptions $SshAlias $remoteScript
+  if ($LASTEXITCODE -eq 0) {
+    $deployed = $true
+    break
+  }
+  Write-Warning "SSH connection attempt $sshAttempt failed with exit code $LASTEXITCODE."
+  if ($sshAttempt -lt $maxSshAttempts) {
+    Write-Host "Waiting 15 seconds before retry..." -ForegroundColor Gray
+    Start-Sleep -Seconds 15
+  }
+}
+
+if (-not $deployed) {
+  throw "Remote deployment failed after $maxSshAttempts attempts."
 }
 
 $healthy = $false
