@@ -11,3 +11,4 @@ backend/v-service/*.pdb
 archive/*.zip
 archive/*.tar.gz
 archive/browser_profiles/
+tools/lifecycle-video/renders/*.mp4
