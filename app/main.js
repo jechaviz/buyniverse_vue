@@ -423,9 +423,16 @@ const applyRemoteWorkspace = (remote) => {
     : productionWorkspaceState(ui.tenantContext);
   replaceWorkspaceState(remote?.state || fallback, ui.tenantContext);
 };
+const canPersistRemotely = () => Boolean(
+  remoteReady &&
+  remoteWorkspace &&
+  runtimeMode.value === "production" &&
+  ui.tenantContext &&
+  ui.workspaceAccess === "ready"
+);
 const persistState = async () => {
   window.clearTimeout(persistenceTimer);
-  if (!remoteReady || !remoteWorkspace) return false;
+  if (!canPersistRemotely()) return false;
   ui.saveState = "saving";
   try {
     const snapshot = JSON.parse(JSON.stringify(state));
@@ -441,7 +448,7 @@ const persistState = async () => {
 watch(
   state,
   () => {
-    if (remoteHydrating || !remoteReady) return;
+    if (remoteHydrating || !canPersistRemotely()) return;
     ui.saveState = "saving";
     window.clearTimeout(persistenceTimer);
     persistenceTimer = window.setTimeout(() => { void persistState(); }, 550);
@@ -465,8 +472,8 @@ const hydrateRemoteWorkspace = async () => {
       ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
       window.dispatchEvent(new Event("buyniverse:workspace-hydrated"));
     } else if (runtimeMode.value === "demo") {
+      remoteReady = false;
       applyRemoteWorkspace({ state: window.BuyniverseDemo.clone(), context: null, mode: "demo" });
-      remoteReady = true;
       ui.saveState = "demo";
       ui.workspaceAccess = "demo";
     } else {
@@ -475,6 +482,7 @@ const hydrateRemoteWorkspace = async () => {
       ui.workspaceAccess = "guest";
     }
   } catch (error) {
+    remoteReady = false;
     if (runtimeMode.value === "demo") {
       applyRemoteWorkspace({ state: window.BuyniverseDemo.clone(), context: null, mode: "demo" });
       ui.saveState = "demo";

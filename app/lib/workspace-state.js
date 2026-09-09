@@ -48,13 +48,16 @@
     });
   }
 
+  var isAuthenticated = false;
+
   function load() {
     return request("GET").then(function (body) {
       csrf = typeof body.csrf === "string" ? body.csrf : "";
       version = Number.isSafeInteger(body.version) && body.version >= 0 ? body.version : 0;
       var hasContext = Boolean(body.context && typeof body.context === "object");
+      isAuthenticated = body.authenticated !== false && hasContext;
       return {
-        authenticated: body.authenticated !== false && hasContext,
+        authenticated: isAuthenticated,
         state: body.state || null,
         version: version,
         mode: body.mode === "demo" ? "demo" : "production",
@@ -64,6 +67,9 @@
   }
 
   function save(state) {
+    if (!isAuthenticated) {
+      return Promise.resolve({ version: version, savedAt: new Date().toISOString(), context: null });
+    }
     return request("PUT", { state: state, version: version }).then(function (body) {
       csrf = typeof body.csrf === "string" ? body.csrf : csrf;
       version = Number.isSafeInteger(body.version) && body.version >= 0 ? body.version : version;
