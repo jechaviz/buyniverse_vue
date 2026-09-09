@@ -457,22 +457,31 @@ const hydrateRemoteWorkspace = async () => {
   }
   try {
     const remote = await remoteWorkspace.load();
-    applyRemoteWorkspace(remote);
-    remoteReady = true;
-    ui.saveState = "saved";
-    ui.workspaceAccess = runtimeMode.value === "demo" ? "demo" : "ready";
-    ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
-    window.dispatchEvent(new Event("buyniverse:workspace-hydrated"));
+    if (remote.authenticated && remote.context) {
+      applyRemoteWorkspace(remote);
+      remoteReady = true;
+      ui.saveState = "saved";
+      ui.workspaceAccess = runtimeMode.value === "demo" ? "demo" : "ready";
+      ui.lastSavedAt = remote.state ? new Date().toISOString() : null;
+      window.dispatchEvent(new Event("buyniverse:workspace-hydrated"));
+    } else if (runtimeMode.value === "demo") {
+      applyRemoteWorkspace({ state: window.BuyniverseDemo.clone(), context: null, mode: "demo" });
+      remoteReady = true;
+      ui.saveState = "demo";
+      ui.workspaceAccess = "demo";
+    } else {
+      remoteReady = false;
+      ui.saveState = "saved";
+      ui.workspaceAccess = "guest";
+    }
   } catch (error) {
     if (runtimeMode.value === "demo") {
       applyRemoteWorkspace({ state: window.BuyniverseDemo.clone(), context: null, mode: "demo" });
       ui.saveState = "demo";
       ui.workspaceAccess = "demo";
     } else {
-      // Production never falls back to browser demo data. The root route will
-      // present only configured identity options when the server denies access.
-      ui.saveState = "error";
-      ui.workspaceAccess = Number(error?.status) === 401 ? "identity-required" : "unavailable";
+      ui.saveState = Number(error?.status) === 401 ? "saved" : "error";
+      ui.workspaceAccess = Number(error?.status) === 401 ? "guest" : "unavailable";
     }
   } finally {
     remoteHydrating = false;
@@ -525,10 +534,14 @@ window.setTimeout(revealApp, 5000);
 const startApplication = async () => {
   await initializeRuntime();
   await hydrateRemoteWorkspace();
+  const currentPath = router.currentRoute.value.path;
+  const isPublic = window.BuyniverseRouter?.isPublicRoute
+    ? window.BuyniverseRouter.isPublicRoute(currentPath)
+    : (currentPath === "/" || currentPath.startsWith("/procurement/auction") || currentPath.startsWith("/procurement/sourcing"));
   if (
     runtimeMode.value !== "demo" &&
     ui.workspaceAccess === "identity-required" &&
-    router.currentRoute.value.path !== "/" &&
+    !isPublic &&
     !router.currentRoute.value.meta.onboarding
   ) {
     await router.replace({

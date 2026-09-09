@@ -52,7 +52,14 @@
     return request("GET").then(function (body) {
       csrf = typeof body.csrf === "string" ? body.csrf : "";
       version = Number.isSafeInteger(body.version) && body.version >= 0 ? body.version : 0;
-      return { state: body.state || null, version: version, mode: body.mode === "demo" ? "demo" : "production", context: body.context || null };
+      var hasContext = Boolean(body.context && typeof body.context === "object");
+      return {
+        authenticated: body.authenticated !== false && hasContext,
+        state: body.state || null,
+        version: version,
+        mode: body.mode === "demo" ? "demo" : "production",
+        context: body.context || null,
+      };
     });
   }
 

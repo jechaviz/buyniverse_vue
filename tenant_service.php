@@ -138,6 +138,11 @@ function tenant_principal_has_membership(PDO $pdo, string $principalId): bool {
     $membership->execute([$principalId]);
     return (bool) $membership->fetchColumn();
 }
+function tenant_has_authenticated_principal(array $config): bool {
+    $identity = $_SESSION['buyniverse_identity'] ?? null;
+    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps','google_oidc','facebook_oauth'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) return true;
+    return workspace_mode($config) === 'demo' && ($config['allow_demo_workspace_state'] ?? false) === true;
+}
 function tenant_principal(PDO $pdo, array $config, array $session, string $key): array {
     $identity = $_SESSION['buyniverse_identity'] ?? null;
     if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps','google_oidc','facebook_oauth'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) {

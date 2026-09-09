@@ -1,6 +1,13 @@
 (function (global) {
   "use strict";
 
+  function isPublicRoute(path) {
+    if (path === "/" || path.startsWith("/procurement/auction") || path.startsWith("/procurement/sourcing")) return true;
+    if (path === "/find-talent" || path === "/browse-services") return true;
+    if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
+    return false;
+  }
+
   function createAppRouter(store, state, runtimeMode, clean, load) {
     const { createRouter, createWebHistory, createWebHashHistory } = VueRouter;
 
@@ -88,13 +95,6 @@
       routes,
       scrollBehavior: () => ({ top: 0 }),
     });
-
-    function isPublicRoute(path) {
-      if (path === "/" || path.startsWith("/procurement/auction") || path.startsWith("/procurement/sourcing")) return true;
-      if (path === "/find-talent" || path === "/browse-services") return true;
-      if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
-      return false;
-    }
 
     router.beforeEach((to) => {
       if (!store.currentUser.value) {
@@ -230,5 +230,5 @@
     return router;
   }
 
-  global.BuyniverseRouter = { createAppRouter };
+  global.BuyniverseRouter = { createAppRouter, isPublicRoute };
 })(typeof window !== "undefined" ? window : globalThis);

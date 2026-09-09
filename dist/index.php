@@ -512,10 +512,12 @@ if ($uri === '/api/v1/workspace-state' || $uri === '/api/v1/workspace-state/') {
     $config = workspace_config(); $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
     if (!in_array($method, ['GET','PUT','DELETE'], true)) fail_response(405, 'Method not allowed');
     if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 786432) fail_response(413, 'Request body too large');
-    $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
+    $session = workspace_session();
+    if ($method === 'GET' && !tenant_has_authenticated_principal($config))
+        workspace_json(['authenticated'=>false, 'state'=>null, 'version'=>0, 'csrf'=>$session['csrf'], 'mode'=>workspace_mode($config), 'context'=>null]);
+    $pdo = workspace_pdo($config); $key = workspace_key($config);
     try {
-        $context = tenant_context($pdo, $config, $session, $key);
-        $scopeHash = (string) $context['contextHash']; $aad = 'buyniverse-workspace-v2|' . $scopeHash;
+        $context = tenant_context($pdo, $config, $session, $key); $scopeHash = (string) $context['contextHash']; $aad = 'buyniverse-workspace-v2|' . $scopeHash;
         if ($method !== 'GET') {
             if (!tenant_header_origin_is_safe() || !hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'workspace-state-v1') fail_response(403, 'Request verification failed');
             $lastWrite = (float) ($_SESSION['workspace_last_write'] ?? 0);
