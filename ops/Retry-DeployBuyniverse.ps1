@@ -11,7 +11,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$deployScript = 'C:\git\webhacks\spaceship\scripts\Deploy-Buyniverse.ps1'
+$deployScript = Join-Path $PSScriptRoot 'Deploy-Buyniverse.ps1'
+if (-not (Test-Path -LiteralPath $deployScript)) {
+  $deployScript = 'C:\git\webhacks\spaceship\scripts\Deploy-Buyniverse.ps1'
+}
 $logPath = Join-Path ([System.IO.Path]::GetTempPath()) 'buyniverse-deploy-retry.log'
 
 function Write-RetryLog {
