@@ -69,6 +69,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "/buyniverse_vue/profile",
             "/buyniverse_vue/agency",
             "/buyniverse_vue/contract",
+            "/buyniverse_vue/marketplace",
             "/buyniverse_vue/find-talent",
             "/buyniverse_vue/find-work",
             "/buyniverse_vue/saved-jobs",
@@ -80,8 +81,11 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             return True
         if raw_path.startswith("/buyniverse_vue/app/"):
             return PurePosixPath(raw_path).suffix.lower() in {".js", ".vue", ".css"}
+        if raw_path.startswith("/buyniverse_vue/assets/vendor/"):
+            # Vendored runtime modules (three.js) are imported lazily by the app.
+            return PurePosixPath(raw_path).suffix.lower() == ".js"
         if raw_path.startswith("/buyniverse_vue/assets/"):
-            return PurePosixPath(raw_path).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".svg", ".json"}
+            return PurePosixPath(raw_path).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".svg", ".json", ".mp4", ".webm"}
         return raw_path in {"/lib/web-common/browser.js", "/lib/procurement-common/browser.js"}
 
     def _reject_untrusted(self) -> bool:
@@ -118,6 +122,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "/buyniverse_vue/profile",
             "/buyniverse_vue/agency",
             "/buyniverse_vue/contract",
+            "/buyniverse_vue/marketplace",
             "/buyniverse_vue/find-talent",
             "/buyniverse_vue/find-work",
             "/buyniverse_vue/saved-jobs",

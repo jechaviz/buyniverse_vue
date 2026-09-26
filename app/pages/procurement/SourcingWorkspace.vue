@@ -204,7 +204,7 @@ const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const DataTable = load("./app/components/DataTable.vue?v=27");
-const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=3");
+const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=4");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
 const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
@@ -236,7 +236,14 @@ export default {
     const supplierSearch = ref(""), awardSupplierId = ref(""), awardReason = ref("");
     const wizardOpen = ref(route.query.new === "1");
     const wizardStep = ref(route.query.new === "1" && [0, 1, 2].includes(Number(route.query.step)) ? Number(route.query.step) : 0);
-    const wizard = ref(freshWizard()), wizardForm = ref(null), wizardError = ref("");
+    // Suppliers short-listed in the public marketplace arrive as ?suppliers=a,b.
+    // Only known supplier ids survive, and the create step still re-validates
+    // them, so the query string can pre-fill the wizard but never widen access.
+    const preselectedSuppliers = () => {
+      const known = new Set((store.state.suppliers || []).map((item) => item.id));
+      return String(route.query.suppliers || "").split(",").map((id) => id.trim()).filter((id) => known.has(id)).slice(0, 50);
+    };
+    const wizard = ref({ ...freshWizard(), suppliers: preselectedSuppliers() }), wizardForm = ref(null), wizardError = ref("");
 
     const columns = [
       { key: "id", label: "Round", width: 135 },

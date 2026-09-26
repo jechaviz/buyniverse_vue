@@ -30,9 +30,10 @@
             v-for="(step, index) in steps"
             :key="step"
             class="rounded-lg border px-3 py-2 text-xs font-bold"
+            :style="currentStep === index ? selectedTint : null"
             :class="
               currentStep === index
-                ? 'border-brand bg-brand-50 text-brand dark:bg-brand/10'
+                ? 'border-brand text-brand'
                 : currentStep > index
                   ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10'
                   : 'border-slate-200 text-slate-400 dark:border-slate-700'
@@ -96,7 +97,8 @@
               :key="supplier.id"
               type="button"
               class="flex items-center justify-between rounded-xl border p-4 text-left"
-              :class="modelValue.suppliers.includes(supplier.id) ? 'border-brand bg-brand-50 dark:bg-brand/10' : 'border-slate-200/70 dark:border-slate-700'"
+              :class="modelValue.suppliers.includes(supplier.id) ? 'border-brand' : 'border-slate-200/70 dark:border-slate-700'"
+              :style="modelValue.suppliers.includes(supplier.id) ? selectedTint : null"
               @click="$emit('toggle-supplier', supplier.id)"
             >
               <span>
@@ -186,5 +188,11 @@ export default {
     formatMoney: Function,
   },
   emits: ["close", "prev", "next", "submit", "toggle-supplier"],
+  setup() {
+    // A translucent tint of the active accent reads on both themes. The old
+    // bg-brand-50 + dark:bg-brand/10 pair depended on the utility runtime's
+    // cascade order; when the light rule won, white text sat on lavender.
+    return { selectedTint: { background: "color-mix(in srgb, var(--accent) 16%, transparent)" } };
+  },
 };
 </script>

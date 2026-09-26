@@ -395,6 +395,23 @@ export default {
       }
       if (path === "/" && route.query.view === "saved")
         return [item("Find work", "/"), item("Saved jobs")];
+      if (path === "/marketplace")
+        return [item("Home", "/"), item("Find suppliers")];
+      if (path.startsWith("/marketplace/supplier/")) {
+        const market = window.BuyniverseMarketplace;
+        const profile = market ? market.profiles(store.state).find((entry) => entry.id === route.params.supplierId) : null;
+        // "Find suppliers" keeps the finder's query so the trail leads back to
+        // the exact result set; the taxonomy crumbs re-filter the market.
+        const back = { ...route.query };
+        delete back.tab;
+        if (!profile) return [item("Home", "/"), item("Find suppliers", { path: "/marketplace", query: back }), item("Supplier")];
+        return [
+          item("Find suppliers", { path: "/marketplace", query: back }),
+          item(profile.sectorLabel, { path: "/marketplace", query: { sector: profile.sector } }),
+          item(profile.categoryLabel, { path: "/marketplace", query: { sector: profile.sector, category: profile.category } }),
+          item(profile.name),
+        ];
+      }
       return crumbs;
     });
     return { store, items };

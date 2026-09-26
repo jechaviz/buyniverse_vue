@@ -9,7 +9,7 @@
 
     <!-- 1. FULL-BLEED PUBLIC LANDING PAGE LAYOUT -->
     <div v-if="isLanding" class="flex-1 flex flex-col min-h-screen">
-      <AppPublicNavbar
+      <BnNavbar
         :locale="locale"
         :dark="dark"
         @set-locale="setLocale"
@@ -17,10 +17,12 @@
         @open-auth="openAuth"
         @launch-demo="launchDemo"
       />
-      <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" tabindex="-1">
+      <!-- Marketplace experience pages lay out their own full-bleed sections;
+           the remaining public pages keep the contained reading column. -->
+      <main id="main-content" :class="route.meta.experience ? 'flex-1 w-full' : 'flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12'" tabindex="-1">
         <RouterView :key="route.path" />
       </main>
-      <AppPublicFooter />
+      <BnFooter />
     </div>
 
     <!-- 2. SOCIAL ONBOARDING DEDICATED SHELL -->
@@ -104,16 +106,16 @@ const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = V
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
-const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=4");
+const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=5");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
-const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=3");
+const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=4");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
-const AppPublicNavbar = load("./app/components/layout/AppPublicNavbar.vue?v=3");
-const AppPublicFooter = load("./app/components/layout/AppPublicFooter.vue?v=2");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=1");
+const BnFooter = load("./app/experience/BnFooter.vue?v=1");
 const AuthModal = load("./app/components/AuthModal.vue?v=6");
 
 export default {
-  components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, AppPublicNavbar, AppPublicFooter, AuthModal },
+  components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const collapsed = ref(false), mobileOpen = ref(false);
@@ -165,6 +167,7 @@ export default {
     };
 
     const accents = [
+      { key: "cosmos", label: "Cosmos", accent: "#6d4aff", deep: "#5a37f0", soft: "#f3efff", pale: "#e6ddff" },
       { key: "red", label: "Red", accent: "#e5484d", deep: "#c9363c", soft: "#fff1f1", pale: "#ffe3e3" },
       { key: "violet", label: "Violet", accent: "#7c3aed", deep: "#6d28d9", soft: "#f5f3ff", pale: "#ede9fe" },
       { key: "blue", label: "Blue", accent: "#2563eb", deep: "#1d4ed8", soft: "#eff6ff", pale: "#dbeafe" },
@@ -180,8 +183,8 @@ export default {
       document.documentElement.style.setProperty("--accent-pale", opt.pale);
     };
 
-    const savedAccent = preference.read("buyniverse-vue-accent", "red");
-    const accent = ref(accents.some((x) => x.key === savedAccent) ? savedAccent : "red");
+    const savedAccent = preference.read("buyniverse-vue-accent", "cosmos");
+    const accent = ref(accents.some((x) => x.key === savedAccent) ? savedAccent : "cosmos");
     applyAccent(accents.find((x) => x.key === accent.value));
     const currentAccent = computed(() => accents.find((x) => x.key === accent.value) || accents[0]);
 

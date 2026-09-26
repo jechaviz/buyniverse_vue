@@ -4,6 +4,7 @@
   function isPublicRoute(path) {
     if (path === "/" || path.startsWith("/procurement/auction") || path.startsWith("/procurement/sourcing")) return true;
     if (path === "/find-talent" || path === "/browse-services") return true;
+    if (path === "/marketplace" || path.startsWith("/marketplace/")) return true;
     if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
     return false;
   }
@@ -13,7 +14,9 @@
 
     // Page Components
     const Dashboard = load("./app/pages/DashboardPage.vue?v=34");
-    const Home = load("./app/pages/HomePage.vue?v=32");
+    const Home = load("./app/pages/HomePage.vue?v=40");
+    const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=1");
+    const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=1");
     const Workspace = load("./app/pages/WorkspacePage.vue?v=57");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
     const Detail = load("./app/pages/DetailPage.vue?v=36");
@@ -29,7 +32,7 @@
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=40");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=2");
-    const Procurement = load("./app/pages/ProcurementPage.vue?v=32");
+    const Procurement = load("./app/pages/ProcurementPage.vue?v=33");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=2");
 
     const NotFound = {
@@ -39,9 +42,11 @@
 
     const r = (path, component, meta = {}) => ({ path, component, meta });
     const routes = [
-      r("/", Home),
+      r("/", Home, { experience: true }),
       r("/onboarding", Onboarding, { onboarding: true }),
-      r("/find-work", Home, { modes: ["supplier"] }),
+      r("/marketplace", SupplierMarket, { experience: true }),
+      r("/marketplace/supplier/:supplierId", SupplierProfile, { experience: true }),
+      r("/find-work", Home, { modes: ["supplier"], experience: true }),
       r("/dashboard/:section?", Dashboard, { view: "dashboard", to: "/dashboard/timesheets" }),
       r("/clients", Workspace, { kind: "clients", modes: ["supplier", "admin"] }),
       r("/suppliers", Workspace, { kind: "suppliers", modes: ["buyer", "admin"] }),
@@ -93,7 +98,10 @@
     const router = createRouter({
       history: routerHistory,
       routes,
-      scrollBehavior: () => ({ top: 0 }),
+      // Filters, tabs and shortlists live in the query string. Changing them
+      // must not throw the reader back to the top; only a new page does, and
+      // browser back/forward restores where they were.
+      scrollBehavior: (to, from, saved) => saved || (to.path === from.path ? false : { top: 0 }),
     });
 
     router.beforeEach((to) => {

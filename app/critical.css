@@ -1,9 +1,9 @@
 /* Buyniverse Critical Layout & Anti-FOUC Stylesheet */
 :root {
-  --accent: #e5484d;
-  --accent-deep: #c9363c;
-  --accent-soft: #fff1f1;
-  --accent-pale: #ffe3e3;
+  --accent: #6d4aff;
+  --accent-deep: #5a37f0;
+  --accent-soft: #f3efff;
+  --accent-pale: #e6ddff;
   --font-sans: "Plus Jakarta Sans", "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-head: "Plus Jakarta Sans", "Manrope", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;

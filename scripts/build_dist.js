@@ -126,15 +126,15 @@ async function build() {
       theme: {
         colors: {
           brand: {
-            DEFAULT: "#e5484d",
-            50: "#fff1f1",
-            100: "#ffe3e3",
-            200: "#ffc9c9",
+            DEFAULT: "#6d4aff",
+            50: "#f3efff",
+            100: "#e6ddff",
+            200: "#d2c4ff",
             300: "#fca5a5",
             400: "#f87171",
-            500: "#e5484d",
-            600: "#c9363c",
-            700: "#a52b30",
+            500: "#6d4aff",
+            600: "#5a37f0",
+            700: "#4424c9",
             800: "#991b1b",
             900: "#7f1d1d",
             950: "#450a0a"

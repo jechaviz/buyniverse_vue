@@ -5,13 +5,13 @@
     dark: 'class',
     theme: {
       colors: {
-        brand: { DEFAULT: '#e5484d', 50: '#fff1f1', 100: '#ffe3e3', 200: '#ffc9c9', 500: '#e5484d', 600: '#c9363c', 700: '#a52b30' },
+        brand: { DEFAULT: '#6d4aff', 50: '#f3efff', 100: '#e6ddff', 200: '#d2c4ff', 500: '#6d4aff', 600: '#5a37f0', 700: '#4424c9' },
         ink: { DEFAULT: '#0f172a', soft: '#64748b' },
         surface: { DEFAULT: '#f8fafc', dark: '#0b0f19' }
       },
       fontFamily: {
         sans: '"Plus Jakarta Sans", Inter, "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif',
-        head: '"Plus Jakarta Sans", Manrope, "DM Sans", sans-serif'
+        head: '"Space Grotesk", "Plus Jakarta Sans", sans-serif'
       },
       boxShadow: {
         card: '0 4px 20px -4px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.02)',

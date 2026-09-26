@@ -64,8 +64,6 @@ const bilingualSummary = runBilingualAudit(root, read, vueFiles);
 
 const main = read("app/main.js") + "\n" + read("app/router.js");
 const liveAuctionSource = read("app/pages/procurement/LiveAuctionWorkspace.vue") + "\n" + read("app/pages/procurement/auction/AuctionLiveChart.vue");
-const homeHeroSource = read("app/pages/home/HomeHeroSection.vue");
-const homeIntelligenceSource = read("app/pages/home/HomeIntelligenceSection.vue");
 for (const token of [
   "supplierSeries", "visibleSupplierSeries", "chartSupplierSeries", "toggleSupplier",
   "showAllSuppliers", "clearSupplierFilters", 'v-for="series in chartSupplierSeries"',
@@ -175,19 +173,35 @@ for (const [name, source, token] of [
   if (!source.includes(token)) throw new Error(`Field contract is incomplete for ${name}: ${token}`);
 }
 
-for (const token of ["lg:grid-cols-5", "lg:col-span-3", "lg:col-span-2"]) {
-  if (!homeHeroSource.includes(token)) throw new Error(`Home hero responsive grid is missing ${token}`);
-}
-for (const token of ["lg:grid-cols-4", "lg:col-span-3", "lg:col-span-1"]) {
-  if (!homeIntelligenceSource.includes(token)) throw new Error(`Opportunity layout responsive grid is missing ${token}`);
-}
+// Marketplace experience. The layout is free to change; these are the business
+// rules the redesign has to keep carrying.
 const homeSource = read("app/pages/HomePage.vue");
+const supplierCardSource = read("app/experience/BnSupplierCard.vue");
+const marketSource = read("app/pages/SupplierMarketPage.vue");
+const profileSource = read("app/pages/SupplierProfilePage.vue");
+const sourcingWorkspaceSource = read("app/pages/procurement/SourcingWorkspace.vue");
 if (!homeSource.includes('job?.visibility === "public"') || !homeSource.includes("job?.confidential !== true"))
   throw new Error("Homepage must only promote explicitly published marketplace records");
-if (homeIntelligenceSource.includes(':to="`/profile/${freelancer.id}`"'))
+if ((homeSource + supplierCardSource).includes("/profile/${"))
   throw new Error("Homepage featured profiles must link to the directory, not an internal identity record");
-if (/lg:w-\[420px\]|lg:w-80/.test(homeHeroSource + homeIntelligenceSource))
-  throw new Error("Home still relies on broken fixed-width responsive utilities");
+if (!supplierCardSource.includes("/marketplace/supplier/"))
+  throw new Error("Supplier cards must open the public marketplace profile");
+for (const [name, source, token] of [
+  ["finder filters in the URL", marketSource, "M.fromQuery(route.query)"],
+  ["finder shortlist in the URL", marketSource, "route.query.shortlist"],
+  ["finder minimum invites", marketSource, "MINIMUM_INVITES = 2"],
+  ["finder hands off to the RFQ wizard", marketSource, "/procurement/sourcing?new=1&suppliers="],
+  ["suppliers cannot create quote rounds", marketSource, "!store.isSupplier.value"],
+  ["profile enforces two-supplier rounds", profileSource, "ids.length < 2"],
+  ["wizard only accepts known suppliers", sourcingWorkspaceSource, "known.has(id)"],
+]) {
+  if (!source.includes(token)) throw new Error(`Marketplace contract is missing ${name}: ${token}`);
+}
+for (const [route, file] of [["/marketplace", "SupplierMarketPage.vue"], ["/marketplace/supplier/:supplierId", "SupplierProfilePage.vue"]]) {
+  if (!main.includes(`r("${route}"`) || !main.includes(file)) throw new Error(`Missing marketplace route ${route}`);
+}
+if (!main.includes('path === "/marketplace" || path.startsWith("/marketplace/")'))
+  throw new Error("The supplier marketplace must stay publicly browsable");
 
 for (const token of [
   "activeMarketplaceMode",

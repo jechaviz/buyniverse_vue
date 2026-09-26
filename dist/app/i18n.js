@@ -8,6 +8,7 @@
   if (global.__buyniverseI18n_workspace) dicts.push(global.__buyniverseI18n_workspace);
   if (global.__buyniverseI18n_fiscal) dicts.push(global.__buyniverseI18n_fiscal);
   if (global.__buyniverseI18n_procurement) dicts.push(global.__buyniverseI18n_procurement);
+  if (global.__buyniverseI18n_experience) dicts.push(global.__buyniverseI18n_experience);
 
   if (typeof globalThis !== "undefined") {
     if (globalThis.__buyniverseI18n_core) dicts.push(globalThis.__buyniverseI18n_core);
@@ -16,6 +17,7 @@
     if (globalThis.__buyniverseI18n_workspace) dicts.push(globalThis.__buyniverseI18n_workspace);
     if (globalThis.__buyniverseI18n_fiscal) dicts.push(globalThis.__buyniverseI18n_fiscal);
     if (globalThis.__buyniverseI18n_procurement) dicts.push(globalThis.__buyniverseI18n_procurement);
+    if (globalThis.__buyniverseI18n_experience) dicts.push(globalThis.__buyniverseI18n_experience);
   }
 
   if (dicts.length === 0) {
@@ -28,7 +30,7 @@
       }
       if (fs && path) {
         var baseDir = path.resolve("app/i18n");
-        var files = ["core.js", "common.js", "marketplace.js", "workspace.js", "fiscal.js", "procurement.js"];
+        var files = ["core.js", "common.js", "marketplace.js", "workspace.js", "fiscal.js", "procurement.js", "experience.js"];
         for (var f = 0; f < files.length; f++) {
           var content = fs.readFileSync(path.join(baseDir, files[f]), "utf8");
           var subScope = {};
@@ -38,6 +40,7 @@
           if (subScope.__buyniverseI18n_marketplace) dicts.push(subScope.__buyniverseI18n_marketplace);
           if (subScope.__buyniverseI18n_workspace) dicts.push(subScope.__buyniverseI18n_workspace);
           if (subScope.__buyniverseI18n_fiscal) dicts.push(subScope.__buyniverseI18n_fiscal);
+          if (subScope.__buyniverseI18n_experience) dicts.push(subScope.__buyniverseI18n_experience);
           if (subScope.__buyniverseI18n_procurement) dicts.push(subScope.__buyniverseI18n_procurement);
         }
       }

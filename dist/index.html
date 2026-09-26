@@ -28,8 +28,8 @@
     <meta name="apple-mobile-web-app-title" content="Buyniverse" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="theme-color" content="#e5484d" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0f19" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#6d4aff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08071a" media="(prefers-color-scheme: dark)" />
 
     <!-- Canonical & Alternate Links -->
     <link rel="canonical" href="https://buyniverse.com/" />
@@ -42,11 +42,8 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     <link rel="dns-prefetch" href="https://unpkg.com" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 32 32%22%3E%3Crect width%3D%2232%22 height%3D%2232%22 rx%3D%228%22 fill%3D%22%23e5484d%22%2F%3E%3Cg fill%3D%22none%22 stroke%3D%22%23fff%22 stroke-width%3D%224.2%22 stroke-linecap%3D%22round%22%3E%3Cpath d%3D%22M16.67 28C18.5 27.83 22.71 24.89 23.46 23.22C24.2 21.54 22.29 19.46 21.13 17.93C19.97 16.41 17.85 15.59 16.5 14.07C15.15 12.54 12.79 10.46 13.04 8.78C13.28 7.11 16.33 3.96 17.98 4C19.62 4.04 22.67 7.28 22.92 9.05C23.17 10.81 20.81 12.97 19.46 14.59C18.11 16.2 15.99 17.11 14.83 18.72C13.67 20.33 12.19 22.71 12.5 24.26C12.81 25.81 14.85 28.17 16.67 28Z%22%2F%3E%3Cpath d%3D%22M9.3 4L9.3 28%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
-    />
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/buyniverse-mark-64.png" />
+    <link rel="apple-touch-icon" href="assets/brand/buyniverse-mark-192.png" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -116,7 +113,7 @@
             "@id": "https://buyniverse.com/#organization",
             "name": "Buyniverse Technologies",
             "url": "https://buyniverse.com/",
-            "logo": "https://buyniverse.com/assets/brand/logo.png",
+            "logo": "https://buyniverse.com/assets/brand/buyniverse-mark-512.png",
             "sameAs": ["https://twitter.com/buyniverse"]
           }
         ]
@@ -126,11 +123,11 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'"
     />
-    <script src="app/boot.js?v=5"></script>
+    <script src="app/boot.js?v=6"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=optional"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link
@@ -146,6 +143,7 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="app/uno.css" />
+    <link rel="stylesheet" href="app/experience/bn.css?v=7" />
     
     
     <style>
@@ -155,10 +153,10 @@
         min-height: 100%;
       }
       :root {
-        --accent: #e5484d;
-        --accent-deep: #c9363c;
-        --accent-soft: #fff1f1;
-        --accent-pale: #ffe3e3;
+        --accent: #6d4aff;
+        --accent-deep: #5a37f0;
+        --accent-soft: #f3efff;
+        --accent-pale: #e6ddff;
         --font-sans: "Plus Jakarta Sans", "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         --font-head: "Plus Jakarta Sans", "Manrope", sans-serif;
       }
@@ -536,8 +534,8 @@
     <script src="app/lib/runtime.js?v=2"></script>
     <script src="app/lib/workspace-state.js?v=4"></script>
     <script src="app/lib/auction-realtime.js?v=1"></script>
-    <script src="app/lib/brand-curve.js?v=1"></script>
-    <script src="app/lib/webgl-engine.js?v=1"></script>
+    <script src="app/lib/marketplace-catalog.js?v=1"></script>
+    <script src="app/lib/bn-three.js?v=2"></script>
     <script src="app/lib/tenant-context.js?v=1"></script>
     <script src="app/lib/onboarding.js?v=1"></script>
     <script src="app/lib/tenant-scope.js?v=1"></script>
@@ -552,15 +550,16 @@
     <script src="app/i18n/workspace.js?v=3"></script>
     <script src="app/i18n/fiscal.js?v=1"></script>
     <script src="app/i18n/procurement.js?v=10"></script>
-    <script src="app/i18n.js?v=26"></script>
+    <script src="app/i18n/experience.js?v=1"></script>
+    <script src="app/i18n.js?v=27"></script>
     <script src="app/services/seo.js?v=1"></script>
     <script src="app/services/security.js?v=2"></script>
     <script src="app/services/tableQuery.js?v=1"></script>
     <script src="app/store/initialState.js?v=6"></script>
     <script src="app/store/procurementDomainActions.js?v=1"></script>
     <script src="app/store/domainActions.js?v=8"></script>
-    <script src="app/data/demo.js?v=9"></script>
-    <script src="app/router.js?v=2"></script>
-    <script src="app/main.js?v=134"></script>
+    <script src="app/data/demo.js?v=10"></script>
+    <script src="app/router.js?v=3"></script>
+    <script src="app/main.js?v=135"></script>
   </body>
 </html>

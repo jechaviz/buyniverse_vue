@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Buyniverse mark renderer</title>
+<!--
+  Renders the 3D brand mark from app/lib/bn-three.js to PNG.
+  Open through a local server at the repo root (so assets/vendor resolves),
+  then click "Render". Each size is shown and offered for saving; when served
+  by a dev server that accepts POST /__save, the files are written straight
+  into assets/brand/.
+-->
+<base href="/" />
+<style>
+  body { font: 14px/1.5 system-ui; margin: 0; padding: 32px; background: #f7f6fc; color: #0b0a1a; }
+  .row { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; margin-top: 24px; }
+  figure { margin: 0; text-align: center; }
+  figure img { display: block; background: repeating-conic-gradient(#e7e4f3 0% 25%, #fff 0% 50%) 50% / 16px 16px; border-radius: 12px; }
+  .dark img { background: #08071a; }
+  button { font: 600 14px system-ui; padding: 10px 18px; border-radius: 10px; border: 0; background: #6d4aff; color: #fff; cursor: pointer; }
+  #log { margin-top: 12px; font-family: ui-monospace, monospace; font-size: 12px; white-space: pre; }
+</style>
+<h1>Buyniverse mark</h1>
+<button id="go">Render</button>
+<div id="log"></div>
+<div class="row" id="out"></div>
+<div class="row dark" id="outDark"></div>
+<script src="app/lib/bn-three.js"></script>
+<script>
+  const SIZES = [1024, 512, 192, 64, 32];
+  const log = (line) => (document.getElementById("log").textContent += line + "\n");
+  async function save(path, dataUrl) {
+    try {
+      const r = await fetch("/__save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path, b64: dataUrl.split(",")[1] }) });
+      return r.ok ? (await r.json()).bytes : 0;
+    } catch (e) { return 0; }
+  }
+  document.getElementById("go").onclick = async () => {
+    for (const size of SIZES) {
+      const url = await window.BuyniverseThree.renderMarkPng(size);
+      for (const id of ["out", "outDark"]) {
+        const fig = document.createElement("figure");
+        fig.innerHTML = `<img src="${url}" width="${Math.min(size, 256)}" height="${Math.min(size, 256)}"><figcaption>${size}px</figcaption>`;
+        document.getElementById(id).appendChild(fig);
+      }
+      const bytes = await save(`assets/brand/buyniverse-mark-${size}.png`, url);
+      log(`${size}px ${bytes ? "saved (" + bytes + " bytes)" : "rendered"}`);
+    }
+    window.__rendered = true;
+  };
+</script>
