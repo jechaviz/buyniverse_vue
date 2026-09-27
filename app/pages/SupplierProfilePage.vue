@@ -4,7 +4,7 @@
       <section class="bn-profile-hero">
         <div class="bn-profile-hero__cover"></div>
         <div class="bn-wrap bn-stack" style="gap: 22px">
-          <Breadcrumbs v-if="!store.currentUser.value" />
+          <Breadcrumbs v-if="!store.currentUser.value" :key="catalogVersion" />
 
           <div class="bn-row" style="align-items: flex-start; gap: 20px; flex-wrap: wrap">
             <span class="bn-avatar bn-avatar--lg" :class="'bn-avatar--' + supplier.accent">{{ initials }}</span>
@@ -140,6 +140,7 @@
       </div>
     </template>
 
+    <div v-else-if="!catalogReady" class="bn-wrap bn-muted" style="padding: 80px 20px">{{ store.t("Loading suppliers…") }}</div>
     <div v-else class="bn-wrap" style="padding: 80px 20px">
       <div class="bn-card bn-empty bn-stack" style="justify-items: center">
         <h1 class="bn-h3">{{ store.t("This supplier is not listed") }}</h1>
@@ -151,10 +152,10 @@
 </template>
 
 <script>
-const { inject, computed, defineAsyncComponent } = Vue;
+const { inject, computed, ref, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=5");
+const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
 
 export default {
   components: { Breadcrumbs },
@@ -164,7 +165,12 @@ export default {
     const router = useRouter();
     const M = window.BuyniverseMarketplace;
 
-    const all = computed(() => M.profiles(store.state));
+    // Guests read the public catalog; a workspace with listed suppliers reads its own.
+    const catalogVersion = ref(0);
+    const catalogReady = ref(M.hasListedSuppliers(store.state));
+    onMounted(() => M.loadPublicCatalog().then(() => { catalogVersion.value += 1; catalogReady.value = true; }));
+    const market = computed(() => { catalogVersion.value; return M.marketState(store.state); });
+    const all = computed(() => M.profiles(market.value.state));
     const supplier = computed(() => all.value.find((p) => p.id === route.params.supplierId) || null);
     const known = computed(() => new Set(all.value.map((p) => p.id)));
     const shortlist = computed(() => String(route.query.shortlist || "").split(",").filter((id) => known.value.has(id)).slice(0, 50));
@@ -235,7 +241,7 @@ export default {
       router.push(target);
     };
 
-    return { store, route, supplier, tab, tabs, backQuery, initials, capLabel, statusTone, riskLabel, metrics, delta, similar, canShortlist, inShortlist, shortlistWithThis, toggleShortlist, requestQuote };
+    return { store, route, catalogReady, catalogVersion, supplier, tab, tabs, backQuery, initials, capLabel, statusTone, riskLabel, metrics, delta, similar, canShortlist, inShortlist, shortlistWithThis, toggleShortlist, requestQuote };
   },
 };
 </script>

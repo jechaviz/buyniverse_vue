@@ -152,7 +152,7 @@
 </template>
 
 <script>
-const { inject, ref, computed, defineAsyncComponent } = Vue;
+const { inject, ref, computed, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const BnUniverse = load("./app/experience/BnUniverse.vue?v=1");
@@ -176,7 +176,12 @@ export default {
     const M = window.BuyniverseMarketplace;
 
     const supplierMode = computed(() => Boolean(store.isSupplier.value));
-    const suppliers = computed(() => M.profiles(store.state));
+    // Guests read the public catalog; a workspace with listed suppliers reads its own.
+    const catalogVersion = ref(0);
+    const catalogReady = ref(M.hasListedSuppliers(store.state));
+    onMounted(() => M.loadPublicCatalog().then(() => { catalogVersion.value += 1; catalogReady.value = true; }));
+    const market = computed(() => { catalogVersion.value; return M.marketState(store.state); });
+    const suppliers = computed(() => M.profiles(market.value.state));
     const nodes = computed(() => suppliers.value.map((s) => ({ id: s.id, sector: s.sector, score: s.score })));
     const averageScore = computed(() => (suppliers.value.length ? Math.round(suppliers.value.reduce((sum, s) => sum + s.score, 0) / suppliers.value.length) : 0));
     const countries = computed(() => new Set(suppliers.value.map((s) => s.country)).size);

@@ -108,6 +108,8 @@
     "Similar suppliers": "Proveedores similares", "This supplier is not listed": "Este proveedor no está publicado",
     "They may have left the marketplace or the link is incomplete.": "Puede que haya salido del marketplace o que el enlace esté incompleto.",
     "Browse suppliers": "Explorar proveedores",
+    "Loading suppliers…": "Cargando proveedores…",
+    "Sample directory: example profiles while real suppliers are onboarded. Quote rounds invite suppliers from your own workspace.": "Directorio de muestra: perfiles de ejemplo mientras se incorporan proveedores reales. Las rondas de cotización invitan a proveedores de tu propio espacio de trabajo.",
     "International": "Internacional", "National": "Nacional",
     "English": "Inglés", "Spanish": "Español", "Catalan": "Catalán",
 

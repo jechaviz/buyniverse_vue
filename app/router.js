@@ -14,9 +14,9 @@
 
     // Page Components
     const Dashboard = load("./app/pages/DashboardPage.vue?v=34");
-    const Home = load("./app/pages/HomePage.vue?v=41");
-    const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=1");
-    const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=1");
+    const Home = load("./app/pages/HomePage.vue?v=42");
+    const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
+    const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=2");
     const Workspace = load("./app/pages/WorkspacePage.vue?v=57");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
     const Detail = load("./app/pages/DetailPage.vue?v=36");

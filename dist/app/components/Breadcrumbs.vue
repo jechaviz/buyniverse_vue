@@ -399,7 +399,7 @@ export default {
         return [item("Home", "/"), item("Find suppliers")];
       if (path.startsWith("/marketplace/supplier/")) {
         const market = window.BuyniverseMarketplace;
-        const profile = market ? market.profiles(store.state).find((entry) => entry.id === route.params.supplierId) : null;
+        const profile = market ? market.profiles(market.marketState(store.state).state).find((entry) => entry.id === route.params.supplierId) : null;
         // "Find suppliers" keeps the finder's query so the trail leads back to
         // the exact result set; the taxonomy crumbs re-filter the market.
         const back = { ...route.query };

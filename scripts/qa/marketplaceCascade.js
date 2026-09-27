@@ -75,6 +75,20 @@ const withOffers = list.filter((p) => p.offers.length > 0);
 check("Catalog offers are attributed to the supplier that made them",
   withOffers.length > 0 && withOffers.every((p) => p.offers.every((o) => o.offer.supplierId === p.id)));
 
+// Public catalog: what production guests read.
+const catalogPath = path.join(root, "assets/data/marketplace-catalog.json");
+const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf8"));
+const privateKeys = ["email", "contact", "totalSpend"];
+check("The public catalog never carries private supplier fields",
+  catalog.suppliers.every((s) => privateKeys.every((key) => !(key in s))) && !/@[a-z0-9-]+.example/i.test(JSON.stringify(catalog)));
+check("The public catalog is declared as sample data", catalog.sample === true);
+const { execFileSync } = require("child_process");
+let inSync = true;
+try { execFileSync(process.execPath, [path.join(root, "scripts/build_marketplace_catalog.js"), "--check"], { stdio: "pipe" }); } catch (error) { inSync = false; }
+check("The public catalog is in sync with the supplier master", inSync);
+check("A guest with an empty workspace falls back to the public catalog", M.marketState({ suppliers: [] }).source === "public");
+check("A workspace with listed suppliers reads its own master", M.marketState(seed).source === "workspace" && M.marketState(seed).sample === false);
+
 if (failures) {
   console.log(`=== ${failures} MARKETPLACE CASCADE CHECK(S) FAILED ===`);
   process.exit(1);

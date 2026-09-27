@@ -1,0 +1,756 @@
+{
+ "sample": true,
+ "source": "app/data/demo.js",
+ "suppliers": [
+  {
+   "id": "sup-1",
+   "name": "Innovate Inc.",
+   "status": "Preferred",
+   "rating": 4.8,
+   "score": 94,
+   "risk": 14,
+   "esg": 82,
+   "onTime": 96,
+   "responseRate": 98,
+   "certifications": [
+    "ISO 9001",
+    "SOC 2"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "electronic-components"
+    ],
+    "country": "US",
+    "region": "NY",
+    "city": "new-york",
+    "headline": "Enterprise hardware with managed rollout",
+    "about": "Sources, images and deploys computing fleets for distributed teams, with lifecycle reporting per asset.",
+    "founded": 2011,
+    "employees": "51-200",
+    "leadDays": 12,
+    "minOrder": 500,
+    "currency": "USD",
+    "languages": [
+     "English",
+     "Spanish"
+    ],
+    "coverage": "International",
+    "responseHours": 4,
+    "verified": true,
+    "reviews": 128,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-2",
+   "name": "Creative Supplies",
+   "status": "Qualified",
+   "rating": 4.4,
+   "score": 86,
+   "risk": 24,
+   "esg": 88,
+   "onTime": 91,
+   "responseRate": 94,
+   "certifications": [
+    "FSC"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "operations",
+    "category": "office",
+    "capabilities": [
+     "stationery",
+     "furniture"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "Office supply on a weekly cadence",
+    "about": "Consolidated office supply with scheduled weekly replenishment and FSC-certified paper lines.",
+    "founded": 2016,
+    "employees": "11-50",
+    "leadDays": 7,
+    "minOrder": 150,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 8,
+    "verified": true,
+    "reviews": 64,
+    "accent": "amber"
+   }
+  },
+  {
+   "id": "sup-3",
+   "name": "Northwind Supplies",
+   "status": "Preferred",
+   "rating": 4.7,
+   "score": 92,
+   "risk": 18,
+   "esg": 84,
+   "onTime": 97,
+   "responseRate": 96,
+   "certifications": [
+    "ISO 9001",
+    "EcoVadis Silver"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "operations",
+    "category": "mro",
+    "capabilities": [
+     "spare-parts",
+     "tools",
+     "ppe"
+    ],
+    "country": "MX",
+    "region": "NL",
+    "city": "monterrey",
+    "headline": "Industrial MRO for northern plants",
+    "about": "Stocked MRO catalog with same-week delivery across the Monterrey industrial corridor.",
+    "founded": 2004,
+    "employees": "201-500",
+    "leadDays": 5,
+    "minOrder": 300,
+    "currency": "MXN",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "National",
+    "responseHours": 3,
+    "verified": true,
+    "reviews": 211,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-4",
+   "name": "Blue Harbor Tech",
+   "status": "Reliable",
+   "rating": 4.5,
+   "score": 88,
+   "risk": 27,
+   "esg": 78,
+   "onTime": 93,
+   "responseRate": 91,
+   "certifications": [
+    "ISO 27001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "software",
+    "capabilities": [
+     "saas-licensing",
+     "erp-integration"
+    ],
+    "country": "US",
+    "region": "TX",
+    "city": "austin",
+    "headline": "SaaS licensing and ERP connectors",
+    "about": "Licensing desk and integration team for collaboration suites and mid-market ERPs.",
+    "founded": 2014,
+    "employees": "51-200",
+    "leadDays": 3,
+    "minOrder": 1000,
+    "currency": "USD",
+    "languages": [
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 6,
+    "verified": true,
+    "reviews": 97,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-5",
+   "name": "Apex Print",
+   "status": "Qualified",
+   "rating": 4.3,
+   "score": 84,
+   "risk": 31,
+   "esg": 91,
+   "onTime": 89,
+   "responseRate": 95,
+   "certifications": [
+    "FSC",
+    "ISO 14001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "operations",
+    "category": "packaging",
+    "capabilities": [
+     "labels",
+     "print",
+     "sustainable-packaging"
+    ],
+    "country": "MX",
+    "region": "JAL",
+    "city": "guadalajara",
+    "headline": "Labels and print with recycled stock",
+    "about": "Short and long print runs on certified recycled substrates, with in-house prepress.",
+    "founded": 2009,
+    "employees": "51-200",
+    "leadDays": 6,
+    "minOrder": 200,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 10,
+    "verified": false,
+    "reviews": 58,
+    "accent": "amber"
+   }
+  },
+  {
+   "id": "sup-6",
+   "name": "Global Logistics",
+   "status": "In review",
+   "rating": 4.1,
+   "score": 79,
+   "risk": 42,
+   "esg": 73,
+   "onTime": 86,
+   "responseRate": 88,
+   "certifications": [
+    "AEO"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "logistics",
+    "category": "transport",
+    "capabilities": [
+     "ground-freight",
+     "last-mile"
+    ],
+    "country": "MX",
+    "region": "NL",
+    "city": "san-pedro",
+    "headline": "Ground freight across the NAFTA lane",
+    "about": "FTL and LTL capacity between Monterrey, Laredo and central Mexico, with live tracking.",
+    "founded": 2002,
+    "employees": "500+",
+    "leadDays": 2,
+    "minOrder": 0,
+    "currency": "MXN",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 2,
+    "verified": false,
+    "reviews": 143,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-7",
+   "name": "Pixel North Studio",
+   "status": "Qualified",
+   "rating": 4.9,
+   "score": 90,
+   "risk": 16,
+   "esg": 86,
+   "onTime": 95,
+   "responseRate": 97,
+   "certifications": [
+    "B Corp"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "services",
+    "category": "design",
+    "capabilities": [
+     "ux-ui",
+     "branding"
+    ],
+    "country": "ES",
+    "region": "MD",
+    "city": "madrid",
+    "headline": "Product design systems for growing teams",
+    "about": "Research, UX and polished interface systems delivered as production-ready Figma libraries.",
+    "founded": 2019,
+    "employees": "2-10",
+    "leadDays": 10,
+    "minOrder": 1200,
+    "currency": "EUR",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 5,
+    "verified": true,
+    "reviews": 76,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-8",
+   "name": "Andes Code Labs",
+   "status": "Reliable",
+   "rating": 4.6,
+   "score": 87,
+   "risk": 22,
+   "esg": 80,
+   "onTime": 92,
+   "responseRate": 93,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "software",
+    "capabilities": [
+     "custom-development",
+     "erp-integration"
+    ],
+    "country": "CO",
+    "region": "ANT",
+    "city": "medellin",
+    "headline": "Nearshore product engineering",
+    "about": "Dedicated squads for web platforms and ERP extensions, overlapping US business hours.",
+    "founded": 2017,
+    "employees": "51-200",
+    "leadDays": 14,
+    "minOrder": 5000,
+    "currency": "USD",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 6,
+    "verified": true,
+    "reviews": 52,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-9",
+   "name": "Sentinel Cyber",
+   "status": "Preferred",
+   "rating": 4.8,
+   "score": 93,
+   "risk": 12,
+   "esg": 79,
+   "onTime": 97,
+   "responseRate": 99,
+   "certifications": [
+    "ISO 27001",
+    "SOC 2"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "cybersecurity",
+    "capabilities": [
+     "security-audit",
+     "managed-soc"
+    ],
+    "country": "US",
+    "region": "CA",
+    "city": "san-francisco",
+    "headline": "Audits and a 24/7 managed SOC",
+    "about": "Penetration testing, SOC 2 readiness and round-the-clock monitoring for regulated teams.",
+    "founded": 2013,
+    "employees": "51-200",
+    "leadDays": 9,
+    "minOrder": 3000,
+    "currency": "USD",
+    "languages": [
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 1,
+    "verified": true,
+    "reviews": 88,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-10",
+   "name": "Bajío MRO",
+   "status": "Qualified",
+   "rating": 4.4,
+   "score": 83,
+   "risk": 26,
+   "esg": 76,
+   "onTime": 90,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "operations",
+    "category": "mro",
+    "capabilities": [
+     "spare-parts",
+     "ppe"
+    ],
+    "country": "MX",
+    "region": "QRO",
+    "city": "queretaro",
+    "headline": "MRO and PPE for the Bajío corridor",
+    "about": "Spare parts and certified PPE with vendor-managed inventory for automotive plants.",
+    "founded": 2012,
+    "employees": "51-200",
+    "leadDays": 4,
+    "minOrder": 250,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 5,
+    "verified": false,
+    "reviews": 39,
+    "accent": "amber"
+   }
+  },
+  {
+   "id": "sup-11",
+   "name": "Aduana Norte",
+   "status": "Preferred",
+   "rating": 4.7,
+   "score": 91,
+   "risk": 17,
+   "esg": 74,
+   "onTime": 96,
+   "responseRate": 95,
+   "certifications": [
+    "AEO",
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "logistics",
+    "category": "trade",
+    "capabilities": [
+     "customs-broker",
+     "bonded-warehouse"
+    ],
+    "country": "MX",
+    "region": "NL",
+    "city": "monterrey",
+    "headline": "Customs brokerage with bonded storage",
+    "about": "Import and export clearance at northern crossings, with fiscal warehousing under one contract.",
+    "founded": 1998,
+    "employees": "201-500",
+    "leadDays": 3,
+    "minOrder": 0,
+    "currency": "MXN",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 2,
+    "verified": true,
+    "reviews": 167,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-12",
+   "name": "Lumen Motion",
+   "status": "Reliable",
+   "rating": 4.7,
+   "score": 88,
+   "risk": 20,
+   "esg": 83,
+   "onTime": 93,
+   "responseRate": 92,
+   "certifications": [],
+   "marketplace": {
+    "listed": true,
+    "sector": "services",
+    "category": "design",
+    "capabilities": [
+     "motion",
+     "branding"
+    ],
+    "country": "US",
+    "region": "CA",
+    "city": "los-angeles",
+    "headline": "Motion design and brand films",
+    "about": "Explainers, product films and animated identity systems, from storyboard to final render.",
+    "founded": 2018,
+    "employees": "11-50",
+    "leadDays": 12,
+    "minOrder": 2500,
+    "currency": "USD",
+    "languages": [
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 7,
+    "verified": false,
+    "reviews": 44,
+    "accent": "amber"
+   }
+  },
+  {
+   "id": "sup-13",
+   "name": "Clara Consultores",
+   "status": "Preferred",
+   "rating": 4.8,
+   "score": 92,
+   "risk": 15,
+   "esg": 85,
+   "onTime": 96,
+   "responseRate": 98,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "services",
+    "category": "consulting",
+    "capabilities": [
+     "procurement-consulting",
+     "finance"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "Sourcing strategy and tax-ready procurement",
+    "about": "Category strategy, RFX design and CFDI-compliant purchasing policy for mid-size companies.",
+    "founded": 2010,
+    "employees": "11-50",
+    "leadDays": 8,
+    "minOrder": 2000,
+    "currency": "MXN",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "National",
+    "responseHours": 4,
+    "verified": true,
+    "reviews": 91,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-14",
+   "name": "Ruta Última Milla",
+   "status": "In review",
+   "rating": 4.2,
+   "score": 78,
+   "risk": 38,
+   "esg": 72,
+   "onTime": 87,
+   "responseRate": 86,
+   "certifications": [],
+   "marketplace": {
+    "listed": true,
+    "sector": "logistics",
+    "category": "transport",
+    "capabilities": [
+     "last-mile"
+    ],
+    "country": "CO",
+    "region": "DC",
+    "city": "bogota",
+    "headline": "Same-day last mile in Bogotá",
+    "about": "Urban delivery fleet with proof-of-delivery and cash-on-delivery reconciliation.",
+    "founded": 2020,
+    "employees": "51-200",
+    "leadDays": 1,
+    "minOrder": 0,
+    "currency": "COP",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 3,
+    "verified": false,
+    "reviews": 23,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-15",
+   "name": "Verde Pack",
+   "status": "Preferred",
+   "rating": 4.8,
+   "score": 91,
+   "risk": 14,
+   "esg": 96,
+   "onTime": 94,
+   "responseRate": 96,
+   "certifications": [
+    "FSC",
+    "ISO 14001",
+    "EcoVadis Gold"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "operations",
+    "category": "packaging",
+    "capabilities": [
+     "sustainable-packaging",
+     "labels"
+    ],
+    "country": "ES",
+    "region": "CT",
+    "city": "barcelona",
+    "headline": "Compostable and recycled packaging",
+    "about": "Mailers, boxes and labels designed for circularity, audited under EcoVadis Gold.",
+    "founded": 2015,
+    "employees": "51-200",
+    "leadDays": 11,
+    "minOrder": 400,
+    "currency": "EUR",
+    "languages": [
+     "Spanish",
+     "Catalan",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 6,
+    "verified": true,
+    "reviews": 118,
+    "accent": "mint"
+   }
+  },
+  {
+   "id": "sup-16",
+   "name": "Tapatío Networks",
+   "status": "Reliable",
+   "rating": 4.5,
+   "score": 86,
+   "risk": 23,
+   "esg": 77,
+   "onTime": 91,
+   "responseRate": 90,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "networking",
+     "computing"
+    ],
+    "country": "MX",
+    "region": "JAL",
+    "city": "zapopan",
+    "headline": "Networks and endpoints, installed",
+    "about": "Structured cabling, Wi-Fi and endpoint supply with on-site installation in western Mexico.",
+    "founded": 2008,
+    "employees": "51-200",
+    "leadDays": 6,
+    "minOrder": 800,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 4,
+    "verified": true,
+    "reviews": 71,
+    "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-17",
+   "name": "Signal Growth",
+   "status": "Qualified",
+   "rating": 4.3,
+   "score": 82,
+   "risk": 28,
+   "esg": 75,
+   "onTime": 88,
+   "responseRate": 91,
+   "certifications": [],
+   "marketplace": {
+    "listed": true,
+    "sector": "services",
+    "category": "marketing",
+    "capabilities": [
+     "digital-campaigns",
+     "seo"
+    ],
+    "country": "US",
+    "region": "TX",
+    "city": "houston",
+    "headline": "Demand generation for B2B",
+    "about": "Paid acquisition and technical SEO measured against pipeline, not impressions.",
+    "founded": 2016,
+    "employees": "11-50",
+    "leadDays": 7,
+    "minOrder": 1500,
+    "currency": "USD",
+    "languages": [
+     "English",
+     "Spanish"
+    ],
+    "coverage": "International",
+    "responseHours": 8,
+    "verified": false,
+    "reviews": 36,
+    "accent": "amber"
+   }
+  },
+  {
+   "id": "sup-18",
+   "name": "Inclusiva Lab",
+   "status": "Qualified",
+   "rating": 4.9,
+   "score": 89,
+   "risk": 18,
+   "esg": 90,
+   "onTime": 95,
+   "responseRate": 97,
+   "certifications": [
+    "IAAP"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "services",
+    "category": "consulting",
+    "capabilities": [
+     "accessibility"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "WCAG 2.2 audits and remediation",
+    "about": "Accessibility audits, remediation plans and assistive-technology testing with disabled testers.",
+    "founded": 2019,
+    "employees": "2-10",
+    "leadDays": 10,
+    "minOrder": 900,
+    "currency": "USD",
+    "languages": [
+     "Spanish",
+     "English"
+    ],
+    "coverage": "International",
+    "responseHours": 5,
+    "verified": true,
+    "reviews": 49,
+    "accent": "violet"
+   }
+  }
+ ]
+}

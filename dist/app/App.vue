@@ -106,7 +106,7 @@ const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = V
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
-const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=5");
+const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=4");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");

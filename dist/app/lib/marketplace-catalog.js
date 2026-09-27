@@ -367,6 +367,45 @@
     return chips;
   }
 
+  // ---- Public catalog ------------------------------------------------------
+  // A signed-in workspace carries its own supplier master. A production guest
+  // starts from a deliberately empty, private workspace, so the public finder
+  // falls back to the published catalog (scripts/build_marketplace_catalog.js),
+  // which holds listing fields only.
+  var publicCatalog = null;
+  var publicLoading = null;
+
+  function loadPublicCatalog(url) {
+    if (publicCatalog) return Promise.resolve(publicCatalog);
+    if (!publicLoading) {
+      publicLoading = fetch(url || "assets/data/marketplace-catalog.json", { credentials: "same-origin" })
+        .then(function (response) { return response.ok ? response.json() : null; })
+        .then(function (json) {
+          publicCatalog = json && Array.isArray(json.suppliers) ? { sample: json.sample === true, suppliers: json.suppliers } : { sample: false, suppliers: [] };
+          return publicCatalog;
+        })
+        .catch(function () {
+          publicLoading = null;
+          return { sample: false, suppliers: [] };
+        });
+    }
+    return publicLoading;
+  }
+
+  function hasListedSuppliers(state) {
+    return ((state && state.suppliers) || []).some(function (supplier) { return supplier && supplier.marketplace && supplier.marketplace.listed !== false; });
+  }
+
+  /** The state the marketplace should read, and whether it is the sample catalog. */
+  function marketState(state) {
+    if (hasListedSuppliers(state)) return { state: state, sample: false, source: "workspace" };
+    return {
+      state: { suppliers: (publicCatalog && publicCatalog.suppliers) || [], products: [], sourcingEvents: [] },
+      sample: Boolean(publicCatalog && publicCatalog.sample),
+      source: "public",
+    };
+  }
+
   function capabilityLabel(profile, value) {
     return labelOf(TAXONOMY, [profile.sector, profile.category, value]) || value;
   }
@@ -387,5 +426,8 @@
     activeChips: activeChips,
     capabilityLabel: capabilityLabel,
     labelOf: labelOf,
+    loadPublicCatalog: loadPublicCatalog,
+    hasListedSuppliers: hasListedSuppliers,
+    marketState: marketState,
   };
 })(typeof window !== "undefined" ? window : globalThis);

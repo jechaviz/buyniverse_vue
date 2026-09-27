@@ -4,8 +4,11 @@
       <div class="bn-hero__glow"></div>
       <div class="bn-wrap bn-stack" style="gap: 14px">
         <!-- The workspace shell already renders the global trail when signed in. -->
-        <Breadcrumbs v-if="!store.currentUser.value" />
+        <Breadcrumbs v-if="!store.currentUser.value" :key="catalogVersion" />
         <h1 class="bn-h2">{{ store.t("Find the right supplier for every purchase") }}</h1>
+        <p v-if="market.sample" class="bn-badge bn-badge--amber" style="justify-self: start; height: auto; padding: 6px 12px; white-space: normal">
+          <i class="fa-solid fa-circle-info"></i>{{ store.t("Sample directory: example profiles while real suppliers are onboarded. Quote rounds invite suppliers from your own workspace.") }}
+        </p>
         <p class="bn-lead" style="max-width: 720px">
           {{ store.t("Narrow the market by what you buy and where you need it. Every option shows how many suppliers remain, so you never land on an empty page.") }}
         </p>
@@ -52,6 +55,7 @@
           />
         </div>
 
+        <div v-else-if="!catalogReady" class="bn-card bn-empty bn-muted">{{ store.t("Loading suppliers…") }}</div>
         <div v-else class="bn-card bn-empty bn-stack" style="justify-items: center">
           <span class="bn-avatar bn-avatar--violet"><i class="fa-solid fa-satellite"></i></span>
           <h2 class="bn-h3">{{ store.t("No supplier matches every filter") }}</h2>
@@ -87,12 +91,12 @@
 </template>
 
 <script>
-const { inject, computed, ref, defineAsyncComponent } = Vue;
+const { inject, computed, ref, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const BnCascadeFilters = load("./app/experience/BnCascadeFilters.vue?v=1");
 const BnSupplierCard = load("./app/experience/BnSupplierCard.vue?v=1");
-const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=5");
+const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
 
 // Same limits the RFQ wizard enforces when it creates the event.
 const MINIMUM_INVITES = 2;
@@ -106,7 +110,12 @@ export default {
     const router = useRouter();
     const M = window.BuyniverseMarketplace;
 
-    const all = computed(() => M.profiles(store.state));
+    // Guests read the public catalog; a workspace with listed suppliers reads its own.
+    const catalogVersion = ref(0);
+    const catalogReady = ref(M.hasListedSuppliers(store.state));
+    onMounted(() => M.loadPublicCatalog().then(() => { catalogVersion.value += 1; catalogReady.value = true; }));
+    const market = computed(() => { catalogVersion.value; return M.marketState(store.state); });
+    const all = computed(() => M.profiles(market.value.state));
     const known = computed(() => new Set(all.value.map((p) => p.id)));
 
     // Filters, sort and shortlist all live in the URL: results are linkable,
@@ -165,7 +174,7 @@ export default {
     ];
 
     return {
-      store, route, filters, sort, options, results, chips, lastChip, shortlist, shortlistProfiles, filtersCollapsed,
+      store, route, market, catalogReady, catalogVersion, filters, sort, options, results, chips, lastChip, shortlist, shortlistProfiles, filtersCollapsed,
       changeFilter, clearOne, resetFilters, changeSort, toggleShortlist, clearShortlist, requestQuotes, canShortlist,
       sortOptions, minimumInvites: MINIMUM_INVITES,
     };
