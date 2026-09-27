@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+        #root { position: absolute; inset: 0; padding: 88px 112px; display: grid; grid-template-columns: 1fr 600px; grid-template-rows: auto auto; align-content: center; gap: 56px 64px; font-family: Inter, sans-serif; color: #f4f2ff; }
+        #auction-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 28px; }
+        #auction-step { font: 700 26px "Space Grotesk", Inter, sans-serif; color: #ffb23f; letter-spacing: 0.08em; }
+        #auction-title { font: 700 76px/1 "Space Grotesk", Inter, sans-serif; letter-spacing: -0.035em; }
+        #auction-live { margin-left: auto; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 22px; border-radius: 999px; background: rgba(22, 217, 160, 0.12); color: #6ff2c8; font-size: 22px; font-weight: 700; }
+        #auction-dot { display: block; width: 14px; height: 14px; border-radius: 999px; background: #16d9a0; }
+        #auction-board { align-self: start; padding: 48px; border-radius: 28px; background: rgba(18, 16, 48, 0.84); border: 1px solid rgba(155, 133, 255, 0.2); display: grid; gap: 34px; align-content: start; }
+        .auction-lane { display: grid; grid-template-columns: 290px 1fr 200px; align-items: center; gap: 22px; }
+        .auction-name { font: 700 32px "Space Grotesk", Inter, sans-serif; letter-spacing: -0.02em; }
+        .auction-track { height: 36px; border-radius: 999px; background: #19163d; overflow: hidden; }
+        .auction-bar { display: block; width: 100%; height: 100%; border-radius: 999px; transform-origin: left center; }
+        .auction-price { font: 700 36px "Space Grotesk", Inter, sans-serif; text-align: right; font-variant-numeric: tabular-nums; color: #d8d3ff; }
+        #auction-rank { font-size: 22px; color: #a8a3cc; }
+        #auction-side { display: grid; gap: 24px; align-content: start; }
+        .auction-stat { padding: 32px 36px; border-radius: 28px; background: rgba(18, 16, 48, 0.84); border: 1px solid rgba(155, 133, 255, 0.2); }
+        .auction-stat span { display: block; font-size: 22px; color: #a8a3cc; font-weight: 700; }
+        .auction-stat b { display: block; margin-top: 10px; font: 700 84px/1 "Space Grotesk", Inter, sans-serif; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+        #auction-best { color: #f4f2ff; }
+        #auction-saving { color: #16d9a0; }
+        #auction-clock { color: #ffb23f; }
+      </style>
+
+      <div id="root" data-composition-id="auction" data-width="1920" data-height="1080">
+        <div id="auction-head">
+          <span id="auction-step">02</span>
+          <h1 id="auction-title">Compiten en vivo. El precio baja.</h1>
+          <span id="auction-live"><span id="auction-dot"></span>Subasta inversa</span>
+        </div>
+
+        <div id="auction-board">
+          <div class="auction-lane"><span class="auction-name">Aduana Norte</span><span class="auction-track"><i class="auction-bar" id="auction-bar-a" style="background: linear-gradient(90deg, #16d9a0, #6ff2c8)"></i></span><span class="auction-price" id="auction-p-a">$23,500</span></div>
+          <div class="auction-lane"><span class="auction-name">Global Logistics</span><span class="auction-track"><i class="auction-bar" id="auction-bar-b" style="background: linear-gradient(90deg, #6d4aff, #9b85ff)"></i></span><span class="auction-price" id="auction-p-b">$24,000</span></div>
+          <span id="auction-rank">Ofertas ciegas · nadie ve el precio de los demás</span>
+        </div>
+
+        <div id="auction-side">
+          <div class="auction-stat"><span>Mejor oferta · salida $25,000</span><b id="auction-best">$23,500</b></div>
+          <div class="auction-stat"><span>Ahorro</span><b id="auction-saving">6.0%</b></div>
+          <div class="auction-stat"><span>Cierra en</span><b id="auction-clock">00:12</b></div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const E = "power3.out";
+          const OPEN = 25000;
+          // Baked bid schedule: [time, a, b, c]. Aduana Norte walks down to 21,400,
+          // which is 14.4% under the 25,000 opening price.
+          const BIDS = [[0, 23500, 24000], [1.2, 23200, 23750], [1.8, 22900, 23300], [2.4, 22400, 22900], [3.0, 21900, 22600], [3.5, 21400, 22150]];
+          const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+          const at = (t) => { for (let i = BIDS.length - 1; i >= 0; i--) if (t >= BIDS[i][0]) return BIDS[i]; return BIDS[0]; };
+
+          tl.fromTo("#auction-head", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: E }, 0);
+          tl.fromTo("#auction-board", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.55, ease: E }, 0.15);
+          tl.fromTo("#auction-side .auction-stat", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: E, stagger: 0.1 }, 0.3);
+          tl.fromTo("#auction-dot", { opacity: 1 }, { opacity: 0.25, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 7 }, 0);
+
+          // Prices, bars, best bid, savings and clock all read from one driver.
+          const driver = { t: 0 };
+          const paint = () => {
+            const row = at(driver.t);
+            ["a", "b"].forEach((k, i) => {
+              const price = row[i + 1];
+              document.getElementById("auction-p-" + k).textContent = money(price);
+              // Bar length is price relative to the opening price: shorter is cheaper.
+              document.getElementById("auction-bar-" + k).style.transform = "scaleX(" + (0.35 + (price / OPEN - 0.8) * 3.25).toFixed(4) + ")";
+            });
+            const best = Math.min(row[1], row[2]);
+            document.getElementById("auction-best").textContent = money(best);
+            document.getElementById("auction-saving").textContent = (((OPEN - best) / OPEN) * 100).toFixed(1) + "%";
+            const left = Math.max(0, 12 - Math.floor(driver.t * 2.4));
+            document.getElementById("auction-clock").textContent = "00:" + String(left).padStart(2, "0");
+          };
+          tl.fromTo(driver, { t: 0 }, { t: 5.2, duration: 5.2, ease: "none", onUpdate: paint }, 0);
+
+          // Each new best bid lands with a small kick on the leader (counting-dynamic-scale).
+          BIDS.slice(1).forEach(([time]) => {
+            tl.fromTo("#auction-best", { scale: 1.08 }, { scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, time);
+            tl.fromTo("#auction-saving", { scale: 1.08 }, { scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, time);
+          });
+
+          tl.to("#root", { opacity: 0, duration: 0.3, ease: "power1.in" }, 4.9);
+          window.__timelines["auction"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

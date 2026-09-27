@@ -158,7 +158,7 @@ const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadMod
 const BnUniverse = load("./app/experience/BnUniverse.vue?v=1");
 const BnSupplierCard = load("./app/experience/BnSupplierCard.vue?v=1");
 
-const FILM_READY = false;
+const FILM_READY = true;
 
 const SECTOR_STYLE = {
   technology: { color: "#6d4aff", soft: "color-mix(in srgb, #6d4aff 14%, transparent)" },

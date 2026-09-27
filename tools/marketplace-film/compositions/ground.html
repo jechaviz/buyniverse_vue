@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; overflow: hidden; }
+        #ground-fill { position: absolute; inset: 0; background: radial-gradient(60% 70% at 78% 18%, rgba(109, 74, 255, 0.34), transparent 70%), radial-gradient(45% 55% at 12% 88%, rgba(22, 217, 160, 0.16), transparent 70%), linear-gradient(160deg, #0c0a26 0%, #08071a 60%, #070614 100%); }
+        #ground-grid { position: absolute; inset: -64px 0 0 0; opacity: 0.22; background-image: linear-gradient(rgba(155, 133, 255, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(155, 133, 255, 0.12) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(70% 70% at 50% 40%, #000, transparent 85%); mask-image: radial-gradient(70% 70% at 50% 40%, #000, transparent 85%); }
+      </style>
+      <div id="root" data-composition-id="ground" data-width="1920" data-height="1080">
+        <div id="ground-fill" data-layout-allow-overflow></div>
+        <div id="ground-grid" data-layout-allow-overflow></div>
+      </div>
+      <script>
+        (function () {
+          // One continuous ground under every scene, so hard cuts never flash.
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo("#ground-grid", { y: 0 }, { y: 64, duration: 20, ease: "none" }, 0);
+          tl.fromTo("#ground-fill", { scale: 1 }, { scale: 1.08, duration: 20, ease: "sine.inOut" }, 0);
+          window.__timelines["ground"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

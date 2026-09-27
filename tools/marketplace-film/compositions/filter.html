@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+  <head><meta charset="UTF-8" /></head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+        #root { position: absolute; inset: 0; padding: 88px 112px 200px; display: grid; grid-template-columns: 600px 1fr; align-content: center; gap: 56px 72px; font-family: Inter, sans-serif; color: #f4f2ff; }
+        #filter-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 28px; }
+        #filter-step { font: 700 26px "Space Grotesk", Inter, sans-serif; color: #9b85ff; letter-spacing: 0.08em; }
+        #filter-title { font: 700 76px/1 "Space Grotesk", Inter, sans-serif; letter-spacing: -0.035em; }
+        #filter-panel { align-self: start; padding: 36px; border-radius: 28px; background: rgba(18, 16, 48, 0.82); border: 1px solid rgba(155, 133, 255, 0.22); display: grid; gap: 22px; }
+        .filter-field { display: grid; gap: 10px; }
+        .filter-label { font-size: 20px; font-weight: 700; color: #a8a3cc; }
+        .filter-select { display: flex; align-items: center; justify-content: space-between; height: 72px; padding: 0 24px; border-radius: 16px; border: 1px solid rgba(155, 133, 255, 0.28); background: #19163d; font-size: 26px; font-weight: 700; color: #6f6a98; }
+        .filter-select b { color: #f4f2ff; font-weight: 700; }
+        .filter-select i { font-style: normal; font-size: 20px; color: #16d9a0; }
+        #filter-count-row { margin-top: 8px; display: flex; align-items: baseline; gap: 14px; }
+        #filter-count { display: block; font: 700 88px/1 "Space Grotesk", Inter, sans-serif; color: #f4f2ff; font-variant-numeric: tabular-nums; transform-origin: left bottom; }
+        #filter-count-label { font-size: 26px; color: #a8a3cc; }
+        #filter-results { align-self: start; display: grid; gap: 18px; }
+        .supplier { display: flex; align-items: center; gap: 24px; height: 124px; padding: 0 28px; border-radius: 22px; background: rgba(18, 16, 48, 0.86); border: 1px solid rgba(155, 133, 255, 0.18); }
+        .supplier-avatar { width: 64px; height: 64px; flex: none; border-radius: 18px; display: grid; place-items: center; font: 700 24px "Space Grotesk", Inter, sans-serif; color: #fff; }
+        .supplier-name { font: 700 34px "Space Grotesk", Inter, sans-serif; letter-spacing: -0.02em; }
+        .supplier-meta { font-size: 22px; color: #a8a3cc; margin-top: 4px; }
+        .supplier-check { margin-left: auto; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: #6d4aff; color: #fff; font-size: 28px; font-weight: 700; }
+        #filter-tray { position: absolute; left: 50%; bottom: 64px; width: 980px; margin-left: -490px; height: 104px; padding: 0 20px 0 32px; border-radius: 28px; background: #f4f2ff; color: #08071a; display: flex; align-items: center; gap: 22px; }
+        #filter-tray b { font: 700 30px "Space Grotesk", Inter, sans-serif; }
+        #filter-tray-cta { margin-left: auto; height: 68px; padding: 0 30px; border-radius: 999px; background: #16d9a0; color: #04291e; display: flex; align-items: center; font-size: 24px; font-weight: 700; }
+      </style>
+
+      <div id="root" data-composition-id="filter" data-width="1920" data-height="1080">
+        <div id="filter-head">
+          <span id="filter-step">01</span>
+          <h1 id="filter-title">Filtra y preselecciona</h1>
+        </div>
+
+        <div id="filter-panel">
+          <div class="filter-field"><span class="filter-label">Sector</span><div class="filter-select" id="filter-sel-sector"><span id="filter-v-sector">Todos los sectores</span><i id="filter-k-sector">18</i></div></div>
+          <div class="filter-field"><span class="filter-label">País</span><div class="filter-select" id="filter-sel-country"><span id="filter-v-country">Cualquier país</span><i id="filter-k-country"></i></div></div>
+          <div class="filter-field"><span class="filter-label">Estado / región</span><div class="filter-select" id="filter-sel-region"><span id="filter-v-region">Elige un país</span><i id="filter-k-region"></i></div></div>
+          <div id="filter-count-row"><span id="filter-count">18</span><span id="filter-count-label">proveedores coinciden</span></div>
+        </div>
+
+        <div id="filter-results">
+          <div class="supplier" id="filter-card-a"><span class="supplier-avatar" style="background: linear-gradient(140deg, #34e3b3, #0a8f69); color: #04291e">AN</span><div><div class="supplier-name">Aduana Norte</div><div class="supplier-meta">Agencia aduanal · Monterrey</div></div><span class="supplier-check" id="filter-check-a"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="supplier" id="filter-card-x"><span class="supplier-avatar" style="background: linear-gradient(140deg, #8f74ff, #4a2fd9)">SC</span><div><div class="supplier-name">Sentinel Cyber</div><div class="supplier-meta">Ciberseguridad · San Francisco</div></div></div>
+          <div class="supplier" id="filter-card-b"><span class="supplier-avatar" style="background: linear-gradient(140deg, #34e3b3, #0a8f69); color: #04291e">GL</span><div><div class="supplier-name">Global Logistics</div><div class="supplier-meta">Carga terrestre · San Pedro</div></div><span class="supplier-check" id="filter-check-b"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="supplier" id="filter-card-y"><span class="supplier-avatar" style="background: linear-gradient(140deg, #ffc768, #e5830b); color: #3a2200">RU</span><div><div class="supplier-name">Ruta Última Milla</div><div class="supplier-meta">Última milla · Bogotá</div></div></div>
+        </div>
+
+        <div id="filter-tray">
+          <b>2 proveedores preseleccionados</b>
+          <span id="filter-tray-cta">Solicitar cotizaciones →</span>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const E = "power3.out";
+
+          // Arrival: heading, panel, then the result cards cascade into slots (grid-card-assemble).
+          tl.fromTo("#filter-head", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: E }, 0);
+          tl.fromTo("#filter-panel", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.55, ease: E }, 0.15);
+          tl.fromTo("#filter-results .supplier", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.45, ease: E, stagger: 0.08 }, 0.3);
+          tl.set(["#filter-check-a", "#filter-check-b"], { opacity: 0, scale: 0.4 }, 0);
+          tl.set("#filter-tray", { opacity: 0, y: 140 }, 0);
+
+          // Text states as a pure function of time (discrete-text-sequence):
+          // one driver tween, reverse search per element, no callbacks.
+          const STATES = {
+            "filter-v-sector": [[0, "Todos los sectores"], [1.1, "Logística"]],
+            "filter-k-sector": [[0, "18"], [1.1, "3"]],
+            "filter-v-country": [[0, "Cualquier país"], [2.2, "México"]],
+            "filter-k-country": [[0, ""], [2.2, "2"]],
+            "filter-v-region": [[0, "Elige un país"], [2.2, "Cualquier región"], [2.45, "Nuevo León"]],
+            "filter-k-region": [[0, ""], [2.45, "2"]],
+            "filter-count": [[0, "18"], [1.15, "3"], [2.25, "2"]],
+          };
+          const at = (list, t) => { for (let i = list.length - 1; i >= 0; i--) if (t >= list[i][0]) return list[i][1]; return list[0][1]; };
+          const driver = { t: 0 };
+          const paint = () => Object.keys(STATES).forEach((id) => { const el = document.getElementById(id); const v = at(STATES[id], driver.t); if (el.textContent !== v) el.textContent = v; });
+          tl.fromTo(driver, { t: 0 }, { t: 5.4, duration: 5.4, ease: "none", onUpdate: paint }, 0);
+
+          // Beat 1 (1.1s): Sector -> Logística, 18 -> 3. Non-matching card falls away.
+          tl.fromTo("#filter-sel-sector", { borderColor: "rgba(155,133,255,0.28)" }, { borderColor: "#6d4aff", duration: 0.25 }, 1.0);
+          tl.fromTo("#filter-v-sector", { color: "#6f6a98" }, { color: "#f4f2ff", duration: 0.2 }, 1.1);
+          tl.fromTo("#filter-card-x", { opacity: 1, x: 0 }, { opacity: 0.12, x: 30, duration: 0.4, ease: "power2.in" }, 1.2);
+
+          // Beat 2 (2.2s): País -> México unlocks Estado; 3 -> 2.
+          tl.fromTo("#filter-sel-country", { borderColor: "rgba(155,133,255,0.28)" }, { borderColor: "#6d4aff", duration: 0.25 }, 2.1);
+          tl.fromTo("#filter-v-country", { color: "#6f6a98" }, { color: "#f4f2ff", duration: 0.2 }, 2.2);
+          tl.fromTo("#filter-card-y", { opacity: 1, x: 0 }, { opacity: 0.12, x: 30, duration: 0.4, ease: "power2.in" }, 2.3);
+          tl.fromTo("#filter-sel-region", { borderColor: "rgba(155,133,255,0.28)" }, { borderColor: "#16d9a0", duration: 0.3 }, 2.45);
+          tl.fromTo("#filter-v-region", { color: "#6f6a98" }, { color: "#f4f2ff", duration: 0.2 }, 2.45);
+
+          // Count steps down with a scale kick on each change (counting-dynamic-scale).
+          [1.15, 2.25].forEach((at) => tl.fromTo("#filter-count", { scale: 1.18 }, { scale: 1, duration: 0.35, ease: "back.out(2)", immediateRender: false }, at));
+
+          // Beat 3 (3.1s): the two survivors are checked, the tray rises.
+          tl.to("#filter-check-a", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)" }, 3.1);
+          tl.to("#filter-check-b", { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)" }, 3.3);
+          tl.to("#filter-tray", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 3.6);
+          tl.fromTo("#filter-tray-cta", { scale: 1 }, { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 4.4);
+
+          // Exit into scene 2.
+          tl.to("#root", { opacity: 0, duration: 0.3, ease: "power1.in" }, 5.1);
+
+          window.__timelines["filter"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

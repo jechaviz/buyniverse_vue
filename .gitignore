@@ -12,3 +12,8 @@ archive/*.zip
 archive/*.tar.gz
 archive/browser_profiles/
 tools/lifecycle-video/renders/*.mp4
+
+# Hyperframes working artifacts (the render itself lives in assets/media)
+tools/marketplace-film/snapshots/
+tools/marketplace-film/renders/
+tools/marketplace-film/.hyperframes/
