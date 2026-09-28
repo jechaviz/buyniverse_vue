@@ -160,7 +160,7 @@ const unitedStates = {
     hint: L("Número de identificación patronal del IRS. Para no almacenar números de Seguro Social, las personas físicas usan su EIN de propietario único.",
       "IRS Employer Identification Number. To avoid storing Social Security numbers, sole proprietors use their sole-proprietor EIN.") },
   invoicing: {
-    system: L("Sin sistema federal", "No federal system"), authority: "IRS / state revenue departments", model: "none",
+    system: L("Sin sistema federal", "No federal system"), authority: L("IRS y departamentos estatales de ingresos", "IRS and state revenue departments"), model: "none",
     mandate: L("No hay mandato de factura electrónica. El impuesto sobre ventas es estatal, de condado y de ciudad, y se calcula por dirección.",
       "There is no e-invoicing mandate. Sales tax is state, county and city level and is calculated by address."),
     buyniverseIssuance: false,

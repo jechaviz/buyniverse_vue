@@ -25,14 +25,17 @@ function tenant_rfc($value): string {
     $rfc = strtoupper(tenant_text($value, 13));
     return preg_match('/^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/u', $rfc) === 1 ? $rfc : '';
 }
+/** Any jurisdiction of the fiscal registry; "OTHER" is the generic ZZ entry. */
 function tenant_country_code($value): string {
     $value = strtoupper(tenant_text($value, 8));
-    return in_array($value, ['MX','US','CA','ES','OTHER'], true) ? ($value === 'OTHER' ? 'ZZ' : $value) : '';
+    if ($value === 'OTHER') $value = 'ZZ';
+    return preg_match('/^[A-Z]{2}$/', $value) === 1 && fiscal_find_country(fiscal_registry(), $value) ? $value : '';
 }
+/** The identifier normalized by its country's validator (check digits included), or ''. */
 function tenant_tax_identifier($value, string $countryCode): string {
-    $value = strtoupper(tenant_text($value, 40));
-    if ($countryCode === 'MX') return tenant_rfc($value);
-    return preg_match('/^[A-Z0-9][A-Z0-9&._\/-]{2,39}$/', $value) === 1 ? $value : '';
+    $country = fiscal_find_country(fiscal_registry(), $countryCode);
+    $result = fiscal_validate($country['taxId']['validator'] ?? 'generic', tenant_text($value, 40));
+    return $result['valid'] ? (string) $result['normalized'] : '';
 }
 function tenant_marketplace_roles($value): array {
     if (!is_array($value) || count($value) < 1 || count($value) > 2) return [];

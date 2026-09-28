@@ -33,7 +33,7 @@
     const Directory = load("./app/pages/DirectoryPage.vue?v=40");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=2");
     const Procurement = load("./app/pages/ProcurementPage.vue?v=33");
-    const Onboarding = load("./app/pages/OnboardingPage.vue?v=2");
+    const Onboarding = load("./app/pages/OnboardingPage.vue?v=4");
 
     const NotFound = {
       template:

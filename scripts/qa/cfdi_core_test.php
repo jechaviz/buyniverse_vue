@@ -45,12 +45,15 @@ distinguished_name = req_dn
 [ req_dn ]
 ");
 $GLOBALS['cnf'] = ['config'=>$cnf];
-function make_cert(string $rfc, bool $withOu, int $days, string $password, ?OpenSSLAsymmetricKey &$key = null): array {
+function make_cert(string $rfc, bool $withOu, int $days, string $password, ?OpenSSLAsymmetricKey &$key = null, bool $satSerial = true): array {
     $key = openssl_pkey_new(['private_key_bits'=>2048, 'private_key_type'=>OPENSSL_KEYTYPE_RSA] + $GLOBALS['cnf']);
     $dn = ['commonName'=>'ESCUELA KEMPER URGATE', 'x500UniqueIdentifier'=>$rfc . ' / VADA800927HSRSRL05', 'organizationName'=>'ESCUELA KEMPER URGATE'];
     if ($withOu) $dn['organizationalUnitName'] = 'Sucursal 1';
     $csr = openssl_csr_new($dn, $key, ['digest_alg'=>'sha256'] + $GLOBALS['cnf']);
-    $cert = openssl_csr_sign($csr, null, $key, $days, ['digest_alg'=>'sha256'] + $GLOBALS['cnf'], random_int(1000, 999999));
+    // SAT certificate numbers are 20 digits carried as the ASCII bytes of the serial.
+    $serialHex = bin2hex('30001000000' . str_pad((string) random_int(0, 999999999), 9, '0', STR_PAD_LEFT));
+    $cert = $satSerial ? openssl_csr_sign($csr, null, $key, $days, ['digest_alg'=>'sha256'] + $GLOBALS['cnf'], 0, $serialHex)
+        : openssl_csr_sign($csr, null, $key, $days, ['digest_alg'=>'sha256'] + $GLOBALS['cnf'], random_int(1000, 999999));
     openssl_x509_export($cert, $certPem);
     openssl_pkey_export($key, $keyPem, $password, ['encrypt_key_cipher'=>OPENSSL_CIPHER_AES_256_CBC] + $GLOBALS['cnf']);
     $der = base64_decode(preg_replace('/-----[^-]+-----|\s/', '', $certPem));
@@ -62,7 +65,7 @@ $expectFail = function (string $label, callable $fn, string $needle) use ($check
 };
 [$cer, $keyDer] = make_cert('EKU9003173C9', true, 365, 's3cret');
 $info = Csd::inspect($cer, $keyDer, 's3cret', 'EKU9003173C9');
-$check('csd accepted', $info['rfc'] === 'EKU9003173C9' && $info['branch'] === 'Sucursal 1' && strlen($info['fingerprint']) === 64);
+$check('csd accepted', $info['rfc'] === 'EKU9003173C9' && $info['branch'] === 'Sucursal 1' && strlen($info['fingerprint']) === 64 && preg_match('/^30001000000\d{9}$/', $info['number']) === 1, json_encode($info['number']));
 $expectFail('wrong password rejected', fn() => Csd::inspect($cer, $keyDer, 'nope', 'EKU9003173C9'), 'contraseña');
 $expectFail('other company rejected', fn() => Csd::inspect($cer, $keyDer, 's3cret', 'URE180429TM6'), 'pertenece');
 [, $otherKey] = make_cert('EKU9003173C9', true, 365, 's3cret');
@@ -70,6 +73,8 @@ $expectFail('mismatched key rejected', fn() => Csd::inspect($cer, $otherKey, 's3
 [$fiel, $fielKey] = make_cert('EKU9003173C9', false, 365, 's3cret');
 $expectFail('e.firma rejected', fn() => Csd::inspect($fiel, $fielKey, 's3cret', 'EKU9003173C9'), 'e.firma');
 $expectFail('expired rejected', fn() => Csd::inspect($cer, $keyDer, 's3cret', 'EKU9003173C9', time() + 400 * 86400), 'venció');
+[$foreign, $foreignKey] = make_cert('EKU9003173C9', true, 365, 's3cret', $unused, false);
+$expectFail('non-SAT certificate rejected', fn() => Csd::inspect($foreign, $foreignKey, 's3cret', 'EKU9003173C9'), 'SAT');
 $check('certificate number from serial', Csd::number('3330303031303030303030353030303033343136') === '30001000000500003416');
 
 // Live stamp in SW's test environment (opt-in).

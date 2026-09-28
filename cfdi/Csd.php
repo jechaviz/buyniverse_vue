@@ -50,12 +50,15 @@ final class Csd {
         if ($key === false) throw new RuntimeException('La contraseña no abre la llave privada, o el archivo .key no es válido.');
         if (!openssl_x509_check_private_key($cert, $key)) throw new RuntimeException('La llave privada no corresponde al certificado.');
 
+        // A SAT certificate number is 20 digits (its serial, read as ASCII).
+        $number = self::number((string) ($info['serialNumberHex'] ?? ''));
+        if (preg_match('/^\d{20}$/', $number) !== 1) throw new RuntimeException('El certificado no fue emitido por el SAT (número de certificado inválido).');
         $fingerprint = openssl_x509_fingerprint($cert, 'sha256');
         return [
             'rfc'=>$rfc,
             'name'=>(string) ($subject['name'] ?? $subject['CN'] ?? ''),
             'branch'=>is_array($branch) ? implode(', ', $branch) : (string) $branch,
-            'number'=>self::number((string) ($info['serialNumberHex'] ?? '')),
+            'number'=>$number,
             'validFrom'=>gmdate('c', $from),
             'validTo'=>gmdate('c', $to),
             'fingerprint'=>strtolower((string) $fingerprint),

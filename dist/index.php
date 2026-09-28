@@ -177,6 +177,10 @@ require_once __DIR__ . '/identity_service.php';
 require_once __DIR__ . '/tenant_service.php';
 require_once __DIR__ . '/auction_service.php';
 
+require_once __DIR__ . '/fiscal_rules.php';
+require_once __DIR__ . '/cfdi/Csd.php';
+require_once __DIR__ . '/cfdi/CfdiConfig.php';
+require_once __DIR__ . '/supplier_compliance.php';
 require_once __DIR__ . '/onboarding_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
@@ -200,7 +204,7 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
     catch (Throwable $error) { if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack(); social_redirect(social_base_path() . '/#/?login_error=identity'); }
 }
 
-if ($uri === '/api/v1/onboarding' || $uri === '/api/v1/onboarding/' || $uri === '/api/v1/onboarding/fiscal-credentials' || $uri === '/api/v1/onboarding/fiscal-credentials/') handle_onboarding($uri);
+if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
 
 if ($uri === '/api/v1/tenant-context' || $uri === '/api/v1/tenant-context/' || str_starts_with($uri, '/api/v1/tenant-companies')) {
     // Server tenant boundary: tenant_context, tenant_workspace_state, tenant_header_origin_is_safe,

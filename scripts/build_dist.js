@@ -242,6 +242,7 @@ async function build() {
     "fiscal_rules.php",
     "identity_service.php",
     "onboarding_service.php",
+    "supplier_compliance.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",
