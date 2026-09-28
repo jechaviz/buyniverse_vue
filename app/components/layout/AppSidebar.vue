@@ -11,7 +11,7 @@
     <!-- Brand Header -->
     <div class="flex h-16 items-center justify-between border-b border-slate-200/80 px-4 dark:border-slate-800/80 flex-none">
       <RouterLink to="/" class="flex items-center gap-3 overflow-hidden group" @click="$emit('close-mobile')">
-        <img src="assets/brand/buyniverse-mark-64.png?v=2" srcset="assets/brand/buyniverse-mark-64.png?v=2 1x, assets/brand/buyniverse-mark-192.png?v=2 3x" width="38" height="38" alt="" class="flex-none group-hover:scale-105 transition-transform" />
+        <img src="assets/brand/buyniverse-mark-64.png?v=3" srcset="assets/brand/buyniverse-mark-64.png?v=3 1x, assets/brand/buyniverse-mark-192.png?v=3 3x" width="38" height="38" alt="" class="flex-none group-hover:scale-105 transition-transform" />
         <div v-show="!collapsed" class="min-w-0">
           <span class="font-head text-base font-800 tracking-tight text-slate-900 dark:text-white block">Buyniverse</span>
           <span class="text-[9px] font-bold uppercase tracking-wider text-brand -mt-1 block">{{ store.t("Enterprise") }}</span>

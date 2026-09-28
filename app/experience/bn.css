@@ -141,6 +141,9 @@ html.dark .bn, .bn .bn-cinema {
 /* Logo ------------------------------------------------------------------- */
 .bn-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--bn-ink); }
 .bn-logo img { display: block; }
+.bn-logo__mark { display: inline-block; flex: none; background-repeat: no-repeat; background-size: 3200% 100%; background-position: 0 0; }
+.bn-logo:hover .bn-logo__mark, .bn-logo:focus-visible .bn-logo__mark { animation: bn-orbit 1.9s steps(31) infinite; }
+@keyframes bn-orbit { to { background-position: 100% 0; } }
 .bn-logo__word { font: 700 1.3rem/1 var(--bn-display); letter-spacing: -0.045em; }
 .bn-logo__word b { color: var(--bn-violet); font-weight: 700; }
 

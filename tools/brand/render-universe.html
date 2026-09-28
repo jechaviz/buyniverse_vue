@@ -13,9 +13,13 @@
     const nodes = Array.from({ length: 18 }, (_, i) => ({ id: "s" + i, sector: ["technology", "services", "operations", "logistics"][i % 4], score: 80 + (i % 15) }));
     const ctrl = await window.BuyniverseThree.createUniverse(document.getElementById("c"), { nodes, preserve: true });
     const out = [];
-    for (const t of times) {
+    for (const entry of times) {
+      const [t, hovered] = Array.isArray(entry) ? entry : [entry, false];
+      ctrl.renderAt(t);
+      // Hover probe: aim at the projected core (near the centre-right of frame).
+      if (hovered) ctrl.setHover(0.34, -0.02); else ctrl.clearHover();
       const url = ctrl.renderAt(t).toDataURL("image/png");
-      const r = await fetch("/__save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path: `assets/_review/universe-${t}s.png`, b64: url.split(",")[1] }) });
+      const r = await fetch("/__save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path: `assets/_review/universe-${t}s${hovered ? "-hover" : ""}.png`, b64: url.split(",")[1] }) });
       out.push(`${t}s ${r.status}`);
     }
     return out;

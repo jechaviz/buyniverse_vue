@@ -7,7 +7,7 @@
  *     luminous "b", brass eyelet and a strand of light for the cord.
  *     tools/brand/render-mark.html renders it to the PNG logo assets.
  *   - The hero "purchasing universe": a photographic spiral galaxy seen from a
- *     slow cinematic dolly, with the brand tag at its heart. Tens of thousands
+ *     slow cinematic dolly whose core is the brand tag, revealed on hover. Tens of thousands
  *     of stars turn with differential rotation (the core faster than the arms,
  *     as real galaxies do) over a volumetric nebula; every listed supplier is a
  *     bright node sending quotes, drawn as small tags of light, along curved
@@ -90,38 +90,64 @@
   // The mark itself lives in app/lib/bn-three-mark.js (loaded first).
   function buildMark(THREE) { return global.BuyniverseMark.build(THREE); }
 
-  function renderMarkPng(size) {
+  // Framed on the combined tag + ring silhouette, which sits right of the tag.
+  var MARK_DISTANCE = 6.6;
+
+  function markStage(THREE, size) {
+    var canvas = document.createElement("canvas");
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(size, size, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    var scene = new THREE.Scene();
+    var env = studioEnvironment(THREE, renderer);
+    scene.environment = env.texture;
+    var key = new THREE.DirectionalLight(0xffffff, 1.6);
+    key.position.set(-2, 3, 4);
+    scene.add(key);
+    var mark = buildMark(THREE);
+    mark.group.rotation.set(0.12, -0.42, 0.14);
+    mark.group.position.set(-0.21, -0.03, 0);
+    // Stars keep the same apparent size at every logo resolution.
+    mark.setPointScale(3.2 * MARK_DISTANCE * size / 1024);
+    scene.add(mark.group);
+    var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
+    camera.position.set(0, 0.1, MARK_DISTANCE);
+    camera.lookAt(0, 0, 0);
+    return {
+      canvas: canvas,
+      shot: function (phase) { mark.setRingPhase(phase || 0); renderer.render(scene, camera); return canvas; },
+      dispose: function () { mark.dispose(); env.dispose(); renderer.dispose(); },
+    };
+  }
+
+  /** The logo as a PNG data URL, ring at the given phase (0 = rest pose). */
+  function renderMarkPng(size, phase) {
     return loadThree().then(function (THREE) {
-      var canvas = document.createElement("canvas");
-      var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
-      renderer.setPixelRatio(1);
-      renderer.setSize(size, size, false);
-      renderer.setClearColor(0x000000, 0);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.3;
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-      var scene = new THREE.Scene();
-      var env = studioEnvironment(THREE, renderer);
-      scene.environment = env.texture;
-      var key = new THREE.DirectionalLight(0xffffff, 1.6);
-      key.position.set(-2, 3, 4);
-      scene.add(key);
-
-      var mark = buildMark(THREE);
-      mark.group.rotation.set(0.12, -0.42, 0.14);
-      mark.group.position.set(0.04, -0.12, 0);
-      scene.add(mark.group);
-
-      var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
-      camera.position.set(0, 0.1, 6.4);
-      camera.lookAt(0, 0, 0);
-      renderer.render(scene, camera);
-      var url = canvas.toDataURL("image/png");
-      mark.dispose();
-      env.dispose();
-      renderer.dispose();
+      var stage = markStage(THREE, size);
+      var url = stage.shot(phase || 0).toDataURL("image/png");
+      stage.dispose();
       return url;
+    });
+  }
+
+  /**
+   * A horizontal strip of `frames` renders covering one lap of the ring. The
+   * last frame equals the first, so a CSS steps(frames - 1) loop is seamless.
+   */
+  function renderMarkSprite(frameSize, frames) {
+    return loadThree().then(function (THREE) {
+      var stage = markStage(THREE, frameSize);
+      var strip = document.createElement("canvas");
+      strip.width = frameSize * frames;
+      strip.height = frameSize;
+      var ctx = strip.getContext("2d");
+      for (var i = 0; i < frames; i++) ctx.drawImage(stage.shot(i / (frames - 1)), i * frameSize, 0);
+      stage.dispose();
+      return strip.toDataURL("image/png");
     });
   }
 
@@ -263,9 +289,9 @@
 
       // Galactic core: a soft volumetric glow that always faces the camera.
       var core = new THREE.Mesh(keep(new THREE.PlaneGeometry(9, 9)), keep(new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uExposure: exposure },
+        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uExposure: exposure, uLight: { value: 1 } },
         vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-        fragmentShader: "varying vec2 vUv; uniform float uExposure; void main(){ float d = length(vUv - 0.5) * 2.0; float g = exp(-d * 6.5) * 0.55 + exp(-d * 2.2) * 0.12; gl_FragColor = vec4(vec3(1.0, 0.86, 0.68) * g * uExposure, g); }",
+        fragmentShader: "varying vec2 vUv; uniform float uExposure; uniform float uLight; void main(){ float d = length(vUv - 0.5) * 2.0; float g = (exp(-d * 6.5) * 0.55 + exp(-d * 2.2) * 0.12) * uLight; gl_FragColor = vec4(vec3(1.0, 0.86, 0.68) * g * uExposure, g); }",
       })));
       scene.add(core);
 
@@ -335,11 +361,18 @@
       var key = new THREE.DirectionalLight(0xffffff, 1.2);
       key.position.set(-4, 6, 8);
       scene.add(key);
+      // The tag IS the galactic core: at rest only the core glows; hovering the
+      // core reveals it as the tag, exactly where every route converges.
       var heart = buildMark(THREE);
-      heart.group.scale.setScalar(small ? 1.9 : 1.6);
+      var heartBase = small ? 1.15 : 0.95;
+      heart.setOpacity(0);
+      heart.group.visible = false;
       scene.add(heart.group);
+      var reveal = 0, revealTarget = 0, hover = { x: 9, y: 9 };
+      var coreNdc = new THREE.Vector3();
+      var coreLight = { value: 1 };
 
-      var flowTarget = new THREE.Vector3(0, 0.45, 0);
+      var flowTarget = new THREE.Vector3(0, 0.2, 0);
       var flows = positions.map(function (from, index) {
         var control = from.clone().multiplyScalar(0.45).add(new THREE.Vector3(0, 1.6 + (index % 3) * 0.5, 0));
         var curve = new THREE.QuadraticBezierCurve3(from, control, flowTarget);
@@ -433,11 +466,24 @@
         camera.position.set(Math.cos(orbit) * dist * Math.cos(elevation), Math.sin(elevation) * dist, Math.sin(orbit) * dist * Math.cos(elevation));
         camera.lookAt(0.6, -0.4, 0);
         core.quaternion.copy(camera.quaternion);
-        heart.group.position.set(0, 1.15 + Math.sin(time * 0.55) * 0.08, 0);
+        // Hover test against the projected core, aspect-corrected.
+        coreNdc.set(0, 0.2, 0).project(camera);
+        var dx = (hover.x - coreNdc.x) * camera.aspect, dy = hover.y - coreNdc.y;
+        revealTarget = Math.sqrt(dx * dx + dy * dy) < 0.32 ? 1 : 0;
+        var eased = reveal * reveal * (3 - 2 * reveal);
+        heart.group.visible = reveal > 0.01;
+        heart.group.position.set(0, 0.2, 0);
+        heart.group.scale.setScalar(heartBase * (0.55 + 0.45 * eased));
         heart.group.lookAt(camera.position);
-        heart.group.rotateY(-0.45 + Math.sin(time * 0.22) * 0.22);
-        heart.group.rotateZ(0.1);
+        heart.group.rotateY(-0.35 + Math.sin(time * 0.22) * 0.18 + (1 - eased) * 0.9);
+        heart.group.rotateZ(0.08);
+        heart.setOpacity(eased);
+        // Once revealed, the ring of stars keeps orbiting the tag.
+        if (heart.group.visible) heart.setRingPhase((time * 0.07) % 1);
+        // The core light recedes as the tag takes its place.
+        coreLight.value = 1 - eased * 0.55;
         flowTags(time);
+        core.material.uniforms.uLight.value = coreLight.value;
       }
 
       function render() { renderer.render(scene, camera); }
@@ -448,6 +494,7 @@
         var delta = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
         last = now;
         elapsed += delta;
+        reveal += (revealTarget - reveal) * Math.min(1, delta * 3.2);
         pose(elapsed);
         render();
       }
@@ -465,6 +512,7 @@
         else camera.clearViewOffset();
         camera.updateProjectionMatrix();
         starUniforms.uScale.value = Math.max(0.7, Math.min(1.8, h / 560)) * renderer.getPixelRatio();
+        heart.setPointScale(36 * (h / 900) * renderer.getPixelRatio());
         if (!running) { pose(reduced ? 30 : elapsed); render(); }
       }
 
@@ -480,6 +528,17 @@
           frame = global.requestAnimationFrame(loop);
         },
         stop: function () { running = false; global.cancelAnimationFrame(frame); },
+        /** Pointer in stage coordinates, -1..1 with y pointing down. */
+        setHover: function (x, y) {
+          hover.x = Number(x);
+          hover.y = -Number(y);
+          if (!running) { pose(elapsed); reveal = revealTarget; pose(elapsed); render(); }
+        },
+        clearHover: function () {
+          hover.x = 9;
+          hover.y = 9;
+          if (!running) { pose(elapsed); reveal = 0; pose(elapsed); render(); }
+        },
         setPointer: function (x, y) {
           pointer.tx = Math.max(-1, Math.min(1, Number(x) || 0));
           pointer.ty = Math.max(-1, Math.min(1, Number(y) || 0));
@@ -514,6 +573,7 @@
     webglAvailable: webglAvailable,
     reducedMotion: reducedMotion,
     renderMarkPng: renderMarkPng,
+    renderMarkSprite: renderMarkSprite,
     createUniverse: createUniverse,
   };
 })(window);

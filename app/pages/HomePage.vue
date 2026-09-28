@@ -154,7 +154,7 @@
 const { inject, ref, computed, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnUniverse = load("./app/experience/BnUniverse.vue?v=3");
+const BnUniverse = load("./app/experience/BnUniverse.vue?v=4");
 const BnSupplierCard = load("./app/experience/BnSupplierCard.vue?v=1");
 
 const FILM_READY = true;

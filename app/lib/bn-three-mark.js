@@ -153,17 +153,103 @@
     eyelet.position.set(-0.72, 0, depth / 2 + bevel * 0.4);
     group.add(eyelet);
 
-    var cordPath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.72, 0.1, 0.02),
-      new THREE.Vector3(-0.86, 0.34, 0.14),
-      new THREE.Vector3(-1.06, 0.66, 0.1),
-      new THREE.Vector3(-1.02, 0.98, -0.08),
-      new THREE.Vector3(-0.78, 1.18, -0.18),
-    ]);
-    var cord = new THREE.Mesh(keep(new THREE.TubeGeometry(cordPath, 96, 0.024, 16, false)), keep(new THREE.MeshPhysicalMaterial({ color: 0x16d9a0, roughness: 0.4, sheen: 1, sheenColor: new THREE.Color(0xc8fff0), emissive: new THREE.Color(0x16d9a0), emissiveIntensity: 0.85 })));
-    group.add(cord);
+    // ---- The cord becomes a ring of stars -----------------------------------
+    // A filament of light leaves the eyelet, meets a tilted orbit around the
+    // tag, and there dissolves into a band of stars that widens as it circles
+    // (in front below, behind above) and fades before closing the loop: the
+    // universe coming out of the tag. The band's shape is fixed; its stars
+    // stream along it, so setRingPhase() turns the ring without ever tearing
+    // it away from the eyelet.
+    var RING = { cx: 0.08, rx: 1.58, ky: 0.55, kz: 0.9, tilt: 0.2, start: Math.PI };
+    var cosT = Math.cos(RING.tilt), sinT = Math.sin(RING.tilt);
+    function ringPoint(theta, out) {
+      var x = RING.cx + RING.rx * Math.cos(theta), y = -RING.ky * Math.sin(theta), z = RING.kz * Math.sin(theta);
+      return out.set(x * cosT - y * sinT, x * sinT + y * cosT, z);
+    }
 
-    return { group: group, dispose: function () { trash.forEach(function (item) { item.dispose(); }); } };
+    var junction = ringPoint(RING.start, new THREE.Vector3());
+    var thread = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-0.72, 0.02, depth / 2 + 0.02),
+      new THREE.Vector3(-0.98, 0.05, 0.16),
+      ringPoint(RING.start + 0.2, new THREE.Vector3()),
+      junction.clone(),
+    ]);
+    var threadMaterial = keep(new THREE.MeshPhysicalMaterial({ color: 0x16d9a0, roughness: 0.35, emissive: new THREE.Color(0x3cf5c4), emissiveIntensity: 1.1 }));
+    group.add(new THREE.Mesh(keep(new THREE.TubeGeometry(thread, 64, 0.018, 12, false)), threadMaterial));
+
+    var stars = 5200;
+    var base = new Float32Array(stars), seedA = new Float32Array(stars), seedB = new Float32Array(stars), seedC = new Float32Array(stars);
+    var ringPos = new Float32Array(stars * 3), ringSize = new Float32Array(stars), ringColor = new Float32Array(stars * 3), ringBright = new Float32Array(stars);
+    var random = rng(4242);
+    var gold = new Uint8Array(stars);
+    for (var i = 0; i < stars; i++) {
+      base[i] = i / stars + random() / stars;
+      seedA[i] = random() * 2 - 1;
+      seedB[i] = random() * 2 - 1;
+      seedC[i] = random() * 2 - 1;
+      ringSize[i] = 0.9 + Math.pow(random(), 6) * 3.6;
+      // Only the rare large stars flash gold; the rest take the band's colour.
+      gold[i] = ringSize[i] > 2.2 && i % 3 === 0 ? 1 : 0;
+    }
+    var ringGeometry = keep(new THREE.BufferGeometry());
+    ringGeometry.setAttribute("position", new THREE.BufferAttribute(ringPos, 3));
+    ringGeometry.setAttribute("aSize", new THREE.BufferAttribute(ringSize, 1));
+    ringGeometry.setAttribute("aColor", new THREE.BufferAttribute(ringColor, 3));
+    ringGeometry.setAttribute("aBright", new THREE.BufferAttribute(ringBright, 1));
+    ringGeometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(RING.cx, 0, 0), RING.rx + 0.5);
+    var ringUniforms = { uScale: { value: 20 }, uOpacity: { value: 1 } };
+    var ringMaterial = keep(new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, blending: THREE.NormalBlending, uniforms: ringUniforms,
+      vertexShader: "attribute float aSize; attribute vec3 aColor; attribute float aBright; varying vec3 vC; varying float vB; uniform float uScale; void main(){ vC = aColor; vB = aBright; vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_PointSize = max(1.0, aSize * uScale / -mv.z); gl_Position = projectionMatrix * mv; }",
+      fragmentShader: "uniform float uOpacity; varying vec3 vC; varying float vB; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float g = exp(-d * d * 3.2); float a = min(1.0, g * vB * 1.25) * uOpacity; if (a < 0.01) discard; gl_FragColor = vec4(vC * 1.15, a); }",
+    }));
+    group.add(new THREE.Points(ringGeometry, ringMaterial));
+
+    var tmp = new THREE.Vector3();
+    function setRingPhase(phase) {
+      for (var k = 0; k < stars; k++) {
+        var f = (base[k] + phase) % 1;
+        // The band: a filament at the junction, widening to its fullest past the
+        // front, then thinning and fading before it would close the loop.
+        var widen = Math.min(1, f / 0.4);
+        var spread = 0.006 + 0.085 * widen * widen * (3 - 2 * widen) * (1 - Math.max(0, (f - 0.75) / 0.25) * 0.5);
+        ringPoint(RING.start - f * Math.PI * 2 * 0.93, tmp);
+        ringPos[k * 3] = tmp.x + seedA[k] * spread;
+        ringPos[k * 3 + 1] = tmp.y + seedB[k] * spread * 0.55;
+        ringPos[k * 3 + 2] = tmp.z + seedC[k] * spread;
+        // Colour follows the band, not the star: mint as it leaves the thread,
+        // starlight white, then lavender and violet as the orbit widens.
+        var toWhite = Math.min(1, f / 0.16), toViolet = Math.max(0, Math.min(1, (f - 0.3) / 0.45));
+        var r = 0.24 + (0.95 - 0.24) * toWhite, g = 0.96 + (0.93 - 0.96) * toWhite, b = 0.77 + (1.0 - 0.77) * toWhite;
+        r += (0.62 - r) * toViolet; g += (0.52 - g) * toViolet; b += (1.0 - b) * toViolet;
+        if (gold[k]) { r = 1.0; g = 0.82; b = 0.52; }
+        ringColor[k * 3] = r; ringColor[k * 3 + 1] = g; ringColor[k * 3 + 2] = b;
+        ringBright[k] = Math.min(1, f / 0.04) * (1 - Math.max(0, (f - 0.8) / 0.2)) * (0.7 + 0.3 * (1 - widen * 0.5));
+      }
+      ringGeometry.attributes.position.needsUpdate = true;
+      ringGeometry.attributes.aBright.needsUpdate = true;
+      ringGeometry.attributes.aColor.needsUpdate = true;
+    }
+    setRingPhase(0);
+
+    var solids = [];
+    group.traverse(function (node) {
+      if (node.material && node.material !== ringMaterial) [].concat(node.material).forEach(function (m) { solids.push(m); });
+    });
+
+    return {
+      group: group,
+      setRingPhase: setRingPhase,
+      /** Star size factor: pixels per unit at unit depth (scale with canvas height). */
+      setPointScale: function (value) { ringUniforms.uScale.value = value; },
+      /** Fade the whole mark, ring included (used by the hero's hover reveal). */
+      setOpacity: function (value) {
+        var o = Math.max(0, Math.min(1, value));
+        solids.forEach(function (m) { m.transparent = o < 0.999; m.depthWrite = o >= 0.999; m.opacity = o; });
+        ringUniforms.uOpacity.value = o;
+      },
+      dispose: function () { trash.forEach(function (item) { item.dispose(); }); },
+    };
   }
 
 

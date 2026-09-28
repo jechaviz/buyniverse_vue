@@ -52,10 +52,26 @@ export default {
       if (visible && document.visibilityState === "visible") controller.start();
       else controller.stop();
     };
+    const stageCoords = (event) => {
+      const r = stage.value.getBoundingClientRect();
+      return [((event.clientX - r.left) / r.width) * 2 - 1, ((event.clientY - r.top) / r.height) * 2 - 1];
+    };
     const onPointer = (event) => {
       if (!controller || !stage.value) return;
-      const r = stage.value.getBoundingClientRect();
-      controller.setPointer(((event.clientX - r.left) / r.width) * 2 - 1, ((event.clientY - r.top) / r.height) * 2 - 1);
+      const [x, y] = stageCoords(event);
+      controller.setPointer(x, y);
+      // Hovering the galactic core reveals it as the brand tag.
+      controller.setHover(x, y);
+    };
+    const onLeave = () => controller && controller.clearHover();
+    // Touch has no hover: a tap on the core reveals the tag for a moment.
+    let tapTimer = 0;
+    const onTap = (event) => {
+      if (!controller || !stage.value || event.pointerType === "mouse") return;
+      const [x, y] = stageCoords(event);
+      controller.setHover(x, y);
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => controller && controller.clearHover(), 2600);
     };
 
     const mount = () => {
@@ -98,13 +114,20 @@ export default {
         ro.observe(stage.value);
       }
       document.addEventListener("visibilitychange", sync);
-      if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) window.addEventListener("pointermove", onPointer, { passive: true });
+      if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+        window.addEventListener("pointermove", onPointer, { passive: true });
+        document.documentElement.addEventListener("mouseleave", onLeave);
+      }
+      window.addEventListener("pointerdown", onTap, { passive: true });
     });
 
     onBeforeUnmount(() => {
       disposed = true;
       document.removeEventListener("visibilitychange", sync);
       window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onTap);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      clearTimeout(tapTimer);
       io && io.disconnect();
       ro && ro.disconnect();
       controller && controller.dispose();
