@@ -1,0 +1,8 @@
+# Tables the published release needs. ops/Deploy-Buyniverse.ps1 refuses to
+# publish while any of them is missing (a migration is still pending).
+tenant_supplier_compliance
+tenant_compliance_documents
+cfdi_series
+cfdi_folios
+cfdi_documents
+cfdi_stamp_ledger

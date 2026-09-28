@@ -27,18 +27,25 @@ if (-not (Test-Path -LiteralPath (Join-Path $projectRoot "ops/migrations/$Migrat
 
 $php = @'
 <?php
-$configPath = getenv("BUYNIVERSE_MIGRATION_CONFIG"); $sqlPath = getenv("BUYNIVERSE_MIGRATION_SQL");
-if (!is_string($configPath) || !is_file($configPath) || !is_readable($configPath)) throw new RuntimeException("Controlled migration configuration is unavailable");
-if (!is_string($sqlPath) || !is_file($sqlPath)) throw new RuntimeException("Migration file is unavailable");
-$config = require $configPath;
-$pdo = new PDO($config["db_dsn"], $config["db_user"], $config["db_password"], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]);
-$sql = preg_replace("/^--.*$/m", "", (string) file_get_contents($sqlPath));
-$count = 0;
-foreach (preg_split("/;\\s*(?:\\r?\\n|$)/", $sql) as $statement) {
-  $statement = trim($statement);
-  if ($statement !== "") { $pdo->exec($statement); $count++; }
-}
-echo "MIGRATION_OK statements=$count\n";
+// Errors are printed (statement number and database message, never secrets)
+// because the server CLI runs with display_errors off.
+try {
+  $configPath = getenv("BUYNIVERSE_MIGRATION_CONFIG"); $sqlPath = getenv("BUYNIVERSE_MIGRATION_SQL");
+  if (!is_string($configPath) || !is_file($configPath) || !is_readable($configPath)) throw new RuntimeException("Migration configuration is unavailable: " . $configPath);
+  if (!is_string($sqlPath) || !is_file($sqlPath)) throw new RuntimeException("Migration file is unavailable");
+  $config = require $configPath;
+  $pdo = new PDO($config["db_dsn"], $config["db_user"], $config["db_password"], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => false]);
+  $sql = preg_replace("/^--.*$/m", "", (string) file_get_contents($sqlPath));
+  $count = 0;
+  foreach (preg_split("/;\s*(?:\r?\n|$)/", $sql) as $statement) {
+    $statement = trim($statement);
+    if ($statement === "") continue;
+    $count++;
+    try { $pdo->exec($statement); }
+    catch (Throwable $error) { fwrite(STDOUT, "STATEMENT $count FAILED: " . substr(preg_replace("/\s+/", " ", $statement), 0, 100) . PHP_EOL . "  " . $error->getMessage() . PHP_EOL); exit(2); }
+  }
+  echo "MIGRATION_OK statements=$count", PHP_EOL;
+} catch (Throwable $error) { fwrite(STDOUT, "MIGRATION_ERROR " . get_class($error) . ": " . $error->getMessage() . PHP_EOL); exit(3); }
 '@
 $encodedPhp = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($php))
 $sshOptions = @('-o', 'BatchMode=yes', '-o', 'ConnectTimeout=25', '-o', 'ServerAliveInterval=5', '-o', 'ServerAliveCountMax=3')

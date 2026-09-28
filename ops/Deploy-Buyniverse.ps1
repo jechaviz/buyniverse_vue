@@ -35,6 +35,15 @@ case "$release_dir" in
 esac
 
 git fetch --prune origin main
+# Refuse the release, before touching the live tree, while a migration it
+# needs is pending: every table in ops/schema-requirements.txt must exist.
+required="$(git show origin/main:ops/schema-requirements.txt 2>/dev/null | grep -v '^#' | grep -v '^[[:space:]]*$' || true)"
+if [ -n "$required" ]; then
+  php_bin=php
+  if test -x /opt/alt/php84/usr/bin/php; then php_bin=/opt/alt/php84/usr/bin/php; fi
+  printf '%s\n' "$required" | "$php_bin" -r '$c = require getenv("HOME") . "/buyniverse-runtime.php"; $p = new PDO($c["db_dsn"], $c["db_user"], $c["db_password"]); $m = []; foreach (file("php://stdin", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $t) { $s = $p->prepare("SHOW TABLES LIKE ?"); $s->execute([trim($t)]); if (!$s->fetchColumn()) $m[] = trim($t); } if ($m) { fwrite(STDERR, "missing tables: " . implode(", ", $m) . PHP_EOL); exit(1); } echo "SCHEMA_OK", PHP_EOL;' \
+    || { echo "Pending migration: the release needs tables that do not exist yet; nothing was published." >&2; exit 65; }
+fi
 git reset --hard origin/main
 test -d dist
 test -f dist/index.html
