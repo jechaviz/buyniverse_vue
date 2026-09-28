@@ -112,7 +112,7 @@ const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=6");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
 const BnNavbar = load("./app/experience/BnNavbar.vue?v=4");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=6");
+const AuthModal = load("./app/components/AuthModal.vue?v=7");
 
 export default {
   components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },

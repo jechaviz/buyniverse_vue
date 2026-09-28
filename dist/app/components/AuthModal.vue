@@ -1,7 +1,7 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md transition-all overflow-y-auto">
+  <div v-if="open" class="fixed inset-0 z-100 flex p-4 bg-slate-950/70 backdrop-blur-md transition-all overflow-y-auto">
     <div
-      class="relative my-8 w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-6 sm:p-8 shadow-2xl dark:border-slate-800 dark:bg-slate-900/95 space-y-5"
+      class="relative m-auto w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-6 sm:p-8 shadow-2xl dark:border-slate-800 dark:bg-slate-900/95 space-y-5"
       role="dialog"
       aria-modal="true"
     >

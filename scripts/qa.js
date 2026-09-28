@@ -268,6 +268,16 @@ const seoResult = runSeoAudit(read);
 const communicationsResult = runCommunicationsAudit(root, read);
 const documentLibraryResult = runDocumentLibraryAudit(root, read);
 
+// #app must not keep a transform/filter after its entrance animation: that makes it
+// the containing block for position: fixed and pushes every modal off-screen.
+{
+  const critical = read("app/critical.css").replace(/\/\*[\s\S]*?\*\//g, "");
+  const entrance = (critical.match(/@keyframes appEntrance \{[\s\S]*?\n\}/) || [""])[0];
+  const appRules = critical.split("}").filter((rule) => /#app\b[^{]*\{/.test(rule) && !/#app-boot/.test(rule)).join("}");
+  if (/transform|filter|perspective|will-change/.test(entrance + appRules) || /appEntrance[^;]*forwards/.test(critical))
+    throw new Error("#app keeps a containing-block property after its entrance animation");
+}
+
 console.log(
   JSON.stringify(
     {

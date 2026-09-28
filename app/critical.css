@@ -83,13 +83,17 @@ html[data-app-ready="false"] #app {
   pointer-events: none !important;
 }
 
+/* Opacity only, and no fill mode: #app must never keep a transform, filter or
+   similar once the entrance ends. Any of those makes #app the containing block
+   for position: fixed, and every modal, drawer and toast is then laid out
+   against the full page height instead of the viewport. */
 html[data-app-ready="true"] #app:not([v-cloak]) {
-  animation: appEntrance 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: appEntrance 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes appEntrance {
-  from { opacity: 0.4; transform: translateY(2px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0.4; }
+  to { opacity: 1; }
 }
 
 #app-boot {
