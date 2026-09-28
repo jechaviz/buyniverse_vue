@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Combined entry point so a CFDI and its Pagos 2.0 complement validate in one pass. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:buyniverse:cfdi-all">
+  <xs:import namespace="http://www.sat.gob.mx/cfd/4" schemaLocation="cfdv40.xsd"/>
+  <xs:import namespace="http://www.sat.gob.mx/Pagos20" schemaLocation="Pagos20.xsd"/>
+</xs:schema>

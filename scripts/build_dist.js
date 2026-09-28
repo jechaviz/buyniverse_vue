@@ -260,6 +260,11 @@ async function build() {
     }
   }
 
+  // Server-only CFDI module: PHP libraries, SAT catalogues and XSDs are copied
+  // byte for byte (XSDs must not be rewritten). Apache denies web access to it.
+  fs.cpSync(path.join(rootDir, "cfdi"), path.join(distDir, "cfdi"), { recursive: true });
+  console.log("[DIST] Included server module: cfdi/");
+
   const savedPct = (((rawBytes - minBytes) / (rawBytes || 1)) * 100).toFixed(1);
   console.log("\n=== BUILD COMPLETE ===");
   console.log(`Total Files Processed: ${fileCount}`);
