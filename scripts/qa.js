@@ -224,7 +224,7 @@ for (const file of ["app/lib/onboarding.js", "app/pages/OnboardingPage.vue", "op
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Social onboarding artifact is missing ${file}`);
 }
 const onboardingSource = read("app/pages/OnboardingPage.vue");
-const serverSource = read("index.php");
+const serverSource = ["index.php", "identity_service.php", "onboarding_service.php"].map(read).join("\n");
 for (const [file, token] of [
   ["app/router.js", 'r("/onboarding", Onboarding, { onboarding: true })'],
   ["app/App.vue", "route.meta.onboarding === true"],

@@ -240,6 +240,8 @@ async function build() {
     "tenant_service.php",
     "auction_service.php",
     "fiscal_rules.php",
+    "identity_service.php",
+    "onboarding_service.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",

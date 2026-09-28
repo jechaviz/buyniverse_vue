@@ -33,7 +33,8 @@ function runSecurityAudit(root, read, vueFiles) {
   if (server.includes("document-domain")) throw new Error("Permissions-Policy contains an unsupported document-domain directive");
   if (server.includes('raw_path.startswith("/buyniverse_vue/"):\n            return True')) throw new Error("Static server exposes the full project directory");
 
-  const phpShim = read("index.php");
+  // The PHP boundary spans the entry point and the services it loads.
+  const phpShim = ["index.php", "identity_service.php", "onboarding_service.php"].map(read).join("\n");
   const buildScript = read("scripts/build_dist.js");
   const htaccess = read(".htaccess");
   const mailService = read("email_service.php");
