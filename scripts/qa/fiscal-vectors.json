@@ -1,0 +1,143 @@
+{
+  "validators": [
+    ["mx_rfc", "SAT970701NN3", true, null, "moral"],
+    ["mx_rfc", "EKU9003173C9", true, null, "moral"],
+    ["mx_rfc", "GODE561231GR8", true, null, "fisica"],
+    ["mx_rfc", "gode-561231-gr8", true, null, "fisica"],
+    ["mx_rfc", "XAXX010101000", false, "generic"],
+    ["mx_rfc", "XEXX010101000", false, "generic"],
+    ["mx_rfc", "ABC991332AB1", false, "date"],
+    ["mx_rfc", "SAT97070NN3", false, "format"],
+    ["us_ein", "12-3456789", true],
+    ["us_ein", "07-1234567", false, "prefix"],
+    ["us_ein", "1234567", false, "format"],
+    ["ca_bn", "123456782", true],
+    ["ca_bn", "123456782RT0001", true],
+    ["ca_bn", "123456789", false, "checksum"],
+    ["es_nif", "12345678Z", true],
+    ["es_nif", "12345678A", false, "checksum"],
+    ["es_nif", "X1234567L", true],
+    ["es_nif", "B12345674", true],
+    ["es_nif", "B12345675", false, "checksum"],
+    ["pt_nif", "501964843", true],
+    ["pt_nif", "501964844", false, "checksum"],
+    ["fr_siren", "732829320", true],
+    ["fr_siren", "732829321", false, "checksum"],
+    ["de_vat", "DE136695976", true],
+    ["de_vat", "DE136695977", false, "checksum"],
+    ["it_piva", "00743110157", true],
+    ["it_piva", "00743110158", false, "checksum"],
+    ["be_enterprise", "0403170701", true],
+    ["be_enterprise", "0403170702", false, "checksum"],
+    ["pl_nip", "5261040828", true],
+    ["pl_nip", "5261040829", false, "checksum"],
+    ["gb_vat", "GB980780684", true],
+    ["gb_vat", "GB980780685", false, "checksum"],
+    ["co_nit", "800197268-4", true],
+    ["co_nit", "800197268-5", false, "checksum"],
+    ["cl_rut", "60.803.000-K", true],
+    ["cl_rut", "60803000-1", false, "checksum"],
+    ["pe_ruc", "20131312955", true],
+    ["pe_ruc", "20131312956", false, "checksum"],
+    ["pe_ruc", "30131312955", false, "format"],
+    ["ar_cuit", "33-69345023-9", true],
+    ["ar_cuit", "33-69345023-8", false, "checksum"],
+    ["br_cnpj", "33.000.167/0001-01", true],
+    ["br_cnpj", "12ABC34501DE35", true],
+    ["br_cnpj", "33000167000102", false, "checksum"],
+    ["br_cnpj", "11111111111111", false, "format"],
+    ["ec_ruc", "1790011674001", true],
+    ["ec_ruc", "9990011674001", false, "prefix"],
+    ["gt_nit", "576937K", true],
+    ["gt_nit", "5769371", false, "checksum"],
+    ["cr_id", "3101123456", true],
+    ["cr_id", "0101123456", false, "format"],
+    ["pa_ruc", "155596713-2-2015", true],
+    ["pa_ruc", "8-123-4567", true],
+    ["pa_ruc", "8123", false, "format"],
+    ["do_rnc", "101010632", true],
+    ["do_rnc", "101010633", false, "checksum"],
+    ["uy_rut", "211003420017", true],
+    ["uy_rut", "211003420018", false, "checksum"],
+    ["in_gstin", "27AAPFU0939F1ZV", true],
+    ["in_gstin", "27AAPFU0939F1ZW", false, "checksum"],
+    ["generic", "HRB 12345", true],
+    ["generic", "?", false, "format"]
+  ],
+  "evaluations": [
+    {
+      "name": "MX company ready to enroll, documents pending",
+      "country": "MX",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE", "taxRegime": "601", "subdivision": "CMX", "postalCode": "06300" },
+      "expect": { "enrollmentReady": true, "formal": false, "status": { "mx.rfc": "met", "mx.regime": "met", "mx.csf": "pending", "mx.opinion32d": "pending" }, "absent": ["mx.repse", "mx.border"] }
+    },
+    {
+      "name": "MX regime that cannot invoice",
+      "country": "MX",
+      "profile": { "accountKind": "business", "taxId": "GODE561231GR8", "legalName": "Emma Gómez Díaz", "taxRegime": "605", "subdivision": "JAL", "postalCode": "44100" },
+      "expect": { "enrollmentReady": false, "status": { "mx.regime": "invalid" }, "codes": { "mx.regime": "regime_not_supplier" } }
+    },
+    {
+      "name": "MX company RFC with an individual regime",
+      "country": "MX",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE", "taxRegime": "612", "subdivision": "CMX", "postalCode": "06300" },
+      "expect": { "enrollmentReady": false, "codes": { "mx.regime": "regime_person_mismatch" } }
+    },
+    {
+      "name": "MX specialized services require REPSE",
+      "country": "MX",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE", "taxRegime": "601", "subdivision": "NLE", "postalCode": "64000", "answers": { "specializedServices": true } },
+      "expect": { "enrollmentReady": false, "status": { "mx.repse": "missing", "mx.repseDocument": "pending", "mx.border": "missing" } }
+    },
+    {
+      "name": "MX corporate suffix and postal mismatch warn",
+      "country": "MX",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE S.A. DE C.V.", "taxRegime": "601", "subdivision": "YUC", "postalCode": "06300" },
+      "expect": { "enrollmentReady": true, "warnings": { "mx.legalName": "mx_corporate_suffix", "mx.postalCode": "postal_state_mismatch" } }
+    },
+    {
+      "name": "MX expired compliance opinion",
+      "country": "MX",
+      "now": "2026-09-28T12:00:00Z",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE", "taxRegime": "601", "subdivision": "CMX", "postalCode": "06300", "documents": { "mx.csf": { "issuedOn": "2026-09-01" }, "mx.opinion32d": { "issuedOn": "2026-08-01" } } },
+      "expect": { "formal": false, "status": { "mx.csf": "met", "mx.opinion32d": "expired" } }
+    },
+    {
+      "name": "MX formal supplier",
+      "country": "MX",
+      "now": "2026-09-28T12:00:00Z",
+      "profile": { "accountKind": "business", "taxId": "EKU9003173C9", "legalName": "ESCUELA KEMPER URGATE", "taxRegime": "601", "subdivision": "CMX", "postalCode": "06300", "documents": { "mx.csf": { "issuedOn": "2026-09-01" }, "mx.opinion32d": { "issuedOn": "2026-09-20" } } },
+      "expect": { "enrollmentReady": true, "formal": true }
+    },
+    {
+      "name": "US California needs a county and a permit",
+      "country": "US",
+      "profile": { "accountKind": "business", "taxId": "12-3456789", "legalName": "Acme Supply LLC", "subdivision": "CA", "answers": { "sellsTaxable": true } },
+      "expect": { "enrollmentReady": false, "status": { "us.county": "missing", "us.salesTaxPermit": "missing" }, "absent": ["us.grossReceipts", "us.homeRule"] }
+    },
+    {
+      "name": "US Oregon has no sales tax obligations",
+      "country": "US",
+      "profile": { "accountKind": "business", "taxId": "12-3456789", "legalName": "Acme Supply LLC", "subdivision": "OR", "answers": { "sellsTaxable": true } },
+      "expect": { "enrollmentReady": true, "absent": ["us.county", "us.salesTaxPermit", "us.grossReceipts"] }
+    },
+    {
+      "name": "US Hawaii gross receipts",
+      "country": "US",
+      "profile": { "accountKind": "business", "taxId": "12-3456789", "legalName": "Aloha Supply LLC", "subdivision": "HI", "county": "003" },
+      "expect": { "enrollmentReady": false, "status": { "us.grossReceipts": "missing", "us.county": "met" } }
+    },
+    {
+      "name": "Canada small supplier in Quebec",
+      "country": "CA",
+      "profile": { "accountKind": "business", "taxId": "123456782", "legalName": "Fournitures Nord Inc.", "subdivision": "QC", "declarations": { "ca.smallSupplier": true } },
+      "expect": { "enrollmentReady": true, "status": { "ca.smallSupplier": "met" }, "absent": ["ca.gstAccount", "ca.qst"] }
+    },
+    {
+      "name": "India GSTIN state must match",
+      "country": "IN",
+      "profile": { "accountKind": "business", "taxId": "27AAPFU0939F1ZV", "legalName": "Unilever Supplies", "subdivision": "29" },
+      "expect": { "enrollmentReady": false, "codes": { "in.taxId": "gstin_state_mismatch" } }
+    }
+  ]
+}

@@ -87,7 +87,7 @@ function runSecurityAudit(root, read, vueFiles) {
     "Options -Indexes", "Require all denied", "Content-Security-Policy", "Strict-Transport-Security",
     "Permissions-Policy", "X-Permitted-Cross-Domain-Policies", "X-Download-Options",
     "RewriteCond %{REQUEST_METHOD} !^(?:GET|HEAD)$", "RewriteRule ^(?:\\.git|node_modules|dist|scripts|tests?|docs)",
-    "RewriteRule \\.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml)$", "package(?:-lock)?\\.json",
+    "RewriteRule \\.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml|bak|old|orig|swp)$", "package(?:-lock)?\\.json",
   ]) {
     if (!htaccess.includes(token)) throw new Error(`Apache static hardening is missing ${token}`);
   }
@@ -95,8 +95,8 @@ function runSecurityAudit(root, read, vueFiles) {
   for (const runtimeFile of ["index.php", ".htaccess", "email_service.php", "email_worker.php", "email_templates.json", "manifest.json", "robots.txt", "sitemap.xml"]) {
     if (!buildScript.includes(`"${runtimeFile}"`)) throw new Error(`Published runtime artifact omits ${runtimeFile}`);
   }
-  if (!htaccess.includes("email_service\\.php|email_worker\\.php|email_templates\\.json"))
-    throw new Error("HTTP access to transactional-mail implementation is not denied");
+  if (!htaccess.includes('<FilesMatch "(?i)^(?!index\\.php$).+\\.(?:php|phtml|php8)$">') || !htaccess.includes("email_templates\\.json"))
+    throw new Error("HTTP access to backend libraries and mail templates is not denied");
   const authModal = read("app/components/AuthModal.vue");
   for (const token of ["isDemoRuntime", "no ingreses credenciales reales", "Disponible únicamente con identidad federada de producción."]) {
     if (!authModal.includes(token)) throw new Error(`Public demo identity safeguard is missing ${token}`);

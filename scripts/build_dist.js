@@ -239,6 +239,7 @@ async function build() {
     "index.php",
     "tenant_service.php",
     "auction_service.php",
+    "fiscal_rules.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",
