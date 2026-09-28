@@ -48,6 +48,23 @@ return [
             'client_secret_ref' => 'secret-manager://buyniverse/google/client-secret',
             'redirect_uri' => 'https://buyniverse.com/api/v1/auth/google/callback',
         ],
+        // Microsoft accepts personal and work or school accounts with tenant
+        // "common"; pin a directory tenant ID to admit only one organization.
+        'microsoft_oidc' => [
+            'enabled' => false,
+            'client_id' => 'REPLACE_MICROSOFT_APPLICATION_ID',
+            'client_secret' => '', // e.g. getenv('BUYNIVERSE_MICROSOFT_CLIENT_SECRET') ?: ''
+            'client_secret_ref' => 'secret-manager://buyniverse/microsoft/client-secret',
+            'redirect_uri' => 'https://buyniverse.com/api/v1/auth/microsoft/callback',
+            'tenant' => 'common',
+        ],
+        'linkedin_oidc' => [
+            'enabled' => false,
+            'client_id' => 'REPLACE_LINKEDIN_CLIENT_ID',
+            'client_secret' => '', // e.g. getenv('BUYNIVERSE_LINKEDIN_CLIENT_SECRET') ?: ''
+            'client_secret_ref' => 'secret-manager://buyniverse/linkedin/client-secret',
+            'redirect_uri' => 'https://buyniverse.com/api/v1/auth/linkedin/callback',
+        ],
         'facebook_oauth' => [
             'enabled' => false,
             'client_id' => 'REPLACE_FACEBOOK_APP_ID',

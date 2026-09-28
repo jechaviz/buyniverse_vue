@@ -141,14 +141,11 @@ html:not(.dark) #app-boot .boot-card {
 #app-boot[hidden] { display: none !important; }
 
 #app-boot .boot-mark {
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border-radius: 0.9rem;
-  color: #fff;
-  background: var(--accent);
-  box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--accent) 78%, transparent);
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px rgba(109, 74, 255, 0.35));
 }
 
 #app-boot .boot-spinner {

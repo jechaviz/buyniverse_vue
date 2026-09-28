@@ -5,7 +5,7 @@
     <!-- Global Command Palette & Modals -->
     <CommandPalette :open="commandOpen" @close="commandOpen = false" />
     <AppModals :ui="ui" :locale="store.locale" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
-    <AuthModal :open="authOpen" :initial-mode="authMode" @close="authOpen = false" />
+    <AuthModal :open="authOpen" :initial-mode="authMode" :error="authError" @close="closeAuth" />
 
     <!-- 1. FULL-BLEED PUBLIC LANDING PAGE LAYOUT -->
     <div v-if="isLanding" class="flex-1 flex flex-col min-h-screen">
@@ -110,9 +110,9 @@ const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=6");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
-const BnNavbar = load("./app/experience/BnNavbar.vue?v=4");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=5");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=7");
+const AuthModal = load("./app/components/AuthModal.vue?v=10");
 
 export default {
   components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },
@@ -130,7 +130,17 @@ export default {
     const dark = ref(preference.read("buyniverse-vue-theme") !== "light");
     const notificationsOpen = ref(false), accountOpen = ref(false), commandOpen = ref(false);
     const authMode = ref(route.query.auth === "register" ? "register" : "login");
-    const authOpen = ref(["login", "register"].includes(route.query.auth));
+    const authOpen = ref(["login", "register"].includes(route.query.auth) || Boolean(route.query.login_error));
+    // The federated callback returns here with ?login_error=cancelled|identity.
+    const authError = computed(() => (typeof route.query.login_error === "string" ? route.query.login_error : ""));
+    watch(authError, (error) => { if (error) { authMode.value = "login"; authOpen.value = true; } });
+    const closeAuth = () => {
+      authOpen.value = false;
+      if (route.query.login_error || route.query.auth) {
+        const query = { ...route.query }; delete query.login_error; delete query.auth;
+        router.replace({ query });
+      }
+    };
     const locale = store.locale;
     let stopTranslator = () => {};
 
@@ -327,7 +337,7 @@ export default {
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace, openWorkspaceShortcut, workspaceShortcutLabel,
       route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
+      accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };

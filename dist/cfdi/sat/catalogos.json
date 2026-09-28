@@ -1,0 +1,606 @@
+{
+ "source": "catCFDI_V_4_20260918.xls",
+ "forma_pago": {
+  "01": "Efectivo",
+  "02": "Cheque nominativo",
+  "03": "Transferencia electrónica de fondos",
+  "04": "Tarjeta de crédito",
+  "05": "Monedero electrónico",
+  "06": "Dinero electrónico",
+  "08": "Vales de despensa",
+  "12": "Dación en pago",
+  "13": "Pago por subrogación",
+  "14": "Pago por consignación",
+  "15": "Condonación",
+  "17": "Compensación",
+  "23": "Novación",
+  "24": "Confusión",
+  "25": "Remisión de deuda",
+  "26": "Prescripción o caducidad",
+  "27": "A satisfacción del acreedor",
+  "28": "Tarjeta de débito",
+  "29": "Tarjeta de servicios",
+  "30": "Aplicación de anticipos",
+  "31": "Intermediario pagos",
+  "99": "Por definir"
+ },
+ "metodo_pago": {
+  "PUE": "Pago en una sola exhibición",
+  "PPD": "Pago en parcialidades o diferido"
+ },
+ "moneda": [
+  "MXN",
+  "USD",
+  "EUR"
+ ],
+ "exportacion": {
+  "01": "No aplica",
+  "02": "Definitiva con clave A1",
+  "03": "Temporal",
+  "04": "Definitiva con clave distinta a A1 o cuando no existe enajenación en términos del CFF"
+ },
+ "objeto_imp": {
+  "01": "No objeto de impuesto.",
+  "02": "Sí objeto de impuesto.",
+  "03": "Sí objeto del impuesto y no obligado al desglose.",
+  "04": "Sí objeto del impuesto y no causa impuesto.",
+  "05": "Sí objeto del impuesto, IVA crédito PODEBI.",
+  "06": "Sí objeto del IVA, No traslado IVA.",
+  "07": "No traslado del IVA, Sí desglose IEPS.",
+  "08": "No traslado del IVA, No desglose IEPS."
+ },
+ "tipo_relacion": {
+  "01": "Nota de crédito de los documentos relacionados",
+  "02": "Nota de débito de los documentos relacionados",
+  "03": "Devolución de mercancía sobre facturas o traslados previos",
+  "04": "Sustitución de los CFDI previos",
+  "05": "Traslados de mercancías facturados previamente",
+  "06": "Factura generada por los traslados previos",
+  "07": "CFDI por aplicación de anticipo"
+ },
+ "periodicidad": {
+  "01": "Diario",
+  "02": "Semanal",
+  "03": "Quincenal",
+  "04": "Mensual",
+  "05": "Bimestral"
+ },
+ "meses": {
+  "01": "Enero",
+  "02": "Febrero",
+  "03": "Marzo",
+  "04": "Abril",
+  "05": "Mayo",
+  "06": "Junio",
+  "07": "Julio",
+  "08": "Agosto",
+  "09": "Septiembre",
+  "10": "Octubre",
+  "11": "Noviembre",
+  "12": "Diciembre",
+  "13": "Enero-Febrero",
+  "14": "Marzo-Abril",
+  "15": "Mayo-Junio",
+  "16": "Julio-Agosto",
+  "17": "Septiembre-Octubre",
+  "18": "Noviembre-Diciembre"
+ },
+ "regimen_fiscal": {
+  "601": {
+   "name": "General de Ley Personas Morales",
+   "fisica": false,
+   "moral": true
+  },
+  "603": {
+   "name": "Personas Morales con Fines no Lucrativos",
+   "fisica": false,
+   "moral": true
+  },
+  "605": {
+   "name": "Sueldos y Salarios e Ingresos Asimilados a Salarios",
+   "fisica": true,
+   "moral": false
+  },
+  "606": {
+   "name": "Arrendamiento",
+   "fisica": true,
+   "moral": false
+  },
+  "607": {
+   "name": "Régimen de Enajenación o Adquisición de Bienes",
+   "fisica": true,
+   "moral": false
+  },
+  "608": {
+   "name": "Demás ingresos",
+   "fisica": true,
+   "moral": false
+  },
+  "610": {
+   "name": "Residentes en el Extranjero sin Establecimiento Permanente en México",
+   "fisica": true,
+   "moral": true
+  },
+  "611": {
+   "name": "Ingresos por Dividendos (socios y accionistas)",
+   "fisica": true,
+   "moral": false
+  },
+  "612": {
+   "name": "Personas Físicas con Actividades Empresariales y Profesionales",
+   "fisica": true,
+   "moral": false
+  },
+  "614": {
+   "name": "Ingresos por intereses",
+   "fisica": true,
+   "moral": false
+  },
+  "615": {
+   "name": "Régimen de los ingresos por obtención de premios",
+   "fisica": true,
+   "moral": false
+  },
+  "616": {
+   "name": "Sin obligaciones fiscales",
+   "fisica": true,
+   "moral": false
+  },
+  "620": {
+   "name": "Sociedades Cooperativas de Producción que optan por diferir sus ingresos",
+   "fisica": false,
+   "moral": true
+  },
+  "621": {
+   "name": "Incorporación Fiscal",
+   "fisica": true,
+   "moral": false
+  },
+  "622": {
+   "name": "Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras",
+   "fisica": false,
+   "moral": true
+  },
+  "623": {
+   "name": "Opcional para Grupos de Sociedades",
+   "fisica": false,
+   "moral": true
+  },
+  "624": {
+   "name": "Coordinados",
+   "fisica": false,
+   "moral": true
+  },
+  "625": {
+   "name": "Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas",
+   "fisica": true,
+   "moral": false
+  },
+  "626": {
+   "name": "Régimen Simplificado de Confianza",
+   "fisica": true,
+   "moral": true
+  }
+ },
+ "uso_cfdi": {
+  "G01": {
+   "name": "Adquisición de mercancías.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "G02": {
+   "name": "Devoluciones, descuentos o bonificaciones.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "616",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "G03": {
+   "name": "Gastos en general.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I01": {
+   "name": "Construcciones.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I02": {
+   "name": "Mobiliario y equipo de oficina por inversiones.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I03": {
+   "name": "Equipo de transporte.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I04": {
+   "name": "Equipo de computo y accesorios.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I05": {
+   "name": "Dados, troqueles, moldes, matrices y herramental.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I06": {
+   "name": "Comunicaciones telefónicas.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I07": {
+   "name": "Comunicaciones satelitales.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "I08": {
+   "name": "Otra maquinaria y equipo.",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "606",
+    "612",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "625",
+    "626"
+   ]
+  },
+  "D01": {
+   "name": "Honorarios médicos, dentales y gastos hospitalarios.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D02": {
+   "name": "Gastos médicos por incapacidad o discapacidad.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D03": {
+   "name": "Gastos funerales.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D04": {
+   "name": "Donativos.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D05": {
+   "name": "Intereses reales efectivamente pagados por créditos hipotecarios (casa habitación).",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D06": {
+   "name": "Aportaciones voluntarias al SAR.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D07": {
+   "name": "Primas por seguros de gastos médicos.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D08": {
+   "name": "Gastos de transportación escolar obligatoria.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D09": {
+   "name": "Depósitos en cuentas para el ahorro, primas que tengan como base planes de pensiones.",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "D10": {
+   "name": "Pagos por servicios educativos (colegiaturas).",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605",
+    "606",
+    "608",
+    "611",
+    "612",
+    "614",
+    "607",
+    "615",
+    "625"
+   ]
+  },
+  "S01": {
+   "name": "Sin efectos fiscales.  ",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "605",
+    "606",
+    "608",
+    "610",
+    "611",
+    "612",
+    "614",
+    "616",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "607",
+    "615",
+    "625",
+    "626"
+   ]
+  },
+  "CP01": {
+   "name": "Pagos",
+   "fisica": true,
+   "moral": true,
+   "regimenes": [
+    "601",
+    "603",
+    "605",
+    "606",
+    "608",
+    "610",
+    "611",
+    "612",
+    "614",
+    "616",
+    "620",
+    "621",
+    "622",
+    "623",
+    "624",
+    "607",
+    "615",
+    "625",
+    "626"
+   ]
+  },
+  "CN01": {
+   "name": "Nómina",
+   "fisica": true,
+   "moral": false,
+   "regimenes": [
+    "605.0"
+   ]
+  }
+ }
+}

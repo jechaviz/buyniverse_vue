@@ -152,7 +152,7 @@
 </template>
 
 <script>
-const { inject, computed, ref, onMounted, defineAsyncComponent } = Vue;
+const { inject, computed, ref, watch, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
@@ -172,6 +172,13 @@ export default {
     const market = computed(() => { catalogVersion.value; return M.marketState(store.state); });
     const all = computed(() => M.profiles(market.value.state));
     const supplier = computed(() => all.value.find((p) => p.id === route.params.supplierId) || null);
+    // Title and share cards use the supplier's name, never its internal id.
+    watch(() => supplier.value && supplier.value.name, (name) => {
+      if (!name) return;
+      const title = name + " · Buyniverse";
+      document.title = title;
+      for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) document.querySelector(selector)?.setAttribute("content", title);
+    }, { immediate: true });
     const known = computed(() => new Set(all.value.map((p) => p.id)));
     const shortlist = computed(() => String(route.query.shortlist || "").split(",").filter((id) => known.value.has(id)).slice(0, 50));
     const inShortlist = computed(() => Boolean(supplier.value) && shortlist.value.includes(supplier.value.id));

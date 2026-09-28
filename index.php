@@ -181,7 +181,7 @@ require_once __DIR__ . '/onboarding_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config(); workspace_session(); $providers = [];
-    foreach (['google','facebook'] as $provider) {
+    foreach (array_keys(social_providers()) as $provider) {
         $definition = social_provider_config($config, $provider);
         if ($definition !== null) $providers[] = ['id'=>$definition['id'], 'name'=>$definition['name'], 'audience'=>'individual'];
     }
@@ -192,7 +192,7 @@ if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
     $config = workspace_config();
     workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true]);
 }
-if (preg_match('#^/api/v1/auth/(google|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
+if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config(); $session = workspace_session();
     if ($socialMatch[2] === 'start') social_start($config, $socialMatch[1]);

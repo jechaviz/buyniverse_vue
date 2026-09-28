@@ -1,13 +1,19 @@
 // Minimal static dev server with SPA fallback, for machines without Python.
-//   bun tools/dev-server.js [port] [--allow-save]
+//   bun tools/dev-server.js [port] [--allow-save] [--production] [--providers=google,microsoft]
 // --allow-save enables POST /__save {path, b64}, used only by the asset
 // renderers under tools/ to write generated files into the repository. It is
 // off by default and refuses any path outside assets/.
+// --production answers the runtime policy as production (no demo), and
+// --providers=... simulates configured sign-in providers, so the public
+// access states can be exercised without the PHP backend.
 const path = require("path");
 const root = path.resolve(__dirname, "..");
 const args = process.argv.slice(2);
 const port = Number(args.find((a) => /^\d+$/.test(a)) || 4178);
 const allowSave = args.includes("--allow-save");
+const production = args.includes("--production");
+const providers = ((args.find((a) => a.startsWith("--providers=")) || "").split("=")[1] || "").split(",").filter(Boolean);
+const providerNames = { google: "Google", microsoft: "Microsoft", linkedin: "LinkedIn", facebook: "Facebook" };
 
 const types = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
@@ -29,6 +35,9 @@ Bun.serve({
       await Bun.write(target, bytes);
       return Response.json({ ok: true, bytes: bytes.length });
     }
+    if (production && url.pathname === "/api/v1/runtime") return Response.json({ mode: "production", serverAuth: true });
+    if (production && url.pathname === "/api/v1/auth/providers") return Response.json({ providers: providers.filter((id) => providerNames[id]).map((id) => ({ id, name: providerNames[id], audience: "individual" })) });
+    if (production && url.pathname === "/api/v1/workspace-state") return Response.json({ authenticated: false, state: null, version: 0, csrf: "0".repeat(64), mode: "production", context: null });
     // No PHP here: the API is absent, exactly like a static host. The app
     // then falls back to its demo runtime instead of parsing HTML as JSON.
     if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return Response.json({ error: "No backend in the dev server" }, { status: 404 });

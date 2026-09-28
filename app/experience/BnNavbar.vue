@@ -11,7 +11,7 @@
           <div class="bn-lang bn-nav__desktop-only" role="group" :aria-label="store.t('Language')">
             <button v-for="code in ['es', 'en']" :key="code" type="button" :aria-pressed="locale === code" @click="$emit('set-locale', code)">{{ code.toUpperCase() }}</button>
           </div>
-          <button type="button" class="bn-icon-btn" :aria-label="store.t(dark ? 'Light mode' : 'Dark mode')" @click="$emit('toggle-theme')">
+          <button type="button" class="bn-icon-btn bn-nav__theme" :aria-label="store.t(dark ? 'Light mode' : 'Dark mode')" @click="$emit('toggle-theme')">
             <i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'"></i>
           </button>
 
@@ -39,6 +39,7 @@
           <button type="button" @click="menuOpen = false; $emit('open-auth', 'login')">{{ store.t("Log in") }}</button>
           <button type="button" @click="menuOpen = false; $emit('launch-demo')">{{ store.t("Explore demo") }}</button>
         </template>
+        <button type="button" @click="$emit('toggle-theme')"><i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'" style="margin-right: 8px"></i>{{ store.t(dark ? "Light mode" : "Dark mode") }}</button>
         <div class="bn-lang" role="group" :aria-label="store.t('Language')" style="justify-self: start; margin-top: 8px">
           <button v-for="code in ['es', 'en']" :key="code" type="button" :aria-pressed="locale === code" @click="$emit('set-locale', code)">{{ code.toUpperCase() }}</button>
         </div>

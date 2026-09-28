@@ -140,12 +140,12 @@ function tenant_principal_has_membership(PDO $pdo, string $principalId): bool {
 }
 function tenant_has_authenticated_principal(array $config): bool {
     $identity = $_SESSION['buyniverse_identity'] ?? null;
-    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps','google_oidc','facebook_oauth'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) return true;
+    if (is_array($identity) && in_array($identity['provider'] ?? '', array_merge(['entra_oidc','aws_ldaps'], social_principal_providers()), true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) return true;
     return workspace_mode($config) === 'demo' && ($config['allow_demo_workspace_state'] ?? false) === true;
 }
 function tenant_principal(PDO $pdo, array $config, array $session, string $key): array {
     $identity = $_SESSION['buyniverse_identity'] ?? null;
-    if (is_array($identity) && in_array($identity['provider'] ?? '', ['entra_oidc','aws_ldaps','google_oidc','facebook_oauth'], true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) {
+    if (is_array($identity) && in_array($identity['provider'] ?? '', array_merge(['entra_oidc','aws_ldaps'], social_principal_providers()), true) && is_string($identity['subject'] ?? null) && strlen($identity['subject']) >= 6) {
         $provider = (string) $identity['provider'];
         $subject = (string) $identity['subject'];
         $displayName = tenant_text($identity['displayName'] ?? 'Enterprise user', 180) ?: 'Enterprise user';
@@ -256,7 +256,7 @@ function tenant_can_manage_company(PDO $pdo, array $context, string $companyId):
 }
 function tenant_onboarding_principal(PDO $pdo, array $config, array $session, string $key): array {
     $principal = tenant_principal($pdo, $config, $session, $key);
-    if (!in_array($principal['provider'], ['google_oidc','facebook_oauth'], true)) fail_response(403, 'A configured social identity is required');
+    if (!in_array($principal['provider'], social_principal_providers(), true)) fail_response(403, 'A configured social identity is required');
     return $principal;
 }
 function tenant_operational_scope_is_valid($scope, array $context): bool {

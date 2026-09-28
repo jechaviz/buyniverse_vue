@@ -84,6 +84,8 @@ html.dark .bn, .bn .bn-cinema {
 .bn-btn--sm { height: 36px; padding: 0 14px; font-size: 0.84rem; }
 .bn-btn--lg { height: 54px; padding: 0 26px; font-size: 1rem; }
 .bn-btn[disabled] { opacity: 0.45; pointer-events: none; }
+/* Long calls to action may wrap on narrow phones instead of widening the page. */
+@media (max-width: 479px) { .bn-btn--lg { white-space: normal; height: auto; min-height: 54px; padding: 12px 22px; text-align: center; line-height: 1.25; } }
 .bn-icon-btn { width: 40px; height: 40px; display: inline-grid; place-items: center; border-radius: 999px; border: 1px solid var(--bn-line); background: var(--bn-surface); color: var(--bn-text); cursor: pointer; }
 .bn-link { color: var(--bn-violet); font-weight: 600; text-decoration: none; }
 .bn-link:hover { text-decoration: underline; }
@@ -125,11 +127,15 @@ html.dark .bn, .bn .bn-cinema {
 .bn-nav__links a { white-space: nowrap; padding: 8px 12px; border-radius: 999px; color: var(--bn-muted); font: 600 0.9rem var(--bn-sans); text-decoration: none; }
 .bn-nav__links a:hover, .bn-nav__links a.router-link-active { color: var(--bn-ink); background: var(--bn-surface-2); }
 .bn-nav__actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.bn-nav__desktop-only { display: none; }
+.bn-nav .bn-nav__desktop-only { display: none; }
 .bn-nav__menu { display: grid; }
+/* Narrow phones: the theme switch moves into the menu so the bar never overflows. */
+@media (max-width: 479px) { .bn-nav .bn-nav__theme { display: none; } }
+/* The smallest phones (320px) keep the mark and drop the wordmark in the bar. */
+@media (max-width: 359px) { .bn-nav .bn-logo__word { display: none; } .bn-nav__row { gap: 12px; } }
 @media (min-width: 1024px) {
   .bn-nav__links { display: flex; }
-  .bn-nav__desktop-only { display: inline-flex; }
+  .bn-nav .bn-nav__desktop-only { display: inline-flex; }
   .bn-nav__menu { display: none; }
 }
 .bn-mobile-menu { border-top: 1px solid var(--bn-line); padding: 12px 0 20px; display: grid; gap: 4px; }

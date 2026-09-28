@@ -24,8 +24,11 @@ function social_redirect(string $path): void {
     security_headers(); http_response_code(303); header('Location: ' . $path); exit;
 }
 function social_callback_path(string $provider): string { return social_base_path() . '/api/v1/auth/' . $provider . '/callback'; }
+/** Supported social providers: route id => principal provider key. */
+function social_providers(): array { return ['google'=>'google_oidc', 'microsoft'=>'microsoft_oidc', 'linkedin'=>'linkedin_oidc', 'facebook'=>'facebook_oauth']; }
+function social_principal_providers(): array { return array_values(social_providers()); }
 function social_provider_config(array $config, string $provider): ?array {
-    $map = ['google'=>'google_oidc', 'facebook'=>'facebook_oauth'];
+    $map = social_providers();
     if (!isset($map[$provider])) return null;
     $raw = $config['identity'][$map[$provider]] ?? null;
     if (!is_array($raw) || ($raw['enabled'] ?? false) !== true) return null;
@@ -46,6 +49,22 @@ function social_provider_config(array $config, string $provider): ?array {
         'id'=>'google', 'name'=>'Google', 'provider'=>'google_oidc', 'client_id'=>$clientId, 'client_secret'=>$clientSecret, 'redirect_uri'=>$redirectUri,
         'authorization_endpoint'=>'https://accounts.google.com/o/oauth2/v2/auth', 'token_endpoint'=>'https://oauth2.googleapis.com/token',
         'profile_endpoint'=>'https://openidconnect.googleapis.com/v1/userinfo', 'scope'=>'openid email profile', 'pkce'=>true,
+    ];
+    if ($provider === 'microsoft') {
+        // "common" accepts personal and work or school accounts; a single
+        // organization can pin its directory tenant instead.
+        $tenant = tenant_text($raw['tenant'] ?? 'common', 64);
+        if (preg_match('/^[A-Za-z0-9.-]{3,64}$/', $tenant) !== 1) return null;
+        return [
+            'id'=>'microsoft', 'name'=>'Microsoft', 'provider'=>'microsoft_oidc', 'client_id'=>$clientId, 'client_secret'=>$clientSecret, 'redirect_uri'=>$redirectUri,
+            'authorization_endpoint'=>'https://login.microsoftonline.com/' . $tenant . '/oauth2/v2.0/authorize', 'token_endpoint'=>'https://login.microsoftonline.com/' . $tenant . '/oauth2/v2.0/token',
+            'profile_endpoint'=>'https://graph.microsoft.com/oidc/userinfo', 'scope'=>'openid email profile', 'pkce'=>true,
+        ];
+    }
+    if ($provider === 'linkedin') return [
+        'id'=>'linkedin', 'name'=>'LinkedIn', 'provider'=>'linkedin_oidc', 'client_id'=>$clientId, 'client_secret'=>$clientSecret, 'redirect_uri'=>$redirectUri,
+        'authorization_endpoint'=>'https://www.linkedin.com/oauth/v2/authorization', 'token_endpoint'=>'https://www.linkedin.com/oauth/v2/accessToken',
+        'profile_endpoint'=>'https://api.linkedin.com/v2/userinfo', 'scope'=>'openid profile email', 'pkce'=>false,
     ];
     $version = tenant_text($raw['graph_version'] ?? 'v22.0', 16);
     if (preg_match('/^v[0-9]{1,3}\.[0-9]{1,3}$/', $version) !== 1) return null;
@@ -81,12 +100,17 @@ function social_profile(array $provider, string $code, string $verifier): array 
     $accessToken = $tokens['access_token'] ?? null;
     if (!is_string($accessToken) || strlen($accessToken) < 16 || strlen($accessToken) > 8192) throw new RuntimeException('Federated identity token was invalid');
     $profile = social_http_json($provider['profile_endpoint'], 'GET', ['Authorization: Bearer ' . $accessToken]);
-    $subject = $provider['id'] === 'google' ? ($profile['sub'] ?? null) : ($profile['id'] ?? null);
+    // OpenID Connect providers identify people by "sub"; Facebook's Graph API by "id".
+    $subject = $provider['id'] === 'facebook' ? ($profile['id'] ?? null) : ($profile['sub'] ?? null);
     if (!is_string($subject) || strlen($subject) < 6 || strlen($subject) > 320 || preg_match('/^[A-Za-z0-9._:@-]+$/', $subject) !== 1) throw new RuntimeException('Federated identity subject was invalid');
     if ($provider['id'] === 'google' && !in_array($profile['email_verified'] ?? false, [true, 'true', 1, '1'], true)) throw new RuntimeException('Google account email is not verified');
     $displayName = tenant_text($profile['name'] ?? '', 180) ?: 'Personal workspace owner';
     $email = isset($profile['email']) && is_string($profile['email']) && filter_var($profile['email'], FILTER_VALIDATE_EMAIL) ? strtolower(trim($profile['email'])) : null;
-    return ['provider'=>$provider['provider'], 'subject'=>$subject, 'displayName'=>$displayName, 'email'=>$email, 'emailVerified'=>$provider['id'] === 'google'];
+    // An email counts as verified only when the provider asserts it (Google
+    // always, enforced above; LinkedIn per profile). Microsoft's userinfo
+    // carries no such claim, so its address is never trusted for mail.
+    $verified = $provider['id'] === 'google' || ($provider['id'] === 'linkedin' && in_array($profile['email_verified'] ?? false, [true, 'true', 1, '1'], true));
+    return ['provider'=>$provider['provider'], 'subject'=>$subject, 'displayName'=>$displayName, 'email'=>$email, 'emailVerified'=>$verified];
 }
 function social_start(array $config, string $provider): void {
     $definition = social_provider_config($config, $provider); if ($definition === null) fail_response(404, 'Identity provider is not enabled');

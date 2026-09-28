@@ -55,6 +55,9 @@
       } else if (to.params.userId) {
         const u = store?.user?.(to.params.userId);
         pageTitle = u ? `${u.name} (${u.title || "Perfil"}) · Buyniverse` : "Perfil · Buyniverse";
+      } else if (to.params.supplierId) {
+        // The supplier profile sets its real name once the catalogue resolves.
+        pageTitle = "Proveedor · Buyniverse";
       } else if (to.params.contractId) {
         pageTitle = `Contrato ${to.params.contractId} · Buyniverse`;
       } else if (to.params.invoiceId) {
