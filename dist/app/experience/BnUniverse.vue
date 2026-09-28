@@ -1,30 +1,52 @@
 <template>
-  <div ref="stage" class="bn-hero__stage" aria-hidden="true">
-    <!-- The rendered mark always paints first; the live scene fades in over it
-         only once WebGL is confirmed, so no visitor ever sees an empty stage. -->
-    <div class="bn-hero__fallback" :style="{ opacity: live ? 0 : 1 }">
-      <img src="assets/brand/buyniverse-mark-1024.png" width="1024" height="1024" alt="" decoding="async" />
-    </div>
-    <canvas ref="canvas" :style="{ opacity: live ? 1 : 0, transition: 'opacity .8s ease' }"></canvas>
+  <div ref="stage" class="bn-cinema__stage" aria-hidden="true">
+    <!-- A painted nebula always shows first; the live galaxy fades in over it
+         only once WebGL is confirmed, so no visitor ever sees an empty band. -->
+    <div class="bn-cinema__fallback"></div>
+    <canvas ref="canvas" :style="{ opacity: live ? 1 : 0 }"></canvas>
+    <div class="bn-cinema__grain" :style="{ backgroundImage: grain }"></div>
+    <div class="bn-cinema__vignette"></div>
+    <div class="bn-cinema__scrim"></div>
   </div>
 </template>
 
 <script>
-const { ref, onMounted, onBeforeUnmount } = Vue;
+const { ref, watch, onMounted, onBeforeUnmount } = Vue;
+
+// Film grain: a small deterministic noise tile, generated once per page.
+function grainTile() {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 160;
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(160, 160);
+    let s = 1337;
+    for (let i = 0; i < img.data.length; i += 4) {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      const v = s >>> 24;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 22;
+    }
+    ctx.putImageData(img, 0, 0);
+    return `url(${c.toDataURL("image/png")})`;
+  } catch (_) {
+    return "none";
+  }
+}
 
 export default {
   props: {
-    // One orbiting node per listed supplier: [{ id, sector, score }]
+    // One node per listed supplier: [{ id, sector, score }]
     nodes: { type: Array, default: () => [] },
   },
   setup(props) {
     const stage = ref(null);
     const canvas = ref(null);
     const live = ref(false);
-    let controller = null, visible = false, disposed = false;
-    let io = null, ro = null, mo = null;
+    const grain = ref("none");
+    let controller = null, visible = false, disposed = false, mounting = false;
+    let io = null, ro = null;
 
-    const isDark = () => document.documentElement.classList.contains("dark");
     const sync = () => {
       if (!controller) return;
       if (visible && document.visibilityState === "visible") controller.start();
@@ -38,8 +60,10 @@ export default {
 
     const mount = () => {
       const three = window.BuyniverseThree;
-      if (!three || !canvas.value || controller) return;
-      three.createUniverse(canvas.value, { nodes: props.nodes, dark: isDark() }).then((instance) => {
+      if (!three || !canvas.value || controller || mounting) return;
+      mounting = true;
+      three.createUniverse(canvas.value, { nodes: props.nodes }).then((instance) => {
+        mounting = false;
         if (!instance) return;
         if (disposed) return instance.dispose();
         controller = instance;
@@ -48,7 +72,16 @@ export default {
       });
     };
 
+    // Guests receive suppliers asynchronously: rebuild once the real nodes arrive.
+    watch(() => props.nodes.length, (count) => {
+      if (!controller || controller.nodeCount === count) return;
+      controller.dispose();
+      controller = null;
+      if (visible) mount();
+    });
+
     onMounted(() => {
+      grain.value = grainTile();
       if (typeof IntersectionObserver === "function") {
         io = new IntersectionObserver(([entry]) => {
           visible = Boolean(entry && entry.isIntersecting);
@@ -64,8 +97,6 @@ export default {
         ro = new ResizeObserver(() => controller && controller.resize());
         ro.observe(stage.value);
       }
-      mo = new MutationObserver(() => controller && controller.setTheme(isDark()));
-      mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       document.addEventListener("visibilitychange", sync);
       if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) window.addEventListener("pointermove", onPointer, { passive: true });
     });
@@ -76,12 +107,11 @@ export default {
       window.removeEventListener("pointermove", onPointer);
       io && io.disconnect();
       ro && ro.disconnect();
-      mo && mo.disconnect();
       controller && controller.dispose();
       controller = null;
     });
 
-    return { stage, canvas, live };
+    return { stage, canvas, live, grain };
   },
 };
 </script>

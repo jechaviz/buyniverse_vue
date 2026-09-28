@@ -1,8 +1,8 @@
 <template>
   <RouterLink to="/" class="bn-logo" :aria-label="store.t('Buyniverse home')">
     <img
-      src="assets/brand/buyniverse-mark-64.png"
-      srcset="assets/brand/buyniverse-mark-64.png 1x, assets/brand/buyniverse-mark-192.png 3x"
+      src="assets/brand/buyniverse-mark-64.png?v=2"
+      srcset="assets/brand/buyniverse-mark-64.png?v=2 1x, assets/brand/buyniverse-mark-192.png?v=2 3x"
       :width="size"
       :height="size"
       alt=""
@@ -14,9 +14,10 @@
 
 <script>
 /**
- * The Buyniverse logo: the rendered 3D mark (planet, sourcing ring and the
- * acquisition cube, see app/lib/bn-three.js) beside the lowercase wordmark.
- * The mark is a PNG asset rendered by tools/brand/render-mark.html.
+ * The Buyniverse logo: the rendered 3D mark (a violet price tag with an
+ * embossed "b", brass eyelet and cord; see app/lib/bn-three.js) beside the
+ * lowercase wordmark. The mark is a PNG asset rendered by
+ * tools/brand/render-mark.html.
  */
 const { inject } = Vue;
 

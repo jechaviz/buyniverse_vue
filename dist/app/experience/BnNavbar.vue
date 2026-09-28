@@ -51,7 +51,7 @@
 const { inject, ref, computed, watch, defineAsyncComponent } = Vue;
 const { useRoute } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnLogo = load("./app/experience/BnLogo.vue?v=1");
+const BnLogo = load("./app/experience/BnLogo.vue?v=2");
 
 export default {
   components: { BnLogo },

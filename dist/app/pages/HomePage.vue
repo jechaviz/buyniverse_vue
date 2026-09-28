@@ -1,10 +1,10 @@
 <template>
   <div class="bn bn-page">
-    <!-- 1. Hero: the brand universe, with every listed supplier in orbit -->
-    <section class="bn-hero">
-      <div class="bn-hero__glow"></div>
-      <div class="bn-wrap bn-hero__grid">
-        <div class="bn-stack" style="gap: 22px">
+    <!-- 1. Hero: a cinematic purchasing universe; every listed supplier is a node on its trade routes -->
+    <section class="bn-cinema">
+      <BnUniverse :nodes="nodes" />
+      <div class="bn-wrap">
+        <div class="bn-cinema__copy">
           <span class="bn-badge bn-badge--mint" style="justify-self: start"><span class="bn-dot bn-live"></span>{{ store.t("Live reverse auctions running now") }}</span>
           <h1 class="bn-h1" v-if="supplierMode">{{ store.t("Win corporate buyers") }} <span class="bn-grad">{{ store.t("without cold calls.") }}</span></h1>
           <h1 class="bn-h1" v-else>{{ store.t("Every purchase your company makes,") }} <span class="bn-grad">{{ store.t("one universe of suppliers.") }}</span></h1>
@@ -36,7 +36,6 @@
             <div class="bn-stat"><b class="bn-num">{{ countries }}</b><span>{{ store.t("countries covered") }}</span></div>
           </div>
         </div>
-        <BnUniverse :nodes="nodes" />
       </div>
     </section>
 
@@ -99,7 +98,7 @@
             <p class="bn-muted" style="margin: 0; line-height: 1.6">{{ store.t(step.body) }}</p>
           </article>
         </div>
-        <video v-if="filmAvailable" class="bn-video" style="margin-top: 28px" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
+        <video v-if="filmAvailable" class="bn-video" style="margin-top: 28px" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=2" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
       </div>
     </section>
 
@@ -155,7 +154,7 @@
 const { inject, ref, computed, onMounted, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnUniverse = load("./app/experience/BnUniverse.vue?v=1");
+const BnUniverse = load("./app/experience/BnUniverse.vue?v=3");
 const BnSupplierCard = load("./app/experience/BnSupplierCard.vue?v=1");
 
 const FILM_READY = true;

@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Buyniverse universe stills</title>
+<!-- Renders the hero universe at exact times to PNG for visual review.
+     Needs the dev server with --allow-save; writes assets/_review/*.png. -->
+<base href="/" />
+<style>body{margin:0;background:#000;color:#fff;font:14px system-ui}canvas{display:block;width:1600px;height:900px}</style>
+<canvas id="c"></canvas>
+<script src="app/lib/bn-three-mark.js"></script>
+<script src="app/lib/bn-three.js"></script>
+<script>
+  window.renderStills = async (times) => {
+    const nodes = Array.from({ length: 18 }, (_, i) => ({ id: "s" + i, sector: ["technology", "services", "operations", "logistics"][i % 4], score: 80 + (i % 15) }));
+    const ctrl = await window.BuyniverseThree.createUniverse(document.getElementById("c"), { nodes, preserve: true });
+    const out = [];
+    for (const t of times) {
+      const url = ctrl.renderAt(t).toDataURL("image/png");
+      const r = await fetch("/__save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path: `assets/_review/universe-${t}s.png`, b64: url.split(",")[1] }) });
+      out.push(`${t}s ${r.status}`);
+    }
+    return out;
+  };
+</script>

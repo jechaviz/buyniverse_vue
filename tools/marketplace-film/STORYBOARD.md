@@ -41,6 +41,6 @@ status: built
 src: compositions/endcard.html
 window: 15.6–20.0s
 shape: blueprint logo-assemble-lockup + rule ambient-glow-bloom
-beat: the 3D mark springs in on a violet bloom, the wordmark "buyniverse"
+beat: the 3D price-tag mark springs in on a violet bloom, the wordmark "buyniverse"
 settles beside it, tagline "Cada compra, un universo de proveedores." and the
 URL buyniverse.com.

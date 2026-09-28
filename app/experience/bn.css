@@ -34,7 +34,7 @@
   font-family: var(--bn-sans);
   -webkit-font-smoothing: antialiased;
 }
-html.dark .bn {
+html.dark .bn, .bn .bn-cinema {
   --bn-ink: #f4f2ff;
   --bn-text: #eceaff;
   --bn-muted: #a8a3cc;
@@ -56,7 +56,7 @@ html.dark .bn {
   --bn-shadow-lg: 0 30px 70px -30px rgba(109, 74, 255, 0.45);
 }
 .bn *, .bn *::before, .bn *::after { box-sizing: border-box; }
-.bn-page { background: var(--bn-bg); min-height: 100vh; display: flex; flex-direction: column; container: bnpage / inline-size; }
+.bn-page { --bn-page-bg: var(--bn-bg); background: var(--bn-bg); min-height: 100vh; display: flex; flex-direction: column; container: bnpage / inline-size; }
 .bn-wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 20px; }
 @media (min-width: 768px) { .bn-wrap { padding: 0 32px; } }
 
@@ -148,14 +148,9 @@ html.dark .bn {
 .bn-hero { position: relative; overflow: hidden; isolation: isolate; padding: 48px 0 64px; }
 .bn-hero__glow { position: absolute; inset: -20% -10% auto; height: 110%; z-index: -2; background: radial-gradient(40% 50% at 70% 40%, color-mix(in srgb, var(--bn-violet) 22%, transparent), transparent 70%), radial-gradient(30% 40% at 15% 70%, color-mix(in srgb, var(--bn-mint) 14%, transparent), transparent 70%); }
 .bn-hero__grid { display: grid; gap: 32px; align-items: center; }
-.bn-hero__stage { position: relative; height: 380px; border-radius: 28px; }
-.bn-hero__stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.bn-hero__fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .8s ease; }
-.bn-hero__fallback img { width: min(78%, 440px); height: auto; filter: drop-shadow(0 40px 60px rgba(109, 74, 255, 0.35)); }
 @media (min-width: 1024px) {
   .bn-hero { padding: 72px 0 96px; }
   .bn-hero__grid { grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
-  .bn-hero__stage { height: 560px; }
 }
 .bn-search { display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: 22px; background: var(--bn-surface); border: 1px solid var(--bn-line); box-shadow: var(--bn-shadow-lg); }
 .bn-search .bn-input, .bn-search .bn-select { border: 0; box-shadow: none; height: 50px; background-color: var(--bn-surface-2); }
@@ -168,6 +163,21 @@ html.dark .bn {
 .bn-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .bn-stat b { display: block; font: 700 clamp(1.4rem, 2.4vw, 2rem)/1 var(--bn-display); color: var(--bn-ink); letter-spacing: -0.03em; }
 .bn-stat span { font-size: 0.8rem; color: var(--bn-muted); }
+
+/* Cinema hero: full-bleed galaxy behind the copy ----------------------------- */
+.bn-cinema { position: relative; isolation: isolate; overflow: hidden; background: #05040f; color: var(--bn-text); min-height: min(92vh, 920px); display: flex; align-items: center; padding: 96px 0 88px; }
+.bn-cinema__stage { position: absolute; inset: 0; z-index: -1; }
+.bn-cinema__stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 1.4s ease; }
+.bn-cinema__fallback { position: absolute; inset: 0; background: radial-gradient(38% 30% at 64% 52%, rgba(255, 214, 168, 0.28), transparent 70%), radial-gradient(60% 50% at 70% 50%, rgba(109, 74, 255, 0.35), transparent 72%), radial-gradient(40% 40% at 20% 80%, rgba(22, 217, 160, 0.12), transparent 70%), #05040f; }
+.bn-cinema__grain { position: absolute; inset: 0; opacity: 0.55; mix-blend-mode: overlay; pointer-events: none; }
+.bn-cinema__vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 60% 50%, transparent 55%, rgba(0, 0, 0, 0.7) 100%); pointer-events: none; }
+.bn-cinema__scrim { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5, 4, 15, 0.92) 0%, rgba(5, 4, 15, 0.7) 32%, rgba(5, 4, 15, 0) 62%), linear-gradient(0deg, var(--bn-page-bg, #05040f) 0%, transparent 18%); pointer-events: none; }
+.bn-cinema__copy { position: relative; max-width: 640px; display: grid; gap: 22px; }
+.bn-cinema .bn-h1 { color: #fff; text-shadow: 0 2px 30px rgba(0, 0, 0, 0.5); }
+@media (max-width: 767px) {
+  .bn-cinema { min-height: 0; padding: 72px 0 64px; }
+  .bn-cinema__scrim { background: linear-gradient(180deg, rgba(5, 4, 15, 0.55) 0%, rgba(5, 4, 15, 0.85) 60%, var(--bn-page-bg, #05040f) 100%); }
+}
 
 /* Sections ----------------------------------------------------------------- */
 .bn-section { padding: 64px 0; }
