@@ -5,6 +5,8 @@
     if (path === "/" || path.startsWith("/procurement/auction") || path.startsWith("/procurement/sourcing")) return true;
     if (path === "/find-talent" || path === "/browse-services") return true;
     if (path === "/marketplace" || path.startsWith("/marketplace/")) return true;
+    // Support must reach everyone, especially people who cannot sign in.
+    if (path === "/soporte") return true;
     if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
     return false;
   }
@@ -16,6 +18,7 @@
     const Dashboard = load("./app/pages/DashboardPage.vue?v=34");
     const Home = load("./app/pages/HomePage.vue?v=47");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
+    const Support = load("./app/pages/SupportPage.vue?v=2");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
     const Workspace = load("./app/pages/WorkspacePage.vue?v=57");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
@@ -46,6 +49,7 @@
       r("/onboarding", Onboarding, { onboarding: true }),
       r("/marketplace", SupplierMarket, { experience: true }),
       r("/marketplace/supplier/:supplierId", SupplierProfile, { experience: true }),
+      r("/soporte", Support, { experience: true }),
       r("/find-work", Home, { modes: ["supplier"], experience: true }),
       r("/dashboard/:section?", Dashboard, { view: "dashboard", to: "/dashboard/timesheets" }),
       r("/clients", Workspace, { kind: "clients", modes: ["supplier", "admin"] }),

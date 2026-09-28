@@ -6,6 +6,7 @@
     <CommandPalette :open="commandOpen" @close="commandOpen = false" />
     <AppModals :ui="ui" :locale="store.locale" @resume-session="resumeSession" @resolve-confirm="store.resolveConfirm" />
     <AuthModal :open="authOpen" :initial-mode="authMode" :error="authError" @close="closeAuth" />
+    <button v-if="showHelp" type="button" class="bn-help" :aria-label="store.t('Help and support')" @click="openHelp"><i class="fa-solid fa-life-ring"></i><span>{{ store.t("Help") }}</span></button>
 
     <!-- 1. FULL-BLEED PUBLIC LANDING PAGE LAYOUT -->
     <div v-if="isLanding" class="flex-1 flex flex-col min-h-screen">
@@ -154,6 +155,9 @@ export default {
 
     const isLanding = computed(() => !route.meta.onboarding && (!store.currentUser.value || route.path === "/"));
     const isOnboarding = computed(() => route.meta.onboarding === true);
+    // Help is one click away everywhere except the support centre and onboarding.
+    const showHelp = computed(() => route.path !== "/soporte" && !isOnboarding.value && !store.ui.locked);
+    const openHelp = () => router.push({ path: "/soporte", query: { from: route.fullPath } });
 
     const openAuth = (mode = "login") => {
       authMode.value = mode;
@@ -337,7 +341,7 @@ export default {
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace, openWorkspaceShortcut, workspaceShortcutLabel,
       route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
+      accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, showHelp, openHelp, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };

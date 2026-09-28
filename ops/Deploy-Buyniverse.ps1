@@ -64,16 +64,21 @@ test -f "$release_dir/app/main.js"
 git log -n 1 --oneline
 '@
 $remoteScript = $remoteScriptTemplate.Replace('__REMOTE_DIR__', $RemoteDir)
+# Windows PowerShell 5.1 strips embedded double quotes from native arguments,
+# so the script travels base64-encoded and is decoded by the remote shell.
+$remoteScript = $remoteScript -replace "`r`n", "`n"
+$remoteCommand = "echo " + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remoteScript)) + " | base64 -d | bash"
 
 $deployed = $false
 $maxSshAttempts = 3
 for ($sshAttempt = 1; $sshAttempt -le $maxSshAttempts; $sshAttempt++) {
   Write-Host "Connecting to $SshAlias (attempt $sshAttempt/$maxSshAttempts)..." -ForegroundColor Yellow
-  & ssh @sshOptions $SshAlias $remoteScript
+  & ssh @sshOptions $SshAlias $remoteCommand
   if ($LASTEXITCODE -eq 0) {
     $deployed = $true
     break
   }
+  if ($LASTEXITCODE -eq 65) { throw "Release refused: a required migration is pending (see ops/schema-requirements.txt). Nothing was published." }
   Write-Warning "SSH connection attempt $sshAttempt failed with exit code $LASTEXITCODE."
   if ($sshAttempt -lt $maxSshAttempts) {
     Write-Host "Waiting 15 seconds before retry..." -ForegroundColor Gray

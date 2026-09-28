@@ -182,6 +182,7 @@ require_once __DIR__ . '/cfdi/Csd.php';
 require_once __DIR__ . '/cfdi/CfdiConfig.php';
 require_once __DIR__ . '/supplier_compliance.php';
 require_once __DIR__ . '/onboarding_service.php';
+require_once __DIR__ . '/support_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config(); workspace_session(); $providers = [];
@@ -205,6 +206,7 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
 }
 
 if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
+if (preg_match('#^/api/v1/support/(?:status|assistant|tickets)$#', $uri) === 1) handle_support($uri);
 
 if ($uri === '/api/v1/tenant-context' || $uri === '/api/v1/tenant-context/' || str_starts_with($uri, '/api/v1/tenant-companies')) {
     // Server tenant boundary: tenant_context, tenant_workspace_state, tenant_header_origin_is_safe,

@@ -142,6 +142,31 @@ file_put_contents($argv[2] . '.key', base64_decode(preg_replace('/-----[^-]+----
     await pause(900);
     r = await call(buyer, "POST", "/api/v1/onboarding", { accountKind: "individual", marketplaceRoles: ["buyer"], workspaceName: "Lucía", countryCode: "MX", invoiceMode: "external", locations: [] });
     check("individual buyer enrolls without tax data", r.status === 201 && r.json.supplierStatus === null, r.text);
+
+    // 4. Support centre: grounded guided answers and encrypted tickets.
+    const guest = { cookie: "", csrf: "" };
+    r = await call(guest, "GET", "/api/v1/support/status");
+    check("support status without AI configured", r.status === 200 && r.json.ai === false, r.text);
+    r = await call(guest, "POST", "/api/v1/support/assistant", { message: "mi certificado dice que es e.firma", locale: "es" }, "support-v1");
+    check("assistant answers in guided mode from the right guide", r.status === 200 && r.json.mode === "guided" && r.json.articles[0] === "invoicing-csd", r.text);
+    r = await call(guest, "POST", "/api/v1/support/tickets", { area: "invoicing", subject: "Mi CSD falla", message: "Al subir el CSD aparece un error." }, "support-v1");
+    check("guest ticket without email is refused", r.status === 400, r.text);
+    r = await call(guest, "POST", "/api/v1/support/tickets", { area: "invoicing", subject: "Mi CSD falla", message: "Al subir el CSD aparece un error.", email: "cliente@example.com", consent: true }, "support-v1");
+    check("guest ticket is created with a reference", r.status === 201 && /^BNV-[0-9A-Z]{4}-[0-9A-Z]{4}$/.test(r.json.reference || ""), r.text);
+    r = await call(guest, "POST", "/api/v1/support/tickets", { area: "access", subject: "spam", message: "buy cheap things now", email: "x@example.com", consent: true, website: "http://spam" }, "support-v1");
+    check("honeypot submissions get a decoy", r.status === 201, r.text);
+    r = await call(guest, "POST", "/api/v1/support/assistant", { message: "hola" }, "tenant-context-v1");
+    check("assistant requires its request header", r.status === 403, r.text);
+    r = await call(mx, "POST", "/api/v1/support/tickets", { area: "suppliers", subject: "Documento 32-D", message: "No sé qué fecha poner en la 32-D.", severity: "low" }, "support-v1");
+    check("signed-in ticket needs no email", r.status === 201, r.text);
+    r = await call(mx, "GET", "/api/v1/support/tickets");
+    check("signed-in user lists own tickets, decrypted", r.status === 200 && r.json.tickets.some((item) => item.subject === "Documento 32-D" && item.status === "open"), r.text);
+    // The team answers from the CLI desk; the requester reads it in My tickets.
+    const reference = r.json.tickets.find((item) => item.subject === "Documento 32-D").reference;
+    php([path.join(ROOT, "support_admin.php"), "reply", reference, "Usa la fecha de emisión que aparece en la opinión."]);
+    r = await call(mx, "GET", "/api/v1/support/tickets");
+    const answered = r.json.tickets.find((item) => item.reference === reference);
+    check("agent reply reaches the requester", answered && answered.status === "waiting_customer" && answered.lastReply && /fecha de emisión/.test(answered.lastReply.text), r.text);
   } finally {
     server.kill();
   }

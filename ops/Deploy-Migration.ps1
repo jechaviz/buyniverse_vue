@@ -64,7 +64,10 @@ echo $encodedPhp | base64 -d | BUYNIVERSE_MIGRATION_CONFIG=$MigrationConfigPath 
 "@
 
 Write-Host "Linting release and applying $Migration..." -ForegroundColor Yellow
-& ssh @sshOptions $SshAlias $remote
+# Windows PowerShell 5.1 strips embedded double quotes from native arguments,
+# so the script travels base64-encoded and is decoded by the remote shell.
+$remoteCommand = "echo " + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($remote -replace "`r`n", "`n"))) + " | base64 -d | bash"
+& ssh @sshOptions $SshAlias $remoteCommand
 if ($LASTEXITCODE -ne 0) { throw "Remote lint or migration failed (exit $LASTEXITCODE); release not published." }
 if ($SkipRelease) { Write-Host 'Migration applied; release skipped by request.' -ForegroundColor Green; exit 0 }
 

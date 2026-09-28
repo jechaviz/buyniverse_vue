@@ -1,0 +1,939 @@
+{
+  "version": "support-2026-09-28",
+  "areas": [
+    {
+      "id": "access",
+      "icon": "fa-key",
+      "persona": "Iris",
+      "title": {
+        "es": "Acceso y cuenta",
+        "en": "Access and account"
+      },
+      "focus": {
+        "es": "Entrar, crear tu cuenta y configurar tu espacio.",
+        "en": "Signing in, creating your account and setting up your workspace."
+      }
+    },
+    {
+      "id": "suppliers",
+      "icon": "fa-store",
+      "persona": "Tomás",
+      "title": {
+        "es": "Proveedores y cumplimiento",
+        "en": "Suppliers and compliance"
+      },
+      "focus": {
+        "es": "Requisitos por país, documentos y estatus formal.",
+        "en": "Requirements by country, documents and formal status."
+      }
+    },
+    {
+      "id": "invoicing",
+      "icon": "fa-file-invoice-dollar",
+      "persona": "Rocío",
+      "title": {
+        "es": "Facturación CFDI",
+        "en": "CFDI invoicing"
+      },
+      "focus": {
+        "es": "CSD, timbrado, series, complementos y cancelaciones.",
+        "en": "CSD, stamping, series, payment complements and cancellations."
+      }
+    },
+    {
+      "id": "buying",
+      "icon": "fa-cart-shopping",
+      "persona": "Leo",
+      "title": {
+        "es": "Compras y subastas",
+        "en": "Buying and auctions"
+      },
+      "focus": {
+        "es": "Buscar proveedores, RFQ y subastas inversas.",
+        "en": "Finding suppliers, RFQs and reverse auctions."
+      }
+    },
+    {
+      "id": "payments",
+      "icon": "fa-vault",
+      "persona": "Marta",
+      "title": {
+        "es": "Pagos y custodia",
+        "en": "Payments and escrow"
+      },
+      "focus": {
+        "es": "Custodia, liberación de pagos y comisión por ahorro.",
+        "en": "Escrow, payment release and the savings-share fee."
+      }
+    }
+  ],
+  "articles": [
+    {
+      "id": "access-sign-in",
+      "area": "access",
+      "keywords": [
+        "entrar",
+        "iniciar",
+        "sesion",
+        "login",
+        "acceder",
+        "google",
+        "microsoft",
+        "linkedin",
+        "facebook",
+        "contrasena",
+        "password",
+        "cuenta"
+      ],
+      "title": {
+        "es": "Cómo entrar a Buyniverse",
+        "en": "How to sign in to Buyniverse"
+      },
+      "summary": {
+        "es": "Buyniverse no usa contraseñas propias: entras con tu cuenta de Google, Microsoft, LinkedIn o Facebook. Solo aparecen los proveedores habilitados.",
+        "en": "Buyniverse has no passwords of its own: you sign in with your Google, Microsoft, LinkedIn or Facebook account. Only enabled providers are shown."
+      },
+      "steps": {
+        "es": [
+          "Pulsa «Iniciar sesión» o «Únete gratis».",
+          "Elige el proveedor de tu cuenta; te llevará a su página para confirmar.",
+          "Al volver, si es tu primera vez, configuras tu espacio de trabajo."
+        ],
+        "en": [
+          "Press “Log in” or “Join free”.",
+          "Choose your account provider; it takes you to its page to confirm.",
+          "When you return, the first time you set up your workspace."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Abrir acceso",
+            "en": "Open sign-in"
+          },
+          "to": "/?auth=login"
+        }
+      ]
+    },
+    {
+      "id": "access-errors",
+      "area": "access",
+      "keywords": [
+        "error",
+        "cancelo",
+        "cancelado",
+        "no puedo",
+        "fallo",
+        "identidad",
+        "no pudimos",
+        "tardo",
+        "no aparece",
+        "boton",
+        "habilitando"
+      ],
+      "title": {
+        "es": "No pude iniciar sesión",
+        "en": "I could not sign in"
+      },
+      "summary": {
+        "es": "Si cancelaste o tardaste más de 10 minutos, el intento expira por seguridad. Si el proveedor no confirma tu identidad (por ejemplo, correo de Google sin verificar), usa otra cuenta.",
+        "en": "If you cancelled or took more than 10 minutes, the attempt expires for security. If the provider cannot confirm your identity (for example an unverified Google email), use another account."
+      },
+      "steps": {
+        "es": [
+          "Vuelve a abrir el acceso e inténtalo de nuevo sin cerrar la ventana del proveedor.",
+          "Si ves «Estamos habilitando el acceso con cuenta», ese proveedor aún no está activo: explora la demo mientras tanto.",
+          "Si el problema sigue, abre un ticket con el proveedor que usaste y la hora aproximada."
+        ],
+        "en": [
+          "Open sign-in again and retry without closing the provider window.",
+          "If you see “Account access is being enabled”, that provider is not active yet: explore the demo meanwhile.",
+          "If it persists, open a ticket with the provider you used and the approximate time."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "access-onboarding",
+      "area": "access",
+      "keywords": [
+        "crear",
+        "registro",
+        "registrarme",
+        "alta",
+        "configurar",
+        "espacio",
+        "rol",
+        "comprador",
+        "proveedor",
+        "empresa",
+        "persona"
+      ],
+      "title": {
+        "es": "Crear tu cuenta y elegir tu rol",
+        "en": "Create your account and choose your role"
+      },
+      "summary": {
+        "es": "Tras entrar eliges si compras, vendes o ambas, y si la cuenta es de una empresa o de una persona. Para vender siempre se requiere identidad fiscal.",
+        "en": "After signing in you choose whether you buy, sell or both, and whether the account is a company or a person. Selling always requires a tax identity."
+      },
+      "steps": {
+        "es": [
+          "Rol: comprar, vender o ambos (cada permiso se audita por separado).",
+          "Identidad fiscal: país de residencia fiscal, identificación, domicilio y los requisitos de tu jurisdicción.",
+          "Facturación: con tu sistema actual o, en México, timbrando CFDI con Buyniverse."
+        ],
+        "en": [
+          "Role: buy, sell or both (each permission is audited separately).",
+          "Tax identity: country of tax residence, tax ID, address and your jurisdiction's requirements.",
+          "Invoicing: with your current system or, in Mexico, stamping CFDI with Buyniverse."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Ir al alta",
+            "en": "Go to onboarding"
+          },
+          "to": "/onboarding"
+        }
+      ]
+    },
+    {
+      "id": "access-team",
+      "area": "access",
+      "keywords": [
+        "equipo",
+        "invitar",
+        "usuarios",
+        "roles",
+        "permisos",
+        "administrador",
+        "aprobador",
+        "almacen",
+        "auditor",
+        "sucursal"
+      ],
+      "title": {
+        "es": "Invitar a tu equipo y asignar roles",
+        "en": "Invite your team and assign roles"
+      },
+      "summary": {
+        "es": "Los dueños y administradores invitan por correo con un rol (administrador, comprador, aprobador, almacén, auditor, consulta o proveedor) y un alcance: todas las empresas, una empresa o una sucursal.",
+        "en": "Owners and administrators invite by email with a role (administrator, buyer, approver, warehouse, auditor, viewer or supplier) and a scope: all companies, one company or one branch."
+      },
+      "steps": {
+        "es": [
+          "Abre Organizaciones en tu espacio de trabajo.",
+          "Elige la empresa y pulsa «Invitar».",
+          "Define rol y alcance; la invitación vence en 7 días."
+        ],
+        "en": [
+          "Open Organizations in your workspace.",
+          "Choose the company and press “Invite”.",
+          "Set role and scope; the invitation expires in 7 days."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Organizaciones",
+            "en": "Organizations"
+          },
+          "to": "/settings/organizations"
+        }
+      ]
+    },
+    {
+      "id": "suppliers-requirements",
+      "area": "suppliers",
+      "keywords": [
+        "vender",
+        "requisitos",
+        "proveedor",
+        "formal",
+        "inscribirme",
+        "estatus",
+        "cumplimiento",
+        "necesito"
+      ],
+      "title": {
+        "es": "Qué necesito para vender en Buyniverse",
+        "en": "What I need to sell on Buyniverse"
+      },
+      "summary": {
+        "es": "Primero te inscribes con una identidad fiscal válida en tu país; después, con los documentos que piden los compradores, alcanzas el estatus de proveedor formal. El servidor aplica las mismas reglas que ves en pantalla.",
+        "en": "First you enrol with a valid tax identity in your country; then, with the documents buyers ask for, you reach the formal supplier status. The server applies the same rules you see on screen."
+      },
+      "steps": {
+        "es": [
+          "Completa la identidad fiscal: el panel «Requisitos de proveedor» se actualiza mientras escribes.",
+          "Responde las preguntas de tu operación; activan registros como REPSE o permisos de sales tax.",
+          "Sube los documentos pendientes para pasar de «inscrito» a «formal»."
+        ],
+        "en": [
+          "Complete your tax identity: the “Supplier requirements” panel updates as you type.",
+          "Answer the questions about your operation; they activate registrations such as REPSE or sales tax permits.",
+          "Upload the pending documents to move from “enrolled” to “formal”."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Ir al alta",
+            "en": "Go to onboarding"
+          },
+          "to": "/onboarding"
+        }
+      ]
+    },
+    {
+      "id": "suppliers-mexico",
+      "area": "suppliers",
+      "keywords": [
+        "mexico",
+        "rfc",
+        "sat",
+        "regimen",
+        "constancia",
+        "csf",
+        "32-d",
+        "opinion",
+        "cumplimiento",
+        "repse",
+        "fronteriza",
+        "frontera",
+        "razon social"
+      ],
+      "title": {
+        "es": "Requisitos para proveedores en México",
+        "en": "Requirements for suppliers in Mexico"
+      },
+      "summary": {
+        "es": "RFC válido (no genérico), razón social idéntica a la Constancia y sin régimen societario, régimen fiscal que permita facturar, código postal del catálogo del SAT dentro de tu estado, Constancia de Situación Fiscal (90 días) y Opinión de cumplimiento 32-D positiva (30 días).",
+        "en": "A valid (non-generic) RFC, the legal name exactly as on the tax certificate without the corporate suffix, a regime that can invoice, a SAT-catalogue postal code within your state, the tax status certificate (90 days) and a positive 32-D compliance opinion (30 days)."
+      },
+      "steps": {
+        "es": [
+          "Si prestas servicios especializados con personal propio en instalaciones del cliente, necesitas folio y constancia REPSE vigentes.",
+          "En la región fronteriza norte o sur, indica si estás inscrito al estímulo: solo así facturas con IVA al 8 %.",
+          "Los regímenes que ves dependen de tu RFC: 12 caracteres para persona moral, 13 para persona física."
+        ],
+        "en": [
+          "If you provide specialized services with your own staff at the customer's premises, you need a current REPSE number and certificate.",
+          "In the northern or southern border region, state whether you are enrolled in the stimulus: only then you invoice at 8% VAT.",
+          "The regimes you see depend on your RFC: 12 characters for a company, 13 for an individual."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "suppliers-us",
+      "area": "suppliers",
+      "keywords": [
+        "estados unidos",
+        "usa",
+        "us",
+        "ein",
+        "w-9",
+        "w9",
+        "sales tax",
+        "condado",
+        "county",
+        "permit",
+        "nexus",
+        "gross receipts"
+      ],
+      "title": {
+        "es": "Proveedores en Estados Unidos",
+        "en": "Suppliers in the United States"
+      },
+      "summary": {
+        "es": "Se pide EIN (no número de Seguro Social), el formulario W-9, el estado y, donde hay impuestos locales, el condado. Si vendes bienes o servicios gravados, tu permiso de sales tax.",
+        "en": "You need an EIN (not a Social Security number), Form W-9, your state and, where local taxes exist, your county. If you sell taxable goods or services, your sales tax permit."
+      },
+      "steps": {
+        "es": [
+          "Hawái, Nuevo México, Delaware y Washington gravan ingresos brutos: se pide su licencia.",
+          "En jurisdicciones con autonomía (Colorado, Luisiana, Alabama, Alaska) confirma si tu ciudad o parroquia requiere registro propio.",
+          "Estados Unidos no tiene factura electrónica obligatoria; facturas con tu sistema actual."
+        ],
+        "en": [
+          "Hawaii, New Mexico, Delaware and Washington tax gross receipts: their license is required.",
+          "In home-rule jurisdictions (Colorado, Louisiana, Alabama, Alaska) confirm whether your city or parish needs its own registration.",
+          "The United States has no e-invoicing mandate; you invoice with your current system."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "suppliers-other",
+      "area": "suppliers",
+      "keywords": [
+        "pais",
+        "otro",
+        "colombia",
+        "chile",
+        "peru",
+        "argentina",
+        "brasil",
+        "espana",
+        "francia",
+        "alemania",
+        "italia",
+        "canada",
+        "india",
+        "factura electronica",
+        "peppol",
+        "ksef"
+      ],
+      "title": {
+        "es": "Proveedores de otros países",
+        "en": "Suppliers from other countries"
+      },
+      "summary": {
+        "es": "Buyniverse aplica reglas específicas para 24 jurisdicciones: identificación fiscal con dígito verificador y el sistema de factura electrónica de cada país (DIAN, SII, SUNAT, ARCA, NF-e, Peppol, KSeF, SdI, Verifactu, entre otros). Si tu país no está en la lista, el equipo verifica tu registro manualmente.",
+        "en": "Buyniverse applies specific rules for 24 jurisdictions: tax ID with check digit and each country's e-invoicing system (DIAN, SII, SUNAT, ARCA, NF-e, Peppol, KSeF, SdI, Verifactu and more). If your country is not listed, the team verifies your registration manually."
+      },
+      "steps": {
+        "es": [
+          "El país se sugiere por tu zona horaria, pero lo que cuenta es tu residencia fiscal: cámbialo si hace falta.",
+          "Donde aplica, confirma que emites comprobantes electrónicos válidos ante tu autoridad.",
+          "Buyniverse timbra facturas solo en México; en otros países sigues facturando con tu proveedor actual."
+        ],
+        "en": [
+          "The country is suggested from your time zone, but your tax residence is what counts: change it if needed.",
+          "Where it applies, confirm you issue valid electronic invoices with your authority.",
+          "Buyniverse stamps invoices only in Mexico; elsewhere you keep invoicing with your current provider."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "suppliers-documents",
+      "area": "suppliers",
+      "keywords": [
+        "documento",
+        "subir",
+        "pdf",
+        "constancia",
+        "vencido",
+        "vigencia",
+        "fecha",
+        "archivo"
+      ],
+      "title": {
+        "es": "Subir documentos de cumplimiento",
+        "en": "Upload compliance documents"
+      },
+      "summary": {
+        "es": "Cada documento es un PDF de hasta 3 MB con su fecha de emisión. Se guarda cifrado y el servidor recalcula tu estatus al instante. Si supera su vigencia (por ejemplo, 30 días para la 32-D), vuelve a pendiente.",
+        "en": "Each document is a PDF of up to 3 MB with its issue date. It is stored encrypted and the server recalculates your status at once. Past its validity (for example 30 days for the 32-D) it returns to pending."
+      },
+      "steps": {
+        "es": [
+          "Abre el alta: si ya tienes cuenta, verás tus documentos pendientes.",
+          "Indica la fecha de emisión y elige el PDF.",
+          "Pulsa «Subir»; el estatus cambia a «Listo» cuando el servidor lo valida."
+        ],
+        "en": [
+          "Open onboarding: with an existing account you see your pending documents.",
+          "Enter the issue date and choose the PDF.",
+          "Press “Upload”; the status turns “Ready” once the server validates it."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Mis documentos",
+            "en": "My documents"
+          },
+          "to": "/onboarding"
+        }
+      ]
+    },
+    {
+      "id": "suppliers-postal",
+      "area": "suppliers",
+      "keywords": [
+        "codigo postal",
+        "cp",
+        "no existe",
+        "no coincide",
+        "estado",
+        "colonia",
+        "catalogo"
+      ],
+      "title": {
+        "es": "Mi código postal no aparece o no coincide",
+        "en": "My postal code is missing or does not match"
+      },
+      "summary": {
+        "es": "En México el código postal debe existir en el catálogo del SAT y pertenecer al estado del domicilio fiscal. Al escribirlo, Buyniverse llena estado, ciudad y colonias automáticamente.",
+        "en": "In Mexico the postal code must exist in the SAT catalogue and belong to the state of the fiscal address. As you type it, Buyniverse fills state, city and neighbourhoods automatically."
+      },
+      "steps": {
+        "es": [
+          "Usa el código postal exacto de tu Constancia de Situación Fiscal.",
+          "Si el estado no coincide, el código postal manda: revisa tu Constancia.",
+          "Si tu código postal es nuevo y no aparece, abre un ticket: actualizamos el catálogo del SAT."
+        ],
+        "en": [
+          "Use the exact postal code on your tax status certificate.",
+          "If the state does not match, the postal code rules: check your certificate.",
+          "If your postal code is new and missing, open a ticket: we update the SAT catalogue."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "suppliers-taxid",
+      "area": "suppliers",
+      "keywords": [
+        "rfc",
+        "digito",
+        "verificador",
+        "invalido",
+        "generico",
+        "xaxx",
+        "formato",
+        "identificacion fiscal",
+        "nit",
+        "cuit",
+        "ruc"
+      ],
+      "title": {
+        "es": "Mi identificación fiscal aparece como inválida",
+        "en": "My tax ID shows as invalid"
+      },
+      "summary": {
+        "es": "Se valida formato, fecha y dígito verificador de cada país. Los RFC genéricos (XAXX010101000, XEXX010101000) no identifican a un proveedor. En México, un dígito verificador distinto solo genera advertencia, porque el SAT ha emitido algunos RFC fuera del algoritmo publicado.",
+        "en": "Format, date and check digit are validated per country. Generic RFCs (XAXX010101000, XEXX010101000) do not identify a supplier. In Mexico a different check digit only warns, because the SAT has issued some RFCs outside the published algorithm."
+      },
+      "steps": {
+        "es": [
+          "Cópiala tal como aparece en tu registro fiscal, sin espacios de más.",
+          "Revisa que el país seleccionado sea el de tu residencia fiscal.",
+          "Si estás seguro de que es correcta, abre un ticket con el mensaje que ves."
+        ],
+        "en": [
+          "Copy it exactly as in your tax register, without extra spaces.",
+          "Check the selected country is your country of tax residence.",
+          "If you are sure it is correct, open a ticket with the message you see."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "invoicing-stamp",
+      "area": "invoicing",
+      "keywords": [
+        "timbrar",
+        "cfdi",
+        "factura",
+        "facturar",
+        "pac",
+        "sw",
+        "emitir",
+        "ingreso"
+      ],
+      "title": {
+        "es": "Timbrar CFDI 4.0 con Buyniverse",
+        "en": "Stamp CFDI 4.0 with Buyniverse"
+      },
+      "summary": {
+        "es": "Buyniverse arma el CFDI 4.0, lo valida contra los esquemas oficiales del SAT y lo timbra con nuestro PAC (SW) usando el CSD de tu empresa. Emite ingresos, notas de crédito y complementos de pago.",
+        "en": "Buyniverse builds the CFDI 4.0, validates it against the official SAT schemas and stamps it through our PAC (SW) with your company's CSD. It issues income invoices, credit notes and payment complements."
+      },
+      "steps": {
+        "es": [
+          "Elige «Timbrar CFDI con Buyniverse» en el alta.",
+          "Protege tu CSD (.cer, .key y contraseña).",
+          "El timbrado se activa en cuanto el PAC confirma tu certificado."
+        ],
+        "en": [
+          "Choose “Stamp CFDI with Buyniverse” during onboarding.",
+          "Protect your CSD (.cer, .key and password).",
+          "Stamping activates once the PAC confirms your certificate."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "invoicing-csd",
+      "area": "invoicing",
+      "keywords": [
+        "csd",
+        "cer",
+        "key",
+        "llave",
+        "certificado",
+        "sello",
+        "e.firma",
+        "fiel",
+        "contrasena",
+        "vencio"
+      ],
+      "title": {
+        "es": "Subir tu CSD",
+        "en": "Upload your CSD"
+      },
+      "summary": {
+        "es": "Se requiere el Certificado de Sello Digital, no la e.firma. Verificamos que la llave abra con la contraseña y corresponda al certificado, que pertenezca a tu RFC y que esté vigente. Se guarda cifrado y la API nunca lo devuelve.",
+        "en": "You need the Digital Seal Certificate (CSD), not the e.firma. We check the key opens with the password and matches the certificate, belongs to your RFC and is current. It is stored encrypted and never returned by the API."
+      },
+      "steps": {
+        "es": [
+          "Si ves «Este certificado es una e.firma», descarga tu CSD desde el portal del SAT (Certifica).",
+          "«El certificado pertenece al RFC…» significa que subiste el CSD de otra empresa.",
+          "«CSD protegido, esperando al PAC» indica que el timbrado se activará al confirmarse; no lo subas de nuevo."
+        ],
+        "en": [
+          "If you see “This certificate is an e.firma”, download your CSD from the SAT portal (Certifica).",
+          "“The certificate belongs to RFC…” means you uploaded another company's CSD.",
+          "“CSD protected, waiting for the PAC” means stamping activates once confirmed; do not upload it again."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "invoicing-complement",
+      "area": "invoicing",
+      "keywords": [
+        "complemento",
+        "pago",
+        "ppd",
+        "rep",
+        "parcialidad",
+        "credito",
+        "cobro"
+      ],
+      "title": {
+        "es": "Complemento de pago (PPD)",
+        "en": "Payment complement (PPD)"
+      },
+      "summary": {
+        "es": "Si facturas a crédito o en parcialidades (método PPD), al recibir cada pago emites un complemento de pago relacionado con el UUID de la factura, a más tardar el día 5 del mes siguiente.",
+        "en": "If you invoice on credit or in instalments (PPD method), for each payment received you issue a payment complement linked to the invoice UUID, no later than the 5th of the following month."
+      },
+      "steps": {
+        "es": [
+          "Usa PUE cuando cobras en el momento; PPD cuando el pago llega después.",
+          "El complemento lleva uso CFDI CP01 y el saldo insoluto de la factura.",
+          "Buyniverse calcula base e impuestos proporcionales a cada pago."
+        ],
+        "en": [
+          "Use PUE when you collect at once; PPD when payment comes later.",
+          "The complement uses CFDI use CP01 and the invoice's outstanding balance.",
+          "Buyniverse computes base and taxes in proportion to each payment."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "invoicing-cancel",
+      "area": "invoicing",
+      "keywords": [
+        "cancelar",
+        "cancelacion",
+        "sustituir",
+        "motivo",
+        "01",
+        "02",
+        "03",
+        "04",
+        "error",
+        "equivocado",
+        "cancelo",
+        "anular",
+        "salio mal",
+        "factura mal",
+        "factura equivocada"
+      ],
+      "title": {
+        "es": "Cancelar o sustituir un CFDI",
+        "en": "Cancel or replace a CFDI"
+      },
+      "summary": {
+        "es": "Para corregir datos se emite un CFDI nuevo relacionado (04) y se cancela el anterior con motivo 01. Los motivos 02, 03 y 04 cubren errores sin relación, operación no realizada y factura global. Algunas cancelaciones requieren aceptación del receptor.",
+        "en": "To correct data a new related CFDI (04) is issued and the previous one is cancelled with motive 01. Motives 02, 03 and 04 cover errors without relation, operations not carried out and global invoices. Some cancellations need the receiver's acceptance."
+      },
+      "steps": {
+        "es": [
+          "Motivo 01 exige el UUID que sustituye al cancelado.",
+          "Consulta el estatus en el SAT: «En proceso» indica que espera al receptor.",
+          "Solo administración de la empresa puede cancelar."
+        ],
+        "en": [
+          "Motive 01 requires the UUID that replaces the cancelled one.",
+          "Check the SAT status: “In process” means it awaits the receiver.",
+          "Only the company's administrators can cancel."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "invoicing-series",
+      "area": "invoicing",
+      "keywords": [
+        "serie",
+        "series",
+        "folio",
+        "folios",
+        "consecutivo",
+        "sucursal",
+        "lugar de expedicion",
+        "fecha"
+      ],
+      "title": {
+        "es": "Series y folios",
+        "en": "Series and folios"
+      },
+      "summary": {
+        "es": "Cada empresa define series por tipo de documento (ingreso, egreso, pago, global) y por lugar de expedición. La regla más específica gana y una serie puede llevar su propio consecutivo.",
+        "en": "Each company defines series per document type (income, credit note, payment, global) and issuing place. The most specific rule wins and a series may keep its own counter."
+      },
+      "steps": {
+        "es": [
+          "Solo administración asigna un folio manual, y debe estar libre en su serie.",
+          "La fecha de emisión puede retroceder hasta 72 horas, como permite el SAT.",
+          "Una serie que ya emitió folios no cambia su folio inicial."
+        ],
+        "en": [
+          "Only administrators assign a manual folio, and it must be free in its series.",
+          "The issue date may go back up to 72 hours, as the SAT allows.",
+          "A series that already issued folios cannot change its starting folio."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "buying-find",
+      "area": "buying",
+      "keywords": [
+        "buscar",
+        "proveedores",
+        "filtros",
+        "comparar",
+        "sector",
+        "categoria",
+        "ciudad",
+        "preseleccion",
+        "marketplace"
+      ],
+      "title": {
+        "es": "Buscar y comparar proveedores",
+        "en": "Find and compare suppliers"
+      },
+      "summary": {
+        "es": "El buscador filtra con combos dependientes: sector → categoría → capacidad y país → estado → ciudad. Cada opción muestra cuántos proveedores quedan y la preselección vive en la URL, así puedes compartirla.",
+        "en": "The finder filters with dependent selects: sector → category → capability and country → state → city. Each option shows how many suppliers remain and the shortlist lives in the URL, so you can share it."
+      },
+      "steps": {
+        "es": [
+          "Abre «Buscar proveedores».",
+          "Combina filtros; al cambiar un filtro padre se limpian sus hijos.",
+          "Preselecciona al menos dos proveedores para solicitar cotización."
+        ],
+        "en": [
+          "Open “Find suppliers”.",
+          "Combine filters; changing a parent filter clears its children.",
+          "Shortlist at least two suppliers to request quotes."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Buscar proveedores",
+            "en": "Find suppliers"
+          },
+          "to": "/marketplace"
+        }
+      ]
+    },
+    {
+      "id": "buying-rfq",
+      "area": "buying",
+      "keywords": [
+        "rfq",
+        "cotizacion",
+        "cotizar",
+        "solicitud",
+        "subasta",
+        "lanzar",
+        "invitar proveedores",
+        "asistente"
+      ],
+      "title": {
+        "es": "Lanzar una RFQ o subasta inversa",
+        "en": "Launch an RFQ or reverse auction"
+      },
+      "summary": {
+        "es": "Desde tu preselección abres el asistente: describe la necesidad, invita a los proveedores preseleccionados y elige cotización cerrada o subasta inversa en vivo.",
+        "en": "From your shortlist you open the wizard: describe the need, invite the shortlisted suppliers and choose a sealed quote or a live reverse auction."
+      },
+      "steps": {
+        "es": [
+          "Preselecciona proveedores en el buscador.",
+          "Pulsa «Solicitar cotización» en la bandeja de preselección.",
+          "Completa el asistente; los proveedores reciben la invitación."
+        ],
+        "en": [
+          "Shortlist suppliers in the finder.",
+          "Press “Request quote” in the shortlist tray.",
+          "Complete the wizard; suppliers receive the invitation."
+        ]
+      },
+      "links": [
+        {
+          "label": {
+            "es": "Buscar proveedores",
+            "en": "Find suppliers"
+          },
+          "to": "/marketplace"
+        }
+      ]
+    },
+    {
+      "id": "buying-auction",
+      "area": "buying",
+      "keywords": [
+        "subasta",
+        "inversa",
+        "pujas",
+        "ofertas",
+        "ronda",
+        "ranking",
+        "precio",
+        "ahorro",
+        "adjudicar"
+      ],
+      "title": {
+        "es": "Cómo funciona la subasta inversa",
+        "en": "How the reverse auction works"
+      },
+      "summary": {
+        "es": "Los proveedores invitados compiten bajando su precio durante la ronda. Buyniverse mide el ahorro frente a tu presupuesto y frente a la mejor primera oferta, y al cierre adjudicas con el historial auditado.",
+        "en": "Invited suppliers compete by lowering their price during the round. Buyniverse measures savings against your budget and against the best first offer, and at the close you award with an audited history."
+      },
+      "steps": {
+        "es": [
+          "Define presupuesto y duración de la ronda.",
+          "Sigue las pujas en vivo en la sala de subasta.",
+          "Adjudica y continúa con la orden de compra."
+        ],
+        "en": [
+          "Set the budget and round duration.",
+          "Follow bids live in the auction room.",
+          "Award and continue with the purchase order."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "payments-escrow",
+      "area": "payments",
+      "keywords": [
+        "custodia",
+        "escrow",
+        "pago",
+        "liberar",
+        "liberacion",
+        "recepcion",
+        "conciliacion",
+        "tres vias",
+        "3-way"
+      ],
+      "title": {
+        "es": "Pagos en custodia",
+        "en": "Escrow payments"
+      },
+      "summary": {
+        "es": "El comprador deposita en custodia y el pago se libera al proveedor cuando se confirma la recepción y la factura concilia con la orden (conciliación a tres vías).",
+        "en": "The buyer funds escrow and the payment is released to the supplier once receipt is confirmed and the invoice matches the order (three-way match)."
+      },
+      "steps": {
+        "es": [
+          "Registra la recepción de la orden.",
+          "Revisa la conciliación de la factura contra orden y recepción.",
+          "Libera el pago; queda en la bitácora de auditoría."
+        ],
+        "en": [
+          "Record receipt of the order.",
+          "Review the invoice match against order and receipt.",
+          "Release the payment; it is recorded in the audit trail."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "payments-fee",
+      "area": "payments",
+      "keywords": [
+        "comision",
+        "costo",
+        "precio",
+        "cobro",
+        "cuanto cuesta",
+        "tarifa",
+        "ahorro"
+      ],
+      "title": {
+        "es": "La comisión de Buyniverse",
+        "en": "Buyniverse's fee"
+      },
+      "summary": {
+        "es": "Solo pagas una parte del ahorro que encontramos: si no hay ahorro, no hay comisión. La cascada de ahorro muestra presupuesto, mejor primera oferta y mejor puja final.",
+        "en": "You only pay a share of the savings we find: no savings, no fee. The savings waterfall shows budget, best first offer and best final bid."
+      },
+      "steps": {
+        "es": [
+          "Revisa el ahorro de cada evento en su panel comercial.",
+          "El ahorro financiero es presupuesto menos mejor primera oferta.",
+          "El ahorro Buyniverse es la mejor primera oferta menos la mejor puja final."
+        ],
+        "en": [
+          "Review each event's savings in its commercial panel.",
+          "Financial savings are budget minus best first offer.",
+          "Buyniverse savings are best first offer minus best final bid."
+        ]
+      },
+      "links": []
+    },
+    {
+      "id": "access-security",
+      "area": "access",
+      "keywords": [
+        "seguridad",
+        "privacidad",
+        "cifrado",
+        "datos",
+        "bloqueo",
+        "inactividad",
+        "sesion bloqueada",
+        "auditoria"
+      ],
+      "title": {
+        "es": "Seguridad y privacidad",
+        "en": "Security and privacy"
+      },
+      "summary": {
+        "es": "No guardamos contraseñas. Credenciales fiscales, documentos y declaraciones se cifran con AES-256-GCM, cada cambio sensible queda en una bitácora inmutable y la sesión se bloquea tras 15 minutos sin actividad.",
+        "en": "We store no passwords. Tax credentials, documents and declarations are encrypted with AES-256-GCM, every sensitive change goes to an immutable audit trail and the session locks after 15 minutes without activity."
+      },
+      "steps": {
+        "es": [
+          "Si tu sesión se bloquea, pulsa «Reanudar» para continuar.",
+          "Puedes bloquearla tú desde el menú de tu cuenta.",
+          "Reporta cualquier actividad que no reconozcas con un ticket de prioridad alta."
+        ],
+        "en": [
+          "If your session locks, press “Resume” to continue.",
+          "You can lock it yourself from your account menu.",
+          "Report any activity you do not recognise with a high-priority ticket."
+        ]
+      },
+      "links": []
+    }
+  ]
+}

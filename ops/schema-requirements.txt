@@ -6,3 +6,5 @@ cfdi_series
 cfdi_folios
 cfdi_documents
 cfdi_stamp_ledger
+support_tickets
+support_ticket_events

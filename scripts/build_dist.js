@@ -243,6 +243,8 @@ async function build() {
     "identity_service.php",
     "onboarding_service.php",
     "supplier_compliance.php",
+    "support_service.php",
+    "support_admin.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",
