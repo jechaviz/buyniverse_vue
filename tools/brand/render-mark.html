@@ -46,7 +46,7 @@
       log(`${size}px ${bytes ? "saved (" + bytes + " bytes)" : "rendered"}`);
     }
     // Orbit strip for the navbar hover: 32 frames of one ring lap.
-    const orbit = await window.BuyniverseThree.renderMarkSprite(128, 32);
+    const orbit = await window.BuyniverseThree.renderMarkSprite(160, 32);
     const orbitBytes = await save("assets/brand/buyniverse-mark-orbit.png", orbit);
     log("orbit strip " + (orbitBytes ? "saved (" + orbitBytes + " bytes)" : "rendered"));
     window.__rendered = true;

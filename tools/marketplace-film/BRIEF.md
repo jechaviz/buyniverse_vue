@@ -23,7 +23,7 @@ decision.
 
 ## Assets
 
-- assets/brand/buyniverse-mark-1024.png — the rendered 3D brand mark (planet, sourcing ring, acquisition cube), end card hero.
+- assets/brand/buyniverse-mark-1024.png — the rendered 3D brand mark (glass price tag holding a nebula, cord becoming a gradient ring of light), end card hero.
 - assets/fonts/space-grotesk-latin-{500,700}-normal.woff2 — brand display face (SIL OFL, license alongside).
 
 ## Notes

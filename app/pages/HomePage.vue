@@ -98,7 +98,7 @@
             <p class="bn-muted" style="margin: 0; line-height: 1.6">{{ store.t(step.body) }}</p>
           </article>
         </div>
-        <video v-if="filmAvailable" class="bn-video" style="margin-top: 28px" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=2" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
+        <video v-if="filmAvailable" class="bn-video" style="margin-top: 28px" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=3" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
       </div>
     </section>
 

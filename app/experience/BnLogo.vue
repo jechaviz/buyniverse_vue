@@ -2,7 +2,7 @@
   <RouterLink to="/" class="bn-logo" :aria-label="store.t('Buyniverse home')">
     <!-- One lap of the 3D ring, pre-rendered as a 32-frame strip: frame 0 is
          the rest pose, and hover plays the orbit with CSS steps(). -->
-    <span class="bn-logo__mark" aria-hidden="true" :style="{ width: size + 'px', height: size + 'px', backgroundImage: 'url(assets/brand/buyniverse-mark-orbit.png?v=1)' }"></span>
+    <span class="bn-logo__mark" aria-hidden="true" :style="{ width: size + 'px', height: size + 'px', backgroundImage: 'url(assets/brand/buyniverse-mark-orbit.png?v=2)' }"></span>
     <span v-if="wordmark" class="bn-logo__word">buy<b>niverse</b></span>
   </RouterLink>
 </template>

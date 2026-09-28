@@ -113,6 +113,8 @@
     mark.group.position.set(-0.21, -0.03, 0);
     // Stars keep the same apparent size at every logo resolution.
     mark.setPointScale(3.2 * MARK_DISTANCE * size / 1024);
+    // Level of detail: individual stars only where they can be resolved.
+    mark.setDetail(size >= 400 ? "full" : "compact");
     scene.add(mark.group);
     var camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
     camera.position.set(0, 0.1, MARK_DISTANCE);

@@ -292,6 +292,22 @@
         return new Promise((resolve) => { ui.inputDialog = { title, message, value: String(value || ""), placeholder, confirmText, cancelText, multiline, rows, resolve }; });
       },
 
+      lockSession(reason = "Manual privacy lock") {
+        // Settle open dialogs so callers awaiting them do not hang behind the lock.
+        ui.confirmDialog?.resolve?.(false);
+        ui.inputDialog?.resolve?.(null);
+        ui.confirmDialog = null;
+        ui.inputDialog = null;
+        ui.loading = false;
+        ui.locked = true;
+        this.securityEvent("Session locked", reason, "warning");
+      },
+
+      unlockSession() {
+        ui.locked = false;
+        this.securityEvent("Session resumed", "Local privacy lock released");
+      },
+
       createJob(payload = {}) {
         if (!this.isBuyer.value) {
           this.notice("Only buyer accounts can post jobs", "fa-shield-halved");
