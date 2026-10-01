@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "buyniverse-dev", "runtimeExecutable": "bun", "runtimeArgs": ["tools/dev-server.js", "4178"], "port": 4178 },
+    { "name": "buyniverse-prod-sim", "runtimeExecutable": "bun", "runtimeArgs": ["tools/dev-server.js", "4179", "--production", "--providers=google,microsoft"], "port": 4179 }
+  ]
+}
