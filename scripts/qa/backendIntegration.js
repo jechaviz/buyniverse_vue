@@ -21,6 +21,13 @@ const port = 8820 + Math.floor(Math.random() * 60);
 const base = `http://127.0.0.1:${port}`;
 const php = (args, opts = {}) => execFileSync("php", ["-d", "display_startup_errors=0", ...args], { encoding: "utf8", env: { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config }, ...opts });
 const failures = [];
+let swToken = "";
+const swEnvFile = process.env.BUYNIVERSE_SW_TEST_ENV_FILE;
+if (swEnvFile && fs.existsSync(swEnvFile)) {
+  const env = Object.fromEntries(fs.readFileSync(swEnvFile, "utf8").split(/\r?\n/).map((line) => /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(line)).filter(Boolean).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+  if (env.SW_ENV === "test" && env.SW_TOKEN) swToken = env.SW_TOKEN;
+}
+const serverEnv = { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config, ...(swToken ? { BUYNIVERSE_TEST_SW_TOKEN: swToken } : {}) };
 const check = (label, ok, detail = "") => { if (!ok) failures.push(`${label}${detail ? ": " + detail : ""}`); };
 
 // A federated identity already in the session, exactly as identity_service
@@ -58,7 +65,7 @@ const mxSupplier = (extra = {}) => ({
 });
 
 async function main() {
-  const server = spawn("php", ["-d", "display_startup_errors=0", "-d", `session.save_path=${sessions}`, "-S", `127.0.0.1:${port}`, "index.php"], { cwd: ROOT, env: { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config }, stdio: "ignore" });
+  const server = spawn("php", ["-d", "display_startup_errors=0", "-d", `session.save_path=${sessions}`, "-S", `127.0.0.1:${port}`, "index.php"], { cwd: ROOT, env: serverEnv, stdio: "ignore" });
   try {
     for (let i = 0; i < 40; i++) { try { await fetch(base + "/api/v1/runtime"); break; } catch (_) { await pause(150); } }
 
@@ -117,8 +124,81 @@ file_put_contents($argv[2] . '.key', base64_decode(preg_replace('/-----[^-]+----
     };
     r = await upload("URE180429TM6");
     check("CSD of another company is refused", r.status === 400 && /pertenece/.test(r.json && r.json.error || ""), r.text);
+    // The attack the SAT chain check closes: a self-signed certificate "for"
+    // this RFC would otherwise replace the real company's CSD in the shared
+    // PAC account. It is refused before anything reaches the PAC.
     r = await upload("EKU9003173C9");
-    check("company CSD is secured and waits for the PAC", r.status === 200 && r.json.secured === true && r.json.pacPending === true, r.text);
+    check("self-signed CSD for the company RFC is refused", r.status === 400 && /firmado por el SAT/.test(r.json && r.json.error || ""), r.text);
+    if (!swToken) {
+      // Without a PAC, the SAT's public test CSD is stored and waits for it.
+      // With a live PAC nothing is uploaded: the shared test account keeps its CSDs.
+      const fixture = path.join(__dirname, "fixtures/sat-test-csd/EKU9003173C9");
+      const pem = fs.readFileSync(fixture + ".cer.pem", "utf8").replace(/-----[^-]+-----|\s/g, "");
+      const form = new FormData(); form.append("companyId", companyId); form.append("privateKeyPassword", "12345678a");
+      form.append("certificate", new Blob([Buffer.from(pem, "base64")]), "csd.cer"); form.append("privateKey", new Blob([fs.readFileSync(fixture + ".key")]), "csd.key");
+      await pause(1700);
+      r = await call(mx, "POST", "/api/v1/onboarding/fiscal-credentials", form, "fiscal-credential-v1");
+      check("SAT-signed CSD is secured and waits for the PAC", r.status === 200 && r.json.secured === true && r.json.pacPending === true && r.json.certificate.number === "30001000000500003416", r.text);
+    }
+
+    // CFDI issuance. The SW test account already holds the SAT test CSD of
+    // EKU9003173C9, so the profile is marked as synced the way a real upload
+    // would leave it, and every stamp below is a real stamp in SW's TEST
+    // environment (no fiscal validity).
+    const sql = path.join(work, "sql.php");
+    fs.writeFileSync(sql, `<?php $c = require getenv('BUYNIVERSE_RUNTIME_CONFIG'); $p = new PDO($c['db_dsn'], $c['db_user'], $c['db_password']); $s = $p->prepare($argv[1]); $s->execute(array_slice($argv, 2)); echo json_encode($s->fetchAll(PDO::FETCH_ASSOC));`);
+    const cfdi = (method, uri, body) => call(mx, method, "/api/v1/cfdi/" + uri, body, "cfdi-v1");
+    r = await cfdi("GET", "status");
+    check("CFDI status before the CSD is active", r.status === 200 && r.json.profileReady === false && r.json.permissions.manage === true, r.text);
+    php([sql, "UPDATE tenant_fiscal_profiles SET status = 'ready', connector_key = 'sw', certificate_number = '30001000000500003416' WHERE legal_entity_id = ?", companyId]);
+    if (swToken) {
+      r = await cfdi("GET", "status");
+      check("CFDI ready with SW", r.status === 200 && r.json.ready === true && r.json.pac === "sw", r.text);
+      await pause(900);
+      r = await cfdi("POST", "series", { docKind: "I", series: "BNV", ownFolio: true, startFolio: 100 });
+      check("manager defines a series with its own folio", r.status === 200 && r.json.series.preview.I.series === "BNV" && r.json.series.preview.I.folio === "100", r.text);
+      const receiver = { rfc: "URE180429TM6", name: "UNIVERSIDAD ROBOTICA ESPAÑOLA S.A. DE C.V.", zip: "86991", regime: "601", use: "G03" };
+      const items = [{ prod: "43211503", unit: "H87", unitName: "Pieza", desc: "Laptop 14 pulgadas", qty: 2, value: 18450.5, objeto: "02", rate: "0.16" }];
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver: { ...receiver, rfc: "XAXX010101000" }, items, paymentMethod: "PPD" });
+      check("generic receiver is refused", r.status === 400, r.text);
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver, items: [{ ...items[0], prod: "99999999" }], paymentMethod: "PPD" });
+      check("unknown SAT product key is refused", r.status === 400 && /clave de producto/.test(r.json.error), r.text);
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver, items, paymentMethod: "PUE", paymentForm: "99" });
+      check("PUE with form 99 is refused", r.status === 400, r.text);
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver, items, paymentMethod: "PPD" });
+      check("income CFDI stamped by SW with series BNV-100", r.status === 201 && r.json.document.series === "BNV" && r.json.document.folio === "100" && /^[0-9A-F-]{36}$/.test(r.json.document.uuid), r.text);
+      const invoice = r.json && r.json.document;
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver, items: [{ ...items[0], qty: 1 }], paymentMethod: "PUE", paymentForm: "03" });
+      check("next folio is 101", r.status === 201 && r.json.document.folio === "101", r.text);
+      const second = r.json && r.json.document;
+      await pause(900);
+      r = await cfdi("POST", "documents", { receiver, items, paymentMethod: "PUE", paymentForm: "03", folio: "100" });
+      check("a taken manual folio is refused", r.status === 409, r.text);
+      await pause(900);
+      r = await cfdi("POST", `documents/${invoice.uuid}/payments`, { amount: 10000, paymentForm: "03", paidAt: new Date().toISOString().slice(0, 10) });
+      check("payment complement with first instalment and balance", r.status === 201 && r.json.document.type === "P" && r.json.document.instalment === 1 && Math.abs(r.json.document.balance - (invoice.total - 10000)) < 0.01, r.text);
+      await pause(900);
+      r = await cfdi("POST", `documents/${invoice.uuid}/credit-notes`, { amount: 1160, reason: "Descuento por volumen" });
+      check("credit note related to the invoice", r.status === 201 && r.json.document.type === "E", r.text);
+      r = await cfdi("GET", "documents");
+      check("documents list: 2 income, 1 payment, 1 credit note", r.status === 200 && r.json.documents.filter((d) => d.type === "I").length === 2 && r.json.documents.some((d) => d.type === "P") && r.json.documents.some((d) => d.type === "E"), r.text);
+      const download = await fetch(base + `/api/v1/cfdi/documents/${invoice.uuid}/xml`, { headers: { Cookie: mx.cookie } });
+      const xml = await download.text();
+      check("stamped XML downloads with its timbre", download.status === 200 && xml.includes("TimbreFiscalDigital") && xml.includes(invoice.uuid), xml.slice(0, 200));
+      await pause(900);
+      r = await cfdi("POST", `documents/${second.uuid}/cancel`, { motive: "02" });
+      check("cancellation requested at SW", r.status === 200 && ["cancel_requested", "cancelled"].includes(r.json.document.status), r.text);
+      const ledger = JSON.parse(php([sql, "SELECT COUNT(*) n FROM cfdi_stamp_ledger WHERE legal_entity_id = ?", companyId]));
+      check("every stamp is in the ledger", Number(ledger[0].n) === 4, JSON.stringify(ledger));
+    } else {
+      r = await cfdi("POST", "documents", { receiver: {}, items: [] });
+      check("issuance without a PAC answers 503", r.status === 503, r.text);
+    }
 
     // 2. United States: county required where local taxes exist.
     const us = identity("Acme");
@@ -176,4 +256,4 @@ main().then(() => {
   fs.rmSync(work, { recursive: true, force: true });
   if (failures.length) { console.error(failures.join("\n")); process.exit(1); }
   console.log(JSON.stringify({ backendIntegration: "verified" }, null, 2));
-}).catch((error) => { console.error(error); process.exit(1); });
+}).catch((error) => { console.error(failures.join("\n")); console.error(error); process.exit(1); });

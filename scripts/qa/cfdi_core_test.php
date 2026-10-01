@@ -63,9 +63,16 @@ function make_cert(string $rfc, bool $withOu, int $days, string $password, ?Open
 $expectFail = function (string $label, callable $fn, string $needle) use ($check) {
     try { $fn(); $check($label, false, 'accepted'); } catch (RuntimeException $e) { $check($label, str_contains($e->getMessage(), $needle), $e->getMessage()); }
 };
+// The SAT's public test CSD is accepted where the test CA is trusted, and
+// refused in production; generated certificates are never SAT-signed.
+$fixture = __DIR__ . '/fixtures/sat-test-csd/EKU9003173C9';
+$satCer = base64_decode((string) preg_replace('/-----[^-]+-----|\s/', '', (string) file_get_contents($fixture . '.cer.pem')));
+$satKey = (string) file_get_contents($fixture . '.key');
+$info = Csd::inspect($satCer, $satKey, '12345678a', 'EKU9003173C9', null, true);
+$check('SAT test CSD accepted', $info['rfc'] === 'EKU9003173C9' && $info['branch'] === 'Sucursal 1' && $info['number'] === '30001000000500003416' && strlen($info['fingerprint']) === 64, json_encode($info['number']));
+$expectFail('SAT test CA refused in production', fn() => Csd::inspect($satCer, $satKey, '12345678a', 'EKU9003173C9'), 'firmado por el SAT');
 [$cer, $keyDer] = make_cert('EKU9003173C9', true, 365, 's3cret');
-$info = Csd::inspect($cer, $keyDer, 's3cret', 'EKU9003173C9');
-$check('csd accepted', $info['rfc'] === 'EKU9003173C9' && $info['branch'] === 'Sucursal 1' && strlen($info['fingerprint']) === 64 && preg_match('/^30001000000\d{9}$/', $info['number']) === 1, json_encode($info['number']));
+$expectFail('self-signed certificate refused', fn() => Csd::inspect($cer, $keyDer, 's3cret', 'EKU9003173C9', null, true), 'firmado por el SAT');
 $expectFail('wrong password rejected', fn() => Csd::inspect($cer, $keyDer, 'nope', 'EKU9003173C9'), 'contraseña');
 $expectFail('other company rejected', fn() => Csd::inspect($cer, $keyDer, 's3cret', 'URE180429TM6'), 'pertenece');
 [, $otherKey] = make_cert('EKU9003173C9', true, 365, 's3cret');

@@ -245,6 +245,7 @@ async function build() {
     "supplier_compliance.php",
     "support_service.php",
     "support_admin.php",
+    "cfdi_service.php",
     ".htaccess",
     "email_service.php",
     "email_worker.php",
