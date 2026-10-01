@@ -35,6 +35,9 @@
         {{ saveStatus.label }}
       </span>
 
+      <button v-if="store.isDemo.value" type="button" class="btn-muted hidden px-3 py-2 text-xs sm:inline-flex" @click="$emit('open-auth', 'login')">
+        <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>{{ store.t("Log in") }}
+      </button>
       <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
         <i class="fa-solid fa-plus text-xs mr-1.5"></i>{{ store.t("Post a Job") }}
       </RouterLink>
@@ -229,7 +232,7 @@ export default {
     "toggle-nav", "open-command", "toggle-overlay", "mark-all-read",
     "open-notification", "close-account", "lock-now", "switch-mode",
     "set-locale", "toggle-theme", "set-accent", "switch-user",
-    "switch-tenant", "open-workspace-shortcut",
+    "switch-tenant", "open-workspace-shortcut", "open-auth",
   ],
   setup() {
     return { store: Vue.inject("store") };

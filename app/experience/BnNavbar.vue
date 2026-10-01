@@ -15,15 +15,13 @@
             <i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'"></i>
           </button>
 
-          <template v-if="signedIn">
-            <RouterLink to="/dashboard" class="bn-btn bn-btn--primary bn-btn--sm bn-nav__desktop-only">
-              <i class="fa-solid fa-arrow-right-to-bracket"></i>{{ store.t("Open workspace") }}
-            </RouterLink>
-          </template>
-          <template v-else>
-            <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('launch-demo')">{{ store.t("Explore demo") }}</button>
-            <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('open-auth', 'login')">{{ store.t("Log in") }}</button>
-            <button type="button" class="bn-btn bn-btn--primary bn-btn--sm" @click="$emit('open-auth', 'register')">{{ store.t("Join free") }}</button>
+          <RouterLink v-if="signedIn" to="/dashboard" class="bn-btn bn-btn--primary bn-btn--sm" :aria-label="store.t('Open workspace')">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i><span class="bn-nav__label">{{ store.t("Open workspace") }}</span>
+          </RouterLink>
+          <template v-if="!signedIn || isDemo">
+            <button v-if="!signedIn" type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('launch-demo')">{{ store.t("Explore demo") }}</button>
+            <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm" :aria-label="store.t('Log in')" @click="$emit('open-auth', 'login')"><i class="fa-solid fa-arrow-right-to-bracket bn-nav__ico-only"></i><span class="bn-nav__label">{{ store.t("Log in") }}</span></button>
+            <button v-if="!signedIn" type="button" class="bn-btn bn-btn--primary bn-btn--sm" @click="$emit('open-auth', 'register')">{{ store.t("Join free") }}</button>
           </template>
 
           <button type="button" class="bn-icon-btn bn-nav__menu" :aria-expanded="menuOpen" aria-controls="bn-mobile-menu" :aria-label="store.t('Menu')" @click="menuOpen = !menuOpen">
@@ -71,7 +69,7 @@ export default {
       { to: "/procurement/auction", label: "Live auctions" },
     ];
 
-    return { store, links, menuOpen, signedIn: computed(() => Boolean(store.currentUser.value)) };
+    return { store, links, menuOpen, signedIn: computed(() => Boolean(store.currentUser.value)), isDemo: computed(() => store.isDemo.value) };
   },
 };
 </script>

@@ -116,7 +116,7 @@ for (const [file, token] of [
   ["app/components/DataTable.vue", 'currentViewLabel() { return this.activeSavedView?.name || this.t("All records"); }'],
   ["app/components/InlineCellEditor.vue", 'inject: ["store"]'],
   ["app/pages/procurement/LiveAuctionWorkspace.vue", 'store.t("Financial savings")'],
-  ["app/pages/procurement/ProcurementCockpit.vue", "store.t('Open activity')"],
+  ["app/pages/procurement/ProcurementCockpit.vue", "store.t('Needs action')"],
   ["app/pages/procurement/governance/GovernanceAuditTab.vue", "t('History')"],
   ["app/pages/procurement/ProcurementGovernance.vue", "Production workspace state is stored server-side by session"],
 ]) {

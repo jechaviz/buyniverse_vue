@@ -283,7 +283,9 @@ export default {
         }
         if (section === "execution" && route.query.view === "receipt")
           crumbs.push(item("New receipt"));
-        return crumbs;
+        // The pipeline rail already says where you are; a trail only helps
+        // once a record (or a sub-view) is open.
+        return crumbs.length > 2 ? crumbs : [];
       }
       if (path.startsWith("/invoices")) {
         crumbs.push(item("Invoices", "/invoices"));

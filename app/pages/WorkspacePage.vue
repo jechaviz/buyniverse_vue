@@ -206,7 +206,7 @@ export default {
       if (["totalSpend", "value", "budget", "total", "amount", "rate"].includes(key)) return store.money(v, item.currency);
       if (key === "billable") return v === true || v === "true" ? "Yes" : "No";
       if (key === "projectId") return store.job(v)?.title || "—";
-      if (key === "invoiceId") { const inv = store.invoice(v); return inv ? `${inv.id} · ${inv.projectTitle}` : "—"; }
+      if (key === "invoiceId") { const inv = store.state.invoices.find((entry) => entry.id === v); return inv ? `${inv.id} · ${inv.projectTitle}` : "—"; }
       if (key === "assignedTo") return Array.isArray(v) ? v.map((id) => store.user(id)?.name || id).join(", ") : "—";
       if (key === "branches") return Array.isArray(v) ? v.join(", ") : "—";
       if (["paidAt", "dueDate", "validUntil"].includes(key) && v) return store.date(v);

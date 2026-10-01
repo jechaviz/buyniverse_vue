@@ -20,7 +20,7 @@
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=2");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
-    const Workspace = load("./app/pages/WorkspacePage.vue?v=57");
+    const Workspace = load("./app/pages/WorkspacePage.vue?v=58");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
     const Detail = load("./app/pages/DetailPage.vue?v=36");
     const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=35");
@@ -35,7 +35,7 @@
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=40");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=2");
-    const Procurement = load("./app/pages/ProcurementPage.vue?v=33");
+    const Procurement = load("./app/pages/ProcurementPage.vue?v=35");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=4");
 
     const NotFound = {
@@ -109,6 +109,9 @@
     });
 
     router.beforeEach((to) => {
+      // A signed-in session opens the workspace, not the marketing home. The demo keeps its own home.
+      if (to.path === "/" && store.currentUser.value && runtimeMode.value !== "demo" && !to.query.auth)
+        return store.isSupplier.value ? "/find-work" : "/dashboard";
       if (!store.currentUser.value) {
         if (to.meta.onboarding || isPublicRoute(to.path)) return true;
         if (runtimeMode.value !== "demo") {

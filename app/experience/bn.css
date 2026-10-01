@@ -129,10 +129,13 @@ html.dark .bn, .bn .bn-cinema {
 .bn-nav__actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .bn-nav .bn-nav__desktop-only { display: none; }
 .bn-nav__menu { display: grid; }
+/* Account actions are never dropped on a phone: past 520px the text labels collapse to icons. */
+.bn-nav .bn-nav__ico-only { display: none; }
+@media (max-width: 519px) { .bn-nav .bn-nav__label { display: none; } .bn-nav .bn-nav__ico-only { display: inline; } }
 /* Narrow phones: the theme switch moves into the menu so the bar never overflows. */
 @media (max-width: 479px) { .bn-nav .bn-nav__theme { display: none; } }
-/* The smallest phones (320px) keep the mark and drop the wordmark in the bar. */
-@media (max-width: 359px) { .bn-nav .bn-logo__word { display: none; } .bn-nav__row { gap: 12px; } }
+/* Phones under 420px keep the mark and drop the wordmark in the bar. */
+@media (max-width: 419px) { .bn-nav .bn-logo__word { display: none; } .bn-nav__row { gap: 12px; } }
 @media (min-width: 1024px) {
   .bn-nav__links { display: flex; }
   .bn-nav .bn-nav__desktop-only { display: inline-flex; }

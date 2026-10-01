@@ -1,203 +1,100 @@
 <template>
   <div class="space-y-6">
-    <section class="grid gap-4 sm:grid-cols-2">
-      <article v-for="kpi in kpis" :key="kpi.label" class="premium-card group rounded-2xl border border-slate-200/80 bg-white/90 p-4 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-        <div class="flex items-start justify-between gap-3">
-          <span class="grid h-10 w-10 place-items-center rounded-xl text-xs font-bold" :class="kpi.iconTone">
-            <i class="fa-solid" :class="kpi.icon"></i>
-          </span>
-          <span class="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold" :class="kpi.deltaTone">{{ kpi.delta }}</span>
+    <!-- 1. What needs a hand right now, in pipeline order. -->
+    <section class="pl-next" :aria-label="store.t('Needs action')">
+      <header class="flex items-end justify-between gap-3">
+        <div>
+          <h2 class="font-head text-base font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t('Needs action') }}</h2>
+          <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Issues and decisions assigned to you') }}</p>
         </div>
-        <p class="mt-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ kpi.label }}</p>
-        <p class="font-head font-mono mt-1 text-xl sm:text-2xl font-800 text-slate-900 dark:text-white">{{ kpi.value }}</p>
-        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-          <div class="h-full rounded-full bg-brand transition-all duration-500" :style="{width:kpi.progress+'%'}"></div>
-        </div>
-      </article>
+        <span v-if="workQueue.length" class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">{{ workQueue.length }}</span>
+      </header>
+      <RouterLink v-for="item in workQueue" :key="item.id" :to="item.to" class="pl-next__item">
+        <span class="pl-next__icon" :class="item.tone"><i class="fa-solid" :class="item.icon"></i></span>
+        <span class="min-w-0">
+          <span class="pl-next__title block truncate"><span class="pl-next__stage">{{ item.stage }}</span>{{ item.title }}</span>
+          <span class="pl-next__meta block truncate">{{ item.detail }} · {{ item.when }}</span>
+        </span>
+        <span class="pl-next__go">{{ item.action }} <i class="fa-solid fa-arrow-right ml-1 text-[9px]"></i></span>
+      </RouterLink>
+      <div v-if="!workQueue.length" class="pl-next__empty">
+        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+        <span>{{ store.t('You are up to date. Start the next purchase when you are ready.') }}</span>
+        <RouterLink to="/procurement/queue?new=1" class="btn-brand ml-auto"><i class="fa-solid fa-plus"></i>{{ store.t('New request') }}</RouterLink>
+      </div>
     </section>
 
+    <!-- 2. What the pipeline is delivering. -->
     <SavingsWaterfall :model="commercial.primary" :title="store.t('Savings waterfall')" :kicker="store.t('Commercial intelligence')" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
 
-    <section class="grid gap-6 2xl:grid-cols-[minmax(0,1.25fr)_minmax(330px,.75fr)]">
-      <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-        <header class="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">{{ store.t('Open activity') }}</h2>
-            <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Every number opens the records behind it.') }}</p>
-          </div>
-          <RouterLink to="/procurement/queue" class="text-xs font-bold text-brand hover:underline">{{ store.t('View requests') }} <i class="fa-solid fa-arrow-right ml-1"></i></RouterLink>
-        </header>
-        <!-- Dense flow rail: stages read left to right as one chain, with the
-             chevron carrying the hand-off instead of four separate cards. -->
-        <ol class="flex flex-col divide-y divide-slate-100 dark:divide-slate-800 sm:flex-row sm:divide-x sm:divide-y-0">
-          <li v-for="(step, index) in pipeline" :key="step.label" class="relative min-w-0 flex-1">
-            <RouterLink :to="step.to" class="group flex items-center gap-3 px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
-              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500 transition group-hover:bg-brand group-hover:text-white dark:bg-slate-800 dark:text-slate-400">
-                <i class="fa-solid text-[11px]" :class="step.icon"></i>
-              </span>
-              <span class="min-w-0 flex-1">
-                <span class="flex items-baseline gap-1.5">
-                  <b class="font-head font-mono text-xl font-800 leading-none tabular-nums text-slate-900 dark:text-white">{{ step.value }}</b>
-                  <b class="font-head truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ step.label }}</b>
-                </span>
-                <span class="mt-0.5 flex items-center gap-1.5 text-[11px] leading-tight">
-                  <span class="truncate text-slate-400">{{ step.note }}</span>
-                  <span class="shrink-0 font-bold" :class="step.flagTone">· {{ step.flag }}</span>
-                </span>
-              </span>
-              <!-- Kept in flow rather than absolutely positioned behind a
-                   responsive variant: only the AOT base layer is guaranteed
-                   ordered, so `hidden sm:block` can lose the cascade race and
-                   silently drop the hand-off arrow. -->
-              <i
-                v-if="index < pipeline.length - 1"
-                class="fa-solid fa-chevron-right shrink-0 text-[10px] text-slate-300 dark:text-slate-600"
-                aria-hidden="true"
-              ></i>
-            </RouterLink>
-          </li>
-        </ol>
-        <div class="border-t border-slate-100 p-5 dark:border-slate-800">
-          <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-head font-bold text-xs uppercase tracking-wider text-slate-400">{{ store.t('Spend & savings pulse') }}</h3>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ store.t('Last 6 months') }}</span>
-          </div>
-          <div class="flex h-44 items-end gap-3 sm:gap-5 pt-4">
-            <div v-for="point in analytics.monthly" :key="point.month" class="group flex h-full min-w-0 flex-1 flex-col justify-end">
-              <div class="relative flex flex-1 items-end justify-center gap-1.5">
-                <div class="w-2/5 rounded-t-lg bg-slate-200 transition group-hover:bg-slate-300 dark:bg-slate-700 dark:group-hover:bg-slate-600" :style="{height:bar(point.spend,150000)}" :title="store.money(point.spend)"></div>
-                <div class="w-2/5 rounded-t-lg bg-brand transition shadow-soft" :style="{height:bar(point.savings,15000)}" :title="store.money(point.savings)"></div>
-              </div>
-              <span class="mt-2 text-center text-[10px] font-bold text-slate-400">{{ point.month }}</span>
+    <!-- 3. Context: trend and the suppliers behind it. -->
+    <section class="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,.6fr)]">
+      <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 class="font-head text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t('Spend & savings pulse') }}</h2>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ store.t('Last 6 months') }}</span>
+        </div>
+        <div class="flex h-40 items-end gap-3 pt-4 sm:gap-5">
+          <div v-for="point in analytics.monthly" :key="point.month" class="group flex h-full min-w-0 flex-1 flex-col justify-end">
+            <div class="relative flex flex-1 items-end justify-center gap-1.5">
+              <div class="w-2/5 rounded-t-lg bg-slate-200 transition group-hover:bg-slate-300 dark:bg-slate-700 dark:group-hover:bg-slate-600" :style="{height:bar(point.spend,150000)}" :title="store.money(point.spend)"></div>
+              <div class="w-2/5 rounded-t-lg bg-brand shadow-soft transition" :style="{height:bar(point.savings,15000)}" :title="store.money(point.savings)"></div>
             </div>
+            <span class="mt-2 text-center text-[10px] font-bold text-slate-400">{{ point.month }}</span>
           </div>
-          <div class="mt-4 flex gap-5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></i>{{ store.t('Spend') }}</span>
-            <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-brand"></i>{{ store.t('Savings') }}</span>
-          </div>
+        </div>
+        <div class="mt-3 flex gap-5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-600"></i>{{ store.t('Spend') }}</span>
+          <span class="flex items-center gap-1.5"><i class="inline-block h-2 w-2 rounded-full bg-brand"></i>{{ store.t('Savings') }}</span>
         </div>
       </article>
 
-      <aside class="space-y-6">
-        <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-          <header class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
-            <div>
-              <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t('Needs action') }}</h2>
-              <p class="mt-0.5 text-[11px] text-slate-400">{{ store.t('Issues and decisions assigned to you') }}</p>
-            </div>
-            <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">{{ workQueue.length }}</span>
-          </header>
-          <div class="divide-y divide-slate-100 dark:divide-slate-800">
-            <RouterLink v-for="item in workQueue" :key="item.id" :to="item.to" class="flex gap-3.5 p-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/40">
-              <span class="mt-0.5 grid h-9 w-9 flex-none place-items-center rounded-xl text-xs" :class="item.tone">
-                <i class="fa-solid" :class="item.icon"></i>
-              </span>
-              <span class="min-w-0 flex-1">
-                <span class="flex items-center justify-between gap-2">
-                  <b class="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ item.title }}</b>
-                  <small class="flex-none text-[10px] font-bold text-slate-400">{{ item.when }}</small>
-                </span>
-                <span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{{ item.detail }}</span>
-                <span class="mt-2 inline-flex items-center text-[10px] font-bold text-brand hover:underline">{{ item.action }} <i class="fa-solid fa-chevron-right ml-1 text-[8px]"></i></span>
-              </span>
-            </RouterLink>
-          </div>
-        </article>
-
-        <article class="panel p-5 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="font-head font-800 text-sm tracking-tight text-slate-900 dark:text-white">{{ store.t('Top Suppliers') }}</h2>
-            <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('Performance') }}</RouterLink>
-          </div>
-          <div class="mt-4 space-y-2">
-            <RouterLink
-              v-for="(supplier,index) in topSuppliers"
-              :key="supplier.id"
-              :to="`/suppliers?supplier=${supplier.id}`"
-              class="grid grid-cols-[1.8rem_minmax(0,1fr)_2.4rem] items-center gap-2 p-1.5 rounded-xl transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            >
-              <span class="grid h-7 w-7 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ index+1 }}</span>
-              <div class="min-w-0">
-                <div class="flex items-center justify-between gap-2">
-                  <b class="truncate text-xs font-bold text-slate-800 hover:text-brand dark:text-slate-200">{{ supplier.name }}</b>
-                  <span class="text-[10px] text-slate-400 font-mono">{{ supplier.onTime }}% on time</span>
-                </div>
-                <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div class="h-full rounded-full" :class="supplier.risk>35?'bg-amber-400':'bg-emerald-500'" :style="{width:supplier.score+'%'}"></div>
-                </div>
-              </div>
-              <b class="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200">{{ supplier.score }}</b>
-            </RouterLink>
-          </div>
-        </article>
-      </aside>
-    </section>
-
-    <section>
-      <article class="panel overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-          <div class="flex min-w-0 items-center gap-3">
-            <span class="grid h-8 w-8 flex-none place-items-center rounded-xl bg-brand text-xs text-white shadow-soft">
-              <i class="fa-solid fa-shield-halved"></i>
-            </span>
+      <article class="panel rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+          <h2 class="font-head text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t('Top Suppliers') }}</h2>
+          <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('Performance') }}</RouterLink>
+        </div>
+        <div class="mt-3 space-y-2">
+          <RouterLink v-for="(supplier,index) in topSuppliers" :key="supplier.id" :to="`/suppliers?supplier=${supplier.id}`" class="grid grid-cols-[1.8rem_minmax(0,1fr)_2.4rem] items-center gap-2 rounded-xl p-1.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            <span class="grid h-7 w-7 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ index+1 }}</span>
             <div class="min-w-0">
-              <h2 class="font-head text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t("Automation coverage") }}</h2>
-              <p class="mt-0.5 truncate text-[11px] text-slate-400">{{ store.t("Rules, checks and follow-up that help the team act consistently.") }}</p>
+              <div class="flex items-center justify-between gap-2">
+                <b class="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ supplier.name }}</b>
+                <span class="font-mono text-[10px] text-slate-400">{{ supplier.onTime }}% {{ store.t('on time') }}</span>
+              </div>
+              <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div class="h-full rounded-full" :class="supplier.risk>35?'bg-amber-400':'bg-emerald-500'" :style="{width:supplier.score+'%'}"></div>
+              </div>
             </div>
-          </div>
-          <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
-            <i class="fa-solid fa-circle-info text-[9px]"></i>{{ store.t("LOCAL DEMO") }}
-          </span>
-        </header>
-        <div class="grid divide-y divide-slate-100 dark:divide-slate-800 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
-          <RouterLink
-            v-for="control in automationCoverage"
-            :key="control.name"
-            :to="control.to"
-            class="group flex items-center gap-3 px-4 py-3.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/40"
-          >
-            <span class="grid h-8 w-8 flex-none place-items-center rounded-lg text-xs" :class="control.iconTone">
-              <i class="fa-solid" :class="control.icon"></i>
-            </span>
-            <span class="min-w-0 flex-1">
-              <b class="block truncate text-xs font-bold text-slate-800 transition group-hover:text-brand dark:text-slate-200">{{ store.t(control.name) }}</b>
-              <span class="mt-0.5 block truncate text-[10px] text-slate-400">{{ store.t(control.detail) }}</span>
-            </span>
-            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand dark:text-slate-600"></i>
+            <b class="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200">{{ supplier.score }}</b>
           </RouterLink>
         </div>
-        <p class="border-t border-slate-100 px-5 py-2 text-[10px] text-slate-400 dark:border-slate-800">{{ store.t("Every control remains reviewable before execution.") }}</p>
       </article>
     </section>
 
-    <section>
-      <article class="panel p-6 rounded-2xl border border-slate-200/80 bg-white/90 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 class="font-head font-800 text-base tracking-tight text-slate-900 dark:text-white">{{ store.t('Recent activity') }}</h2>
-            <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Requests, offers, orders and invoice checks in one history.') }}</p>
-          </div>
-          <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('View insights') }}</RouterLink>
+    <!-- 4. History, kept short: the full trail lives in Insights. -->
+    <section class="panel rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900/80">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+        <div>
+          <h2 class="font-head text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t('Recent activity') }}</h2>
+          <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Requests, offers, orders and invoice checks in one history.') }}</p>
         </div>
-        <div class="mt-5 grid gap-3 md:grid-cols-2">
-          <div v-for="event in store.state.procurementAudit.slice(0,6)" :key="event.id" class="flex gap-3.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 dark:border-slate-800 dark:bg-slate-800/30">
-            <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full" :class="event.level==='warning'?'bg-amber-400':event.level==='danger'?'bg-rose-500':event.level==='success'?'bg-emerald-400':'bg-sky-400'"></span>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center justify-between gap-2">
-                <b class="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ event.action }}</b>
-                <RouterLink
-                  v-if="auditLink(event.objectId)"
-                  :to="auditLink(event.objectId)"
-                  class="rounded-md bg-brand-50 px-2 py-0.5 text-[9px] font-mono font-bold text-brand hover:underline dark:bg-brand/20"
-                >{{ event.objectId }}</RouterLink>
-                <span v-else class="rounded-md bg-slate-200/70 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">{{ event.objectId }}</span>
-              </div>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ event.detail }}</p>
-              <p class="mt-1 text-[10px] text-slate-400">{{ event.actor }} · {{ store.date(event.at) }}</p>
+        <RouterLink to="/procurement/intelligence" class="text-xs font-bold text-brand hover:underline">{{ store.t('View insights') }}</RouterLink>
+      </div>
+      <div class="mt-4 grid gap-3 md:grid-cols-2">
+        <div v-for="event in store.state.procurementAudit.slice(0,4)" :key="event.id" class="flex gap-3.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 dark:border-slate-800 dark:bg-slate-800/30">
+          <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full" :class="event.level==='warning'?'bg-amber-400':event.level==='danger'?'bg-rose-500':event.level==='success'?'bg-emerald-400':'bg-sky-400'"></span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <b class="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ event.action }}</b>
+              <RouterLink v-if="auditLink(event.objectId)" :to="auditLink(event.objectId)" class="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-[9px] font-bold text-brand hover:underline dark:bg-brand/20">{{ event.objectId }}</RouterLink>
+              <span v-else class="rounded-md bg-slate-200/70 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300">{{ event.objectId }}</span>
             </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ event.detail }}</p>
+            <p class="mt-1 text-[10px] text-slate-400">{{ event.actor }} · {{ store.date(event.at) }}</p>
           </div>
         </div>
-      </article>
+      </div>
     </section>
   </div>
 </template>
@@ -209,35 +106,12 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
   const requests=computed(()=>store.scopedRecords(store.state.purchaseRequests)), events=computed(()=>store.scopedRecords(store.state.sourcingEvents)), orders=computed(()=>store.scopedRecords(store.state.purchaseOrders));
   const commercial=computed(()=>window.BuyniverseCommercialMetrics?.portfolio(store.state)||{primary:{}});
   const setServiceFee=(rate)=>store.setCommercialTerms({rate,basis:store.state.procurementAnalytics?.commercialModel?.successFeeBasis});
-  const activeRequests=computed(()=>requests.value.filter(item=>!['Closed','Rejected'].includes(item.status)).length);
-  const activeEvents=computed(()=>events.value.filter(item=>!['Closed','Awarded'].includes(item.status)).length);
-  const openOrders=computed(()=>orders.value.filter(item=>!['Matched','Closed'].includes(item.status)).length);
-  const exceptionCount=computed(()=>orders.value.reduce((sum,item)=>sum+(item.exceptions||[]).filter(exception=>exception.status!=='Resolved').length,0));
-  const kpis=computed(()=>[
-    {label:store.t('Financial savings'),value:store.money(commercial.value.primary.financialSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('Budget to first offer'),progress:Math.min(100,Math.round((commercial.value.primary.financialSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-chart-line',iconTone:'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300',deltaTone:'text-sky-500'},
-    {label:store.t('Buyniverse savings'),value:store.money(commercial.value.primary.buyniverseSavings||0,commercial.value.primary.currency||'USD'),delta:store.t('First offer to final bid'),progress:Math.min(100,Math.round((commercial.value.primary.buyniverseSavings||0)/Math.max(1,commercial.value.primary.budget||1)*100)),icon:'fa-gavel',iconTone:'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',deltaTone:'text-emerald-500'},
-  ]);
-  // One rail, one number per stage. The operational counts used to be repeated
-  // as standalone KPI cards above; the rail is now their only home so the fold
-  // carries commercial outcome plus flow instead of the same figure twice.
-  const pipeline=computed(()=>[
-    {label:store.t('Requests'),value:activeRequests.value,note:store.t('Intake and approvals'),flag:store.t('1 due today'),flagTone:'text-amber-600 dark:text-amber-400',icon:'fa-inbox',to:'/procurement/queue'},
-    {label:store.t('Quotes'),value:activeEvents.value,note:store.t('Offers and comparison'),flag:store.t('2 decisions'),flagTone:'text-brand',icon:'fa-file-signature',to:'/procurement/sourcing'},
-    {label:store.t('Orders'),value:openOrders.value,note:store.t('Commitment and receipt'),flag:store.t('1 partial'),flagTone:'text-amber-600 dark:text-amber-400',icon:'fa-cart-shopping',to:'/procurement/execution'},
-    {label:store.t('Invoice checks'),value:exceptionCount.value,note:store.t('3-way match review'),flag:store.t('1 high'),flagTone:'text-rose-600 dark:text-rose-400',icon:'fa-link',to:'/procurement/execution'}]);
   const workQueue=computed(()=>[
-    ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):'Today',action:'Review decision',to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
-    ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,action:'Resolve issue',to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
-    ...events.value.filter(item=>item.status==='Comparing').map(item=>({id:item.id,title:'Supplier choice ready',detail:`${item.id} · ${(item.quotes||[]).length} offers`,when:'Now',action:'Compare offers',to:`/procurement/sourcing?event=${item.id}`,icon:'fa-scale-balanced',tone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10'}))
+    ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):store.t('Today'),stage:store.t('Request'),action:store.t('Review decision'),to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
+    ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,stage:store.t('Order'),action:store.t('Resolve issue'),to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
+    ...events.value.filter(item=>item.status==='Comparing').map(item=>({id:item.id,title:store.t('Supplier choice ready'),detail:`${item.id} · ${(item.quotes||[]).length} offers`,when:store.t('Now'),stage:store.t('Quote'),action:store.t('Compare offers'),to:`/procurement/sourcing?event=${item.id}`,icon:'fa-scale-balanced',tone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10'}))
   ].slice(0,5));
   const topSuppliers=computed(()=>[...store.state.suppliers].sort((a,b)=>b.score-a.score).slice(0,4));
-
-  const automationCoverage = computed(() => [
-    { name: 'Request intake', detail: 'Budget and routing rules', to: '/procurement/queue', icon: 'fa-file-signature', iconTone: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400' },
-    { name: 'Sourcing readiness', detail: 'Quote coverage and comparison', to: '/procurement/sourcing', icon: 'fa-compass-drafting', iconTone: 'bg-brand-50 text-brand dark:bg-brand/20' },
-    { name: 'Supplier risk', detail: 'Continuous compliance checks', to: '/procurement/intelligence', icon: 'fa-shield-halved', iconTone: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400' },
-    { name: 'Invoice matching', detail: '3-way control status', to: '/procurement/execution', icon: 'fa-file-contract', iconTone: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400' }
-  ]);
 
   const bar=(value,max)=>`${Math.max(6,Math.round(Number(value||0)/max*100))}%`;
   const auditLink=(id)=>{
@@ -249,5 +123,5 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,commercial,kpis,pipeline,workQueue,topSuppliers,automationCoverage,bar,auditLink,setServiceFee};}}
+  return{store,analytics,commercial,workQueue,topSuppliers,bar,auditLink,setServiceFee};}}
 </script>

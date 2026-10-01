@@ -4,8 +4,9 @@
       class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
     >
       <div class="max-w-3xl">
-        <p class="mb-1 text-[10px] font-800 uppercase tracking-wider text-brand">
-          {{ store.t(contextLabel) }}
+        <p class="mb-1 flex flex-wrap items-center gap-x-2 text-[10px] font-800 uppercase tracking-wider text-brand">
+          <span>{{ store.t(contextLabel) }}</span>
+          <OperationalScopeBadge :scope="store.operationalScope.value" :show-prefix="false" />
         </p>
         <div class="flex items-center gap-2">
           <h1
@@ -26,8 +27,7 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <OperationalScopeBadge :scope="store.operationalScope.value" />
-        <button v-if="canBuy" class="btn-muted" @click="exportWorkspace">
+        <button v-if="canBuy && ['cockpit', 'execution'].includes(section)" class="btn-muted" :title="store.t('Export')" @click="exportWorkspace">
           <i class="fa-solid fa-download"></i>{{ store.t("Export") }}
         </button>
         <RouterLink
@@ -45,8 +45,9 @@
       </div>
     </header>
 
+    <ProcurementStageRail v-if="canBuy" :active="section" />
     <nav
-      v-if="sections.length > 1"
+      v-else-if="sections.length > 1"
       class="section-tabs flex gap-1 overflow-x-auto border-b border-slate-200/80 dark:border-slate-700"
       :aria-label="contextLabel"
     >
@@ -70,7 +71,7 @@ const load = (p) =>
   Vue.defineAsyncComponent(() =>
     window["vue3-sfc-loader"].loadModule(p, window.sfcOptions),
   );
-const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=12");
+const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=13");
 const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=13");
 const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=22");
 const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=30");
@@ -82,8 +83,9 @@ const Governance = load(
   "./app/pages/procurement/ProcurementGovernance.vue?v=10",
 );
 const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
+const ProcurementStageRail = load("./app/pages/procurement/ProcurementStageRail.vue?v=3");
 export default {
-  components: { OperationalScopeBadge },
+  components: { OperationalScopeBadge, ProcurementStageRail },
   setup() {
     const store = inject("store"),
       route = useRoute(),

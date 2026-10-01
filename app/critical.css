@@ -180,7 +180,10 @@ html[data-app-ready="true"] #app-boot {
   #app-boot .boot-spinner { animation: none; }
 }
 
-/* Core Layout Utilities */
+/* Core Layout Utilities. Anti-FOUC only: these exist so the first paint is laid out before UnoCSS arrives.
+   They live in a cascade layer so they can never outrank the responsive variants (md:flex, lg:grid...)
+   that UnoCSS generates, whatever the stylesheet order. Unlayered rules always win over layered ones. */
+@layer critical-utilities {
 .flex { display: flex; }
 .inline-flex { display: inline-flex; }
 .grid { display: grid; }
@@ -284,6 +287,7 @@ html[data-app-ready="true"] #app-boot {
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
 .font-800 { font-weight: 800; }
+}
 
 /* Ultra-Premium Controls & Cards */
 .btn {
