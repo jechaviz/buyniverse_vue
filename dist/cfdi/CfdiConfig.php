@@ -26,3 +26,10 @@ function cfdi_now(array $config): string {
     $zone = (string) (($config['cfdi']['timezone'] ?? null) ?: 'America/Mexico_City');
     return (new \DateTime('now', new \DateTimeZone($zone)))->format('Y-m-d\TH:i:s');
 }
+
+/** Test and demo environments also trust the SAT's test CA (AC UAT). */
+function cfdi_test_environment(array $config, string $mode): bool {
+    $cfdi = is_array($config['cfdi'] ?? null) ? $config['cfdi'] : [];
+    $environment = strtolower((string) ($cfdi['environment'] ?? ($cfdi['sw']['environment'] ?? 'production')));
+    return $mode === 'demo' || $environment === 'test';
+}

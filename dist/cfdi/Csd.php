@@ -23,7 +23,24 @@ final class Csd {
         return $out;
     }
 
-    public static function inspect(string $certificate, string $privateKey, string $password, ?string $expectedRfc = null, ?int $now = null): array {
+    /**
+     * True when a SAT certification authority signed the certificate. The
+     * platform's PAC account is shared by every company and keys CSDs by RFC,
+     * so a self-signed certificate "for" someone else's RFC must never reach
+     * it: only the real owner of an RFC holds a SAT-signed CSD and its key.
+     * Test CAs (AC UAT) are trusted only in test and demo environments.
+     */
+    public static function signedBySat($cert, bool $allowTestCa = false): bool {
+        $dirs = [__DIR__ . '/sat/ca/prod'];
+        if ($allowTestCa) $dirs[] = __DIR__ . '/sat/ca/test';
+        foreach ($dirs as $dir) foreach (glob($dir . '/*.pem') ?: [] as $file) {
+            $authority = openssl_pkey_get_public((string) file_get_contents($file));
+            if ($authority && openssl_x509_verify($cert, $authority) === 1) return true;
+        }
+        return false;
+    }
+
+    public static function inspect(string $certificate, string $privateKey, string $password, ?string $expectedRfc = null, ?int $now = null, bool $allowTestCa = false): array {
         if (!function_exists('openssl_x509_read')) throw new RuntimeException('La verificación de certificados no está disponible.');
         $certPem = str_contains($certificate, '-----BEGIN CERTIFICATE-----') ? $certificate : self::pem($certificate, 'CERTIFICATE');
         $cert = @openssl_x509_read($certPem);
@@ -53,6 +70,7 @@ final class Csd {
         // A SAT certificate number is 20 digits (its serial, read as ASCII).
         $number = self::number((string) ($info['serialNumberHex'] ?? ''));
         if (preg_match('/^\d{20}$/', $number) !== 1) throw new RuntimeException('El certificado no fue emitido por el SAT (número de certificado inválido).');
+        if (!self::signedBySat($cert, $allowTestCa)) throw new RuntimeException('El certificado no está firmado por el SAT. Descarga tu CSD desde el portal del SAT (Certifica).');
         $fingerprint = openssl_x509_fingerprint($cert, 'sha256');
         return [
             'rfc'=>$rfc,

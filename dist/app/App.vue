@@ -79,6 +79,7 @@
           @switch-user="switchUser"
           @switch-tenant="switchTenantContext"
           @open-workspace-shortcut="openWorkspaceShortcut"
+          @open-auth="openAuth"
         />
 
         <main id="main-content" class="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" tabindex="-1">
@@ -107,11 +108,11 @@ const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = V
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
-const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=6");
+const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=7");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
-const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=6");
-const AppHeader = load("./app/components/layout/AppHeader.vue?v=2");
-const BnNavbar = load("./app/experience/BnNavbar.vue?v=5");
+const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=7");
+const AppHeader = load("./app/components/layout/AppHeader.vue?v=3");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=7");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
 const AuthModal = load("./app/components/AuthModal.vue?v=10");
 
@@ -153,7 +154,12 @@ export default {
       authOpen.value = false;
     });
 
-    const isLanding = computed(() => !route.meta.onboarding && (!store.currentUser.value || route.path === "/"));
+    const isLanding = computed(() => !route.meta.onboarding && (!store.currentUser.value || (store.isDemo.value && route.path === "/")));
+    // A real session has no use for the marketing home: it opens the workspace. The router
+    // guard handles direct visits; this covers a session that resolves (or signs in) while on "/".
+    watch([() => store.currentUser.value, () => route.path], ([signedIn, path]) => {
+      if (signedIn && path === "/" && !store.isDemo.value && !route.query.auth) router.replace(store.isSupplier.value ? "/find-work" : "/dashboard");
+    }, { immediate: true });
     const isOnboarding = computed(() => route.meta.onboarding === true);
     // Help is one click away everywhere except the support centre and onboarding.
     const showHelp = computed(() => route.path !== "/soporte" && !isOnboarding.value && !store.ui.locked);
@@ -318,12 +324,12 @@ export default {
         items: section.items.map((item) => ({ ...item, label: store.t(item.label) })),
       }));
       const core = { title: "", items: [{ to: "/dashboard", icon: "fa-solid fa-tachometer-alt", label: "Dashboard" }] };
-      const purchases = { to: "/procurement", icon: "fa-solid fa-cart-shopping", label: "Purchases" };
       if (marketplaceMode.value === "buyer") return localize([
         core,
-        { title: "Mercado & Proyectos", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, purchases, { to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/products", icon: "fa-solid fa-boxes-stacked", label: "Products" }, { to: "/expenses", icon: "fa-solid fa-money-bill-wave", label: "Expenses" }] },
-        { title: "Finanzas & Pagos", items: [{ to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }] },
-        { title: "Descubrir", items: [{ to: "/find-talent", icon: "fa-solid fa-users", label: "Find Talent" }, { to: "/browse-services", icon: "fa-solid fa-store", label: "Browse Services" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
+        { title: "Purchasing flow", items: [{ to: "/procurement/cockpit", icon: "fa-solid fa-cart-shopping", label: "Purchases" }, { to: "/procurement/queue", icon: "fa-solid fa-inbox", label: "Requests" }, { to: "/procurement/sourcing", icon: "fa-solid fa-file-signature", label: "Quotes" }, { to: "/procurement/auction", icon: "fa-solid fa-gavel", label: "Live bids" }, { to: "/procurement/execution", icon: "fa-solid fa-truck-ramp-box", label: "Orders" }] },
+        { title: "Catalog", items: [{ to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/products", icon: "fa-solid fa-boxes-stacked", label: "Products" }, { to: "/find-talent", icon: "fa-solid fa-users", label: "Talent & services" }] },
+        { title: "Projects & spend", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, { to: "/expenses", icon: "fa-solid fa-money-bill-wave", label: "Expenses" }] },
+        { title: "Finance", items: [{ to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
       ]);
       if (marketplaceMode.value === "admin") return localize([
         core,

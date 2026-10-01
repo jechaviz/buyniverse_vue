@@ -55,7 +55,7 @@ function handle_onboarding(string $uri): void {
             if (strlen($password) < 1 || strlen($password) > 512 || preg_match('/[\x00]/', $password)) fail_response(400, 'Private-key password is invalid');
             // The key must open with the password and match the certificate, which
             // must be a current CSD (not an e.firma) issued to this company's RFC.
-            try { $csd = \Buyniverse\Cfdi\Csd::inspect($certificate, $privateKey, $password, (string) $country['rfc']); }
+            try { $csd = \Buyniverse\Cfdi\Csd::inspect($certificate, $privateKey, $password, (string) $country['rfc'], null, \Buyniverse\Cfdi\cfdi_test_environment($config, workspace_mode($config))); }
             catch (RuntimeException $error) { fail_response(400, $error->getMessage()); }
             $certificateFingerprint = tenant_fiscal_certificate_fingerprint($certificate);
             $certificateSha = hash('sha256', $certificate); $privateKeySha = hash('sha256', $privateKey);
