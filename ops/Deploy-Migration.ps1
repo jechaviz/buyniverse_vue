@@ -67,8 +67,22 @@ Write-Host "Linting release and applying $Migration..." -ForegroundColor Yellow
 # Windows PowerShell 5.1 strips embedded double quotes from native arguments,
 # so the script travels base64-encoded and is decoded by the remote shell.
 $remoteCommand = "echo " + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($remote -replace "`r`n", "`n"))) + " | base64 -d | bash"
-& ssh @sshOptions $SshAlias $remoteCommand
-if ($LASTEXITCODE -ne 0) { throw "Remote lint or migration failed (exit $LASTEXITCODE); release not published." }
+$migrated = $false
+$maxSshAttempts = 3
+for ($sshAttempt = 1; $sshAttempt -le $maxSshAttempts; $sshAttempt++) {
+  Write-Host "Connecting to $SshAlias (attempt $sshAttempt/$maxSshAttempts)..." -ForegroundColor Yellow
+  & ssh @sshOptions $SshAlias $remoteCommand
+  if ($LASTEXITCODE -eq 0) {
+    $migrated = $true
+    break
+  }
+  Write-Warning "SSH connection attempt $sshAttempt failed with exit code $LASTEXITCODE."
+  if ($sshAttempt -lt $maxSshAttempts) {
+    Write-Host "Waiting 15 seconds before retry..." -ForegroundColor Gray
+    Start-Sleep -Seconds 15
+  }
+}
+if (-not $migrated) { throw "Remote lint or migration failed after $maxSshAttempts attempts; release not published." }
 if ($SkipRelease) { Write-Host 'Migration applied; release skipped by request.' -ForegroundColor Green; exit 0 }
 
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Deploy-Buyniverse.ps1')

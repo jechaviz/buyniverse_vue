@@ -591,10 +591,6 @@
     ,"Respond securely to the requests where your company was invited.": "Responde de forma segura a las solicitudes donde tu empresa fue invitada."
   };
 
-  if (typeof module !== "undefined" && module.exports) {
-    module.exports = dict;
-  }
-  if (typeof global !== "undefined") {
-    global.__buyniverseI18n_procurement = dict;
-  }
+  if (typeof module !== "undefined" && module.exports) module.exports = dict;
+  if (typeof global !== "undefined") global.__buyniverseI18n_procurement = dict;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
