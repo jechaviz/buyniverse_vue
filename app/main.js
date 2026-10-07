@@ -196,7 +196,8 @@ const date = (value) =>
 const id = (prefix) => window.ProcurementCommon.uid(prefix);
 const clean = (value, limit = 4000) => window.WebCommon.sanitizeText(value, limit).trim();
 const MAX_TRANSACTION_AMOUNT = window.WebCommon.MAX_FINANCIAL_AMOUNT;
-const positive = (value) => window.WebCommon.isSafeAmount(value, 0) && Number(value) > 0;
+// The amount itself when it is a safe positive number, otherwise 0. Callers use it as a number (`positive(x) || fallback`).
+const positive = (value) => (window.WebCommon.isSafeAmount(value, 0) && Number(value) > 0 ? Number(value) : 0);
 const activeOperationalScope = () => {
   const verified = window.BuyniverseTenantScope?.scopeForContext(ui.tenantContext);
   if (verified) return verified;
@@ -558,7 +559,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=62"));
+  const app = createApp(load("./app/App.vue?v=69"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

@@ -1,6 +1,6 @@
 <template>
-  <section class="premium-card overflow-hidden rounded-2xl border border-slate-200/80 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
-    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 p-3 sm:p-4 dark:border-slate-800 flex-wrap" role="toolbar" :aria-label="t(`${title} controls`)">
+  <section class="dt">
+    <div class="dt-bar" role="toolbar" :aria-label="t(`${title} controls`)">
       <div class="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
         <div
           class="relative flex h-9 items-center transition-all duration-200"
@@ -70,8 +70,8 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex rounded-lg border border-slate-200/80 p-0.5 dark:border-slate-700">
-          <button v-for="m in viewModes" :key="m.key" class="h-7 px-2.5 rounded-md text-xs font-semibold transition" :class="mode === m.key ? 'bg-brand text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'" :title="m.label" @click="mode = m.key">
+        <div class="dt-seg">
+          <button v-for="m in viewModes" :key="m.key" class="dt-seg__btn" :class="{ 'is-on': mode === m.key }" :title="m.label" @click="mode = m.key">
             <i class="fa-solid" :class="m.icon"></i>
           </button>
         </div>
@@ -115,7 +115,7 @@
     <!-- Table View -->
     <div v-if="mode === 'table'" class="overflow-x-auto">
       <table :id="tableElementId" class="w-full min-w-200 table-fixed text-left text-sm">
-        <thead class="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800/50">
+        <thead class="dt-head">
           <tr>
             <th class="w-12 px-4 py-3"><input :checked="allPageSelected" type="checkbox" :aria-label="t('Select page')" @change="togglePage" /></th>
             <th v-for="column in visibleTableColumns" :key="column.key" scope="col" :aria-sort="ariaSort(column)" :style="{ width: `${widths[column.key] || column.width || 160}px` }" class="table-column-header relative whitespace-nowrap px-4 py-3 font-semibold" @dragover.prevent @drop="dropColumn(column.key)">

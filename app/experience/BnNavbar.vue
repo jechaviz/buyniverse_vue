@@ -16,7 +16,7 @@
           </button>
 
           <RouterLink v-if="signedIn" to="/dashboard" class="bn-btn bn-btn--primary bn-btn--sm" :aria-label="store.t('Open workspace')">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i><span class="bn-nav__label">{{ store.t("Open workspace") }}</span>
+            <i class="fa-solid fa-table-columns"></i><span class="bn-nav__label">{{ store.t("Open workspace") }}</span>
           </RouterLink>
           <template v-if="!signedIn || isDemo">
             <button v-if="!signedIn" type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('launch-demo')">{{ store.t("Explore demo") }}</button>
@@ -50,7 +50,7 @@
 const { inject, ref, computed, watch, defineAsyncComponent } = Vue;
 const { useRoute } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnLogo = load("./app/experience/BnLogo.vue?v=4");
+const BnLogo = load("./app/experience/BnLogo.vue?v=5");
 
 export default {
   components: { BnLogo },
@@ -64,9 +64,8 @@ export default {
 
     const links = [
       { to: "/marketplace", label: "Find suppliers" },
-      { to: "/browse-services", label: "Services" },
-      { to: "/find-talent", label: "Talent" },
       { to: "/procurement/auction", label: "Live auctions" },
+      { to: "/soporte", label: "Help" },
     ];
 
     return { store, links, menuOpen, signedIn: computed(() => Boolean(store.currentUser.value)), isDemo: computed(() => store.isDemo.value) };

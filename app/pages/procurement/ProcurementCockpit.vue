@@ -1,28 +1,7 @@
 <template>
   <div class="space-y-6">
-    <!-- 1. What needs a hand right now, in pipeline order. -->
-    <section class="pl-next" :aria-label="store.t('Needs action')">
-      <header class="flex items-end justify-between gap-3">
-        <div>
-          <h2 class="font-head text-base font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t('Needs action') }}</h2>
-          <p class="mt-0.5 text-xs text-slate-400">{{ store.t('Issues and decisions assigned to you') }}</p>
-        </div>
-        <span v-if="workQueue.length" class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">{{ workQueue.length }}</span>
-      </header>
-      <RouterLink v-for="item in workQueue" :key="item.id" :to="item.to" class="pl-next__item">
-        <span class="pl-next__icon" :class="item.tone"><i class="fa-solid" :class="item.icon"></i></span>
-        <span class="min-w-0">
-          <span class="pl-next__title block truncate"><span class="pl-next__stage">{{ item.stage }}</span>{{ item.title }}</span>
-          <span class="pl-next__meta block truncate">{{ item.detail }} · {{ item.when }}</span>
-        </span>
-        <span class="pl-next__go">{{ item.action }} <i class="fa-solid fa-arrow-right ml-1 text-[9px]"></i></span>
-      </RouterLink>
-      <div v-if="!workQueue.length" class="pl-next__empty">
-        <i class="fa-solid fa-circle-check text-emerald-500"></i>
-        <span>{{ store.t('You are up to date. Start the next purchase when you are ready.') }}</span>
-        <RouterLink to="/procurement/queue?new=1" class="btn-brand ml-auto"><i class="fa-solid fa-plus"></i>{{ store.t('New request') }}</RouterLink>
-      </div>
-    </section>
+    <!-- 1. Every need, with its stage and what to do next: the one list that matters. -->
+    <NeedsBoard />
 
     <!-- 2. What the pipeline is delivering. -->
     <SavingsWaterfall :model="commercial.primary" :title="store.t('Savings waterfall')" :kicker="store.t('Commercial intelligence')" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
@@ -102,15 +81,10 @@
 const {inject,computed}=Vue;
 const load=(path)=>Vue.defineAsyncComponent(()=>window['vue3-sfc-loader'].loadModule(path,window.sfcOptions));
 const SavingsWaterfall=load('./app/components/commercial/SavingsWaterfall.vue?v=1');
-export default {components:{SavingsWaterfall},setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
-  const requests=computed(()=>store.scopedRecords(store.state.purchaseRequests)), events=computed(()=>store.scopedRecords(store.state.sourcingEvents)), orders=computed(()=>store.scopedRecords(store.state.purchaseOrders));
+const NeedsBoard=load('./app/pages/procurement/NeedsBoard.vue?v=2');
+export default {components:{SavingsWaterfall,NeedsBoard},setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
   const commercial=computed(()=>window.BuyniverseCommercialMetrics?.portfolio(store.state)||{primary:{}});
   const setServiceFee=(rate)=>store.setCommercialTerms({rate,basis:store.state.procurementAnalytics?.commercialModel?.successFeeBasis});
-  const workQueue=computed(()=>[
-    ...requests.value.filter(item=>item.status==='Pending approval').map(item=>({id:item.id,title:item.title,detail:`${store.money(item.amount,item.currency)} · ${item.department}`,when:item.dueDate?store.date(item.dueDate):store.t('Today'),stage:store.t('Request'),action:store.t('Review decision'),to:`/procurement/queue?request=${item.id}`,icon:'fa-stamp',tone:'bg-amber-50 text-amber-600 dark:bg-amber-500/10'})),
-    ...orders.value.flatMap(order=>(order.exceptions||[]).filter(item=>item.status!=='Resolved').map(item=>({id:item.id,title:item.type,detail:`${order.id} · ${item.detail}`,when:item.severity,stage:store.t('Order'),action:store.t('Resolve issue'),to:`/procurement/execution?order=${order.id}`,icon:'fa-triangle-exclamation',tone:'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}))),
-    ...events.value.filter(item=>item.status==='Comparing').map(item=>({id:item.id,title:store.t('Supplier choice ready'),detail:`${item.id} · ${(item.quotes||[]).length} offers`,when:store.t('Now'),stage:store.t('Quote'),action:store.t('Compare offers'),to:`/procurement/sourcing?event=${item.id}`,icon:'fa-scale-balanced',tone:'bg-violet-50 text-violet-600 dark:bg-violet-500/10'}))
-  ].slice(0,5));
   const topSuppliers=computed(()=>[...store.state.suppliers].sort((a,b)=>b.score-a.score).slice(0,4));
 
   const bar=(value,max)=>`${Math.max(6,Math.round(Number(value||0)/max*100))}%`;
@@ -123,5 +97,5 @@ export default {components:{SavingsWaterfall},setup(){const store=inject('store'
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,commercial,workQueue,topSuppliers,bar,auditLink,setServiceFee};}}
+  return{store,analytics,commercial,topSuppliers,bar,auditLink,setServiceFee};}}
 </script>

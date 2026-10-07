@@ -2,7 +2,7 @@
   <div v-if="open" class="bn bn-auth" @mousedown.self="$emit('close')" @keydown="onKeydown">
     <div ref="dialog" class="bn-auth__dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId">
       <aside class="bn-auth__story" aria-hidden="true">
-        <div class="bn-auth__brand"><img src="assets/brand/buyniverse-mark-192.png?v=4" alt="" width="40" height="40" />buyniverse</div>
+        <div class="bn-auth__brand"><img src="assets/brand/buyniverse-ring.svg?v=1" alt="" width="40" height="40" />buyniverse</div>
         <div>
           <h3>{{ mode === "register" ? t("Every purchase, a universe of suppliers.") : t("Welcome back.") }}</h3>
           <p>{{ mode === "register" ? t("One secure identity. Then you choose how your company takes part.") : t("Your requests, auctions and escrow payments, right where you left them.") }}</p>

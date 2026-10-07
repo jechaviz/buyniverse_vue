@@ -75,9 +75,9 @@
 
 /* Floating help launcher, shown everywhere except the support centre itself. */
 .bn-help { position: fixed; right: 18px; bottom: 18px; z-index: 60; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px; border: 0; border-radius: 999px;
-  background: var(--bn-violet, #6d4aff); color: #fff; font: 700 0.88rem var(--bn-sans, sans-serif); cursor: pointer; box-shadow: 0 14px 30px -12px rgba(109, 74, 255, 0.7); }
+  background: var(--bn-violet, #3f6af2); color: #fff; font: 700 0.88rem var(--bn-sans, sans-serif); cursor: pointer; box-shadow: 0 14px 30px -12px rgba(63, 106, 242, 0.7); }
 .bn-help:hover { filter: brightness(1.08); }
-.bn-help:focus-visible { outline: 3px solid color-mix(in srgb, #6d4aff 45%, transparent); outline-offset: 3px; }
+.bn-help:focus-visible { outline: 3px solid color-mix(in srgb, #3f6af2 45%, transparent); outline-offset: 3px; }
 @media (max-width: 639px) { .bn-help { right: 12px; bottom: 12px; height: 44px; width: 44px; padding: 0; justify-content: center; } .bn-help span { display: none; } }
 .bn-sup__reply { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--bn-surface-2); font-size: 0.8rem; line-height: 1.45; color: var(--bn-text); }
 /* Never cover the marketplace shortlist tray: the launcher rises above it. */

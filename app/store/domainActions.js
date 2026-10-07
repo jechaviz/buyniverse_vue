@@ -24,6 +24,10 @@
       ? global.BuyniverseProcurementDomainActions.createProcurementDomainActions(state, ui, helpers)
       : (typeof require !== "undefined" ? require("./procurementDomainActions.js") : null)?.createProcurementDomainActions?.(state, ui, helpers) || {};
 
+    const need = global.BuyniverseNeedActions
+      ? global.BuyniverseNeedActions.createNeedActions(state, ui, helpers)
+      : (typeof require !== "undefined" ? require("./needActions.js") : null)?.createNeedActions?.(state, ui, helpers) || {};
+
     const communicationContext = (type, contextId) => {
       const contextType = ["project", "sourcing", "auction"].includes(type) ? type : null;
       const idValue = clean(contextId, 120);
@@ -473,6 +477,7 @@
       },
 
       ...procurement,
+      ...need,
 
       renderMessageTemplate(templateId, contextType, contextId) {
         const template = state.messageTemplates?.find((item) => item.id === templateId);

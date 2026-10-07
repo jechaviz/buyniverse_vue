@@ -1,13 +1,10 @@
 <template>
-  <div class="space-y-5">
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <button v-for="metric in metrics" :key="metric.label" class="premium-card rounded-xl border p-4 text-left" @click="metric.action">
-        <div class="flex items-center justify-between">
-          <span class="grid h-9 w-9 place-items-center rounded-lg" :class="metric.tone"><i class="fa-solid" :class="metric.icon"></i></span>
-          <b class="text-2xl">{{ metric.value }}</b>
-        </div>
-        <p class="mt-3 text-xs font-semibold text-slate-500">{{ metric.label }}</p>
-        <p class="mt-1 text-[11px] text-slate-400">{{ metric.note }}</p>
+  <div class="pg-body">
+    <section class="st">
+      <button v-for="metric in metrics" :key="metric.label" type="button" class="st-item" @click="metric.action">
+        <b>{{ metric.value }}</b>
+        <span>{{ metric.label }}</span>
+        <small>{{ metric.note }}</small>
       </button>
     </section>
 
@@ -50,7 +47,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=27");
+const DataTable = load("./app/components/DataTable.vue?v=29");
 const QueueDetailPanel = load("./app/pages/procurement/queue/QueueDetailPanel.vue?v=1");
 const QueueCreateModal = load("./app/pages/procurement/queue/QueueCreateModal.vue?v=2");
 
@@ -171,6 +168,8 @@ export default {
       store.procurementTransition(selected.value, "Approved", "Budget and policy checks passed");
       selected.value.nextAction = "Request quotes";
       store.addNotification({ userId: selected.value.requesterId, title: "Request approved", text: `${selected.value.id} is ready for quotes.`, link: `/procurement/queue?request=${selected.value.id}`, icon: "fa-circle-check" });
+      // A need published from "Necesito" carries its intent: approving it opens the round.
+      if (selected.value.need && store.launchNeed(selected.value)) router.push(`/procurement/cockpit`);
     };
 
     const reject = async () => {
@@ -190,6 +189,12 @@ export default {
 
     const createRfx = () => {
       const req = selected.value;
+      // A need published from "Necesito" already says how it should compete: open that round.
+      if (req && req.need && req.status === "Approved" && !req.sourcingEventId && canOwn.value) {
+        const opened = store.launchNeed(req);
+        if (opened) router.push(opened.auction ? `/procurement/auction?auction=${encodeURIComponent(opened.auction.id)}` : `/procurement/sourcing?event=${encodeURIComponent(opened.event.id)}&tab=bidsheet`);
+        return;
+      }
       if (!req || !canOwn.value || req.status !== "Approved" || req.sourcingEventId) return store.notice("Quote request creation denied", "fa-shield-halved");
       const ev = store.scopeRecord({
         id: "RFQ-" + new Date().getFullYear() + "-" + String(100 + store.state.sourcingEvents.length),

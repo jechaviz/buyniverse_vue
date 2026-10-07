@@ -1,11 +1,11 @@
 /* Buyniverse Critical Layout & Anti-FOUC Stylesheet */
 :root {
-  --accent: #6d4aff;
-  --accent-deep: #5a37f0;
-  --accent-soft: #f3efff;
-  --accent-pale: #e6ddff;
+  --accent: #3f6af2;
+  --accent-deep: #2f55d4;
+  --accent-soft: #eef3ff;
+  --accent-pale: #dbe6ff;
   --font-sans: "Plus Jakarta Sans", "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-head: "Plus Jakarta Sans", "Manrope", sans-serif;
+  --font-head: "Sora", "Plus Jakarta Sans", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
@@ -35,8 +35,8 @@ html.dark body {
   color: #f1f5f9;
   background:
     radial-gradient(circle at 8% 4%, color-mix(in srgb, var(--accent) 12%, transparent) 0, transparent 36rem),
-    radial-gradient(circle at 92% 92%, #1e1b4b 0, transparent 40rem),
-    #070a13;
+    radial-gradient(circle at 92% 92%, #0d1c3a 0, transparent 40rem),
+    #05070d;
 }
 
 h1, h2, h3, h4, .font-head {
@@ -145,7 +145,7 @@ html:not(.dark) #app-boot .boot-card {
   width: 3.5rem;
   height: 3.5rem;
   object-fit: contain;
-  filter: drop-shadow(0 10px 18px rgba(109, 74, 255, 0.35));
+  filter: drop-shadow(0 10px 18px rgba(63, 106, 242, 0.35));
 }
 
 #app-boot .boot-spinner {

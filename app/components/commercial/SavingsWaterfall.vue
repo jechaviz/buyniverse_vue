@@ -1,52 +1,53 @@
 <template>
-  <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-card dark:border-slate-800/80 dark:bg-slate-900/90">
-    <header class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+  <article class="sv">
+    <header class="sv-head">
       <div>
-        <p class="premium-kicker text-[10px] font-800 uppercase tracking-[.15em] text-brand">{{ store.t(kicker) }}</p>
-        <h2 class="font-head mt-0.5 text-sm font-800 tracking-tight text-slate-900 dark:text-white">{{ store.t(title) }}</h2>
+        <p class="sv-kicker">{{ store.t(kicker) }}</p>
+        <h2 class="sv-title">{{ store.t(title) }}</h2>
       </div>
-      <div class="flex items-center gap-2">
-        <label v-if="configurable" class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          <i class="fa-solid fa-percent text-brand"></i><span>{{ store.t('Service fee') }}</span>
-          <select class="cursor-pointer bg-transparent font-mono font-800 text-slate-800 outline-none dark:text-white" :value="model.successFeeRate || 40" @change="updateRate">
+      <div class="sv-tools">
+        <label v-if="configurable" class="sv-fee">
+          <span>{{ store.t('Service fee') }}</span>
+          <select :value="model.successFeeRate || 40" :aria-label="store.t('Service fee')" @change="updateRate">
             <option v-for="rate in feeRates" :key="rate" :value="rate">{{ rate }}%</option>
           </select>
         </label>
-        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-800" :class="model.state === 'realized' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-brand-50 text-brand dark:bg-brand/15'">
-          <i class="fa-solid" :class="model.state === 'realized' ? 'fa-circle-check' : 'fa-tower-broadcast'"></i>
-          {{ store.t(model.state === 'realized' ? 'Realized at award' : 'Live potential') }}
-        </span>
+        <span class="sv-state" :class="{ 'is-live': model.state !== 'realized' }"><i></i>{{ store.t(model.state === 'realized' ? 'Realized at award' : 'Live potential') }}</span>
       </div>
     </header>
 
-    <div class="grid gap-px bg-slate-100 dark:bg-slate-800 sm:grid-cols-3">
-      <div v-for="(step, index) in steps" :key="step.key" class="relative min-w-0 bg-white p-3 dark:bg-slate-900">
-        <span v-if="index" class="absolute -left-2 top-1/2 z-10 hidden h-4 w-4 -translate-y-1/2 place-items-center rounded-full bg-slate-100 text-[8px] text-slate-400 dark:bg-slate-800 sm:grid"><i class="fa-solid fa-chevron-right"></i></span>
-        <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-          <i class="fa-solid text-[9px]" :class="step.icon"></i>{{ store.t(step.label) }}
-        </div>
-        <p class="mt-1 truncate font-head font-mono text-base font-800 tracking-tight text-slate-900 dark:text-white">{{ display(step.value) }}</p>
-        <p class="mt-1 text-[10px] leading-snug" :class="step.tone">{{ store.t(step.note) }}</p>
-      </div>
+    <div class="sv-big">
+      <span>{{ store.t('Total savings') }}</span>
+      <b><AnimatedNumber money :value="Number(model.totalSavings) || 0" :currency="model.currency || 'USD'" /></b>
     </div>
 
-    <footer class="flex flex-wrap items-center gap-x-4 gap-y-1.5 bg-slate-50/70 px-4 py-2.5 text-[10px] dark:bg-slate-950/40">
-      <span class="font-bold uppercase tracking-wide text-slate-400">{{ store.t('Total savings') }}</span>
-      <b class="font-mono text-sm font-800 text-emerald-600 dark:text-emerald-400">{{ display(model.totalSavings) }}</b>
-      <span class="h-3 w-px bg-slate-200 dark:bg-slate-700"></span>
-      <span class="text-slate-500 dark:text-slate-400">{{ store.t('Service fee') }} · {{ model.successFeeRate || 40 }}% {{ store.t('of validated savings') }}</span>
-      <b class="font-mono font-800 text-slate-700 dark:text-slate-200">{{ display(model.outcomeShare) }}</b>
-      <span class="h-3 w-px bg-slate-200 dark:bg-slate-700"></span>
-      <span class="text-slate-500 dark:text-slate-400">{{ store.t('Net buyer savings') }}</span>
-      <b class="font-mono font-800 text-emerald-600 dark:text-emerald-400">{{ display(model.netSavings) }}</b>
-      <span class="ml-auto text-slate-400">{{ store.t('Auditable from source bids') }}</span>
-    </footer>
+    <div v-if="bar" class="sv-bar" role="img" :aria-label="`${store.t('Budget baseline')} ${display(model.budget)}, ${store.t('Total savings')} ${display(model.totalSavings)}`">
+      <i class="is-paid" :style="{ width: ready ? bar.paid + '%' : '0%' }"></i>
+      <i class="is-first" :style="{ width: ready ? bar.first + '%' : '0%' }"></i>
+      <i class="is-final" :style="{ width: ready ? bar.final + '%' : '0%' }"></i>
+    </div>
+
+    <dl class="sv-legend">
+      <div v-for="step in steps" :key="step.key" :class="'is-' + step.key">
+        <dt>{{ store.t(step.label) }}</dt>
+        <dd>{{ display(step.value) }}</dd>
+        <small>{{ step.note }}</small>
+      </div>
+    </dl>
+
+    <p class="sv-foot">
+      {{ store.t('Service fee') }} {{ model.successFeeRate || 40 }}% {{ store.t('of validated savings') }} · <b>{{ display(model.outcomeShare) }}</b>
+      <span class="sv-dot"></span>{{ store.t('Net buyer savings') }} <b class="is-net">{{ display(model.netSavings) }}</b>
+    </p>
   </article>
 </template>
 
 <script>
-const { inject, computed } = Vue;
+const { inject, ref, computed, onMounted, defineAsyncComponent } = Vue;
+const AnimatedNumber = defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule("./app/components/AnimatedNumber.vue?v=1", window.sfcOptions));
+
 export default {
+  components: { AnimatedNumber },
   props: {
     model: { type: Object, default: () => ({}) },
     title: { type: String, default: 'Savings waterfall' },
@@ -57,17 +58,26 @@ export default {
   setup(props, { emit }) {
     const store = inject('store');
     const feeRates = [10, 20, 25, 30, 35, 40, 45, 50];
+    const ready = ref(false);
+    onMounted(() => setTimeout(() => { ready.value = true; }, 120));
     const display = (value) => store.money(Number(value) || 0, props.model.currency || 'USD');
     const updateRate = (event) => {
       const rate = Number(event?.target?.value);
       if (Number.isFinite(rate)) emit('change-service-fee', rate);
     };
+    // The budget as one bar: what you pay, what the first offers saved, what the live bids saved on top.
+    const bar = computed(() => {
+      const budget = Number(props.model.budget) || 0, first = Number(props.model.bestFirst) || budget, final = Number(props.model.bestFinal) || first;
+      if (budget <= 0 || final > budget) return null;
+      const pct = (n) => Math.max(0, Math.min(100, (n / budget) * 100));
+      return { paid: pct(final), first: pct(budget - first), final: pct(first - final) };
+    });
     const steps = computed(() => [
-      { key: 'budget', label: 'Budget baseline', value: props.model.budget, icon: 'fa-wallet', note: 'Approved commercial ceiling', tone: 'text-slate-400' },
-      { key: 'first', label: 'Best first offer', value: props.model.bestFirst, icon: 'fa-handshake', note: `${store.t('Financial savings')} · ${display(props.model.financialSavings)}`, tone: 'text-sky-600 dark:text-sky-400' },
-      { key: 'final', label: 'Best final offer', value: props.model.bestFinal, icon: 'fa-gavel', note: `${store.t('Buyniverse savings')} · ${display(props.model.buyniverseSavings)}`, tone: 'text-emerald-600 dark:text-emerald-400' },
+      { key: 'budget', label: 'Budget baseline', value: props.model.budget, note: store.t('Approved commercial ceiling') },
+      { key: 'first', label: 'Best first offer', value: props.model.bestFirst, note: `${store.t('Financial savings')} · ${display(props.model.financialSavings)}` },
+      { key: 'final', label: 'Best final offer', value: props.model.bestFinal, note: `${store.t('Buyniverse savings')} · ${display(props.model.buyniverseSavings)}` },
     ]);
-    return { store, steps, display, feeRates, updateRate };
+    return { store, steps, display, feeRates, updateRate, bar, ready };
   },
 };
 </script>

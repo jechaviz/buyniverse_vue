@@ -1,27 +1,15 @@
 <template>
   <div v-if="auction" class="space-y-4">
-    <!-- Densified Top Metric Strip -->
-    <section class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-      <article
-        class="relative flex min-h-11 items-center gap-2 overflow-hidden rounded-xl bg-brand p-2.5 text-white shadow-soft"
-        :title="store.t(`${auction.extensionCount}/${auction.maxExtensions} extensions`)"
-      >
-        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/20 text-[11px]"><i class="fa-regular fa-clock"></i></span>
-        <span class="min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-white/80">{{ store.t('Remaining') }}</span>
-        <b class="ml-auto font-head font-mono text-xs tracking-tight">{{ timeLeft }}</b>
-      </article>
-      <article
-        v-for="kpi in kpis"
-        :key="kpi.label"
-        class="panel flex min-h-11 items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 shadow-xs dark:border-slate-800/80 dark:bg-slate-900/80"
-        :title="kpi.note"
-      >
-        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-brand-50 text-[11px] text-brand dark:bg-brand/20">
-          <i class="fa-solid" :class="kpi.icon"></i>
-        </span>
-        <span class="min-w-0 truncate text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ kpi.label }}</span>
-        <b class="ml-auto truncate font-mono text-xs font-800 text-slate-900 dark:text-white">{{ kpi.value }}</b>
-      </article>
+    <!-- The round at a glance: the clock first, then the numbers that move -->
+    <section class="st st--live">
+      <div class="st-item is-clock" :title="store.t(`${auction.extensionCount}/${auction.maxExtensions} extensions`)">
+        <b>{{ timeLeft }}</b>
+        <span><i class="st-live"></i>{{ store.t('Remaining') }}</span>
+      </div>
+      <div v-for="kpi in kpis" :key="kpi.label" class="st-item" :title="kpi.note">
+        <b>{{ kpi.value }}</b>
+        <span>{{ kpi.label }}</span>
+      </div>
     </section>
 
     <SavingsWaterfall v-if="isOrganizer" :model="commercial" :title="store.t('Savings waterfall')" :kicker="store.t('Live commercial value')" />

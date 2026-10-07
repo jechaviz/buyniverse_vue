@@ -28,8 +28,8 @@
     <meta name="apple-mobile-web-app-title" content="Buyniverse" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="theme-color" content="#6d4aff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#08071a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#3f6af2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#05070d" media="(prefers-color-scheme: dark)" />
 
     <!-- Canonical & Alternate Links -->
     <link rel="canonical" href="https://buyniverse.com/" />
@@ -42,6 +42,7 @@
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     <link rel="dns-prefetch" href="https://unpkg.com" />
+    <link rel="icon" type="image/svg+xml" href="assets/brand/buyniverse-tile.svg?v=1" />
     <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/buyniverse-mark-64.png?v=4" />
     <link rel="apple-touch-icon" href="assets/brand/buyniverse-mark-192.png?v=4" />
 
@@ -127,7 +128,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link
@@ -143,11 +144,14 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" href="app/critical.css?v=9" />
-    <link rel="stylesheet" href="app/experience/bn.css?v=15" />
+    <link rel="stylesheet" href="app/experience/bn.css?v=16" />
     <link rel="stylesheet" href="app/experience/bn-auth.css?v=1" />
     <link rel="stylesheet" href="app/experience/bn-onboarding.css?v=2" />
     <link rel="stylesheet" href="app/experience/bn-support.css?v=3" />
-    <link rel="stylesheet" href="app/experience/bn-pipeline.css?v=2" />
+    <link rel="stylesheet" href="app/experience/bn-pipeline.css?v=10" />
+    <link rel="stylesheet" href="app/experience/bn-need.css?v=4" />
+    <link rel="stylesheet" href="app/experience/bn-calm.css?v=12" />
+    <link rel="stylesheet" href="app/experience/bn-catalog.css?v=2" />
     <script src="app/uno-config.js?v=3"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/@unocss/runtime@66.7.5"
@@ -161,10 +165,10 @@
         min-height: 100%;
       }
       :root {
-        --accent: #6d4aff;
-        --accent-deep: #5a37f0;
-        --accent-soft: #f3efff;
-        --accent-pale: #e6ddff;
+        --accent: #3f6af2;
+        --accent-deep: #2f55d4;
+        --accent-soft: #eef3ff;
+        --accent-pale: #dbe6ff;
         --font-sans: "Plus Jakarta Sans", "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         --font-head: "Plus Jakarta Sans", "Manrope", sans-serif;
       }
@@ -247,99 +251,9 @@
       .app-sidebar {
         z-index: 40;
       }
-      .glass {
-        background: rgba(255, 255, 255, 0.82) !important;
-        border: 1px solid rgba(226, 232, 240, 0.85) !important;
-        backdrop-filter: blur(20px) saturate(160%);
-        -webkit-backdrop-filter: blur(20px) saturate(160%);
-        box-shadow:
-          0 10px 30px -10px rgba(15, 23, 42, 0.08),
-          inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      }
-      html.dark .glass {
-        background: rgba(15, 23, 42, 0.8) !important;
-        border-color: rgba(51, 65, 85, 0.7) !important;
-        box-shadow:
-          0 16px 40px -15px rgba(0, 0, 0, 0.6),
-          inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      }
-      .premium-shell header {
-        background: rgba(255, 255, 255, 0.82) !important;
-        border-color: rgba(226, 232, 240, 0.85) !important;
-        backdrop-filter: blur(20px) saturate(160%);
-        -webkit-backdrop-filter: blur(20px) saturate(160%);
-        box-shadow:
-          0 4px 20px -8px rgba(15, 23, 42, 0.06),
-          inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      }
-      html.dark .premium-shell header {
-        background: rgba(15, 23, 42, 0.8) !important;
-        border-color: rgba(51, 65, 85, 0.6) !important;
-        box-shadow:
-          0 8px 24px -10px rgba(0, 0, 0, 0.5),
-          inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      }
-      .premium-card {
-        background: rgba(255, 255, 255, 0.9) !important;
-        border: 1px solid rgba(226, 232, 240, 0.9) !important;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow:
-          0 4px 16px -4px rgba(15, 23, 42, 0.05),
-          0 1px 2px rgba(15, 23, 42, 0.03);
-      }
-      .premium-card:hover {
-        border-color: color-mix(in srgb, var(--accent) 35%, #cbd5e1) !important;
-        box-shadow:
-          0 14px 28px -10px color-mix(in srgb, var(--accent) 15%, rgba(15, 23, 42, 0.1)),
-          0 2px 4px rgba(15, 23, 42, 0.04);
-        transform: translateY(-1px);
-      }
-      html.dark .premium-card {
-        background: rgba(30, 41, 59, 0.75) !important;
-        border-color: rgba(51, 65, 85, 0.7) !important;
-        box-shadow:
-          0 8px 24px -10px rgba(0, 0, 0, 0.5),
-          inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      }
-      html.dark .premium-card:hover {
-        border-color: color-mix(in srgb, var(--accent) 45%, #475569) !important;
-        box-shadow:
-          0 16px 32px -10px rgba(0, 0, 0, 0.7),
-          inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      }
       .premium-shell main h1 {
         letter-spacing: -0.035em;
         text-wrap: balance;
-      }
-      .premium-shell main :is(.rounded-lg.border, .rounded-xl.border) {
-        background: rgba(255, 255, 255, 0.88);
-        border-color: rgba(226, 232, 240, 0.85);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        box-shadow:
-          0 4px 16px -4px rgba(15, 23, 42, 0.04),
-          0 1px 2px rgba(15, 23, 42, 0.02);
-      }
-      .premium-shell main :is(.rounded-lg.border, .rounded-xl.border):hover {
-        border-color: color-mix(in srgb, var(--accent) 25%, #cbd5e1);
-      }
-      html.dark
-        .premium-shell
-        main
-        :is(.rounded-lg.border, .rounded-xl.border) {
-        background: rgba(30, 41, 59, 0.7);
-        border-color: rgba(51, 65, 85, 0.65);
-        box-shadow:
-          0 8px 24px -10px rgba(0, 0, 0, 0.4),
-          inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      }
-      .premium-shell main .panel {
-        background: rgba(255, 255, 255, 0.88);
-        border-color: rgba(226, 232, 240, 0.85);
-        box-shadow:
-          0 4px 16px -4px rgba(15, 23, 42, 0.04),
-          0 1px 2px rgba(15, 23, 42, 0.02);
       }
       /* Inline editing remains discoverable without becoming persistent table noise. */
       .premium-card .inline-edit-affordance {
@@ -509,12 +423,20 @@
       .field.is-valid { border-color: #10b981 !important; }
       .required-note { display: inline-flex; align-items: center; gap: 0.35rem; color: #64748b; font-size: 0.7rem; }
       .required-note::before { content: "*"; color: #e11d48; font-weight: 800; }
+    /* Menus and dialogs: frosted surface, no outline. */
+      .glass {
+        background: color-mix(in srgb, var(--c-pop, #0e1426) 92%, transparent) !important;
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--c-hair, rgba(127, 127, 127, 0.14));
+      }
+      .premium-card:hover { transform: none; }
     </style>
   </head>
   <body>
     <div id="app-boot" role="status" aria-live="polite" aria-label="Preparando Buyniverse">
       <div class="boot-card">
-        <img class="boot-mark" src="assets/brand/buyniverse-mark-192.png?v=4" alt="" aria-hidden="true" width="56" height="56" />
+        <img class="boot-mark" src="assets/brand/buyniverse-ring.svg?v=1" alt="" aria-hidden="true" width="56" height="56" />
         <span class="boot-spinner" aria-hidden="true"></span>
         <p class="boot-label">Preparando tu espacio de trabajo</p>
       </div>
@@ -543,8 +465,7 @@
     <script src="app/lib/workspace-state.js?v=4"></script>
     <script src="app/lib/auction-realtime.js?v=1"></script>
     <script src="app/lib/marketplace-catalog.js?v=2"></script>
-    <script src="app/lib/bn-three-mark.js?v=3"></script>
-    <script src="app/lib/bn-three.js?v=11"></script>
+    <script src="app/lib/bn-ring.js?v=2"></script>
     <script src="app/lib/tenant-context.js?v=1"></script>
     <script src="app/lib/fiscal-rules.js?v=1"></script>
     <script src="app/lib/support-engine.js?v=1"></script>
@@ -563,15 +484,18 @@
     <script src="app/i18n/procurement.js?v=13"></script>
     <script src="app/i18n/experience.js?v=2"></script>
     <script src="app/i18n/access.js?v=3"></script>
-    <script src="app/i18n.js?v=28"></script>
+    <script src="app/i18n/need.js?v=6"></script>
+    <script src="app/i18n.js?v=29"></script>
     <script src="app/services/seo.js?v=2"></script>
     <script src="app/services/security.js?v=2"></script>
     <script src="app/services/tableQuery.js?v=1"></script>
     <script src="app/store/initialState.js?v=6"></script>
+    <script src="app/lib/need-journey.js?v=3"></script>
     <script src="app/store/procurementDomainActions.js?v=1"></script>
-    <script src="app/store/domainActions.js?v=9"></script>
+    <script src="app/store/needActions.js?v=2"></script>
+    <script src="app/store/domainActions.js?v=10"></script>
     <script src="app/data/demo.js?v=10"></script>
-    <script src="app/router.js?v=18"></script>
-    <script src="app/main.js?v=147"></script>
+    <script src="app/router.js?v=30"></script>
+    <script src="app/main.js?v=155"></script>
   </body>
 </html>

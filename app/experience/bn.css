@@ -7,19 +7,20 @@
  * layout deterministic and leaves the authenticated workspace untouched.
  */
 .bn {
-  --bn-ink: #0b0a1a;
-  --bn-text: #15132b;
-  --bn-muted: #5e5a78;
-  --bn-faint: #8e8aa8;
-  --bn-bg: #f7f6fc;
+  --bn-ink: #070b16;
+  --bn-text: #0f1626;
+  --bn-muted: #566078;
+  --bn-faint: #8791a8;
+  --bn-bg: #f5f7fc;
   --bn-surface: #ffffff;
-  --bn-surface-2: #f1effa;
-  --bn-line: #e7e4f3;
-  --bn-violet: #6d4aff;
-  --bn-violet-600: #5a37f0;
-  --bn-violet-soft: #efeaff;
-  --bn-mint: #0fb887;
-  --bn-mint-soft: #dcfaef;
+  --bn-surface-2: #edf1fa;
+  --bn-line: #e1e6f2;
+  --bn-violet: #3f6af2;
+  --bn-violet-600: #2f55d4;
+  --bn-violet-soft: #e8efff;
+  --bn-mint: #0c9f84;
+  --bn-mint-soft: #d9f7ef;
+  --bn-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --bn-amber: #f29a12;
   --bn-amber-soft: #fff1d9;
   --bn-coral: #f0456a;
@@ -28,32 +29,32 @@
   --bn-radius-sm: 12px;
   --bn-shadow: 0 1px 2px rgba(21, 19, 43, 0.04), 0 8px 24px -12px rgba(21, 19, 43, 0.12);
   --bn-shadow-lg: 0 30px 60px -28px rgba(45, 26, 143, 0.35);
-  --bn-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --bn-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
   --bn-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--bn-text);
   font-family: var(--bn-sans);
   -webkit-font-smoothing: antialiased;
 }
 html.dark .bn, .bn .bn-cinema {
-  --bn-ink: #f4f2ff;
-  --bn-text: #eceaff;
-  --bn-muted: #a8a3cc;
-  --bn-faint: #7b769f;
-  --bn-bg: #08071a;
-  --bn-surface: #121030;
-  --bn-surface-2: #19163d;
-  --bn-line: #29255a;
-  --bn-violet: #8f74ff;
-  --bn-violet-600: #a592ff;
-  --bn-violet-soft: #231c5c;
-  --bn-mint: #2ee6b0;
-  --bn-mint-soft: #0f3a30;
+  --bn-ink: #f4f7ff;
+  --bn-text: #eef2fb;
+  --bn-muted: #8b94ad;
+  --bn-faint: #6a7492;
+  --bn-bg: #05070d;
+  --bn-surface: #0d111c;
+  --bn-surface-2: #121a2f;
+  --bn-line: #1f2638;
+  --bn-violet: #6b8dff;
+  --bn-violet-600: #8fa8ff;
+  --bn-violet-soft: #142049;
+  --bn-mint: #36e3c0;
+  --bn-mint-soft: #0b3a35;
   --bn-amber: #ffbe55;
   --bn-amber-soft: #3a2a0c;
   --bn-coral: #ff7a93;
   --bn-coral-soft: #3d1522;
   --bn-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px -16px rgba(0, 0, 0, 0.6);
-  --bn-shadow-lg: 0 30px 70px -30px rgba(109, 74, 255, 0.45);
+  --bn-shadow-lg: 0 30px 70px -30px rgba(63, 106, 242, 0.45);
 }
 .bn *, .bn *::before, .bn *::after { box-sizing: border-box; }
 .bn-page { --bn-page-bg: var(--bn-bg); background: var(--bn-bg); min-height: 100vh; display: flex; flex-direction: column; container: bnpage / inline-size; }
@@ -150,11 +151,13 @@ html.dark .bn, .bn .bn-cinema {
 /* Logo ------------------------------------------------------------------- */
 .bn-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--bn-ink); }
 .bn-logo img { display: block; }
-.bn-logo__mark { display: inline-block; flex: none; background-repeat: no-repeat; background-size: 3200% 100%; background-position: 0 0; }
-.bn-logo:hover .bn-logo__mark, .bn-logo:focus-visible .bn-logo__mark { animation: bn-orbit 1.9s steps(31) infinite; }
-@keyframes bn-orbit { to { background-position: 100% 0; } }
+.bn-logo__mark { display: block; flex: none; overflow: visible; }
+.bn-logo__orbit { transform-origin: 17px 19px; transform-box: view-box; }
+.bn-logo:hover .bn-logo__orbit, .bn-logo:focus-visible .bn-logo__orbit { animation: bn-orbit 1.6s cubic-bezier(.5, 0, .2, 1) infinite; }
+@keyframes bn-orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .bn-logo__orbit { animation: none !important; } }
 .bn-logo__word { font: 700 1.3rem/1 var(--bn-display); letter-spacing: -0.045em; }
-.bn-logo__word b { color: var(--bn-violet); font-weight: 700; }
+.bn-logo__word b { color: var(--bn-muted); font-weight: 600; }
 
 /* Hero -------------------------------------------------------------------- */
 .bn-hero { position: relative; overflow: hidden; isolation: isolate; padding: 48px 0 64px; }
@@ -180,7 +183,7 @@ html.dark .bn, .bn .bn-cinema {
 .bn-cinema { position: relative; isolation: isolate; overflow: hidden; background: #05040f; color: var(--bn-text); min-height: min(92vh, 920px); display: flex; align-items: center; padding: 96px 0 88px; }
 .bn-cinema__stage { position: absolute; inset: 0; z-index: -1; }
 .bn-cinema__stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 1.4s ease; }
-.bn-cinema__fallback { position: absolute; inset: 0; background: radial-gradient(38% 30% at 64% 52%, rgba(255, 214, 168, 0.28), transparent 70%), radial-gradient(60% 50% at 70% 50%, rgba(109, 74, 255, 0.35), transparent 72%), radial-gradient(40% 40% at 20% 80%, rgba(22, 217, 160, 0.12), transparent 70%), #05040f; }
+.bn-cinema__fallback { position: absolute; inset: 0; background: radial-gradient(38% 30% at 64% 52%, rgba(255, 214, 168, 0.28), transparent 70%), radial-gradient(60% 50% at 70% 50%, rgba(63, 106, 242, 0.35), transparent 72%), radial-gradient(40% 40% at 20% 80%, rgba(22, 217, 160, 0.12), transparent 70%), #05040f; }
 .bn-cinema__grain { position: absolute; inset: 0; opacity: 0.55; mix-blend-mode: overlay; pointer-events: none; }
 .bn-cinema__vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 60% 50%, transparent 55%, rgba(0, 0, 0, 0.7) 100%); pointer-events: none; }
 .bn-cinema__scrim { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5, 4, 15, 0.92) 0%, rgba(5, 4, 15, 0.7) 32%, rgba(5, 4, 15, 0) 62%), linear-gradient(0deg, var(--bn-page-bg, #05040f) 0%, transparent 18%); pointer-events: none; }
@@ -219,7 +222,7 @@ html.dark .bn, .bn .bn-cinema {
 .bn-supplier__head { display: flex; gap: 14px; align-items: flex-start; }
 .bn-avatar { width: 52px; height: 52px; flex: none; border-radius: 16px; display: grid; place-items: center; font: 700 1.05rem var(--bn-display); color: #fff; letter-spacing: -0.02em; }
 .bn-avatar--lg { width: 88px; height: 88px; border-radius: 26px; font-size: 1.8rem; }
-.bn-avatar--violet { background: linear-gradient(140deg, #8f74ff, #4a2fd9); }
+.bn-avatar--violet { background: linear-gradient(140deg, #6b8dff, #4a2fd9); }
 .bn-avatar--mint { background: linear-gradient(140deg, #34e3b3, #0a8f69); }
 .bn-avatar--amber { background: linear-gradient(140deg, #ffc768, #e5830b); }
 .bn-supplier__name { font: 600 1.02rem/1.25 var(--bn-display); color: var(--bn-ink); letter-spacing: -0.02em; margin: 0; }

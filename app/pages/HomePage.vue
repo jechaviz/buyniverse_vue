@@ -1,8 +1,8 @@
 <template>
   <div class="bn bn-page">
     <!-- 1. Hero: a cinematic purchasing universe; every listed supplier is a node on its trade routes -->
-    <section class="bn-cinema">
-      <BnUniverse :nodes="nodes" />
+    <BnNeedHero v-if="!supplierMode" :suppliers="suppliers" />
+    <section v-else class="bn-cinema">
       <div class="bn-wrap">
         <div class="bn-cinema__copy">
           <span class="bn-badge bn-badge--mint" style="justify-self: start"><span class="bn-dot bn-live"></span>{{ store.t("Live reverse auctions running now") }}</span>
@@ -39,111 +39,90 @@
       </div>
     </section>
 
-    <!-- 2. Browse by sector -->
-    <section class="bn-section">
-      <div class="bn-wrap">
-        <div class="bn-section__head">
-          <div class="bn-stack" style="gap: 8px">
-            <span class="bn-eyebrow">{{ store.t("Every class of acquisition") }}</span>
-            <h2 class="bn-h2">{{ store.t("Browse by what you buy") }}</h2>
-          </div>
-          <RouterLink to="/marketplace" class="bn-btn bn-btn--ghost">{{ store.t("All suppliers") }} <i class="fa-solid fa-arrow-right"></i></RouterLink>
-        </div>
-        <div class="bn-grid bn-grid--4">
-          <RouterLink v-for="s in sectors" :key="s.value" :to="{ path: '/marketplace', query: { sector: s.value } }" class="bn-card bn-card--hover bn-sector">
-            <span class="bn-sector__icon" :style="{ background: s.soft, color: s.color }"><i class="fa-solid" :class="s.icon"></i></span>
-            <span class="bn-stack" style="gap: 4px">
-              <b class="bn-display" style="font-size: 1.1rem; color: var(--bn-ink)">{{ store.t(s.label) }}</b>
-              <span class="bn-muted" style="font-size: 0.85rem; line-height: 1.45">{{ s.children.map((c) => store.t(c.label)).join(" · ") }}</span>
-            </span>
-            <span class="bn-row" style="margin-top: auto; justify-content: space-between; font-size: 0.84rem">
-              <span class="bn-muted"><b class="bn-num" style="color: var(--bn-ink)">{{ s.count }}</b> {{ store.t("suppliers") }}</span>
-              <i class="fa-solid fa-arrow-right" :style="{ color: s.color }"></i>
-            </span>
-          </RouterLink>
-        </div>
+    <!-- 2. Proof: three numbers, nothing boxed -->
+    <section v-if="!supplierMode" class="hp-proof">
+      <div class="bn-wrap hp-proof__row">
+        <div class="hp-reveal"><b><AnimatedNumber :value="suppliers.length" /></b><span>{{ store.t("verified-ready suppliers") }}</span></div>
+        <div class="hp-reveal" style="--i: 1"><b><AnimatedNumber :value="averageScore" /></b><span>{{ store.t("average supplier score") }}</span></div>
+        <div class="hp-reveal" style="--i: 2"><b><AnimatedNumber :value="countries" /></b><span>{{ store.t("countries covered") }}</span></div>
+        <div class="hp-reveal" style="--i: 3"><b>0%</b><span>{{ store.t("commission if there are no savings") }}</span></div>
       </div>
     </section>
 
-    <!-- 3. Top suppliers (link to the public directory profile, never to an internal identity record) -->
-    <section class="bn-section bn-section--tint">
+    <!-- 3. The journey -->
+    <section class="hp-section" id="how-it-works">
       <div class="bn-wrap">
-        <div class="bn-section__head">
-          <div class="bn-stack" style="gap: 8px">
-            <span class="bn-eyebrow">{{ store.t("Top rated this month") }}</span>
-            <h2 class="bn-h2">{{ store.t("Suppliers buyers keep coming back to") }}</h2>
-          </div>
-          <RouterLink to="/marketplace?sort=score" class="bn-btn bn-btn--ghost">{{ store.t("See the ranking") }} <i class="fa-solid fa-arrow-right"></i></RouterLink>
-        </div>
-        <div class="bn-grid bn-grid--3">
-          <BnSupplierCard v-for="supplier in topSuppliers" :key="supplier.id" :supplier="supplier" />
-        </div>
+        <p class="hp-eyebrow">{{ store.t("How Buyniverse works") }}</p>
+        <h2 class="hp-h2">{{ store.t("From need to paid invoice, in one place") }}</h2>
+        <ol class="hp-steps">
+          <li v-for="(step, index) in journey" :key="step.key" class="hp-reveal" :style="{ '--c': step.color, '--i': index }">
+            <span class="hp-steps__node"></span>
+            <b class="hp-steps__n">0{{ step.n }}</b>
+            <h3>{{ store.t(step.verb) }}</h3>
+            <p>{{ store.t(step.body) }}</p>
+          </li>
+        </ol>
+        <video v-if="filmAvailable" class="hp-film hp-reveal" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=3" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
       </div>
     </section>
 
-    <!-- 4. How it works -->
-    <section class="bn-section">
+    <!-- 4. Suppliers buyers keep coming back to -->
+    <section v-if="!supplierMode" class="hp-section">
       <div class="bn-wrap">
-        <div class="bn-section__head">
-          <div class="bn-stack" style="gap: 8px">
-            <span class="bn-eyebrow">{{ store.t("How Buyniverse works") }}</span>
-            <h2 class="bn-h2">{{ store.t("From need to paid invoice, in one place") }}</h2>
+        <div class="hp-head">
+          <div>
+            <p class="hp-eyebrow">{{ store.t("Top rated this month") }}</p>
+            <h2 class="hp-h2">{{ store.t("Suppliers buyers keep coming back to") }}</h2>
           </div>
+          <RouterLink to="/marketplace?sort=score" class="hp-more">{{ store.t("See the ranking") }} <i class="fa-solid fa-arrow-right"></i></RouterLink>
         </div>
-        <div class="bn-grid bn-grid--3">
-          <article v-for="(step, i) in steps" :key="step.title" class="bn-card bn-step bn-stack" style="gap: 12px">
-            <span class="bn-step__n">0{{ i + 1 }}</span>
-            <span class="bn-sector__icon" :style="{ background: step.soft, color: step.color }"><i class="fa-solid" :class="step.icon"></i></span>
-            <h3 class="bn-h3">{{ store.t(step.title) }}</h3>
-            <p class="bn-muted" style="margin: 0; line-height: 1.6">{{ store.t(step.body) }}</p>
-          </article>
-        </div>
-        <video v-if="filmAvailable" class="bn-video" style="margin-top: 28px" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=3" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
+        <ul class="hp-sups">
+          <li v-for="supplier in topSuppliers" :key="supplier.id">
+            <RouterLink :to="`/marketplace/supplier/${supplier.id}`" class="hp-sup">
+              <span class="hp-sup__av">{{ initials(supplier.name) }}</span>
+              <span class="hp-sup__t"><b>{{ supplier.name }}<i v-if="supplier.verified" class="fa-solid fa-circle-check" :title="store.t('Verified supplier')"></i></b><small>{{ store.t(supplier.categoryLabel) }} · {{ store.t(supplier.cityLabel) }}</small></span>
+              <span class="hp-sup__score"><b>{{ supplier.score }}</b><small>{{ store.t("Score") }}</small></span>
+            </RouterLink>
+          </li>
+        </ul>
       </div>
     </section>
 
-    <!-- 5. Open opportunities: only explicitly published, non-confidential records -->
-    <section v-if="featuredJobs.length || supplierMode" class="bn-section bn-section--tint">
+    <!-- 5. Open opportunities (for suppliers): only explicitly published, non-confidential records -->
+    <section v-if="supplierMode" class="hp-section">
       <div class="bn-wrap">
-        <div class="bn-section__head">
-          <div class="bn-stack" style="gap: 8px">
-            <span class="bn-eyebrow">{{ store.t("Open opportunities") }}</span>
-            <h2 class="bn-h2">{{ store.t("Projects published by verified buyers") }}</h2>
+        <div class="hp-head">
+          <div>
+            <p class="hp-eyebrow">{{ store.t("Open opportunities") }}</p>
+            <h2 class="hp-h2">{{ store.t("Projects published by verified buyers") }}</h2>
           </div>
-          <div v-if="supplierMode" class="bn-lang" role="tablist" :aria-label="store.t('Opportunities')">
+          <div class="bn-lang" role="tablist" :aria-label="store.t('Opportunities')">
             <button v-for="key in ['search', 'saved']" :key="key" type="button" role="tab" :aria-selected="tab === key" :aria-pressed="tab === key" @click="openTab(key)">{{ store.t(key === "saved" ? "Saved" : "Open") }}</button>
           </div>
         </div>
-        <div v-if="visibleJobs.length" class="bn-grid bn-grid--3">
-          <article v-for="job in visibleJobs" :key="job.id" class="bn-card bn-card--hover bn-stack" style="padding: 22px; gap: 12px">
-            <div class="bn-row" style="justify-content: space-between">
-              <span class="bn-badge bn-badge--violet">{{ store.t(job.category) }}</span>
-              <button v-if="supplierMode" type="button" class="bn-icon-btn" style="width: 34px; height: 34px" :aria-pressed="isSaved(job.id)" :aria-label="store.t(isSaved(job.id) ? 'Remove from saved' : 'Save project')" @click="store.toggleSavedJob(job.id)">
-                <i :class="isSaved(job.id) ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'" style="color: var(--bn-violet)"></i>
-              </button>
-            </div>
-            <RouterLink :to="`/job/${job.id}`" class="bn-h3" style="text-decoration: none">{{ store.t(job.title) }}</RouterLink>
-            <div class="bn-supplier__tags"><span v-for="skill in (job.skills || []).slice(0, 3)" :key="skill" class="bn-badge">{{ skill }}</span></div>
-            <div class="bn-supplier__foot">
-              <span class="bn-muted" style="font-size: 0.82rem">{{ store.t("Budget") }} <b class="bn-num" style="color: var(--bn-ink)">{{ store.money(job.budget, job.currency) }}</b></span>
-              <span class="bn-muted" style="font-size: 0.82rem">{{ (job.proposals || []).length }} {{ store.t("proposals") }}</span>
-            </div>
-          </article>
-        </div>
-        <p v-else class="bn-card bn-empty bn-muted" style="margin: 0">{{ store.t(tab === "saved" ? "You have not saved any open project yet." : "No public projects are open right now.") }}</p>
+        <ul v-if="visibleJobs.length" class="hp-sups">
+          <li v-for="job in visibleJobs" :key="job.id">
+            <RouterLink :to="`/job/${job.id}`" class="hp-sup">
+              <span class="hp-sup__av"><i class="fa-solid fa-briefcase"></i></span>
+              <span class="hp-sup__t"><b>{{ store.t(job.title) }}</b><small>{{ store.t(job.category) }} · {{ (job.proposals || []).length }} {{ store.t("proposals") }}</small></span>
+              <span class="hp-sup__score"><b>{{ store.money(job.budget, job.currency) }}</b><small>{{ store.t("Budget") }}</small></span>
+            </RouterLink>
+            <button type="button" class="hp-save" :aria-pressed="isSaved(job.id)" :aria-label="store.t(isSaved(job.id) ? 'Remove from saved' : 'Save project')" @click="store.toggleSavedJob(job.id)"><i :class="isSaved(job.id) ? 'fa-solid fa-bookmark' : 'fa-regular fa-bookmark'"></i></button>
+          </li>
+        </ul>
+        <p v-else class="hp-empty">{{ store.t(tab === "saved" ? "You have not saved any open project yet." : "No public projects are open right now.") }}</p>
       </div>
     </section>
 
     <!-- 6. Closing call to action -->
-    <section class="bn-section">
+    <section class="hp-cta">
       <div class="bn-wrap">
-        <div class="bn-card" style="padding: clamp(28px, 5vw, 56px); background: radial-gradient(80% 140% at 100% 0%, color-mix(in srgb, var(--bn-violet) 28%, var(--bn-surface)), var(--bn-surface)); display: grid; gap: 18px">
-          <h2 class="bn-h2" style="max-width: 720px">{{ store.t(supplierMode ? "Put your company in front of buyers who are ready to purchase." : "You only pay a share of the savings we find. No savings, no fee.") }}</h2>
-          <div class="bn-row" style="flex-wrap: wrap">
-            <RouterLink v-if="supplierMode" to="/onboarding" class="bn-btn bn-btn--primary bn-btn--lg">{{ store.t("List your company") }}</RouterLink>
-            <RouterLink v-else to="/marketplace" class="bn-btn bn-btn--primary bn-btn--lg">{{ store.t("Start comparing suppliers") }}</RouterLink>
-            <RouterLink to="/procurement/auction" class="bn-btn bn-btn--ghost bn-btn--lg"><span class="bn-dot bn-live" style="color: var(--bn-mint)"></span>{{ store.t("Watch a live auction") }}</RouterLink>
-          </div>
+        <h2 class="hp-cta__h">{{ store.t(supplierMode ? "Put your company in front of buyers who are ready to purchase." : "Publish once. Let them compete.") }}</h2>
+        <p class="hp-cta__p">{{ store.t(supplierMode ? "Answer verified requests and get paid through escrow." : "You only pay a share of the savings we find. No savings, no fee.") }}</p>
+        <div class="hp-cta__row">
+          <RouterLink v-if="supplierMode" to="/onboarding" class="hp-go">{{ store.t("List your company") }}</RouterLink>
+          <RouterLink v-else to="/necesito" class="hp-go">{{ store.t("I need…") }} →</RouterLink>
+          <RouterLink to="/procurement/auction" class="hp-more"><span class="hp-live"></span>{{ store.t("Watch a live auction") }}</RouterLink>
         </div>
       </div>
     </section>
@@ -151,23 +130,24 @@
 </template>
 
 <script>
-const { inject, ref, computed, onMounted, defineAsyncComponent } = Vue;
+const { inject, ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnUniverse = load("./app/experience/BnUniverse.vue?v=4");
-const BnSupplierCard = load("./app/experience/BnSupplierCard.vue?v=1");
+const BnNeedHero = load("./app/experience/BnNeedHero.vue?v=2");
+const AnimatedNumber = load("./app/components/AnimatedNumber.vue?v=1");
 
-const FILM_READY = true;
+// The explainer film still shows the previous brand mark; it returns once it is re-rendered with the ring and the dot.
+const FILM_READY = false;
 
 const SECTOR_STYLE = {
-  technology: { color: "#6d4aff", soft: "color-mix(in srgb, #6d4aff 14%, transparent)" },
+  technology: { color: "#3f6af2", soft: "color-mix(in srgb, #3f6af2 14%, transparent)" },
   services: { color: "#f0456a", soft: "color-mix(in srgb, #f0456a 14%, transparent)" },
   operations: { color: "#f29a12", soft: "color-mix(in srgb, #f29a12 16%, transparent)" },
   logistics: { color: "#0fb887", soft: "color-mix(in srgb, #0fb887 16%, transparent)" },
 };
 
 export default {
-  components: { BnUniverse, BnSupplierCard },
+  components: { BnNeedHero, AnimatedNumber },
   setup() {
     const store = inject("store");
     const route = useRoute();
@@ -181,7 +161,6 @@ export default {
     onMounted(() => M.loadPublicCatalog().then(() => { catalogVersion.value += 1; catalogReady.value = true; }));
     const market = computed(() => { catalogVersion.value; return M.marketState(store.state); });
     const suppliers = computed(() => M.profiles(market.value.state));
-    const nodes = computed(() => suppliers.value.map((s) => ({ id: s.id, sector: s.sector, score: s.score })));
     const averageScore = computed(() => (suppliers.value.length ? Math.round(suppliers.value.reduce((sum, s) => sum + s.score, 0) / suppliers.value.length) : 0));
     const countries = computed(() => new Set(suppliers.value.map((s) => s.country)).size);
 
@@ -191,6 +170,17 @@ export default {
       count: suppliers.value.filter((s) => s.sector === node.value).length,
     })));
     const topSuppliers = computed(() => M.sortProfiles(suppliers.value, "relevance").slice(0, 6));
+
+    const initials = (name) => String(name || "?").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+    // Sections arrive as you reach them.
+    let observer = null;
+    onMounted(() => {
+      const items = document.querySelectorAll(".hp-reveal");
+      if (!("IntersectionObserver" in window)) return items.forEach((el) => el.classList.add("is-in"));
+      observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add("is-in"); observer.unobserve(entry.target); } }), { threshold: 0.12 });
+      items.forEach((el) => observer.observe(el));
+    });
+    onBeforeUnmount(() => observer && observer.disconnect());
 
     const query = ref("");
     const sector = ref("");
@@ -208,11 +198,14 @@ export default {
       { label: "Suppliers in Monterrey", to: "/marketplace?country=MX&region=NL&city=monterrey" },
     ];
 
-    const steps = [
-      { title: "Filter and shortlist", body: "Narrow the market by sector, capability, location and certification. Shortlist the suppliers that fit.", icon: "fa-filter", color: "#6d4aff", soft: "color-mix(in srgb, #6d4aff 14%, transparent)" },
-      { title: "Quote round or live auction", body: "Invite your shortlist to a quote round, or let them bid down in a blind reverse auction with anti-sniping.", icon: "fa-gavel", color: "#f29a12", soft: "color-mix(in srgb, #f29a12 16%, transparent)" },
-      { title: "Award, receive and pay", body: "Award with an audit trail, match order, receipt and CFDI invoice, and release escrow when it all reconciles.", icon: "fa-file-invoice-dollar", color: "#0fb887", soft: "color-mix(in srgb, #0fb887 16%, transparent)" },
-    ];
+    // The product in one line: a need has five stages, and each one is somebody's job.
+    const journey = window.BuyniverseNeed.STAGES.map((stage, i) => ({ ...stage, n: i + 1, body: [
+      "State what you need once: what, how many and your maximum budget. No supplier-by-supplier emails.",
+      "Verified suppliers send offers, or bid each other down in a live reverse auction with anti-sniping.",
+      "Compare price, delivery, risk and ESG side by side, and award with a full audit trail.",
+      "Order, receipt and issues in one place. A short shipment is flagged, not forgotten.",
+      "Three-way match with the CFDI invoice, then release payment through escrow.",
+    ][i], color: ["#36e3c0", "#4d9dff", "#a37bff", "#ffb44d", "#ff6b8b"][i] }));
 
     // Route-backed tab so "saved" is linkable and survives reload.
     const tab = computed(() => (route.query.view === "saved" ? "saved" : "search"));
@@ -236,7 +229,7 @@ export default {
     // A static flag rather than a HEAD probe, which logs a 404 when absent.
     const filmAvailable = FILM_READY;
 
-    return { store, supplierMode, suppliers, nodes, averageScore, countries, sectors, topSuppliers, query, sector, search, popular, steps, tab, openTab, featuredJobs, visibleJobs, isSaved, filmAvailable };
+    return { store, supplierMode, suppliers, journey, initials, averageScore, countries, sectors, topSuppliers, query, sector, search, popular, tab, openTab, featuredJobs, visibleJobs, isSaved, filmAvailable };
   },
 };
 </script>

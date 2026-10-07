@@ -76,6 +76,8 @@ for ($sshAttempt = 1; $sshAttempt -le $maxSshAttempts; $sshAttempt++) {
     $migrated = $true
     break
   }
+  # Exit 2/3 come from the migration itself (a failing statement, a missing configuration): retrying cannot help.
+  if ($LASTEXITCODE -eq 2 -or $LASTEXITCODE -eq 3) { throw "Migration failed (exit $LASTEXITCODE); release not published. See the message above." }
   Write-Warning "SSH connection attempt $sshAttempt failed with exit code $LASTEXITCODE."
   if ($sshAttempt -lt $maxSshAttempts) {
     Write-Host "Waiting 15 seconds before retry..." -ForegroundColor Gray

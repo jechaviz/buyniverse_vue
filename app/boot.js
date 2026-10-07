@@ -5,7 +5,7 @@
   // the same values later; this only prevents a light/red frame from flashing.
   var root = document.documentElement;
   var palette = {
-    cosmos: ["#6d4aff", "#5a37f0", "#f3efff", "#e6ddff"],
+    cosmos: ["#3f6af2", "#2f55d4", "#eef3ff", "#dbe6ff"],
     red: ["#e5484d", "#c9363c", "#fff1f1", "#ffe3e3"],
     violet: ["#7c3aed", "#6d28d9", "#f5f3ff", "#ede9fe"],
     blue: ["#2563eb", "#1d4ed8", "#eff6ff", "#dbeafe"],
