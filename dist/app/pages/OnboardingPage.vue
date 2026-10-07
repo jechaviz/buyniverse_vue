@@ -2,7 +2,7 @@
   <main class="bn bn-ob" aria-labelledby="onboarding-title">
     <div class="bn-ob__wrap">
       <header class="bn-ob__top">
-        <RouterLink to="/" class="bn-logo" :aria-label="t('Buyniverse home')"><img src="assets/brand/buyniverse-mark-192.png?v=4" alt="" width="42" height="42" /><span class="bn-logo__word">buy<b>niverse</b></span></RouterLink>
+        <RouterLink to="/" class="bn-logo" :aria-label="t('Buyniverse home')"><img src="assets/brand/buyniverse-ring.svg?v=1" alt="" width="42" height="42" /><span class="bn-logo__word">buy<b>niverse</b></span></RouterLink>
         <span class="bn-ob__secure"><i class="fa-solid fa-shield-halved"></i>{{ t("Validated on the server") }}</span>
       </header>
 

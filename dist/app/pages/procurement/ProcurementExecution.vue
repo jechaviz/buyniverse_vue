@@ -1,14 +1,11 @@
 <template>
-  <div class="space-y-5">
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-      <article v-for="metric in metrics" :key="metric.label" class="premium-card rounded-xl border p-4">
-        <div class="flex items-center justify-between">
-          <span class="grid h-9 w-9 place-items-center rounded-lg" :class="metric.tone"><i class="fa-solid" :class="metric.icon"></i></span>
-          <b class="text-2xl">{{ metric.value }}</b>
-        </div>
-        <p class="mt-3 text-xs font-semibold text-slate-500">{{ metric.label }}</p>
-        <p class="mt-1 text-[10px] text-slate-400">{{ metric.note }}</p>
-      </article>
+  <div class="pg-body">
+    <section class="st">
+      <div v-for="metric in metrics" :key="metric.label" class="st-item">
+        <b>{{ metric.value }}</b>
+        <span>{{ metric.label }}</span>
+        <small>{{ metric.note }}</small>
+      </div>
     </section>
 
     <DataTable
@@ -151,7 +148,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=27");
+const DataTable = load("./app/components/DataTable.vue?v=29");
 const OrderReceiptModal = load("./app/pages/procurement/execution/OrderReceiptModal.vue?v=1");
 const OrderLinesTab = load("./app/pages/procurement/execution/OrderLinesTab.vue?v=1");
 const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=2");

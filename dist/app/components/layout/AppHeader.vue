@@ -1,211 +1,100 @@
 <template>
-  <header class="z-20 flex h-16 flex-shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80 sm:px-6 lg:px-8">
-    <div class="flex items-center gap-3">
-      <button class="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 md:hidden" :aria-label="store.t('Toggle navigation')" @click="$emit('toggle-nav')">
-        <i class="fa-solid fa-bars text-lg"></i>
-      </button>
+  <header class="ws-top">
+    <button type="button" class="ws-icon ws-burger" :aria-label="store.t('Toggle navigation')" @click="$emit('toggle-nav')"><i class="fa-solid fa-bars"></i></button>
 
-      <button class="grid h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-500 md:hidden dark:border-slate-800 dark:bg-slate-800" :aria-label="store.t('Quick access')" @click="$emit('open-command')">
-        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-      </button>
+    <!-- Buyers: the one thing they do, always within reach. -->
+    <form v-if="marketplaceMode === 'buyer'" class="ws-prompt" :class="{ 'has-text': draft }" role="search" novalidate data-no-validate="true" @submit.prevent="needFromPrompt">
+      <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+      <input v-model="draft" class="ws-bare" type="text" maxlength="120" autocomplete="off" data-optional="true" :placeholder="store.t('I need…')" :aria-label="store.t('What do you need?')" />
+      <button type="submit" :aria-label="store.t('Publish a need')"><i class="fa-solid fa-arrow-right"></i></button>
+    </form>
+    <button v-else type="button" class="ws-prompt" @click="$emit('open-command')">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>{{ store.t("Quick access") }}</span><kbd>Ctrl K</kbd>
+    </button>
 
-      <button class="hidden items-center gap-2.5 rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900/90 px-3.5 py-2 text-xs font-semibold text-slate-500 hover:border-brand hover:text-brand md:flex shadow-xs transition active:scale-98" @click="$emit('open-command')">
-        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-        <span>{{ store.t("Quick access") }}</span>
-        <kbd class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Ctrl K</kbd>
-      </button>
+    <TenantContextMenu v-if="tenantContext" :context="tenantContext" :switching="ui?.tenantSwitching" @switch="$emit('switch-tenant', $event)" />
+    <span class="ws-spacer"></span>
 
-      <TenantContextMenu v-if="tenantContext" :context="tenantContext" :switching="ui?.tenantSwitching" @switch="$emit('switch-tenant', $event)" />
+    <span v-if="saveStatus && saveStatus.state !== 'saved'" class="ws-status" :class="'is-' + saveStatus.state" :title="saveStatusTitle" role="status" aria-live="polite"><i></i><span>{{ saveStatus.short }}</span></span>
+    <button v-if="store.isDemo.value" type="button" class="ws-text-btn" @click="$emit('open-auth', 'login')">{{ store.t("Log in") }}</button>
+    <RouterLink v-if="marketplaceMode === 'supplier'" to="/find-work" class="ws-cta"><i class="fa-solid fa-briefcase"></i><span>{{ store.t("Find Work") }}</span></RouterLink>
+    <RouterLink v-else-if="marketplaceMode === 'admin'" to="/settings/organizations" class="ws-cta"><i class="fa-solid fa-building-shield"></i><span>{{ store.t("Manage access") }}</span></RouterLink>
+    <button v-if="marketplaceMode === 'buyer'" type="button" class="ws-icon ws-search" :title="store.t('Quick access') + ' · Ctrl K'" :aria-label="store.t('Quick access')" @click="$emit('open-command')"><i class="fa-solid fa-magnifying-glass"></i></button>
 
-      <button
-        type="button"
-        class="hidden items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-100/70 px-3 py-1.5 text-[11px] font-700 text-slate-600 transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:flex dark:border-slate-700/80 dark:bg-slate-800/70 dark:text-slate-300"
-        :title="workspaceShortcutLabel"
-        :aria-label="workspaceShortcutLabel"
-        @click="$emit('open-workspace-shortcut')"
-      >
-        <i class="fa-solid text-brand text-xs" :class="marketplaceMode === 'buyer' ? 'fa-cart-shopping' : marketplaceMode === 'supplier' ? 'fa-store' : 'fa-shield-halved'"></i>
-        {{ store.t(activeModeLabel) }}
+    <div class="relative">
+      <button type="button" class="ws-icon" :title="store.t('Notifications')" :aria-label="store.t('Notifications')" :aria-expanded="notificationsOpen" @click="$emit('toggle-overlay', 'notifications')">
+        <i class="fa-regular fa-bell"></i><b v-if="unreadNotifications.length">{{ unreadNotifications.length }}</b>
       </button>
+      <div v-if="notificationsOpen" class="ws-pop">
+        <div class="ws-pop__head">
+          <h2>{{ store.t("Notifications") }}</h2>
+          <p>{{ unreadNotifications.length ? store.t(`${unreadNotifications.length} unread`) : store.t("You are all caught up") }}</p>
+        </div>
+        <RouterLink v-for="notification in visibleNotifications" :key="notification.id" :to="notification.link" class="ws-note" :class="{ 'is-new': !notification.isRead }" @click="$emit('open-notification', notification)">
+          <i class="fa-solid" :class="notification.icon"></i>
+          <span><b>{{ notification.title }}</b><span>{{ notification.text }}</span><time>{{ formatDate ? formatDate(notification.at) : notification.at }}</time></span>
+        </RouterLink>
+        <p v-if="!visibleNotifications.length" class="ws-pop__head">{{ store.t("No notifications yet.") }}</p>
+        <section v-if="unreadNotifications.length"><button type="button" class="ws-text-btn" @click="$emit('mark-all-read')">{{ store.t("Mark all read") }}</button></section>
+      </div>
     </div>
 
-    <div class="flex items-center gap-3 sm:gap-4">
-      <span v-if="saveStatus" class="hidden items-center gap-1.5 text-[11px] font-semibold lg:flex" :class="saveStatus.tone" :title="saveStatusTitle" role="status" aria-live="polite">
-        <i class="fa-solid text-[10px]" :class="saveStatus.icon"></i>
-        {{ saveStatus.label }}
-      </span>
+    <div class="relative">
+      <button type="button" class="ws-avatar" aria-label="Account menu" :aria-expanded="accountOpen" @click="$emit('toggle-overlay', 'account')">{{ user.avatar }}</button>
+      <div v-if="accountOpen" class="ws-pop">
+        <div class="ws-pop__head"><h2>{{ user.name }}</h2><p>{{ user.email }}</p></div>
+        <RouterLink :to="`/profile/${user.id}`" class="ws-pop__item" @click="$emit('close-account')"><i class="fa-regular fa-user"></i>{{ store.t("View profile") }}</RouterLink>
+        <RouterLink to="/profile/billing" class="ws-pop__item" @click="$emit('close-account')"><i class="fa-regular fa-credit-card"></i>{{ store.t("Billing & folios") }}</RouterLink>
+        <RouterLink to="/soporte" class="ws-pop__item" @click="$emit('close-account')"><i class="fa-regular fa-life-ring"></i>{{ store.t("Help and support") }}</RouterLink>
+        <button type="button" class="ws-pop__item" @click="$emit('lock-now')"><i class="fa-solid fa-lock"></i>{{ store.t("Lock workspace") }}</button>
 
-      <button v-if="store.isDemo.value" type="button" class="btn-muted hidden px-3 py-2 text-xs sm:inline-flex" @click="$emit('open-auth', 'login')">
-        <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>{{ store.t("Log in") }}
-      </button>
-      <RouterLink v-if="marketplaceMode === 'buyer'" to="/post-job/new" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
-        <i class="fa-solid fa-plus text-xs mr-1.5"></i>{{ store.t("Post a Job") }}
-      </RouterLink>
-      <RouterLink v-else-if="marketplaceMode === 'supplier'" to="/find-work" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
-        <i class="fa-solid fa-briefcase text-xs mr-1.5"></i>{{ store.t("Find Work") }}
-      </RouterLink>
-      <RouterLink v-else-if="marketplaceMode === 'admin'" to="/settings/organizations" class="btn-brand hidden text-xs py-2 px-3.5 sm:inline-flex">
-        <i class="fa-solid fa-building-shield text-xs mr-1.5"></i>{{ store.t("Manage access") }}
-      </RouterLink>
-
-      <!-- Notifications -->
-      <div class="relative">
-        <button
-          class="relative hidden h-9 w-9 place-items-center rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-400 sm:grid shadow-xs transition active:scale-95"
-          :title="store.t('Notifications')"
-          :aria-label="store.t('Notifications')"
-          :aria-expanded="notificationsOpen"
-          @click="$emit('toggle-overlay', 'notifications')"
-        >
-          <i class="fa-regular fa-bell text-sm"></i>
-          <span v-if="unreadNotifications.length" class="absolute -right-1 -top-1 grid min-w-4 h-4 place-items-center rounded-full bg-brand px-1 text-[9px] font-bold text-white shadow-soft">
-            {{ unreadNotifications.length }}
-          </span>
-        </button>
-        <div v-if="notificationsOpen" class="absolute right-0 top-11 z-50 w-90 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-elevated dark:border-slate-700 dark:bg-slate-900">
-          <div class="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
-            <div>
-              <h2 class="font-head font-bold text-sm">{{ store.t("Notifications") }}</h2>
-              <p class="mt-0.5 text-xs text-slate-500">{{ unreadNotifications.length ? store.t(`${unreadNotifications.length} unread`) : store.t("You are all caught up") }}</p>
-            </div>
-            <button v-if="unreadNotifications.length" class="text-xs font-semibold text-brand hover:underline" @click="$emit('mark-all-read')">
-              {{ store.t("Mark all read") }}
-            </button>
+        <section v-if="marketplaceModeOptions.length > 1">
+          <h3>{{ store.t("Company workspace") }}</h3>
+          <div class="ws-seg" role="group" :aria-label="store.t('Company operating workspace')">
+            <button v-for="option in marketplaceModeOptions" :key="option.key" type="button" :aria-pressed="marketplaceMode === option.key" @click="$emit('switch-mode', option.key)">{{ store.t(option.label) }}</button>
           </div>
-          <div class="max-h-96 overflow-y-auto">
-            <RouterLink
-              v-for="notification in visibleNotifications"
-              :key="notification.id"
-              :to="notification.link"
-              class="flex gap-3 border-b border-slate-100 p-4 transition hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
-              :class="!notification.isRead ? 'bg-brand-50/40 dark:bg-brand/10' : ''"
-              @click="$emit('open-notification', notification)"
-            >
-              <span class="grid h-9 w-9 flex-none place-items-center rounded-xl bg-brand-50 text-brand dark:bg-brand/20">
-                <i class="fa-solid text-sm" :class="notification.icon"></i>
-              </span>
-              <span class="min-w-0">
-                <b class="block text-xs font-bold text-slate-900 dark:text-slate-100">{{ notification.title }}</b>
-                <span class="mt-0.5 block text-xs leading-5 text-slate-500 dark:text-slate-400">{{ notification.text }}</span>
-                <time class="mt-1 block text-[10px] text-slate-400">{{ formatDate ? formatDate(notification.at) : notification.at }}</time>
-              </span>
-            </RouterLink>
-            <div v-if="!visibleNotifications.length" class="p-8 text-center text-sm text-slate-500">
-              <i class="fa-regular fa-bell-slash text-2xl text-slate-300 dark:text-slate-600"></i>
-              <p class="mt-2 text-xs">{{ store.t("No notifications yet.") }}</p>
+        </section>
+
+        <section aria-labelledby="user-preferences-title">
+          <h3 id="user-preferences-title">{{ store.t("Preferences") }}</h3>
+          <div class="ws-row">
+            <span>{{ store.t("Language") }}</span>
+            <div class="ws-seg" role="group" aria-label="Language">
+              <button v-for="code in ['es', 'en']" :key="code" type="button" :aria-pressed="locale === code" :title="store.t(code === 'en' ? 'Switch to English' : 'Switch to Spanish')" @click="setLocale(code)">{{ code.toUpperCase() }}</button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Account Menu -->
-      <div class="relative">
-        <button
-          class="grid h-9 w-9 place-items-center rounded-xl bg-brand-100 text-xs font-bold text-brand ring-2 ring-transparent hover:ring-brand/30 dark:bg-brand/20 dark:text-brand-200 transition active:scale-95"
-          aria-label="Account menu"
-          :aria-expanded="accountOpen"
-          @click="$emit('toggle-overlay', 'account')"
-        >
-          {{ user.avatar }}
-        </button>
-        <div v-if="accountOpen" class="absolute right-0 top-11 z-50 max-h-[calc(100vh-5rem)] w-76 overflow-y-auto rounded-2xl border border-slate-200/90 bg-white shadow-elevated dark:border-slate-700 dark:bg-slate-900">
-          <div class="border-b border-slate-100 p-4 dark:border-slate-800">
-            <p class="font-head font-bold text-sm">{{ user.name }}</p>
-            <p class="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{{ user.email }}</p>
+          <div class="ws-row">
+            <span>{{ store.t("Theme") }}</span>
+            <div class="ws-seg" role="group" :aria-label="store.t('Theme')">
+              <button type="button" :aria-pressed="!dark" @click="dark && $emit('toggle-theme')"><i class="fa-solid fa-sun"></i></button>
+              <button type="button" :aria-pressed="dark" @click="!dark && $emit('toggle-theme')"><i class="fa-solid fa-moon"></i></button>
+            </div>
           </div>
-          <div class="py-1">
-            <RouterLink :to="`/profile/${user.id}`" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="$emit('close-account')">
-              <i class="fa-regular fa-user mr-2.5 w-4 text-slate-400"></i>{{ store.t("View profile") }}
-            </RouterLink>
-            <RouterLink to="/profile/billing" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="$emit('close-account')">
-              <i class="fa-regular fa-credit-card mr-2.5 w-4 text-slate-400"></i>{{ store.t("Billing & folios") }}
-            </RouterLink>
-            <button class="flex w-full items-center px-4 py-2.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800 transition" @click="$emit('lock-now')">
-              <i class="fa-solid fa-lock mr-2.5 w-4 text-slate-400"></i>{{ store.t("Lock workspace") }}
-            </button>
+          <div class="ws-row">
+            <span>{{ store.t("Accent") }}</span>
+            <div class="ws-swatches">
+              <button v-for="option in accents" :key="option.key" type="button" :aria-label="store.t(`Use ${option.label} accent`)" :aria-pressed="accent === option.key" :title="store.t(option.label)" :style="{ backgroundColor: option.accent }" @click="$emit('set-accent', option)"></button>
+            </div>
           </div>
+        </section>
 
-          <!-- Company Workspace Mode -->
-          <section v-if="marketplaceModeOptions.length > 1" class="border-t border-slate-100 p-3.5 dark:border-slate-800" aria-labelledby="company-workspace-title">
-            <h2 id="company-workspace-title" class="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Company workspace") }}</h2>
-            <div class="grid gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/60" :class="marketplaceModeOptions.length > 2 ? 'grid-cols-3' : 'grid-cols-2'" role="group" :aria-label="store.t('Company operating workspace')">
-              <button
-                v-for="option in marketplaceModeOptions"
-                :key="option.key"
-                class="flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-[10px] font-800 transition"
-                :class="marketplaceMode === option.key ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
-                :aria-pressed="marketplaceMode === option.key"
-                @click="$emit('switch-mode', option.key)"
-              >
-                <i class="fa-solid text-xs" :class="option.icon"></i>{{ store.t(option.label) }}
-              </button>
-            </div>
-            <p class="mt-2 text-[10px] leading-4 text-slate-400">{{ store.t("One company identity; navigation and permissions follow the active workspace.") }}</p>
-          </section>
-
-          <!-- Preferences -->
-          <section class="border-t border-slate-100 p-3.5 dark:border-slate-800" aria-labelledby="user-preferences-title">
-            <h2 id="user-preferences-title" class="mb-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Preferences") }}</h2>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Language") }}</span>
-              <div class="flex rounded-lg bg-slate-100 p-0.5 text-[10px] font-800 dark:bg-slate-800/60" role="group" aria-label="Language">
-                <button
-                  v-for="code in ['en', 'es']"
-                  :key="code"
-                  class="h-6 rounded-md px-2.5 transition font-bold"
-                  :class="locale === code ? 'bg-white text-brand shadow-xs dark:bg-slate-700' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'"
-                  :aria-pressed="locale === code"
-                  :title="store.t(code === 'en' ? 'Switch to English' : 'Switch to Spanish')"
-                  @click="setLocale(code)"
-                >
-                  {{ code.toUpperCase() }}
-                </button>
-              </div>
-            </div>
-            <div class="mt-3 flex items-center justify-between gap-3">
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Theme") }}</span>
-              <button class="flex items-center gap-2 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:text-brand dark:bg-slate-800/60 dark:text-slate-300 transition" :aria-label="store.t(dark ? 'Switch to light mode' : 'Switch to dark mode')" @click="$emit('toggle-theme')">
-                <i class="fa-solid" :class="dark ? 'fa-moon' : 'fa-sun'"></i>
-                {{ store.t(dark ? "Dark mode" : "Light mode") }}
-              </button>
-            </div>
-            <div class="mt-3">
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ store.t("Accent") }}</span>
-              <div class="mt-2 flex items-center justify-between gap-1">
-                <button
-                  v-for="option in accents"
-                  :key="option.key"
-                  class="grid h-8 w-8 place-items-center rounded-lg transition hover:bg-slate-100 dark:hover:bg-slate-800"
-                  :aria-label="store.t(`Use ${option.label} accent`)"
-                  :aria-pressed="accent === option.key"
-                  :title="store.t(option.label)"
-                  @click="$emit('set-accent', option)"
-                >
-                  <span class="h-4 w-4 rounded-full ring-2 ring-offset-2 dark:ring-offset-slate-900" :class="accent === option.key ? 'ring-slate-500' : 'ring-transparent'" :style="{ backgroundColor: option.accent }"></span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <!-- Demo Account Selector -->
-          <div class="border-t border-slate-100 p-3.5 dark:border-slate-800">
-            <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ store.t("Demo account") }}</label>
-            <select class="field py-2 text-xs" :value="currentUserId" @change="$emit('switch-user', $event.target.value)">
-              <option v-for="person in users" :key="person.id" :value="person.id">
-                {{ person.name }} · {{ person.type }}
-              </option>
-            </select>
-          </div>
-        </div>
+        <section v-if="store.isDemo.value">
+          <h3>{{ store.t("Demo account") }}</h3>
+          <select class="field" :value="currentUserId" @change="$emit('switch-user', $event.target.value)">
+            <option v-for="person in users" :key="person.id" :value="person.id">{{ person.name }} · {{ person.type }}</option>
+          </select>
+        </section>
       </div>
     </div>
   </header>
 </template>
 <script>
+const { inject, ref } = Vue;
+const { useRouter } = VueRouter;
+const load = (path) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(path, window.sfcOptions));
+
 export default {
-  components: {
-    TenantContextMenu: window.vue3SfcLoader?.loadComponent ? Vue.defineAsyncComponent(() => window.vue3SfcLoader.loadComponent("app/components/TenantContextMenu.vue")) : null,
-  },
+  components: { TenantContextMenu: load("./app/components/TenantContextMenu.vue?v=2") },
   props: {
     ui: Object,
     user: Object,
@@ -234,13 +123,17 @@ export default {
     "set-locale", "toggle-theme", "set-accent", "switch-user",
     "switch-tenant", "open-workspace-shortcut", "open-auth",
   ],
-  setup() {
-    return { store: Vue.inject("store") };
-  },
-  methods: {
-    setLocale(code) {
-      this.$emit("set-locale", code);
-    },
+  setup(props, { emit }) {
+    const store = inject("store"), router = useRouter();
+    const draft = ref("");
+    // Whatever was typed becomes the start of the need; the page picks its category.
+    const needFromPrompt = () => {
+      const text = draft.value.trim();
+      const key = text ? window.BuyniverseNeed.guess(text) : null;
+      draft.value = "";
+      router.push({ path: "/necesito", query: { ...(text ? { q: text } : {}), ...(key ? { cat: key } : {}) } });
+    };
+    return { store, draft, needFromPrompt, setLocale: (code) => emit("set-locale", code) };
   },
 };
 </script>

@@ -15,12 +15,12 @@
     const { createRouter, createWebHistory, createWebHashHistory } = VueRouter;
 
     // Page Components
-    const Dashboard = load("./app/pages/DashboardPage.vue?v=34");
-    const Home = load("./app/pages/HomePage.vue?v=47");
+    const Dashboard = load("./app/pages/DashboardPage.vue?v=37");
+    const Home = load("./app/pages/HomePage.vue?v=51");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=2");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
-    const Workspace = load("./app/pages/WorkspacePage.vue?v=58");
+    const Workspace = load("./app/pages/WorkspacePage.vue?v=60");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
     const Detail = load("./app/pages/DetailPage.vue?v=36");
     const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=35");
@@ -33,10 +33,11 @@
     const Billing = load("./app/pages/BillingPage.vue?v=32");
     const Contest = load("./app/pages/ContestPage.vue?v=34");
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
-    const Directory = load("./app/pages/DirectoryPage.vue?v=40");
-    const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=2");
-    const Procurement = load("./app/pages/ProcurementPage.vue?v=35");
+    const Directory = load("./app/pages/DirectoryPage.vue?v=41");
+    const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=3");
+    const Procurement = load("./app/pages/ProcurementPage.vue?v=41");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=4");
+    const NeedPage = load("./app/pages/NeedPage.vue?v=4");
 
     const NotFound = {
       template:
@@ -69,6 +70,8 @@
       r("/products", ProductCatalog, { kind: "products", modes: ["buyer", "admin"] }),
       r("/expenses", Workspace, { kind: "expenses", modes: ["buyer", "admin"] }),
       r("/messages", Workspace, { kind: "messages" }),
+      r("/necesito", NeedPage, { modes: ["buyer", "admin"], need: true }),
+      r("/need", { redirect: (to) => ({ path: "/necesito", query: to.query }) }),
       r("/post-job/:id?", PostJobWizard, { modes: ["buyer", "admin"] }),
       r("/job/:jobId", JobDetails, { jobAccess: true }),
       r("/job/:jobId/:slug", JobDetails, { jobAccess: true }),

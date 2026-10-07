@@ -42,24 +42,12 @@
             <button
               v-for="(item, index) in results"
               :key="item.path"
-              class="flex w-full items-center gap-3.5 rounded-2xl px-3.5 py-3 text-left transition-all"
-              :class="
-                index === selected
-                  ? 'bg-brand-50 text-brand dark:bg-brand/15 dark:text-brand-200 shadow-xs'
-                  : 'hover:bg-slate-100/80 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800/60'
-              "
+              class="pal-row"
+              :class="{ 'is-on': index === selected }"
               @mouseenter="selected = index"
               @click="go(item)"
             >
-              <span
-                class="grid h-10 w-10 flex-none place-items-center rounded-xl transition"
-                :class="
-                  index === selected
-                    ? 'bg-white text-brand shadow-xs dark:bg-slate-800 dark:text-brand'
-                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                "
-                ><i class="fa-solid text-sm" :class="item.icon"></i
-              ></span>
+              <span class="pal-ico"><i class="fa-solid text-sm" :class="item.icon"></i></span>
               <span class="min-w-0 flex-1"
                 ><b class="block truncate text-xs font-bold leading-tight">{{ item.label }}</b
                 ><small class="mt-0.5 block truncate text-[11px] text-slate-500 dark:text-slate-400">{{

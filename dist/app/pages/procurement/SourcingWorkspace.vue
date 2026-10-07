@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-5">
+  <div class="pg-body">
     <DataTable
       :items="tableItems"
       :columns="tableColumns"
@@ -203,7 +203,7 @@
 const { inject, computed, ref, watch } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const DataTable = load("./app/components/DataTable.vue?v=27");
+const DataTable = load("./app/components/DataTable.vue?v=29");
 const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=4");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");

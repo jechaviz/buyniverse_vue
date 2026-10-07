@@ -1,62 +1,32 @@
 <template>
-  <section class="procurement-page space-y-5">
-    <header
-      class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
-    >
-      <div class="max-w-3xl">
-        <p class="mb-1 flex flex-wrap items-center gap-x-2 text-[10px] font-800 uppercase tracking-wider text-brand">
-          <span>{{ store.t(contextLabel) }}</span>
-          <OperationalScopeBadge :scope="store.operationalScope.value" :show-prefix="false" />
-        </p>
-        <div class="flex items-center gap-2">
-          <h1
-            class="premium-title text-3xl font-800 text-slate-900 dark:text-white"
-          >
-            {{ store.t(current.title) }}
-          </h1>
-          <span
-            v-if="attentionCount"
-            class="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:bg-rose-500/10 dark:text-rose-300"
-            >{{ attentionCount }} {{ store.t("need attention") }}</span
-          >
-        </div>
-        <p
-          class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-300"
-        >
-          {{ store.t(current.description) }}
-        </p>
+  <section class="procurement-page pg">
+    <header class="pg-head">
+      <div>
+        <h1 class="pg-title">{{ store.t(current.title) }}</h1>
+        <p class="pg-lede">{{ store.t(current.description) }}</p>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button v-if="canBuy && ['cockpit', 'execution'].includes(section)" class="btn-muted" :title="store.t('Export')" @click="exportWorkspace">
-          <i class="fa-solid fa-download"></i>{{ store.t("Export") }}
-        </button>
-        <RouterLink
-          v-if="canBuy && (section === 'cockpit' || section === 'queue')"
-          to="/procurement/queue?new=1"
-          class="btn-brand"
-          ><i class="fa-solid fa-plus"></i>{{ store.t("New request") }}</RouterLink
-        >
-        <RouterLink
-          v-else-if="canBuy && section === 'sourcing'"
-          to="/procurement/sourcing?new=1"
-          class="btn-brand"
-          ><i class="fa-solid fa-plus"></i>{{ store.t("New quote round") }}</RouterLink
-        >
+      <div class="pg-actions">
+        <RouterLink v-if="canBuy && section === 'queue'" to="/procurement/queue?new=1" class="pg-link" :title="store.t('Full request form with department and budget code')">{{ store.t("Detailed request") }}</RouterLink>
+        <button v-if="canBuy && ['cockpit', 'execution'].includes(section)" type="button" class="pg-link" @click="exportWorkspace">{{ store.t("Export") }}</button>
+        <RouterLink v-if="canBuy" to="/procurement/intelligence" class="pg-link">{{ store.t("Insights") }}</RouterLink>
       </div>
     </header>
 
-    <ProcurementStageRail v-if="canBuy" :active="section" />
+    <ProcurementStageRail v-if="canBuy" :active="activeStage" :overview="section === 'cockpit'" />
+    <nav v-if="canBuy && (section === 'sourcing' || section === 'auction')" class="pl-sub" :aria-label="store.t('Compete')">
+      <RouterLink to="/procurement/sourcing" :class="{ on: section === 'sourcing' }">{{ store.t("Quote rounds") }}</RouterLink>
+      <RouterLink to="/procurement/auction" :class="{ on: section === 'auction' }"><span class="pl-sub__live"></span>{{ store.t("Live auctions") }}</RouterLink>
+    </nav>
     <nav
-      v-else-if="sections.length > 1"
-      class="section-tabs flex gap-1 overflow-x-auto border-b border-slate-200/80 dark:border-slate-700"
+      v-if="!canBuy && sections.length > 1"
+      class="pl-sub"
       :aria-label="contextLabel"
     >
       <RouterLink
         v-for="item in sections"
         :key="item.key"
         :to="`/procurement/${item.key}`"
-        class="min-w-max border-b-2 border-transparent px-3 py-3 text-xs font-bold text-slate-500 transition hover:text-slate-800 dark:hover:text-white"
-        :class="section === item.key ? '!border-brand !text-brand' : ''"
+        :class="{ on: section === item.key }"
         >{{ store.t(item.short) }}</RouterLink
       >
     </nav>
@@ -71,21 +41,20 @@ const load = (p) =>
   Vue.defineAsyncComponent(() =>
     window["vue3-sfc-loader"].loadModule(p, window.sfcOptions),
   );
-const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=13");
-const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=13");
-const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=22");
-const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=30");
-const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=13");
+const Cockpit = load("./app/pages/procurement/ProcurementCockpit.vue?v=14");
+const Queue = load("./app/pages/procurement/ProcurementQueue.vue?v=16");
+const Sourcing = load("./app/pages/procurement/SourcingWorkspace.vue?v=24");
+const Auction = load("./app/pages/procurement/LiveAuctionWorkspace.vue?v=31");
+const Execution = load("./app/pages/procurement/ProcurementExecution.vue?v=15");
 const Intelligence = load(
   "./app/pages/procurement/ProcurementIntelligence.vue?v=7",
 );
 const Governance = load(
   "./app/pages/procurement/ProcurementGovernance.vue?v=10",
 );
-const OperationalScopeBadge = load("./app/components/OperationalScopeBadge.vue?v=1");
-const ProcurementStageRail = load("./app/pages/procurement/ProcurementStageRail.vue?v=3");
+const ProcurementStageRail = load("./app/pages/procurement/ProcurementStageRail.vue?v=4");
 export default {
-  components: { OperationalScopeBadge, ProcurementStageRail },
+  components: { ProcurementStageRail },
   setup() {
     const store = inject("store"),
       route = useRoute(),
@@ -95,7 +64,7 @@ export default {
         key: "cockpit",
         short: "Overview",
         title: "Purchases",
-        description: "Requests, quotes, orders and savings in one place.",
+        description: "Say what you need and follow it until it is paid.",
         component: Cockpit,
       },
       {
@@ -169,6 +138,15 @@ export default {
         ? route.params.section
         : defaultSection.value,
     );
+    // Which of the five stages this page belongs to (-1 for the overview).
+    const activeStage = computed(() => {
+      const tab = String(route.query.tab || "");
+      if (section.value === "queue") return 0;
+      if (section.value === "auction") return 1;
+      if (section.value === "sourcing") return ["comparison", "award"].includes(tab) ? 2 : 1;
+      if (section.value === "execution") return tab === "matching" ? 4 : 3;
+      return -1;
+    });
     const current = computed(() => {
       if (store.marketplaceMode.value === "supplier" && section.value === "sourcing")
         return {
@@ -231,6 +209,11 @@ export default {
       store.notice("Purchases exported", "fa-download");
     };
     const normalizeRoute = () => {
+      // For a buyer the overview of purchasing is "My needs", the dashboard home.
+      if (store.marketplaceMode.value === "buyer" && (!route.params.section || route.params.section === "cockpit")) {
+        router.replace("/dashboard");
+        return;
+      }
       if (
         !route.params.section ||
         !accessibleSections.value.some((item) => item.key === route.params.section)
@@ -246,6 +229,7 @@ export default {
       store,
       sections,
       section,
+      activeStage,
       current,
       attentionCount,
       canBuy,

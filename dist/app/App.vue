@@ -31,9 +31,10 @@
       <RouterView />
     </div>
 
-    <!-- 3. AUTHENTICATED WORKSPACE SHELL -->
-    <div v-else class="relative flex h-screen overflow-hidden">
-      <button v-if="mobileOpen" class="fixed inset-0 z-30 bg-slate-950/50 backdrop-blur-xs md:hidden" aria-label="Close navigation" @click="mobileOpen = false"></button>
+    <!-- 3. AUTHENTICATED WORKSPACE SHELL: ambient light, a quiet sidebar, one prompt, one page -->
+    <div v-else class="ws" :class="{ 'is-collapsed': collapsed }" :style="{ '--ambient': ambient }">
+      <div class="ws-ambient" aria-hidden="true"></div>
+      <button v-if="mobileOpen" type="button" class="ws-scrim" :aria-label="store.t('Close navigation')" @click="mobileOpen = false"></button>
 
       <AppSidebar
         :menu="menu"
@@ -43,7 +44,7 @@
         @toggle-collapse="collapsed = !collapsed"
       />
 
-      <div class="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div class="ws-body">
         <AppHeader
           :ui="ui"
           :user="user"
@@ -82,10 +83,14 @@
           @open-auth="openAuth"
         />
 
-        <main id="main-content" class="relative z-10 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" tabindex="-1">
-          <div class="mx-auto" :class="fullWidth ? 'max-w-none' : 'max-w-7xl'">
+        <main id="main-content" class="ws-main" tabindex="-1">
+          <div class="ws-wrap" :class="{ 'ws-wrap--wide': fullWidth }">
             <Breadcrumbs />
-            <RouterView :key="route.path" />
+            <RouterView v-slot="{ Component }">
+              <Transition name="page" mode="out-in">
+                <component :is="Component" :key="route.path" />
+              </Transition>
+            </RouterView>
           </div>
         </main>
       </div>
@@ -107,12 +112,12 @@
 const { inject, computed, ref, watch, nextTick, onMounted, onBeforeUnmount } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const CommandPalette = load("./app/components/CommandPalette.vue?v=5");
+const CommandPalette = load("./app/components/CommandPalette.vue?v=6");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=7");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
-const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=7");
-const AppHeader = load("./app/components/layout/AppHeader.vue?v=3");
-const BnNavbar = load("./app/experience/BnNavbar.vue?v=7");
+const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=10");
+const AppHeader = load("./app/components/layout/AppHeader.vue?v=7");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=8");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
 const AuthModal = load("./app/components/AuthModal.vue?v=10");
 
@@ -187,7 +192,7 @@ export default {
     };
 
     const accents = [
-      { key: "cosmos", label: "Cosmos", accent: "#6d4aff", deep: "#5a37f0", soft: "#f3efff", pale: "#e6ddff" },
+      { key: "cosmos", label: "Cosmos", accent: "#3f6af2", deep: "#2f55d4", soft: "#eef3ff", pale: "#dbe6ff" },
       { key: "red", label: "Red", accent: "#e5484d", deep: "#c9363c", soft: "#fff1f1", pale: "#ffe3e3" },
       { key: "violet", label: "Violet", accent: "#7c3aed", deep: "#6d28d9", soft: "#f5f3ff", pale: "#ede9fe" },
       { key: "blue", label: "Blue", accent: "#2563eb", deep: "#1d4ed8", soft: "#eff6ff", pale: "#dbeafe" },
@@ -208,6 +213,19 @@ export default {
     applyAccent(accents.find((x) => x.key === accent.value));
     const currentAccent = computed(() => accents.find((x) => x.key === accent.value) || accents[0]);
 
+    // The colour of the five stages. The whole workspace glows with the one you are working in.
+    const STAGE_COLORS = ["#36e3c0", "#4d9dff", "#a37bff", "#ffb44d", "#ff6b8b"];
+    const ambient = computed(() => {
+      if (store.ui.ambient) return store.ui.ambient;
+      const path = route.path, tab = String(route.query.tab || "");
+      if (path.startsWith("/procurement/queue") || path.startsWith("/necesito")) return STAGE_COLORS[0];
+      if (path.startsWith("/procurement/auction")) return STAGE_COLORS[1];
+      if (path.startsWith("/procurement/sourcing")) return ["comparison", "award"].includes(tab) ? STAGE_COLORS[2] : STAGE_COLORS[1];
+      if (path.startsWith("/procurement/execution")) return tab === "matching" ? STAGE_COLORS[4] : STAGE_COLORS[3];
+      if (path.startsWith("/invoices") || path.startsWith("/payments")) return STAGE_COLORS[4];
+      return currentAccent.value.accent;
+    });
+
     const user = store.currentUser, marketplaceMode = store.marketplaceMode, tenantContext = store.tenantContext;
     const marketplaceModeOptions = computed(() => {
       const meta = { buyer: { key: "buyer", label: "Buy", icon: "fa-cart-shopping" }, supplier: { key: "supplier", label: "Sell", icon: "fa-store" }, admin: { key: "admin", label: "Admin", icon: "fa-shield-halved" } };
@@ -218,11 +236,11 @@ export default {
     const visibleNotifications = computed(() => store.userNotifications(user.value?.id || ""));
     const unreadNotifications = computed(() => store.unreadNotifications(user.value?.id || ""));
     const saveStatus = computed(() => {
-      if (store.ui.saveState === "connecting") return { label: store.t("Connecting secure workspace…"), icon: "fa-arrows-rotate fa-spin", tone: "text-sky-600 dark:text-sky-300" };
-      if (store.ui.saveState === "saving") return { label: store.t("Saving securely…"), icon: "fa-arrows-rotate fa-spin", tone: "text-amber-600 dark:text-amber-400" };
-      if (store.ui.saveState === "error") return { label: store.t("Secure save unavailable"), icon: "fa-triangle-exclamation", tone: "text-rose-600 dark:text-rose-400" };
-      if (store.ui.saveState === "demo") return { label: store.t("Local demo · not synced"), icon: "fa-flask", tone: "text-amber-600 dark:text-amber-400" };
-      return { label: store.t("Saved to workspace"), icon: "fa-shield-halved", tone: "text-emerald-600 dark:text-emerald-400" };
+      if (store.ui.saveState === "connecting") return { state: "busy", short: store.t("Connecting…") };
+      if (store.ui.saveState === "saving") return { state: "busy", short: store.t("Saving…") };
+      if (store.ui.saveState === "error") return { state: "error", short: store.t("Secure save unavailable") };
+      if (store.ui.saveState === "demo") return { state: "demo", short: store.t("Demo") };
+      return { state: "saved", short: store.t("Saved to workspace") };
     });
     const saveStatusTitle = computed(() => store.isDemo.value
       ? store.t("The public demo uses fictional data and never connects to a production workspace.")
@@ -318,36 +336,35 @@ export default {
     document.documentElement.classList.toggle("dark", dark.value);
 
     const menu = computed(() => {
-      const localize = (sections) => sections.map((section) => ({
-        ...section,
-        title: store.t(section.title),
-        items: section.items.map((item) => ({ ...item, label: store.t(item.label) })),
+      const localize = (groups) => groups.map((group) => ({
+        ...group,
+        title: store.t(group.title),
+        items: group.items.map((item) => ({ ...item, label: store.t(item.label) })),
       }));
-      const core = { title: "", items: [{ to: "/dashboard", icon: "fa-solid fa-tachometer-alt", label: "Dashboard" }] };
+      const item = (to, icon, label, extra = {}) => ({ to, icon: `fa-solid ${icon}`, label, ...extra });
       if (marketplaceMode.value === "buyer") return localize([
-        core,
-        { title: "Purchasing flow", items: [{ to: "/procurement/cockpit", icon: "fa-solid fa-cart-shopping", label: "Purchases" }, { to: "/procurement/queue", icon: "fa-solid fa-inbox", label: "Requests" }, { to: "/procurement/sourcing", icon: "fa-solid fa-file-signature", label: "Quotes" }, { to: "/procurement/auction", icon: "fa-solid fa-gavel", label: "Live bids" }, { to: "/procurement/execution", icon: "fa-solid fa-truck-ramp-box", label: "Orders" }] },
-        { title: "Catalog", items: [{ to: "/suppliers", icon: "fa-solid fa-building-circle-check", label: "Suppliers" }, { to: "/products", icon: "fa-solid fa-boxes-stacked", label: "Products" }, { to: "/find-talent", icon: "fa-solid fa-users", label: "Talent & services" }] },
-        { title: "Projects & spend", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, { to: "/expenses", icon: "fa-solid fa-money-bill-wave", label: "Expenses" }] },
-        { title: "Finance", items: [{ to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
+        { title: "Needs", items: [item("/dashboard", "fa-bolt", "My needs", { match: ["/dashboard", "/procurement", "/necesito"] })] },
+        { title: "Market", items: [item("/suppliers", "fa-building-circle-check", "Suppliers"), item("/products", "fa-boxes-stacked", "Products"), item("/find-talent", "fa-users", "Talent & services", { match: ["/find-talent", "/browse-services"] })] },
+        { title: "Work", items: [item("/projects", "fa-folder", "Projects"), item("/messages", "fa-comments", "Messages")] },
+        { title: "Money", items: [item("/invoices", "fa-file-invoice-dollar", "Invoices"), item("/payments", "fa-credit-card", "Payments"), item("/expenses", "fa-money-bill-wave", "Expenses")] },
       ]);
       if (marketplaceMode.value === "admin") return localize([
-        core,
-        { title: "Identidad & Control", items: [{ to: "/settings/organizations", icon: "fa-solid fa-building-shield", label: "Companies & access" }, { to: "/admin/issuers", icon: "fa-solid fa-file-invoice-dollar", label: "Fiscal issuers" }, { to: "/procurement/governance", icon: "fa-solid fa-scale-balanced", label: "Policies & audit" }] },
-        { title: "Supervisión Operativa", items: [{ to: "/procurement/cockpit", icon: "fa-solid fa-binoculars", label: "Procurement oversight" }, { to: "/projects", icon: "fa-solid fa-folder-tree", label: "Project oversight" }, { to: "/invoices", icon: "fa-solid fa-receipt", label: "Invoice oversight" }] },
+        { title: "Home", items: [item("/dashboard", "fa-gauge", "Dashboard")] },
+        { title: "Identity & Control", items: [item("/settings/organizations", "fa-building-shield", "Companies & access"), item("/admin/issuers", "fa-file-invoice-dollar", "Fiscal issuers"), item("/procurement/governance", "fa-scale-balanced", "Policies & audit")] },
+        { title: "Oversight", items: [item("/procurement/cockpit", "fa-binoculars", "Procurement oversight"), item("/projects", "fa-folder-tree", "Project oversight"), item("/invoices", "fa-receipt", "Invoice oversight")] },
       ]);
       return localize([
-        core,
-        { title: "Entregas & Subastas", items: [{ to: "/projects", icon: "fa-solid fa-folder", label: "Projects" }, { to: "/procurement/auction", icon: "fa-solid fa-gavel", label: "Live Offers" }] },
-        { title: "Buscar Oportunidades", items: [{ to: "/find-work", icon: "fa-solid fa-briefcase", label: "Find Work" }, { to: "/saved-jobs", icon: "fa-solid fa-bookmark", label: "Saved Jobs" }] },
-        { title: "Ventas & Clientes", items: [{ to: "/leads", icon: "fa-solid fa-bullseye", label: "Leads" }, { to: "/clients", icon: "fa-solid fa-user-tie", label: "Clients" }, { to: "/estimates", icon: "fa-solid fa-file-invoice", label: "Estimates" }, { to: "/invoices", icon: "fa-solid fa-file-invoice-dollar", label: "Invoices" }, { to: "/payments", icon: "fa-solid fa-credit-card", label: "Payments" }, { to: "/messages", icon: "fa-solid fa-comments", label: "Messages" }] },
+        { title: "Home", items: [item("/dashboard", "fa-gauge", "Dashboard")] },
+        { title: "Deliver", items: [item("/projects", "fa-folder", "Projects"), item("/procurement/auction", "fa-gavel", "Live Offers")] },
+        { title: "Find", items: [item("/find-work", "fa-briefcase", "Find Work"), item("/saved-jobs", "fa-bookmark", "Saved Jobs")] },
+        { title: "Sell", items: [item("/leads", "fa-bullseye", "Leads"), item("/clients", "fa-user-tie", "Clients"), item("/estimates", "fa-file-invoice", "Estimates"), item("/invoices", "fa-file-invoice-dollar", "Invoices"), item("/payments", "fa-credit-card", "Payments"), item("/messages", "fa-comments", "Messages")] },
       ]);
     });
 
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace, openWorkspaceShortcut, workspaceShortcutLabel,
       route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
-      accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, showHelp, openHelp, launchDemo, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
+      accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, showHelp, openHelp, launchDemo, ambient, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),
     };
