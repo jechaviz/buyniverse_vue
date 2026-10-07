@@ -16,7 +16,7 @@
 
     // Page Components
     const Dashboard = load("./app/pages/DashboardPage.vue?v=37");
-    const Home = load("./app/pages/HomePage.vue?v=51");
+    const Home = load("./app/pages/HomePage.vue?v=52");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=2");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");

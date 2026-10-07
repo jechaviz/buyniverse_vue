@@ -67,7 +67,7 @@
     </section>
 
     <!-- 4. Suppliers buyers keep coming back to -->
-    <section v-if="!supplierMode" class="hp-section">
+    <section v-if="!supplierMode" class="hp-section hp-section--tint">
       <div class="bn-wrap">
         <div class="hp-head">
           <div>
