@@ -51,9 +51,23 @@ if (
   !read("app/main.js").includes("const resetWorkspaceState = () =>")
 )
   throw new Error("Production boot must render a trusted empty shell before remote workspace hydration");
+// Production must have no URL-driven demo door and no workspace without identity.
+if (/get\(["']demo["']\)|\?demo=1/.test(read("app/lib/runtime.js") + read("app/App.vue") + read("app/components/AuthModal.vue") + read("app/main.js")))
+  throw new Error("A client-side ?demo=1 switch must not exist: demo is entered only through /demo");
+if (!/hash_equals\(strtolower\(trim\(\$candidate\)\), \$host\)/.test(read("index.php")))
+  throw new Error("The /demo forward must be restricted to the operator's demo_hosts allowlist");
 for (const [file, token] of [
-  ["app/lib/runtime.js", 'get("demo") === "1"'],
-  ["app/lib/runtime.js", "never grants a production server session or persistence"],
+  ["app/lib/runtime.js", "a URL hint can never turn"],
+  ["app/lib/runtime.js", "demoEntry"],
+  ["index.php", "function workspace_demo_entry"],
+  [".htaccess", "|demo)"],
+  [".htaccess", "app/data/demo"],
+  ["auction_service.php", "function auction_amount_cents"],
+  ["auction_service.php", "Offers are placed through the bid endpoint"],
+  ["app/lib/auction-realtime.js", "function placeBid"],
+  ["app/store/procurementDomainActions.js", "placeLedgerBid"],
+  ["ops/schema-requirements.txt", "auction_live_bids"],
+  ["ops/migrations/20261008_auction_bid_ledger.sql", "live auction bids are immutable"],
   ["app/components/AuthModal.vue", 'store.t("Explore demo")'],
   ["app/components/CommandPalette.vue", "if (!current) return [];"],
 ]) {

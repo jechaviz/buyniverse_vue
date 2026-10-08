@@ -6,14 +6,15 @@
 .nh__grain { position: absolute; inset: 0; pointer-events: none; opacity: .07; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
 .nh__stage { position: relative; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); gap: clamp(28px, 4.5vw, 72px); align-items: center; padding-top: 56px; padding-bottom: 64px; min-height: min(100svh - 70px, 820px); }
 .nh__col { min-width: 0; }
-.nh__ttl { display: flex; align-items: center; gap: 4px; margin: 0 0 14px -18px; }
+.nh__ttl { margin: 0 0 14px; }
 .nh__mark { position: relative; flex: none; width: clamp(150px, 13vw, 196px); aspect-ratio: 1; }
 .nh__mark canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
 .nh__mark svg { position: absolute; left: 25%; top: 25%; width: 50%; filter: drop-shadow(0 0 24px #36e3c066); }
 .nh__h1 { margin: 0; flex: 1; min-width: 0; font-size: clamp(30px, 3.6vw, 52px); line-height: 1.05; letter-spacing: -2px; font-weight: 800; color: var(--ink); }
 .nh__h1 em { display: block; font-style: normal; min-height: 2.15em; overflow-wrap: anywhere; }
 .nh__tx { background: linear-gradient(90deg, var(--a), var(--b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.nh__caret { display: inline-block; width: .07em; height: .85em; margin-left: .06em; vertical-align: -.08em; background: var(--c); box-shadow: 0 0 14px var(--c); animation: nh-bl 1s steps(1) infinite; }
+.nh__caret { display: inline-block; width: .2em; height: .2em; margin-left: .14em; vertical-align: .04em; border-radius: 50%; background: #fff; box-shadow: 0 0 .5em var(--c), 0 0 1.1em var(--c); animation: nh-dot 1.6s ease-in-out infinite; }
+@keyframes nh-dot { 50% { transform: scale(1.45); opacity: .75; } }
 @keyframes nh-bl { 50% { opacity: 0; } }
 .nh__intro { max-width: 460px; margin: 0 0 22px; color: var(--mut); font-size: 1rem; line-height: 1.65; }
 .nh__sbox { position: relative; max-width: 660px; }
@@ -138,3 +139,6 @@
 .hp-sup:hover { background: color-mix(in srgb, var(--bn-violet) 14%, var(--bn-surface-2)); }
 .hp-sups { gap: 10px 14px; }
 @media (max-width: 1000px) { .hp-steps { padding-left: 0; } .hp-steps__node { position: static; margin-bottom: 14px; } }
+
+/* The logo in motion, in the panel: the dot is the need, the ring is the market. */
+.nh__orbit { display: block; width: 100%; height: clamp(190px, 24vw, 270px); margin: 6px 0 0; cursor: pointer; }

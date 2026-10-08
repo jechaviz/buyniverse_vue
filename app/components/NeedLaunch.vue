@@ -19,7 +19,7 @@
  * suppliers are named as they are invited, and then you are taken to where the
  * offers will arrive. A second, not a loading screen: any key or click skips it.
  */
-const { inject, ref, reactive, watch, nextTick, onBeforeUnmount } = Vue;
+const { inject, ref, watch, nextTick, onBeforeUnmount } = Vue;
 
 export default {
   props: {
@@ -27,26 +27,29 @@ export default {
     color: { type: String, default: "#36e3c0" },
     focus: { type: Number, default: -1 },
     lines: { type: Array, default: () => [] },
+    // the suppliers being invited: [{ id, name }]; each one lifts off the ring and falls toward the need
+    suppliers: { type: Array, default: () => [] },
   },
   emits: ["done"],
   setup(props, { emit }) {
     const store = inject("store"), Need = window.BuyniverseNeed;
     const canvas = ref(null), shown = ref([]);
-    const ctl = reactive({ hover: false, pinned: true, kick: 0, reduced: false, colors: Need.CATEGORIES.map((c) => c.color), focus: () => props.focus });
-    let ring = null, timers = [], finished = false;
+    let scene = null;
+    let timers = [], finished = false;
     const finish = () => { if (finished) return; finished = true; emit("done"); };
     const onKey = () => finish();
     watch(() => props.open, async (open) => {
       timers.forEach(clearTimeout); timers = []; shown.value = []; finished = false;
-      if (ring) { ring.dispose(); ring = null; }
+      if (scene) { scene.dispose(); scene = null; }
       if (!open) { window.removeEventListener("keydown", onKey); return; }
       window.addEventListener("keydown", onKey);
       await nextTick();
-      if (window.BnRing && canvas.value) window.BnRing.mount(canvas.value, ctl).then((r) => { ring = r; ctl.kick = 1; }).catch(() => {});
-      props.lines.forEach((line, i) => timers.push(setTimeout(() => { shown.value = [...shown.value, line]; ctl.kick = 1; }, 350 + i * 520)));
+      if (window.BnOrbit && canvas.value) { scene = window.BnOrbit.mount(canvas.value, { color: props.color }); scene.call(); }
+      props.lines.forEach((line, i) => timers.push(setTimeout(() => { shown.value = [...shown.value, line]; if (scene) scene.ping(); }, 350 + i * 520)));
+      props.suppliers.slice(0, 4).forEach((sup, i, all) => timers.push(setTimeout(() => { if (scene) scene.addOrb({ id: sup.id, label: sup.label || "", level: all.length > 1 ? 0.15 + 0.85 * (i / (all.length - 1)) : 1, win: i === all.length - 1 }); }, 500 + i * 520)));
       timers.push(setTimeout(finish, 350 + props.lines.length * 520 + 650));
     });
-    onBeforeUnmount(() => { timers.forEach(clearTimeout); window.removeEventListener("keydown", onKey); if (ring) ring.dispose(); });
+    onBeforeUnmount(() => { timers.forEach(clearTimeout); window.removeEventListener("keydown", onKey); if (scene) scene.dispose(); });
     return { store, canvas, shown, finish };
   },
 };

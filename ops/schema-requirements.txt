@@ -8,3 +8,5 @@ cfdi_documents
 cfdi_stamp_ledger
 support_tickets
 support_ticket_events
+auction_live_terms
+auction_live_bids

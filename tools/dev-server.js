@@ -35,7 +35,8 @@ Bun.serve({
       await Bun.write(target, bytes);
       return Response.json({ ok: true, bytes: bytes.length });
     }
-    if (production && url.pathname === "/api/v1/runtime") return Response.json({ mode: "production", serverAuth: true });
+    if (url.pathname === "/demo" || url.pathname === "/demo/") return production ? new Response("not found", { status: 404 }) : new Response(null, { status: 303, headers: { location: "/#/dashboard" } });
+    if (production && url.pathname === "/api/v1/runtime") return Response.json({ mode: "production", serverAuth: true, demoAvailable: false });
     if (production && url.pathname === "/api/v1/auth/providers") return Response.json({ providers: providers.filter((id) => providerNames[id]).map((id) => ({ id, name: providerNames[id], audience: "individual" })) });
     if (production && url.pathname === "/api/v1/workspace-state") return Response.json({ authenticated: false, state: null, version: 0, csrf: "0".repeat(64), mode: "production", context: null });
     // No PHP here: the API is absent, exactly like a static host. The app

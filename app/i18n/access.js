@@ -34,6 +34,7 @@
     "By continuing you allow Buyniverse to receive your name and email from the provider to create and protect your account.": "Al continuar autorizas que Buyniverse reciba tu nombre y correo del proveedor para crear y proteger tu cuenta.",
     "Get help": "Obtener ayuda", "Signed in to the demo": "Sesión de demostración iniciada",
     "Account access is being enabled": "Estamos habilitando el acceso con cuenta",
+    "Sign-in with Google, Microsoft, LinkedIn and Facebook opens as soon as each provider approves Buyniverse.": "El acceso con Google, Microsoft, LinkedIn y Facebook se abrirá en cuanto cada proveedor apruebe a Buyniverse.",
     "Sign-in with Google, Microsoft, LinkedIn and Facebook opens as soon as each provider approves Buyniverse. Meanwhile the demo shows every flow with sample data, no sign-up needed.": "El acceso con Google, Microsoft, LinkedIn y Facebook se abre en cuanto cada proveedor aprueba a Buyniverse. Mientras tanto, la demo muestra todos los flujos con datos de ejemplo, sin registrarte.",
     "Request business access": "Solicitar acceso empresarial",
     // Onboarding, fiscal identity and supplier requirements

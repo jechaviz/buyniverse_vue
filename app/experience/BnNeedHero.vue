@@ -4,10 +4,6 @@
     <div class="bn-wrap nh__stage">
       <div class="nh__col">
         <div class="nh__ttl">
-          <div class="nh__mark">
-            <canvas ref="canvas" role="img" :aria-label="store.t('Buyniverse mark: a ring and a dot. The dot orbits to the kind of purchase you pick.')" @pointerenter="ctl.hover = true" @pointerleave="ctl.hover = false" @pointerdown="togglePin"></canvas>
-            <svg v-show="!live" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="nhg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36e3c0"/><stop offset="1" stop-color="#4d7cff"/></linearGradient></defs><circle cx="17" cy="19" r="7" fill="none" stroke="url(#nhg)" stroke-width="4"/><circle cx="12" cy="7.5" r="3" fill="#fff"/></svg>
-          </div>
           <h1 class="nh__h1">{{ store.t("I need") }}<em aria-hidden="true"><span class="nh__tx">{{ typed }}</span><span class="nh__caret"></span></em></h1>
         </div>
         <p class="nh__intro">{{ store.t("Publish once and the offers compete for you.") }}</p>
@@ -41,6 +37,7 @@
 
       <aside class="nh__auc" aria-live="polite">
         <div class="nh__lh"><span>{{ store.t("Reverse auction") }} · {{ store.t("sample demo") }}</span><em>{{ shown.length }}/3 {{ store.t("offers") }}</em></div>
+        <canvas ref="canvas" class="nh__orbit" role="img" :aria-label="store.t('The logo in motion: the dot is your need, the ring is the market, and the offers fall toward it. The closer to the dot, the better the price.')" @pointerdown="scene && scene.call()"></canvas>
         <small class="nh__k">{{ store.t("Your request") }}</small>
         <h3 class="nh__lt">{{ auctionTitle || store.t("Waiting for your request…") }}</h3>
         <div class="nh__meta">{{ auctionMeta }}</div>
@@ -55,7 +52,7 @@
 </template>
 
 <script>
-const { inject, ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
+const { inject, ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
 const { useRouter } = VueRouter;
 
 // What people actually ask for, per kind of purchase (the typewriter and the suggestions).
@@ -75,14 +72,13 @@ export default {
     const Need = window.BuyniverseNeed, cats = Need.CATEGORIES;
     const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lang = () => (store.locale.value === "en" ? "en" : "es");
-    const canvas = ref(null), input = ref(null), live = ref(false);
+    const canvas = ref(null), input = ref(null), scene = ref(null);
     const query = ref(""), typed = ref(""), sel = ref(-1), hov = ref(-1), guessed = ref(-1), demoCat = ref(-1);
     const showSug = ref(false), hl = ref(-1), running = ref(false);
     const auctionTitle = ref(""), auctionMeta = ref(""), shown = ref([]);
-    const ctl = reactive({ hover: false, pinned: false, kick: 0, reduced, colors: cats.map((c) => c.color), focus: () => (hov.value >= 0 ? hov.value : sel.value >= 0 ? sel.value : guessed.value >= 0 ? guessed.value : demoCat.value) });
+    const focusIndex = () => (hov.value >= 0 ? hov.value : sel.value >= 0 ? sel.value : guessed.value >= 0 ? guessed.value : demoCat.value);
     const view = () => ({ suppliers: props.suppliers });
     const totals = computed(() => cats.map((c) => Need.matchSuppliers(view(), c.key, 999).length));
-    const focusIndex = () => ctl.focus();
     const accent = computed(() => (focusIndex() >= 0 ? cats[focusIndex()].color : "#36e3c0"));
     const placeholder = computed(() => sel.value >= 0 ? store.t("Search") + " " + store.t(cats[sel.value].ph) + "…" : store.t("E.g. 50 laptops, a Monterrey–CDMX freight…"));
     const samples = (i) => SAMPLES[cats[i].key].map((s) => s[lang()]);
@@ -93,7 +89,8 @@ export default {
       cats.forEach((c, i) => { if (sel.value >= 0 && sel.value !== i) return; samples(i).forEach((_, n) => pool.push(sample(c.key, n))); });
       return pool.filter((s) => !v || s.text.toLowerCase().includes(v) || v.split(/\s+/).some((w) => w.length > 2 && s.text.toLowerCase().includes(w))).slice(0, 5);
     });
-    let paused = false, alive = true, timers = [], lastAct = Date.now(), ring = null;
+    let paused = false, alive = true, timers = [], lastAct = Date.now();
+    const ping = () => scene.value && scene.value.ping();
     const act = () => { lastAct = Date.now(); };
     const sleep = (ms) => new Promise((res) => timers.push(setTimeout(res, ms)));
     const pause = () => { paused = true; act(); };
@@ -103,11 +100,11 @@ export default {
       timers.splice(0).forEach(clearTimeout); shown.value = []; running.value = true;
       const key = cats[catIndex].key, chosen = Need.matchSuppliers(view(), key, 3);
       auctionTitle.value = title; auctionMeta.value = `${store.t(cats[catIndex].label)} · ${store.t("notifying")} ${totals.value[catIndex]} ${store.t("suppliers")}`;
-      chosen.forEach((s, k) => timers.push(setTimeout(() => { shown.value = [{ name: s.name, pct: pct[k], days: dayList[k] }, ...shown.value].sort((a, b) => b.pct - a.pct); ctl.kick = 1; }, 600 + k * 800)));
+      if (scene.value) { scene.value.clear(); scene.value.call(); }
+      chosen.forEach((s, k) => timers.push(setTimeout(() => { shown.value = [{ name: s.name, pct: pct[k], days: dayList[k] }, ...shown.value].sort((a, b) => b.pct - a.pct); if (scene.value) scene.value.addOrb({ id: s.id, label: "−" + pct[k] + "%", level: [0.12, 0.52, 1][k], win: k === chosen.length - 1 }); }, 700 + k * 900)));
     };
-    const choose = (i) => { sel.value = sel.value === i ? -1 : i; pause(); ctl.kick = 1; if (!query.value.trim()) { typed.value = ""; running.value = false; clear(); } else if (sel.value >= 0) guessed.value = -1; };
-    const togglePin = () => { ctl.pinned = !ctl.pinned; act(); ctl.kick = 1; };
-    const onInput = () => { pause(); typed.value = query.value; const g = Need.guess(query.value); guessed.value = g ? cats.findIndex((c) => c.key === g) : -1; showSug.value = true; hl.value = -1; ctl.kick = 1; };
+    const choose = (i) => { sel.value = sel.value === i ? -1 : i; pause(); ping(); if (!query.value.trim()) { typed.value = ""; running.value = false; clear(); } else if (sel.value >= 0) guessed.value = -1; };
+    const onInput = () => { pause(); typed.value = query.value; const g = Need.guess(query.value); guessed.value = g ? cats.findIndex((c) => c.key === g) : -1; showSug.value = true; hl.value = -1; ping(); };
     const onFocus = () => { pause(); if (!query.value.trim()) { typed.value = ""; running.value = false; clear(); } showSug.value = suggestions.value.length > 0; };
     const onBlur = () => { setTimeout(() => { showSug.value = false; }, 120); act(); };
     const onKey = (e) => {
@@ -134,7 +131,7 @@ export default {
       while (alive) {
         if (paused) { await sleep(500); continue; }
         const k = n++ % cats.length, text = SAMPLES[cats[k].key][0][lang()];
-        demoCat.value = k; ctl.kick = 1;
+        demoCat.value = k; ping();
         for (let c = 1; c <= text.length && !paused && alive; c++) { typed.value = text.slice(0, c); await sleep(46 + Math.random() * 55); }
         if (!paused && alive) { runAuction(text.charAt(0).toUpperCase() + text.slice(1), k); await sleep(4200); }
         while (typed.value.length && !paused && alive) { typed.value = typed.value.slice(0, -1); await sleep(16); }
@@ -146,13 +143,14 @@ export default {
     let idle = 0;
     onMounted(() => {
       demo();
-      idle = setInterval(() => { if (paused && !reduced && Date.now() - lastAct > 12000 && !query.value.trim() && sel.value < 0 && !ctl.pinned && document.activeElement !== input.value) { paused = false; guessed.value = -1; running.value = false; clear(); typed.value = ""; } }, 2000);
-      if (window.BnRing) window.BnRing.mount(canvas.value, ctl).then((r) => { ring = r; live.value = true; }).catch(() => { live.value = false; });
+      idle = setInterval(() => { if (paused && !reduced && Date.now() - lastAct > 12000 && !query.value.trim() && sel.value < 0 && document.activeElement !== input.value) { paused = false; guessed.value = -1; running.value = false; clear(); typed.value = ""; } }, 2000);
+      if (window.BnOrbit && canvas.value) scene.value = window.BnOrbit.mount(canvas.value, { reduced, color: accent.value });
     });
-    onBeforeUnmount(() => { alive = false; clearInterval(idle); timers.forEach(clearTimeout); if (ring) ring.dispose(); });
+    watch(accent, (c) => { if (scene.value) scene.value.setColor(c); });
+    onBeforeUnmount(() => { alive = false; clearInterval(idle); timers.forEach(clearTimeout); if (scene.value) scene.value.dispose(); });
 
-    return { store, cats, canvas, input, live, ctl, query, typed, sel, hov, totals, accent, placeholder, quick, suggestions, showSug, hl, running, auctionTitle, auctionMeta, shown,
-      choose, togglePin, onInput, onFocus, onBlur, onKey, pick, submit };
+    return { store, cats, canvas, input, scene, query, typed, sel, hov, totals, accent, placeholder, quick, suggestions, showSug, hl, running, auctionTitle, auctionMeta, shown,
+      choose, onInput, onFocus, onBlur, onKey, pick, submit };
   },
 };
 </script>

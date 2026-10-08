@@ -143,6 +143,7 @@ const isSafeRemoteState = (value) => {
   );
 };
 const runtimeMode = ref(window.BuyniverseRuntime?.mode === "demo" ? "demo" : "production");
+const demoAvailable = ref(false);
 const emptyWorkspaceState = () => ({
   currentUserId: null,
   activeMarketplaceMode: "buyer",
@@ -240,6 +241,8 @@ const store = {
   locale,
   runtimeMode: computed(() => runtimeMode.value),
   isDemo: computed(() => runtimeMode.value === "demo"),
+  demoAvailable: computed(() => demoAvailable.value),
+  enterDemo: () => { if (demoAvailable.value) window.location.assign(window.BuyniverseRuntime.demoEntry); },
   workspaceAccess: computed(() => ui.workspaceAccess),
   setLocale: (next) => {
     window.BuyniverseI18n.setLocale(next);
@@ -499,6 +502,7 @@ const hydrateRemoteWorkspace = async () => {
 const initializeRuntime = async () => {
   const decision = await window.BuyniverseRuntime?.load?.();
   runtimeMode.value = decision?.mode === "demo" ? "demo" : "production";
+  demoAvailable.value = runtimeMode.value !== "demo" && decision?.demoAvailable === true;
   if (runtimeMode.value === "demo") {
     replaceWorkspaceState(window.BuyniverseDemo.clone(), null);
   } else {
@@ -559,7 +563,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=69"));
+  const app = createApp(load("./app/App.vue?v=70"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

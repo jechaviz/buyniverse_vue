@@ -69,9 +69,14 @@ async function main() {
   try {
     for (let i = 0; i < 40; i++) { try { await fetch(base + "/api/v1/runtime"); break; } catch (_) { await pause(150); } }
 
+    // 0. Production and demo stay apart: no URL hint, no /demo door, no demo flag.
+    let r = await fetch(base + "/api/v1/runtime?demo=1", { headers: { Accept: "application/json" } }).then((x) => x.json());
+    check("runtime ignores a client demo hint", r.mode === "production" && r.demoAvailable === false, JSON.stringify(r));
+    check("/demo is not served by a production host", (await fetch(base + "/demo", { redirect: "manual" })).status === 404);
+
     // 1. A Mexican supplier: exact SAT postal code, REPSE when applicable, rules on the server.
     const mx = identity("Kemper");
-    let r = await call(mx, "GET", "/api/v1/onboarding");
+    r = await call(mx, "GET", "/api/v1/onboarding");
     check("new identity is not enrolled", r.status === 200 && r.json.complete === false, r.text);
     await pause(900);
     r = await call(mx, "POST", "/api/v1/onboarding", mxSupplier({ address: { street: "Calle 60", city: "Mérida", region: "Yucatán", postalCode: "97000" } }));

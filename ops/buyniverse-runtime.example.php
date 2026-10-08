@@ -12,6 +12,10 @@ return [
     'app_mode' => 'production', // Set to 'demo' only on an isolated demo host.
     'demo_hosts' => ['demo.buyniverse.com', 'localhost', '127.0.0.1', '::1'],
     'allow_demo_workspace_state' => false,
+    // Production never contains the demo. Publish it on its own host (listed in
+    // demo_hosts, running with app_mode 'demo') and point /demo at it. Leave
+    // demo_url empty to have /demo answer 404 on this production host.
+    'demo_url' => '', // e.g. 'https://demo.buyniverse.com/'
 
     // Transactional email is queued encrypted in MySQL and sent only by the
     // CLI worker. Keep disabled until the sending domain is verified and the

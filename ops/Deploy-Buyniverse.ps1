@@ -2,7 +2,11 @@
 param(
   [string]$SshAlias = "spaceship",
   [string]$RemoteDir = "~/buyniverse.com",
-  [string]$HealthUrl = "https://buyniverse.com/"
+  [string]$HealthUrl = "https://buyniverse.com/",
+  # The demo is a separate deployment with its own docroot and a config of its
+  # own. Pass an empty string to publish production only.
+  [string]$DemoDir = "~/demo.buyniverse.com",
+  [string]$DemoHost = "demo.buyniverse.com"
 )
 
 Set-StrictMode -Version Latest
@@ -10,6 +14,9 @@ $ErrorActionPreference = "Stop"
 
 if ($SshAlias -notmatch '^[A-Za-z0-9._@-]+$') {
   throw "SshAlias contains unsupported characters."
+}
+if ($DemoDir -ne "" -and ($DemoDir -notmatch '^(?:~\/|\/)[A-Za-z0-9._/-]+$' -or $DemoHost -notmatch '^[a-z0-9.-]+$')) {
+  throw "DemoDir/DemoHost contain unsupported characters."
 }
 if ($RemoteDir -notmatch '^(?:~\/|\/)[A-Za-z0-9._/-]+$') {
   throw "RemoteDir must be an absolute POSIX path or ~/ path without shell metacharacters."
@@ -62,8 +69,30 @@ test -f "$release_dir/index.html"
 test -f "$release_dir/.htaccess"
 test -f "$release_dir/app/main.js"
 git log -n 1 --oneline
+
+# The demo host gets the same build in its own docroot. Its configuration sits
+# beside the docroot (see ops/buyniverse-demo-runtime.example.php), holds no
+# secrets and is created once; an existing one is never overwritten.
+demo_dir="__DEMO_DIR__"
+if [ -n "$demo_dir" ]; then
+  demo_dir="$(eval "echo $demo_dir")"
+  case "$demo_dir" in
+    */demo.buyniverse.com) ;;
+    *) echo "Refusing unexpected demo directory: $demo_dir" >&2; exit 64 ;;
+  esac
+  mkdir -p -- "$demo_dir"
+  find "$demo_dir" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+  cp -a "$stage"/. "$demo_dir"/
+  demo_config="${demo_dir}.runtime.php"
+  if [ ! -f "$demo_config" ]; then
+    printf '%s\n' '<?php' "return ['app_mode' => 'demo', 'demo_hosts' => ['__DEMO_HOST__'], 'allow_demo_workspace_state' => false];" > "$demo_config"
+    chmod 600 "$demo_config"
+  fi
+  test -f "$demo_dir/index.html"
+  echo "DEMO_PUBLISHED $demo_dir"
+fi
 '@
-$remoteScript = $remoteScriptTemplate.Replace('__REMOTE_DIR__', $RemoteDir)
+$remoteScript = $remoteScriptTemplate.Replace('__REMOTE_DIR__', $RemoteDir).Replace('__DEMO_DIR__', $DemoDir).Replace('__DEMO_HOST__', $DemoHost)
 # Windows PowerShell 5.1 strips embedded double quotes from native arguments,
 # so the script travels base64-encoded and is decoded by the remote shell.
 $remoteScript = $remoteScript -replace "`r`n", "`n"

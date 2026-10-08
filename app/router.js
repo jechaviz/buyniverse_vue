@@ -16,7 +16,7 @@
 
     // Page Components
     const Dashboard = load("./app/pages/DashboardPage.vue?v=37");
-    const Home = load("./app/pages/HomePage.vue?v=52");
+    const Home = load("./app/pages/HomePage.vue?v=53");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=2");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
@@ -35,9 +35,9 @@
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=41");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=3");
-    const Procurement = load("./app/pages/ProcurementPage.vue?v=41");
+    const Procurement = load("./app/pages/ProcurementPage.vue?v=42");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=4");
-    const NeedPage = load("./app/pages/NeedPage.vue?v=4");
+    const NeedPage = load("./app/pages/NeedPage.vue?v=5");
 
     const NotFound = {
       template:
