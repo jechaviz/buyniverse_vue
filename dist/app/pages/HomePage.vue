@@ -133,7 +133,7 @@
 const { inject, ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnNeedHero = load("./app/experience/BnNeedHero.vue?v=2");
+const BnNeedHero = load("./app/experience/BnNeedHero.vue?v=3");
 const AnimatedNumber = load("./app/components/AnimatedNumber.vue?v=1");
 
 // The explainer film still shows the previous brand mark; it returns once it is re-rendered with the ring and the dot.

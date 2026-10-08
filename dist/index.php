@@ -22,6 +22,8 @@ function security_headers(): void {
     // authorizes only the dynamic <base> bootstrap; no broad inline-script
     // exception is allowed.
     header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'");
+    // A demo is never an indexable site.
+    if (function_exists('workspace_mode') && workspace_mode(workspace_config()) === 'demo' && !in_array(workspace_request_host(), ['localhost', '127.0.0.1', '::1', '[::1]'], true)) header('X-Robots-Tag: noindex, nofollow, noarchive');
     foreach ([
         'Strict-Transport-Security: max-age=63072000; includeSubDomains; preload',
         'X-Content-Type-Options: nosniff', 'X-Frame-Options: DENY', 'Referrer-Policy: no-referrer',
@@ -55,18 +57,53 @@ $uri = parse_url($rawUri, PHP_URL_PATH);
 if (!is_string($uri) || strlen($rawUri) > 4096) fail_response(400, 'Invalid request');
 $path = rawurldecode($uri);
 if (preg_match('/[\\x00\\r\\n\\\\]/', $path) || in_array('..', explode('/', $path), true)) fail_response(400, 'Invalid request');
+// A deployment under a sub-folder (e.g. /buyniverse_vue/) routes exactly like a root one.
+$installBase = workspace_base_path();
+if ($installBase !== '' && ($uri === $installBase || str_starts_with($uri, $installBase . '/'))) {
+    $uri = substr($uri, strlen($installBase)) ?: '/';
+    $path = substr($path, strlen($installBase)) ?: '/';
+}
 
 // Deployment, database and seed/reset operations never belong to a public endpoint.
 $action = (string) ($_GET['action'] ?? '');
 if (preg_match('#^/api/v1/(?:deploy|sync|admin/db)(?:/|$)#', $uri) || in_array($action, ['sync','deploy','seed','reset','status'], true))
     fail_response(404, 'Not found');
 
+// Sample data belongs to the demo deployment only.
+if (preg_match('#(?:^|/)app/data/demo\.js$#', $path) === 1 && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
 foreach ([__DIR__ . '/dist', __DIR__] as $root) {
     $file = static_file($root, $path);
     if ($file === null) continue;
     security_headers();
     $mimes = ['css'=>'text/css; charset=utf-8','js'=>'application/javascript; charset=utf-8','json'=>'application/json; charset=utf-8','svg'=>'image/svg+xml','png'=>'image/png','jpg'=>'image/jpeg','jpeg'=>'image/jpeg','gif'=>'image/gif','ico'=>'image/x-icon','woff'=>'font/woff','woff2'=>'font/woff2','ttf'=>'font/ttf','vue'=>'text/plain; charset=utf-8','txt'=>'text/plain; charset=utf-8','xml'=>'application/xml; charset=utf-8'];
     header('Content-Type: ' . $mimes[strtolower(pathinfo($file, PATHINFO_EXTENSION))]); readfile($file); exit;
+}
+function workspace_base_path(): string {
+    $script = str_replace(chr(92), '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+    if (!str_ends_with($script, '/index.php')) return '';
+    $base = substr($script, 0, -10);
+    return $base === '/' ? '' : rtrim($base, '/');
+}
+// Production and demo are different deployments, never two faces of one. The
+// host decides: an allowlisted demo host is always demo, every other host is
+// production and ignores any client hint. The demo is entered only through
+// /demo, which production forwards to the configured demo host (or 404s).
+function workspace_demo_entry(array $config): ?string {
+    if (workspace_mode($config) === 'demo') return workspace_base_path() . '/#/dashboard';
+    $url = (string) ($config['demo_url'] ?? '');
+    $parts = parse_url($url);
+    if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || empty($parts['host']) || isset($parts['user']) || isset($parts['pass'])) return null;
+    $host = strtolower((string) $parts['host']);
+    foreach ((array) ($config['demo_hosts'] ?? []) as $candidate)
+        if (is_string($candidate) && hash_equals(strtolower(trim($candidate)), $host)) return 'https://' . $host . ((isset($parts['port']) && (int) $parts['port'] !== 443) ? ':' . (int) $parts['port'] : '') . '/#/dashboard';
+    return null;
+}
+if ($uri === '/demo' || $uri === '/demo/') {
+    if (!in_array(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET','HEAD'], true)) fail_response(405, 'Method not allowed');
+    $target = workspace_demo_entry(workspace_config());
+    if ($target === null) fail_response(404, 'Not found');
+    // The target is either local or an https host from the operator's own demo_hosts allowlist.
+    security_headers(); http_response_code(303); header('Location: ' . $target); exit;
 }
 if (!str_starts_with($uri, '/api/') && $uri !== '/api') serve_spa();
 
@@ -75,7 +112,12 @@ if (!str_starts_with($uri, '/api/') && $uri !== '/api') serve_spa();
 // key; this published artifact intentionally contains neither credentials nor
 // a fallback key.
 function workspace_config(): array {
-    $path = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__) . '/buyniverse-runtime.php';
+    // The file is chosen by where this copy of the code lives, never by the
+    // request: a docroot may have its own <docroot-name>.runtime.php next to it
+    // (the demo host does), otherwise the shared production file applies. A
+    // spoofed Host header therefore cannot select another deployment's config.
+    $sibling = dirname(__DIR__) . '/' . basename(__DIR__) . '.runtime.php';
+    $path = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: (is_file($sibling) ? $sibling : dirname(__DIR__) . '/buyniverse-runtime.php');
     if (!is_file($path) || !is_readable($path)) return [];
     $config = require $path;
     return is_array($config) ? $config : [];
@@ -196,7 +238,7 @@ if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
 if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config();
-    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true]);
+    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true, 'demoAvailable'=>workspace_demo_entry($config) !== null]);
 }
 if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');

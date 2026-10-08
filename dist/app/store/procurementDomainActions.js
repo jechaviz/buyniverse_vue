@@ -65,7 +65,8 @@
           userId, title: "Auction extended", text: "A valid late offer extended this live round by 60 seconds.", link, icon: "fa-clock-rotate-left",
         }));
       }
-      window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "bid_activity", { extended });
+      // With a ledger room the server already dispatched this signal when it accepted the bid.
+      if (input.publish !== false) window.BuyniverseAuctionRealtime?.publish?.(auction.realtimeRoomRef || auction.id, "bid_activity", { extended });
       return signal;
     };
 
@@ -80,6 +81,9 @@
         auctionRef: auction.realtimeRoomRef,
         participantPrincipalIds,
         closesAt: auction.closingAt || auction.endAt,
+        startAmount: auction.currentBid, minStep: Math.max(1, Number(auction.minStep) || 1), floor: auction.floor,
+        currency: auction.currency, autoExtend: auction.autoExtend !== false,
+        antiSnipingSeconds: auction.antiSnipingSeconds, maxExtensions: auction.maxExtensions,
       }).then((room) => {
         if (!room) return;
         auction.realtimeChannel = "server";
@@ -90,6 +94,36 @@
         // provisioned by the organizer.
         auction.realtimeChannel = "browser";
       });
+    };
+
+    // The server ledger is the only shared truth about a live auction. Whatever
+    // it reports replaces the local copy of price, clock, status and bids.
+    const LEDGER_STATUS = { running: "Running", paused: "Paused", closed: "Closed" };
+    const supplierOfPrincipal = (principalId) => state.users.find((user) => user.id === principalId)?.supplierProfileId || null;
+    const applyLedger = (auction, ledger, bids) => {
+      if (!auction || !ledger) return;
+      const best = Number(ledger.bestAmount);
+      if (Number.isFinite(best)) auction.currentBid = best;
+      if (LEDGER_STATUS[ledger.status] && auction.status !== "Awarded" && auction.status !== "Cancelled") auction.status = LEDGER_STATUS[ledger.status];
+      if (ledger.closesAt) { auction.closingAt = ledger.closesAt; auction.endAt = ledger.closesAt; }
+      if (Number.isFinite(Number(ledger.extensionCount))) auction.extensionCount = Number(ledger.extensionCount);
+      auction.realtimeChannel = "server";
+      auction.realtimeRoomReady = true;
+      if (!Array.isArray(bids)) return;
+      let previous = Number(ledger.startAmount) || null;
+      auction.bids = bids.map((bid) => {
+        const amount = Number(bid.amount);
+        const record = { id: `ledger-${bid.id}`, supplierId: supplierOfPrincipal(bid.bidderId), amount, at: bid.at, delta: previous === null ? 0 : amount - previous, source: "Server ledger" };
+        previous = amount;
+        return record;
+      });
+      (auction.participants || []).forEach((participant) => {
+        const own = auction.bids.filter((bid) => bid.supplierId === participant.supplierId);
+        participant.bidCount = own.length;
+        if (own.length) participant.lastBid = own[own.length - 1].amount;
+      });
+      const last = auction.bids[auction.bids.length - 1];
+      if (last?.supplierId) auction.leadingSupplierId = last.supplierId;
     };
 
     return {
@@ -299,6 +333,54 @@
         return auction;
       },
 
+      // Reads the server ledger into the local copy. Resolves false when the
+      // viewer has no live room (demo, or an auction that never opened one).
+      async syncLiveAuction(auctionRef) {
+        const auction = typeof auctionRef === "string" ? this.auction(auctionRef) : auctionRef;
+        const realtime = window.BuyniverseAuctionRealtime;
+        if (!auction || this.isDemo?.value || !realtime?.state) return false;
+        const room = auction.realtimeRoomRef || auction.id;
+        try {
+          const ledger = await realtime.state(room);
+          const bids = (await realtime.bids(room)).bids;
+          applyLedger(auction, ledger, bids);
+          if (ledger.role !== "organizer" && ledger.leading) {
+            const own = this.currentSupplierId?.value;
+            if (own) auction.leadingSupplierId = own;
+          }
+          return true;
+        } catch (_) {
+          return false;
+        }
+      },
+
+      async placeLedgerBid(auction, supplierId, amount) {
+        const room = auction.realtimeRoomRef || auction.id;
+        const participant = (auction.participants || []).find((item) => item.supplierId === supplierId);
+        if (!participant || participant.disqualified) { this.notice("Bid submission denied", "fa-shield-halved"); return null; }
+        try {
+          const result = await window.BuyniverseAuctionRealtime.placeBid(room, amount);
+          const bid = { id: `ledger-${result.bidId}`, supplierId, amount: Number(result.amount), at: new Date().toISOString(), delta: Number(result.amount) - Number(auction.currentBid), source: "Server ledger" };
+          applyLedger(auction, result);
+          if (!Array.isArray(auction.bids)) auction.bids = [];
+          if (!auction.bids.some((item) => item.id === bid.id)) auction.bids.push(bid);
+          participant.bidCount = (Number(participant.bidCount) || 0) + (result.duplicate ? 0 : 1);
+          participant.lastBid = bid.amount;
+          auction.leadingSupplierId = supplierId;
+          window.ProcurementCommon.audit(auction, this.currentUser.value.name, "Bid accepted", String(bid.amount), "success");
+          const audit = auction.audit?.[0];
+          if (audit) state.procurementAudit.unshift({ ...audit, objectId: auction.id });
+          if (result.extended) this.procurementEvent(auction, "Anti-sniping extension", "+60 seconds after valid offer", "info");
+          emitAuctionSignal(this, auction, this.sourcingEvent(auction.eventId), { supplierId, extended: result.extended === true, publish: false });
+          this.notice("Bid accepted", "fa-gavel");
+          return bid;
+        } catch (error) {
+          this.notice(error?.body?.error || error?.message || "Bid submission denied", "fa-triangle-exclamation");
+          if (error?.status === 409 || error?.status === 422) void this.syncLiveAuction(auction);
+          return null;
+        }
+      },
+
       placeLiveAuctionBid(auctionRef, amount) {
         const auction = typeof auctionRef === "string" ? this.auction(auctionRef) : auctionRef;
         const supplierId = this.currentSupplierId?.value;
@@ -306,6 +388,8 @@
           this.notice("Bid submission denied", "fa-shield-halved");
           return null;
         }
+        // Outside the demo the server decides; the browser only relays and mirrors the verdict.
+        if (!this.isDemo?.value && window.BuyniverseAuctionRealtime?.placeBid) return this.placeLedgerBid(auction, supplierId, amount);
         const result = window.ProcurementCommon.placeReverseBid(auction, supplierId, amount, this.currentUser.value.name);
         if (!result.ok) {
           this.notice(result.reason || "Bid submission denied", "fa-triangle-exclamation");

@@ -117,9 +117,9 @@ const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=7");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=10");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=7");
-const BnNavbar = load("./app/experience/BnNavbar.vue?v=8");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=9");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=10");
+const AuthModal = load("./app/components/AuthModal.vue?v=11");
 
 export default {
   components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },
@@ -174,12 +174,7 @@ export default {
       authMode.value = mode;
       authOpen.value = true;
     };
-    const launchDemo = () => {
-      const root = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
-      const target = (route.query && route.query.returnTo) ? String(route.query.returnTo) : "/dashboard";
-      const hash = target.startsWith("/") ? `#${target}` : `#/${target}`;
-      window.location.assign(`${root}?demo=1${hash}`);
-    };
+    const launchDemo = () => store.enterDemo();
     watch(() => route.query.auth, (requested) => {
       if (!["login", "register"].includes(requested)) return;
       authMode.value = requested;

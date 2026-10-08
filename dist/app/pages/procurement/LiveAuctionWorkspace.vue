@@ -463,13 +463,29 @@ export default {
       store.procurementEvent(auction.value, p.disqualified ? "Supplier disqualified" : "Supplier reinstated", p.name);
     };
 
-    const placeBid = () => {
+    const placeBid = async () => {
       bidError.value = "";
       if (!auction.value || auction.value.status !== 'Running') return;
-      const bid = store.placeLiveAuctionBid(auction.value, Number(bidAmount.value));
+      // Outside the demo this resolves after the server ledger accepted or refused the offer.
+      const bid = await store.placeLiveAuctionBid(auction.value, Number(bidAmount.value));
       if (!bid) { bidError.value = "This offer is outside the permitted blind-bid range. Submit a lower valid amount."; return; }
       bidAmount.value = Math.max(auction.value.floor, bid.amount - auction.value.minStep);
     };
+
+    // Outside the demo, mirror the server ledger: once now, on every live
+    // signal for this room, and on a slow heartbeat so a missed signal heals.
+    let stopLedger = null;
+    const followLedger = (current) => {
+      if (stopLedger) { stopLedger(); stopLedger = null; }
+      if (!current || store.isDemo.value || !window.BuyniverseAuctionRealtime?.subscribe) return;
+      let alive = true;
+      const refresh = () => { if (alive && document.visibilityState !== "hidden") void store.syncLiveAuction(current); };
+      refresh();
+      const unsubscribe = window.BuyniverseAuctionRealtime.subscribe(current.realtimeRoomRef || current.id, refresh);
+      const beat = setInterval(refresh, 8000);
+      stopLedger = () => { alive = false; unsubscribe(); clearInterval(beat); };
+    };
+    watch(() => auction.value?.id, () => followLedger(auction.value), { immediate: true });
 
     const improveOffer = () => {
       if (!auction.value || auction.value.status !== "Running") return;
@@ -494,7 +510,7 @@ export default {
       }, 3000);
     });
 
-    onBeforeUnmount(() => { if (timer) clearInterval(timer); if (unsubscribeRealtime) unsubscribeRealtime(); });
+    onBeforeUnmount(() => { if (timer) clearInterval(timer); if (unsubscribeRealtime) unsubscribeRealtime(); if (stopLedger) stopLedger(); });
 
     return {
       store, router, auction, commercial, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,

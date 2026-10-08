@@ -54,14 +54,14 @@
       </footer>
       <p class="np__alt">{{ store.t("Need milestones and escrow for a service project?") }} <RouterLink to="/post-job/new">{{ store.t("Post a project") }}</RouterLink></p>
     </form>
-    <NeedLaunch :open="launch.open" :color="category.color" :focus="catIndex" :lines="launch.lines" @done="goTo" />
+    <NeedLaunch :open="launch.open" :color="category.color" :focus="catIndex" :lines="launch.lines" :suppliers="launch.suppliers" @done="goTo" />
   </section>
 </template>
 
 <script>
 const { inject, reactive, ref, computed, watch, onBeforeUnmount } = Vue;
 const { useRoute, useRouter } = VueRouter;
-const NeedLaunch = Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule("./app/components/NeedLaunch.vue?v=2", window.sfcOptions));
+const NeedLaunch = Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule("./app/components/NeedLaunch.vue?v=3", window.sfcOptions));
 
 export default {
   components: { NeedLaunch },
@@ -79,7 +79,7 @@ export default {
     watch(category, (c) => { store.ui.ambient = c.color; }, { immediate: true });
     onBeforeUnmount(() => { store.ui.ambient = ""; });
     // Publishing is a short, honest moment: the mark orbits, the suppliers are named, then you land where the offers arrive.
-    const launch = reactive({ open: false, lines: [], target: null });
+    const launch = reactive({ open: false, lines: [], suppliers: [], target: null });
     const catIndex = computed(() => cats.findIndex((c) => c.key === form.category));
     const reduced = Boolean(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const goTo = () => { const target = launch.target; launch.open = false; if (target) router.push(target); };
@@ -90,6 +90,7 @@ export default {
       busy.value = false;
       if (!result) return;
       const created = `${store.t("Need created")} · ${result.request.id}`;
+      launch.suppliers = (result.event?.invitedSupplierIds || []).map((id) => ({ id })).slice(0, 4);
       if (result.pending) {
         launch.target = `/procurement/queue?request=${result.request.id}`;
         launch.lines = [created, store.t("Sent to your approver"), store.t("Offers start when it is approved")];

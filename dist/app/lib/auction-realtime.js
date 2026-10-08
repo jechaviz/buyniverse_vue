@@ -80,6 +80,7 @@
         if (!response.ok) {
           var error = new Error(body.error || "Live auction channel unavailable.");
           error.status = response.status;
+          error.body = body;
           throw error;
         }
         return body;
@@ -184,12 +185,48 @@
       var headers = { Accept: "application/json", "Content-Type": "application/json", "X-Buyniverse-Request": "auction-realtime-v1", "X-Buyniverse-CSRF": csrf() };
       return request("/rooms", {
         method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers: headers,
-        body: JSON.stringify({ auctionRef: auctionRef, participantPrincipalIds: ids, closesAt: text(input && input.closesAt, 40) }),
+        body: JSON.stringify({
+          auctionRef: auctionRef, participantPrincipalIds: ids, closesAt: text(input && input.closesAt, 40),
+          startAmount: money(input && input.startAmount), minStep: money(input && input.minStep), floor: money(input && input.floor),
+          currency: text(input && input.currency, 3), autoExtend: !(input && input.autoExtend === false),
+          antiSnipingSeconds: Number(input && input.antiSnipingSeconds) || 60, maxExtensions: Number(input && input.maxExtensions) || 0,
+        }),
       });
     }).then(rememberCsrf);
   }
 
+  // Amounts travel as decimal strings; the server keeps integer cents.
+  function money(value) {
+    var amount = Number(value);
+    return Number.isFinite(amount) && amount >= 0 ? amount.toFixed(2) : "";
+  }
+  function roomPath(roomInput, resource) {
+    var room = roomRef(roomInput);
+    return room ? "/rooms/" + encodeURIComponent(room) + "/" + resource : "";
+  }
+  function writeHeaders() {
+    return { Accept: "application/json", "Content-Type": "application/json", "X-Buyniverse-Request": "auction-realtime-v1", "X-Buyniverse-CSRF": csrf() };
+  }
+  // The ledger is authoritative: a bid exists only once the server accepts it.
+  function placeBid(roomInput, amount) {
+    var path = roomPath(roomInput, "bids");
+    var cents = money(amount);
+    if (!path || !cents) return Promise.reject(new Error("A valid amount is required."));
+    var bidKey = "bid-" + Array.from(global.crypto.getRandomValues(new Uint8Array(10)), function (byte) { return byte.toString(16).padStart(2, "0"); }).join("");
+    return ensureCsrf().then(function () {
+      return request(path, { method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers: writeHeaders(), body: JSON.stringify({ amount: cents, bidKey: bidKey }) });
+    }).then(rememberCsrf);
+  }
+  function read(roomInput, resource) {
+    var path = roomPath(roomInput, resource);
+    if (!path) return Promise.reject(new Error("Unknown live room."));
+    return request(path, { method: "GET", credentials: "same-origin", cache: "no-store", redirect: "error", headers: { Accept: "application/json" } }).then(rememberCsrf);
+  }
+
   global.BuyniverseAuctionRealtime = {
+    placeBid: placeBid,
+    state: function (room) { return read(room, "state"); },
+    bids: function (room) { return read(room, "bids"); },
     subscribe: subscribe,
     publish: publish,
     createRoom: createRoom,

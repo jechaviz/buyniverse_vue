@@ -2,6 +2,7 @@
   "use strict";
   // Strings of the "Necesito" experience. Keys already translated elsewhere are not repeated here.
   var dict = {
+    "The logo in motion: the dot is your need, the ring is the market, and the offers fall toward it. The closer to the dot, the better the price.": "El logo en movimiento: el punto es tu necesidad, el aro es el mercado y las ofertas caen hacia él. Mientras más cerca del punto, mejor el precio.",
     "Collapse menu": "Colapsar menú", "Main navigation": "Navegación principal", "Close navigation": "Cerrar navegación", "Publish a need": "Publicar una necesidad",
     "Publishing your need": "Publicando tu necesidad", "Need created": "Necesidad creada", "Inviting suppliers": "Invitando a proveedores",
     "Sent to your approver": "Enviada a tu aprobador", "Offers start when it is approved": "Las ofertas empiezan al aprobarla", "Click to continue": "Haz clic para continuar",
