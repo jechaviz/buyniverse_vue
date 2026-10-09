@@ -44,7 +44,7 @@ Options -Indexes -MultiViews
   # Mutable tenancy and encrypted-workspace routes are routed through the
   # server boundary. It validates method, same-origin CSRF, membership scope,
   # payload limits and audit records before the database is reached.
-  RewriteCond %{REQUEST_URI} ^(?:/buyniverse_vue)?/(?:api/v1/(?:runtime|auth|workspace-state|tenant-context|tenant-companies|onboarding|support|cfdi|auction-realtime)|demo)(?:/|$) [NC]
+  RewriteCond %{REQUEST_URI} ^(?:/buyniverse_vue)?/(?:api/v1/(?:runtime|auth|workspace-state|tenant-context|tenant-companies|onboarding|setup|support|cfdi|auction-realtime)|demo)(?:/|$) [NC]
   RewriteRule ^ index.php [L,QSA]
 
   # The demo fixture is decided by the server (404 outside a demo host), so it

@@ -21,6 +21,14 @@
             <p class="bn-ob__lead">{{ t(phaseLead) }}</p>
           </div>
 
+          <div v-if="phase === 'form' && invitations.length" class="bn-ob__body">
+            <div class="bn-ob__alert bn-ob__alert--info" role="status"><i class="fa-solid fa-envelope-open-text"></i>
+              <div><b>{{ t("You have been invited") }}</b>{{ t("Join an existing company instead of creating a new workspace.") }}
+                <ul class="bn-setup__list" style="margin-top: 10px">
+                  <li v-for="item in invitations" :key="item.id"><div><b>{{ item.company || item.workspace }}</b><br /><small>{{ t(roleLabel(item.role)) }}</small></div>
+                    <button type="button" class="bn-btn bn-btn--primary bn-btn--sm" :disabled="busy" @click="acceptInvitation(item)">{{ t("Accept and join") }}</button></li>
+                </ul></div></div>
+          </div>
           <template v-if="phase === 'form'">
             <nav class="bn-ob__steps" :aria-label="t('Steps')">
               <button v-for="item in steps" :key="item.id" type="button" :aria-current="step === item.id ? 'step' : null" :class="{ 'is-done': step > item.id }" @click="goTo(item.id)"><span>{{ step > item.id ? "✓" : item.id }}</span>{{ t(item.label) }}</button>
@@ -83,7 +91,7 @@
           <div v-else-if="phase === 'documents'" class="bn-ob__body">
             <div v-if="pacPending" class="bn-ob__alert bn-ob__alert--info"><i class="fa-solid fa-hourglass-half"></i><div><b>{{ t("CSD protected") }}</b>{{ t("Stamping activates as soon as the PAC confirms your certificate.") }}</div></div>
             <BnRequirementList :registry="registry" :country-code="complianceCountry" :evaluation="compliance" :uploads="true" :company-id="companyId" @updated="onCompliance" />
-            <div class="bn-ob__foot" style="padding: 0; border: 0"><span></span><RouterLink to="/dashboard" class="bn-btn bn-btn--primary">{{ t(supplierStatus === "formal" ? "Go to my workspace" : "Continue and finish later") }}<i class="fa-solid fa-arrow-right"></i></RouterLink></div>
+            <div class="bn-ob__foot" style="padding: 0; border: 0"><span></span><RouterLink to="/setup" class="bn-btn bn-btn--primary">{{ t(supplierStatus === "formal" ? "Set up my company" : "Continue and finish later") }}<i class="fa-solid fa-arrow-right"></i></RouterLink></div>
           </div>
         </section>
 
@@ -123,6 +131,17 @@ export default {
     const registry = ref({ countries: [], messages: {} });
     const identityName = ref(""), companyId = ref(""), compliance = ref(null), complianceCountry = ref(""), supplierStatus = ref(null), pacPending = ref(false);
     const csd = reactive({ certificate: null, privateKey: null, password: "" });
+    const invitations = ref([]);
+    const ROLE_NAMES = { admin: "Administrator", buyer: "Buyer", approver: "Approver", warehouse: "Warehouse", auditor: "Auditor", viewer: "View only", supplier: "Supplier" };
+    const roleLabel = (role) => ROLE_NAMES[role] || role;
+    const acceptInvitation = async (item) => {
+      busy.value = true; serverError.value = "";
+      try {
+        await window.BuyniverseSetup.acceptInvitation(item.id);
+        // A full load rehydrates the workspace of the company just joined.
+        window.location.assign(window.BuyniverseBase.root + "dashboard");
+      } catch (cause) { serverError.value = t((cause && cause.body && cause.body.error) || (cause && cause.message) || "The invitation could not be accepted."); busy.value = false; }
+    };
     const form = reactive({
       accountKind: "business", marketplaceRoles: ["buyer"], workspaceName: "", countryCode: "", residenceCountry: "", subdivision: "", county: "",
       legalName: "", taxIdentifier: "", taxRegime: "", billingEmail: "", neighborhood: "",
@@ -182,10 +201,10 @@ export default {
     };
     const openCompliance = async () => {
       const result = await window.BuyniverseOnboarding.loadCompliance().catch(() => null);
-      if (!result || !result.evaluation) { router.replace("/dashboard"); return; }
+      if (!result || !result.evaluation) { router.replace("/setup"); return; }
       compliance.value = result.evaluation; complianceCountry.value = result.evaluation.country; supplierStatus.value = result.status; phase.value = "documents";
     };
-    const afterCsd = () => (isSupplier.value || supplierStatus.value ? openCompliance() : router.replace("/dashboard"));
+    const afterCsd = () => (isSupplier.value || supplierStatus.value ? openCompliance() : router.replace("/setup"));
     const submit = async () => {
       busy.value = true; serverError.value = ""; serverFailures.value = [];
       try {
@@ -194,7 +213,7 @@ export default {
         store.notice(t("Workspace created securely."), "fa-circle-check");
         if (result.needsFiscalCredentials) phase.value = "csd";
         else if (result.supplierStatus) await openCompliance();
-        else router.replace("/dashboard");
+        else router.replace("/setup");
       } catch (cause) {
         const body = cause && cause.body || {};
         serverFailures.value = Array.isArray(body.requirements) ? body.requirements : [];
@@ -223,7 +242,10 @@ export default {
         identityName.value = status.identity && status.identity.displayName || t("Verified identity");
         if (!form.workspaceName) form.workspaceName = identityName.value;
         companyId.value = status.companyId || ""; supplierStatus.value = status.supplierStatus || null; pacPending.value = !!status.pacPending;
-        if (!status.complete) { phase.value = "form"; return; }
+        if (!status.complete) {
+          invitations.value = await window.BuyniverseSetup.invitations().then((result) => result.invitations || []).catch(() => []);
+          phase.value = "form"; return;
+        }
         if (status.needsFiscalCredentials) { phase.value = "csd"; return; }
         if (status.supplierStatus && status.supplierStatus !== "formal") { await openCompliance(); return; }
         router.replace(route.query.returnTo ? String(route.query.returnTo) : "/dashboard");
@@ -235,7 +257,7 @@ export default {
 
     return { t, phase, step, steps, busy, error, serverError, serverFailures, registry, identityName, companyId, compliance, complianceCountry, supplierStatus, pacPending,
       csd, form, hasRole, toggleRole, isSupplier, needsFiscal, countryName, buyniverseIssuance, liveEvaluation, phaseEyebrow, phaseTitle, phaseLead,
-      goTo, next, submit, uploadCsd, afterCsd, onCompliance, showSide };
+      goTo, next, submit, uploadCsd, afterCsd, onCompliance, showSide, invitations, roleLabel, acceptInvitation };
   },
 };
 </script>

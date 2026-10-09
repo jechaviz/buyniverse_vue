@@ -36,8 +36,9 @@
     const Directory = load("./app/pages/DirectoryPage.vue?v=41");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=3");
     const Procurement = load("./app/pages/ProcurementPage.vue?v=42");
-    const Onboarding = load("./app/pages/OnboardingPage.vue?v=4");
+    const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
+    const Setup = load("./app/pages/SetupPage.vue?v=2");
 
     const NotFound = {
       template:
@@ -48,6 +49,7 @@
     const routes = [
       r("/", Home, { experience: true }),
       r("/onboarding", Onboarding, { onboarding: true }),
+      r("/setup", Setup, { onboarding: true, setup: true }),
       r("/marketplace", SupplierMarket, { experience: true }),
       r("/marketplace/supplier/:supplierId", SupplierProfile, { experience: true }),
       r("/soporte", Support, { experience: true }),

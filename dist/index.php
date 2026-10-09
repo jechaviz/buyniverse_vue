@@ -211,6 +211,7 @@ require_once __DIR__ . '/cfdi/Csd.php';
 require_once __DIR__ . '/cfdi/CfdiConfig.php';
 require_once __DIR__ . '/supplier_compliance.php';
 require_once __DIR__ . '/onboarding_service.php';
+require_once __DIR__ . '/setup_service.php';
 require_once __DIR__ . '/support_service.php';
 require_once __DIR__ . '/cfdi_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
@@ -235,7 +236,8 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
     catch (Throwable $error) { if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack(); social_redirect(social_base_path() . '/#/?login_error=identity'); }
 }
 
-if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
+if ($uri === '/api/v1/setup' || str_starts_with($uri, '/api/v1/setup/')) handle_setup($uri);
+if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials(?:/verify)?|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
 if (preg_match('#^/api/v1/support/(?:status|assistant|tickets)$#', $uri) === 1) handle_support($uri);
 if (str_starts_with($uri, '/api/v1/cfdi/')) handle_cfdi($uri);
 

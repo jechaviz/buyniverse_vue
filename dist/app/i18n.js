@@ -11,6 +11,7 @@
   if (global.__buyniverseI18n_experience) dicts.push(global.__buyniverseI18n_experience);
   if (global.__buyniverseI18n_access) dicts.push(global.__buyniverseI18n_access);
   if (global.__buyniverseI18n_need) dicts.push(global.__buyniverseI18n_need);
+  if (global.__buyniverseI18n_setup) dicts.push(global.__buyniverseI18n_setup);
 
   if (typeof globalThis !== "undefined") {
     if (globalThis.__buyniverseI18n_core) dicts.push(globalThis.__buyniverseI18n_core);
@@ -22,6 +23,7 @@
     if (globalThis.__buyniverseI18n_experience) dicts.push(globalThis.__buyniverseI18n_experience);
     if (globalThis.__buyniverseI18n_access) dicts.push(globalThis.__buyniverseI18n_access);
     if (globalThis.__buyniverseI18n_need) dicts.push(globalThis.__buyniverseI18n_need);
+    if (globalThis.__buyniverseI18n_setup) dicts.push(globalThis.__buyniverseI18n_setup);
   }
 
   if (dicts.length === 0) {
@@ -47,6 +49,7 @@
           if (subScope.__buyniverseI18n_experience) dicts.push(subScope.__buyniverseI18n_experience);
           if (subScope.__buyniverseI18n_access) dicts.push(subScope.__buyniverseI18n_access);
           if (subScope.__buyniverseI18n_need) dicts.push(subScope.__buyniverseI18n_need);
+          if (subScope.__buyniverseI18n_setup) dicts.push(subScope.__buyniverseI18n_setup);
           if (subScope.__buyniverseI18n_procurement) dicts.push(subScope.__buyniverseI18n_procurement);
         }
       }
