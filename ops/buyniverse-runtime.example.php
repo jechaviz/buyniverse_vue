@@ -12,10 +12,21 @@ return [
     'app_mode' => 'production', // Set to 'demo' only on an isolated demo host.
     'demo_hosts' => ['demo.buyniverse.com', 'localhost', '127.0.0.1', '::1'],
     'allow_demo_workspace_state' => false,
-    // Production never contains the demo. Publish it on its own host (listed in
-    // demo_hosts, running with app_mode 'demo') and point /demo at it. Leave
-    // demo_url empty to have /demo answer 404 on this production host.
-    'demo_url' => '', // e.g. 'https://demo.buyniverse.com/'
+    // The public demo is the /demo/ path of this host: client-side sample data,
+    // no API, no session, no database. Set to false to make /demo answer 404.
+    'demo_enabled' => true,
+
+    // CFDI stamping through SW (the same PAC and tokens besttorni uses). One
+    // token per environment; 'environment' picks which one is live. Put the
+    // real values only in the 0600 runtime file, never in the repository.
+    'cfdi' => [
+        'provider' => 'sw',
+        'environment' => 'test', // 'production' once the invoicing go-live is approved
+        'sw' => [
+            'environment' => 'test',
+            'tokens' => ['test' => '', 'production' => ''], // e.g. getenv('BUYNIVERSE_SW_TOKEN_TEST') ?: ''
+        ],
+    ],
 
     // Transactional email is queued encrypted in MySQL and sent only by the
     // CLI worker. Keep disabled until the sending domain is verified and the

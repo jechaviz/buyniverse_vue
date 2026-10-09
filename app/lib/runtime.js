@@ -1,16 +1,15 @@
 (function (global) {
   "use strict";
 
-  // Demo is an explicit runtime mode. A missing endpoint must never turn a
-  // public deployment into a demo; only local previews can fall back to it.
-  var basePath = global.location.pathname.startsWith("/buyniverse_vue/") ? "/buyniverse_vue" : "";
+  // Production and demo are separate: the demo is the /demo/ path of the same
+  // host, served by the server with no API, no session and no database, and it
+  // runs only from the sanitized client fixture. Anywhere else a networked host
+  // takes its mode from the server and fails closed into production; a query
+  // string can never turn it into a demo. Local previews may fall back to demo.
+  var base = global.BuyniverseBase;
   var localHost = /^(?:localhost|127\.0\.0\.1|\[::1\]|::1)$/i.test(global.location.hostname || "");
-  // Production and demo are separate deployments. A networked host takes its
-  // mode only from the server, which decides by host; a URL hint can never turn
-  // a production site into a demo. The demo is entered through /demo, which the
-  // server forwards to the operator's demo host (or refuses).
-  var fallbackMode = global.location.protocol === "file:" || localHost ? "demo" : "production";
-  var runtime = { mode: fallbackMode, endpoint: basePath + "/api/v1/runtime", demoEntry: basePath + "/demo", demoAvailable: false };
+  var fallbackMode = base.demo || global.location.protocol === "file:" || localHost ? "demo" : "production";
+  var runtime = { mode: fallbackMode, endpoint: base.sub + "/api/v1/runtime", demoEntry: base.sub + "/demo/", demoAvailable: false, inDemo: base.demo };
 
   // The sample data exists only in a demo: it is fetched on demand after the
   // server confirmed the mode, and a production host refuses to serve it.
@@ -26,6 +25,11 @@
   }
 
   runtime.load = function () {
+    if (base.demo) {
+      // Under /demo/ there is nothing to ask the server: no API exists there.
+      runtime.mode = "demo";
+      return loadFixture({ mode: "demo", serverAuth: false, demoAvailable: false });
+    }
     return fetch(runtime.endpoint, {
       credentials: "same-origin",
       cache: "no-store",

@@ -35,14 +35,18 @@ Bun.serve({
       await Bun.write(target, bytes);
       return Response.json({ ok: true, bytes: bytes.length });
     }
-    if (url.pathname === "/demo" || url.pathname === "/demo/") return production ? new Response("not found", { status: 404 }) : new Response(null, { status: 303, headers: { location: "/#/dashboard" } });
-    if (production && url.pathname === "/api/v1/runtime") return Response.json({ mode: "production", serverAuth: true, demoAvailable: false });
+    // Like the real server: /demo/ is the same app with no API at all.
+    if (url.pathname === "/demo") return new Response(null, { status: 301, headers: { location: "/demo/" } });
+    const inDemo = url.pathname.startsWith("/demo/");
+    const pathname = inDemo ? url.pathname.slice(5) : url.pathname;
+    if (inDemo && (pathname === "/api" || pathname.startsWith("/api/"))) return new Response("The demo has no server", { status: 404 });
+    if (production && url.pathname === "/api/v1/runtime") return Response.json({ mode: "production", serverAuth: true, demoAvailable: true });
     if (production && url.pathname === "/api/v1/auth/providers") return Response.json({ providers: providers.filter((id) => providerNames[id]).map((id) => ({ id, name: providerNames[id], audience: "individual" })) });
     if (production && url.pathname === "/api/v1/workspace-state") return Response.json({ authenticated: false, state: null, version: 0, csrf: "0".repeat(64), mode: "production", context: null });
     // No PHP here: the API is absent, exactly like a static host. The app
     // then falls back to its demo runtime instead of parsing HTML as JSON.
-    if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return Response.json({ error: "No backend in the dev server" }, { status: 404 });
-    let p = decodeURIComponent(url.pathname);
+    if (pathname === "/api" || pathname.startsWith("/api/")) return Response.json({ error: "No backend in the dev server" }, { status: 404 });
+    let p = decodeURIComponent(pathname);
     if (p.endsWith("/")) p += "index.html";
     const file = Bun.file(path.join(root, p));
     if (!(await file.exists())) {

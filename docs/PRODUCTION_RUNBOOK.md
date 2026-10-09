@@ -25,11 +25,11 @@ Deployments are executed from ops/Deploy-Buyniverse.ps1:
 
 The deployment script atomically stages dist/ outside document root, tests index and asset validity, swaps the active files without dropping .git, and runs automated HTTP health verification.
 
-### 4.1 Production and demo are separate deployments
-- Production has no demo: no `?demo=1`, no sample data (`app/data/demo.js` answers 404) and no workspace without a federated identity.
-- The demo runs from its own docroot (`~/demo.buyniverse.com`) with its own configuration file beside it, `~/demo.buyniverse.com.runtime.php` (template: `ops/buyniverse-demo-runtime.example.php`). It has no database, no encryption key and no provider secrets. The file is chosen by where the code lives, never by the request `Host`.
-- `Deploy-Buyniverse.ps1` publishes both docroots. Production reaches the demo only through `GET /demo`, which redirects to `demo_url` (set in `buyniverse-runtime.php`, and it must be listed in `demo_hosts`); without `demo_url` it answers 404 and the "Explore demo" buttons disappear (`/api/v1/runtime` reports `demoAvailable`).
-- Prerequisite outside this repo: the `demo.buyniverse.com` subdomain (DNS + document root `~/demo.buyniverse.com`) must exist in the hosting panel.
+### 4.1 Production and demo
+- Production has no workspace without a federated identity and no `?demo=1`.
+- The demo is the `/demo/` path of the same host (no subdomain). The server serves it without any API (`/demo/api/...` is 404), session or database; it runs only from the sanitized client fixture (`app/data/demo.js`, which is refused outside `/demo/`), is `noindex` and is disallowed in `robots.txt`.
+- The client refuses every same-origin `/api/` call while under `/demo/`, so the shared cookies of the real product can never reach the real API from the demo.
+- `'demo_enabled' => false` in `buyniverse-runtime.php` turns it off: `/demo/` answers 404 and the "Explore demo" buttons disappear (`/api/v1/runtime` reports `demoAvailable`).
 
 ### 4.2 Live-auction bid ledger
 `ops/migrations/20261008_auction_bid_ledger.sql` adds `auction_live_terms` and the immutable `auction_live_bids`. The release gate refuses to publish until both tables exist, so apply it first:

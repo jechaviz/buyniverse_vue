@@ -22,6 +22,7 @@ Allow: /assets/
 
 # Disallow authenticated/internal/private action states
 Disallow: /admin/
+Disallow: /demo/
 Disallow: /invoices/new
 Disallow: /payments/new
 Disallow: /*?new=*

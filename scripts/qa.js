@@ -39,8 +39,8 @@ if (!index.includes('src="app/boot.js') || !fs.existsSync(path.join(root, "app",
   throw new Error("Missing synchronous visual-preference bootstrap");
 if (!index.includes('src="app/lib/runtime.js') || !fs.existsSync(path.join(root, "app", "lib", "runtime.js")))
   throw new Error("Missing explicit demo/production runtime policy adapter");
-const dynamicBase = '(function(d,l){var a="/buyniverse_vue/",p=l.pathname,r=p.indexOf(a)>-1?a:"/";d.write(\'<base href="\'+r+\'">\')})(document,location);';
-if (!index.includes(dynamicBase) || !index.includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read(".htaccess").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='") || !read("serve.py").includes("'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='"))
+const dynamicBase = '(function(d,l){var a=["/buyniverse_vue/demo/","/buyniverse_vue/","/demo/"],p=l.pathname,r="/",i;for(i=0;i<a.length;i++)if(p.indexOf(a[i])>-1){r=a[i];break}d.write(\'<base href="\'+r+\'">\')})(document,location);';
+if (!index.includes(dynamicBase) || !index.includes("'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE='") || !read(".htaccess").includes("'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE='") || !read("serve.py").includes("'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE='"))
   throw new Error("Dynamic base bootstrap must stay hash-authorized by every CSP policy");
 if (!criticalCss.includes('data-app-ready="false"') || !criticalCss.includes("#app-boot") || !criticalCss.includes("#app-boot[hidden] { display: none !important; }"))
   throw new Error("Missing anti-FOUC boot layer");
@@ -54,12 +54,14 @@ if (
 // Production must have no URL-driven demo door and no workspace without identity.
 if (/get\(["']demo["']\)|\?demo=1/.test(read("app/lib/runtime.js") + read("app/App.vue") + read("app/components/AuthModal.vue") + read("app/main.js")))
   throw new Error("A client-side ?demo=1 switch must not exist: demo is entered only through /demo");
-if (!/hash_equals\(strtolower\(trim\(\$candidate\)\), \$host\)/.test(read("index.php")))
-  throw new Error("The /demo forward must be restricted to the operator's demo_hosts allowlist");
 for (const [file, token] of [
-  ["app/lib/runtime.js", "a URL hint can never turn"],
+  ["app/lib/runtime.js", "Under /demo/ there is nothing to ask the server"],
   ["app/lib/runtime.js", "demoEntry"],
-  ["index.php", "function workspace_demo_entry"],
+  ["index.php", "function workspace_demo_enabled"],
+  ["index.php", "The demo has no server"],
+  ["app/boot.js", "The demo has no server."],
+  ["app/boot.js", "BuyniverseBase"],
+  ["robots.txt", "Disallow: /demo/"],
   [".htaccess", "|demo)"],
   [".htaccess", "app/data/demo"],
   ["auction_service.php", "function auction_amount_cents"],

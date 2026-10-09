@@ -71,8 +71,15 @@ async function main() {
 
     // 0. Production and demo stay apart: no URL hint, no /demo door, no demo flag.
     let r = await fetch(base + "/api/v1/runtime?demo=1", { headers: { Accept: "application/json" } }).then((x) => x.json());
-    check("runtime ignores a client demo hint", r.mode === "production" && r.demoAvailable === false, JSON.stringify(r));
-    check("/demo is not served by a production host", (await fetch(base + "/demo", { redirect: "manual" })).status === 404);
+    check("runtime ignores a client demo hint", r.mode === "production" && r.demoAvailable === true, JSON.stringify(r));
+    check("/demo redirects to /demo/", (await fetch(base + "/demo", { redirect: "manual" })).status === 301);
+    check("/demo/ serves the app", (await fetch(base + "/demo/")).status === 200);
+    check("the demo has no API", (await fetch(base + "/demo/api/v1/runtime")).status === 404);
+    check("the demo cannot write", (await fetch(base + "/demo/", { method: "POST" })).status === 405);
+    check("the demo fixture is served inside /demo/", (await fetch(base + "/demo/app/data/demo.js")).status === 200);
+    check("the demo fixture is refused outside /demo/", (await fetch(base + "/app/data/demo.js")).status === 404);
+    check("the demo is not indexable", /noindex/.test((await fetch(base + "/demo/")).headers.get("x-robots-tag") || ""));
+    check("production is not marked noindex", !(await fetch(base + "/")).headers.get("x-robots-tag"));
 
     // 1. A Mexican supplier: exact SAT postal code, REPSE when applicable, rules on the server.
     const mx = identity("Kemper");

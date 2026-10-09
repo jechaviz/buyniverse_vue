@@ -79,7 +79,7 @@ function runSecurityAudit(root, read, vueFiles) {
   if (catalogIds.size < 40 || requiredMailTemplates.some((id) => !catalogIds.has(id)))
     throw new Error("Bilingual transactional mail catalog is incomplete");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");
-  for (const token of ["'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA='", "X-Permitted-Cross-Domain-Policies", "X-Download-Options", "Strict-Transport-Security"]) {
+  for (const token of ["'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE='", "X-Permitted-Cross-Domain-Policies", "X-Download-Options", "Strict-Transport-Security"]) {
     if (!phpShim.includes(token)) throw new Error(`PHP response hardening is missing ${token}`);
   }
   if (/db_schema\.sql|db_seed\.sql|buyniverse\.c|buyniverse\.v/.test(buildScript))
