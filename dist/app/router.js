@@ -95,11 +95,10 @@
 
     if (window.location.protocol !== "file:" && window.location.hash && window.location.hash.startsWith("#/")) {
       const cleanPath = window.location.hash.slice(1);
-      const basePrefix = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue" : "";
-      window.history.replaceState(null, "", basePrefix + cleanPath);
+      window.history.replaceState(null, "", window.BuyniverseBase.prefix + cleanPath);
     }
 
-    const routerBase = window.location.pathname.startsWith("/buyniverse_vue") ? "/buyniverse_vue/" : "/";
+    const routerBase = window.BuyniverseBase.root;
     const routerHistory = window.location.protocol === "file:" ? createWebHashHistory() : createWebHistory(routerBase);
 
     const router = createRouter({

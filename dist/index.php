@@ -21,9 +21,9 @@ function security_headers(): void {
     // Keep this byte-for-byte aligned with .htaccess and index.html. The hash
     // authorizes only the dynamic <base> bootstrap; no broad inline-script
     // exception is allowed.
-    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-Gq7EzIVYpfwoSm3b31s7d9byqHy/d58ikcNNLBXcyxA=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'");
-    // A demo is never an indexable site.
-    if (function_exists('workspace_mode') && workspace_mode(workspace_config()) === 'demo' && !in_array(workspace_request_host(), ['localhost', '127.0.0.1', '::1', '[::1]'], true)) header('X-Robots-Tag: noindex, nofollow, noarchive');
+    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'");
+    // The demo is never an indexable site.
+    if (!empty($GLOBALS['bn_demo'])) header('X-Robots-Tag: noindex, nofollow, noarchive');
     foreach ([
         'Strict-Transport-Security: max-age=63072000; includeSubDomains; preload',
         'X-Content-Type-Options: nosniff', 'X-Frame-Options: DENY', 'Referrer-Policy: no-referrer',
@@ -69,8 +69,21 @@ $action = (string) ($_GET['action'] ?? '');
 if (preg_match('#^/api/v1/(?:deploy|sync|admin/db)(?:/|$)#', $uri) || in_array($action, ['sync','deploy','seed','reset','status'], true))
     fail_response(404, 'Not found');
 
-// Sample data belongs to the demo deployment only.
-if (preg_match('#(?:^|/)app/data/demo\.js$#', $path) === 1 && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
+// The demo is the /demo/ path of this host. It is a read-only, client-side
+// experience over sanitized sample data: no API, no session, no database. The
+// operator can switch it off with 'demo_enabled' => false.
+function workspace_demo_enabled(array $config): bool { return ($config['demo_enabled'] ?? true) !== false; }
+$GLOBALS['bn_demo'] = false;
+if ($uri === '/demo') { security_headers(); http_response_code(301); header('Location: ' . $installBase . '/demo/'); exit; }
+if (str_starts_with($uri, '/demo/')) {
+    if (!workspace_demo_enabled(workspace_config())) fail_response(404, 'Not found');
+    if (!in_array(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET','HEAD'], true)) fail_response(405, 'Method not allowed');
+    $uri = substr($uri, 5); $path = substr($path, 5);
+    if ($uri === '/api' || str_starts_with($uri, '/api/')) fail_response(404, 'The demo has no server');
+    $GLOBALS['bn_demo'] = true;
+}
+// Sample data is served only inside the demo (or on a host the operator set to demo mode).
+if (preg_match('#(?:^|/)app/data/demo\.js$#', $path) === 1 && !$GLOBALS['bn_demo'] && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
 foreach ([__DIR__ . '/dist', __DIR__] as $root) {
     $file = static_file($root, $path);
     if ($file === null) continue;
@@ -84,27 +97,6 @@ function workspace_base_path(): string {
     $base = substr($script, 0, -10);
     return $base === '/' ? '' : rtrim($base, '/');
 }
-// Production and demo are different deployments, never two faces of one. The
-// host decides: an allowlisted demo host is always demo, every other host is
-// production and ignores any client hint. The demo is entered only through
-// /demo, which production forwards to the configured demo host (or 404s).
-function workspace_demo_entry(array $config): ?string {
-    if (workspace_mode($config) === 'demo') return workspace_base_path() . '/#/dashboard';
-    $url = (string) ($config['demo_url'] ?? '');
-    $parts = parse_url($url);
-    if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || empty($parts['host']) || isset($parts['user']) || isset($parts['pass'])) return null;
-    $host = strtolower((string) $parts['host']);
-    foreach ((array) ($config['demo_hosts'] ?? []) as $candidate)
-        if (is_string($candidate) && hash_equals(strtolower(trim($candidate)), $host)) return 'https://' . $host . ((isset($parts['port']) && (int) $parts['port'] !== 443) ? ':' . (int) $parts['port'] : '') . '/#/dashboard';
-    return null;
-}
-if ($uri === '/demo' || $uri === '/demo/') {
-    if (!in_array(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET','HEAD'], true)) fail_response(405, 'Method not allowed');
-    $target = workspace_demo_entry(workspace_config());
-    if ($target === null) fail_response(404, 'Not found');
-    // The target is either local or an https host from the operator's own demo_hosts allowlist.
-    security_headers(); http_response_code(303); header('Location: ' . $target); exit;
-}
 if (!str_starts_with($uri, '/api/') && $uri !== '/api') serve_spa();
 
 // Server-local configuration lives outside the public document root (or at
@@ -112,12 +104,7 @@ if (!str_starts_with($uri, '/api/') && $uri !== '/api') serve_spa();
 // key; this published artifact intentionally contains neither credentials nor
 // a fallback key.
 function workspace_config(): array {
-    // The file is chosen by where this copy of the code lives, never by the
-    // request: a docroot may have its own <docroot-name>.runtime.php next to it
-    // (the demo host does), otherwise the shared production file applies. A
-    // spoofed Host header therefore cannot select another deployment's config.
-    $sibling = dirname(__DIR__) . '/' . basename(__DIR__) . '.runtime.php';
-    $path = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: (is_file($sibling) ? $sibling : dirname(__DIR__) . '/buyniverse-runtime.php');
+    $path = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__) . '/buyniverse-runtime.php';
     if (!is_file($path) || !is_readable($path)) return [];
     $config = require $path;
     return is_array($config) ? $config : [];
@@ -238,7 +225,7 @@ if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
 if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config();
-    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true, 'demoAvailable'=>workspace_demo_entry($config) !== null]);
+    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true, 'demoAvailable'=>workspace_mode($config) !== 'demo' && workspace_demo_enabled($config)]);
 }
 if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');

@@ -7,10 +7,7 @@ const fileCache = new Map();
 window.sfcOptions = {
   moduleCache: { vue: Vue, "vue-router": VueRouter },
   async getFile(url) {
-    const basePath = window.location.pathname.startsWith("/buyniverse_vue")
-      ? "/buyniverse_vue/"
-      : "/";
-    const base = new URL(basePath, window.location.origin);
+    const base = new URL(window.BuyniverseBase.root, window.location.origin);
     const rawStr = String(url);
     let cleanUrl = rawStr.startsWith("./") ? rawStr.slice(2) : (rawStr.startsWith("/") ? rawStr.slice(1) : rawStr);
     const appIndex = cleanUrl.lastIndexOf("app/");

@@ -33,7 +33,10 @@ final class SwPacProvider implements PacProvider {
         $prod = in_array(strtolower((string) ($config['environment'] ?? 'test')), ['prod', 'production', 'live'], true);
         $this->base = rtrim((string) ($config['base_url'] ?? ($prod ? 'https://services.sw.com.mx' : 'https://services.test.sw.com.mx')), '/');
         $this->api = rtrim((string) ($config['api_url'] ?? ($prod ? 'https://api.sw.com.mx' : 'https://api.test.sw.com.mx')), '/');
-        $token = trim((string) ($config['token'] ?? '')); if ($token !== '') $this->token = $token;
+        // One token per environment (the same SW tokens besttorni uses): the
+        // 'environment' picks which applies, so test and production never mix.
+        $tokens = is_array($config['tokens'] ?? null) ? $config['tokens'] : [];
+        $token = trim((string) ($tokens[$prod ? 'production' : 'test'] ?? ($config['token'] ?? ''))); if ($token !== '') $this->token = $token;
     }
 
     public function name(): string { return 'sw'; }
