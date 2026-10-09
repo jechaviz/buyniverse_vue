@@ -86,6 +86,7 @@
         <main id="main-content" class="ws-main" tabindex="-1">
           <div class="ws-wrap" :class="{ 'ws-wrap--wide': fullWidth }">
             <Breadcrumbs />
+            <SetupBanner />
             <RouterView v-slot="{ Component }">
               <Transition name="page" mode="out-in">
                 <component :is="Component" :key="route.path" />
@@ -120,9 +121,10 @@ const AppHeader = load("./app/components/layout/AppHeader.vue?v=7");
 const BnNavbar = load("./app/experience/BnNavbar.vue?v=9");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
 const AuthModal = load("./app/components/AuthModal.vue?v=11");
+const SetupBanner = load("./app/components/SetupBanner.vue?v=1");
 
 export default {
-  components: { Breadcrumbs, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },
+  components: { Breadcrumbs, SetupBanner, CommandPalette, AppModals, AppSidebar, AppHeader, BnNavbar, BnFooter, AuthModal },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const collapsed = ref(false), mobileOpen = ref(false);

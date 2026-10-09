@@ -47,6 +47,16 @@ function handle_onboarding(string $uri): void {
             $company = $pdo->prepare('SELECT country_code, rfc FROM tenant_legal_entities WHERE id = ? AND tenant_id = ? AND status = "active" LIMIT 1');
             $company->execute([$companyId, $context['tenant']['id']]); $country = $company->fetch();
             if (!is_array($country) || (string)$country['country_code'] !== 'MX') fail_response(400, 'CSD credentials are available only for a Mexican fiscal profile');
+            if (rtrim($uri, '/') === '/api/v1/onboarding/fiscal-credentials/verify') {
+                // Dry run for the setup wizard: the same checks as the real upload, nothing stored, nothing sent to the PAC.
+                $certificate = tenant_fiscal_uploaded_file('certificate', '.cer', 262144); $privateKey = tenant_fiscal_uploaded_file('privateKey', '.key', 262144);
+                $password = (string)($_POST['privateKeyPassword'] ?? '');
+                if (strlen($password) < 1 || strlen($password) > 512 || preg_match('/[\x00]/', $password)) fail_response(400, 'Private-key password is invalid');
+                try {
+                    $csd = \Buyniverse\Cfdi\Csd::inspect($certificate, $privateKey, $password, (string) $country['rfc'], null, \Buyniverse\Cfdi\cfdi_test_environment($config, workspace_mode($config)));
+                    workspace_json(['ok'=>true, 'rfc'=>$csd['rfc'], 'number'=>$csd['number'], 'validFrom'=>$csd['validFrom'], 'validTo'=>$csd['validTo'], 'daysLeft'=>(int) floor((strtotime($csd['validTo']) - time()) / 86400), 'csrf'=>$session['csrf']]);
+                } catch (RuntimeException $error) { workspace_json(['ok'=>false, 'error'=>$error->getMessage(), 'csrf'=>$session['csrf']]); }
+            }
             $profile = $pdo->prepare('SELECT id, issuance_mode, connector_key, status FROM tenant_fiscal_profiles WHERE tenant_id = ? AND legal_entity_id = ? LIMIT 1');
             $profile->execute([$context['tenant']['id'], $companyId]); $fiscalProfile = $profile->fetch();
             if (!is_array($fiscalProfile) || $fiscalProfile['issuance_mode'] !== 'buyniverse' || !in_array($fiscalProfile['connector_key'], ['sw', 'odoo_fiax'], true)) fail_response(409, 'Buyniverse invoicing is not enabled for this company');

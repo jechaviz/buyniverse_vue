@@ -38,6 +38,11 @@ The deployment script atomically stages dist/ outside document root, tests index
 
 The server validates every bid (minimum step, floor, window, anti-sniping) in integer cents and records it append-only; the browser only mirrors the verdict. Verify with `npm run qa:backend` against a disposable database (`BUYNIVERSE_TEST_RUNTIME_CONFIG`).
 
+### 4.3 Company setup wizard (`/setup`)
+Adapted from besttorni's first-run wizard. After enrolment a company administrator completes: fiscal data (with the Constancia read in the browser by the self-hosted `assets/vendor/pdfjs`), branches and warehouses with their expedition postal code, series and folios, CSD (verify, then protect), stamps, team (invitations that the invited, verified-email person can accept) and payout account (CLABE, encrypted), then a final audit by area. The server is the only judge of progress (`GET /api/v1/setup/status`). Apply `ops/migrations/20261009_company_setup.sql` before publishing. Verify with `npm run qa:backend`.
+
+CFDI stamping uses one SW token per environment: `cfdi.sw.tokens.test` / `cfdi.sw.tokens.production` in `buyniverse-runtime.php`, selected by `cfdi.sw.environment` (see `ops/buyniverse-runtime.example.php`).
+
 ## 5. Automated Background Jobs & Cron
 To dispatch pending notification emails from the outbox table, configure a server cron job:
 * * * * * php ~/buyniverse.com/email_worker.php >/dev/null 2>&1

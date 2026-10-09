@@ -10,3 +10,6 @@ support_tickets
 support_ticket_events
 auction_live_terms
 auction_live_bids
+tenant_company_profiles
+tenant_location_details
+tenant_payout_accounts
