@@ -80,6 +80,7 @@
 
         <section v-if="store.isDemo.value">
           <h3>{{ store.t("Demo account") }}</h3>
+          <a v-if="inDemoPath" class="ws-text-btn" :href="exitHref">{{ store.t("Exit the demo") }}</a>
           <select class="field" :value="currentUserId" @change="$emit('switch-user', $event.target.value)">
             <option v-for="person in users" :key="person.id" :value="person.id">{{ person.name }} · {{ person.type }}</option>
           </select>
@@ -90,6 +91,8 @@
 </template>
 <script>
 const { inject, ref } = Vue;
+const inDemoPath = Boolean(window.BuyniverseBase && window.BuyniverseBase.demo);
+const exitHref = (window.BuyniverseBase ? window.BuyniverseBase.prefix : "") + "/__demo/exit";
 const { useRouter } = VueRouter;
 const load = (path) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(path, window.sfcOptions));
 
@@ -133,7 +136,7 @@ export default {
       draft.value = "";
       router.push({ path: "/necesito", query: { ...(text ? { q: text } : {}), ...(key ? { cat: key } : {}) } });
     };
-    return { store, draft, needFromPrompt, setLocale: (code) => emit("set-locale", code) };
+    return { store, draft, inDemoPath, exitHref, needFromPrompt, setLocale: (code) => emit("set-locale", code) };
   },
 };
 </script>

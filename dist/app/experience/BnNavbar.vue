@@ -19,7 +19,7 @@
             <i class="fa-solid fa-table-columns"></i><span class="bn-nav__label">{{ store.t("Open workspace") }}</span>
           </RouterLink>
           <template v-if="!signedIn || isDemo">
-            <button v-if="!signedIn && store.demoAvailable.value" type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('launch-demo')">{{ store.t("Explore demo") }}</button>
+            <button v-if="!signedIn && store.demoAvailable.value" type="button" class="bn-btn bn-btn--ghost bn-btn--sm bn-nav__desktop-only" @click="$emit('launch-demo')">{{ store.t("Demo access") }}</button>
             <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm" :aria-label="store.t('Log in')" @click="$emit('open-auth', 'login')"><i class="fa-solid fa-arrow-right-to-bracket bn-nav__ico-only"></i><span class="bn-nav__label">{{ store.t("Log in") }}</span></button>
             <button v-if="!signedIn" type="button" class="bn-btn bn-btn--primary bn-btn--sm" @click="$emit('open-auth', 'register')">{{ store.t("Join free") }}</button>
           </template>
@@ -35,7 +35,7 @@
         <RouterLink v-if="signedIn" to="/dashboard" @click="menuOpen = false">{{ store.t("Open workspace") }}</RouterLink>
         <template v-else>
           <button type="button" @click="menuOpen = false; $emit('open-auth', 'login')">{{ store.t("Log in") }}</button>
-          <button v-if="store.demoAvailable.value" type="button" @click="menuOpen = false; $emit('launch-demo')">{{ store.t("Explore demo") }}</button>
+          <button v-if="store.demoAvailable.value" type="button" @click="menuOpen = false; $emit('launch-demo')">{{ store.t("Demo access") }}</button>
         </template>
         <button type="button" @click="$emit('toggle-theme')"><i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'" style="margin-right: 8px"></i>{{ store.t(dark ? "Light mode" : "Dark mode") }}</button>
         <div class="bn-lang" role="group" :aria-label="store.t('Language')" style="justify-self: start; margin-top: 8px">

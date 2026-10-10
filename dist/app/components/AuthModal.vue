@@ -64,7 +64,7 @@
           <p class="bn-auth__legal">{{ t("By continuing you allow Buyniverse to receive your name and email from the provider to create and protect your account.") }}</p>
           <div class="bn-auth__divider">{{ t("or") }}</div>
           <div class="bn-auth__actions">
-            <button v-if="store.demoAvailable.value" type="button" class="bn-btn bn-btn--ghost bn-btn--sm" @click="launchDemo">{{ store.t("Explore demo") }}</button>
+            <button v-if="store.demoAvailable.value" type="button" class="bn-btn bn-btn--ghost bn-btn--sm" @click="launchDemo">{{ store.t("Demo access") }}</button>
             <button v-if="supportAvailable" type="button" class="bn-btn bn-btn--ghost bn-btn--sm" @click="openSupport"><i class="fa-solid fa-life-ring"></i>{{ t("Get help") }}</button>
           </div>
         </template>
@@ -72,10 +72,10 @@
         <template v-else-if="identityUnavailable">
           <div class="bn-auth__notice bn-auth__notice--info" role="status">
             <i class="fa-solid fa-hourglass-half"></i>
-            <div><b>{{ t("Account access is being enabled") }}</b>{{ t(store.demoAvailable.value ? "Sign-in with Google, Microsoft, LinkedIn and Facebook opens as soon as each provider approves Buyniverse. Meanwhile the demo shows every flow with sample data, no sign-up needed." : "Sign-in with Google, Microsoft, LinkedIn and Facebook opens as soon as each provider approves Buyniverse.") }}</div>
+            <div><b>{{ t("Account access is being enabled") }}</b>{{ t("Sign-in with Google, Microsoft, LinkedIn and Facebook opens as soon as each provider approves Buyniverse.") }}</div>
           </div>
           <div class="bn-auth__actions">
-            <button v-if="store.demoAvailable.value" type="button" class="bn-btn bn-btn--primary" @click="launchDemo"><i class="fa-solid fa-play"></i>{{ store.t("Explore demo") }}</button>
+            <button v-if="store.demoAvailable.value" type="button" class="bn-btn bn-btn--primary" @click="launchDemo"><i class="fa-solid fa-play"></i>{{ store.t("Demo access") }}</button>
             <button v-if="supportAvailable" type="button" class="bn-btn bn-btn--ghost" @click="openSupport"><i class="fa-solid fa-life-ring"></i>{{ t("Request business access") }}</button>
           </div>
         </template>

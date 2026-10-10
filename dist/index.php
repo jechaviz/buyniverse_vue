@@ -75,12 +75,16 @@ if (preg_match('#^/api/v1/(?:deploy|sync|admin/db)(?:/|$)#', $uri) || in_array($
 function workspace_demo_enabled(array $config): bool { return ($config['demo_enabled'] ?? true) !== false; }
 $GLOBALS['bn_demo'] = false;
 if ($uri === '/demo') { security_headers(); http_response_code(301); header('Location: ' . $installBase . '/demo/'); exit; }
+$GLOBALS['bn_install_base'] = $installBase;
 if (str_starts_with($uri, '/demo/')) {
-    if (!workspace_demo_enabled(workspace_config())) fail_response(404, 'Not found');
-    if (!in_array(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), ['GET','HEAD'], true)) fail_response(405, 'Method not allowed');
+    $demoConfig = workspace_config();
+    if (!workspace_demo_enabled($demoConfig)) fail_response(404, 'Not found');
     $uri = substr($uri, 5); $path = substr($path, 5);
-    if ($uri === '/api' || str_starts_with($uri, '/api/')) fail_response(404, 'The demo has no server');
     $GLOBALS['bn_demo'] = true;
+    if ($uri === '/api' || str_starts_with($uri, '/api/')) fail_response(404, 'The demo has no server');
+    // The demo is private: nothing under /demo/ is served without its own session (see demo_service.php).
+    require_once __DIR__ . '/demo_service.php';
+    demo_guard($uri, $demoConfig);
 }
 // Sample data is served only inside the demo (or on a host the operator set to demo mode).
 if (preg_match('#(?:^|/)app/data/demo\.js$#', $path) === 1 && !$GLOBALS['bn_demo'] && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
