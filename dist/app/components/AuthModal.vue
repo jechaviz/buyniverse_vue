@@ -165,7 +165,7 @@ export default {
       if (!provider || !gisHost.value) return;
       try { await loadGis(); } catch (cause) { gisError.value = t(cause.message); return; }
       window.google.accounts.id.initialize({ client_id: provider.clientId, nonce: provider.nonce, callback: onGoogleCredential, ux_mode: "popup" });
-      gisHost.value.innerHTML = "";
+      gisHost.value.replaceChildren();
       window.google.accounts.id.renderButton(gisHost.value, { type: "standard", theme: "outline", size: "large", shape: "pill", width: 300, text: mode.value === "register" ? "signup_with" : "continue_with", locale: store.locale.value });
     };
 

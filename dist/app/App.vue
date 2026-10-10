@@ -120,7 +120,7 @@ const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=10");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=7");
 const BnNavbar = load("./app/experience/BnNavbar.vue?v=9");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=12");
+const AuthModal = load("./app/components/AuthModal.vue?v=13");
 const SetupBanner = load("./app/components/SetupBanner.vue?v=1");
 
 export default {
