@@ -560,7 +560,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=72"));
+  const app = createApp(load("./app/App.vue?v=73"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {
