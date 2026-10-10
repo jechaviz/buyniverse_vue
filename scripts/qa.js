@@ -59,6 +59,9 @@ for (const [file, token] of [
   ["app/lib/runtime.js", "demoEntry"],
   ["index.php", "function workspace_demo_enabled"],
   ["index.php", "The demo has no server"],
+  ["index.php", "demo_guard($uri, $demoConfig)"],
+  ["demo_service.php", "function demo_guard"],
+  ["ops/migrations/20261010_demo_access.sql", "demo_access_codes"],
   ["app/boot.js", "The demo has no server."],
   ["app/boot.js", "BuyniverseBase"],
   ["robots.txt", "Disallow: /demo/"],
@@ -70,7 +73,7 @@ for (const [file, token] of [
   ["app/store/procurementDomainActions.js", "placeLedgerBid"],
   ["ops/schema-requirements.txt", "auction_live_bids"],
   ["ops/migrations/20261008_auction_bid_ledger.sql", "live auction bids are immutable"],
-  ["app/components/AuthModal.vue", 'store.t("Explore demo")'],
+  ["app/components/AuthModal.vue", 'store.t("Demo access")'],
   ["app/components/CommandPalette.vue", "if (!current) return [];"],
 ]) {
   if (!read(file).includes(token)) throw new Error(`Public access recovery coverage is incomplete: ${file} (${token})`);

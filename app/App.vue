@@ -117,10 +117,10 @@ const CommandPalette = load("./app/components/CommandPalette.vue?v=6");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=7");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=10");
-const AppHeader = load("./app/components/layout/AppHeader.vue?v=7");
-const BnNavbar = load("./app/experience/BnNavbar.vue?v=9");
+const AppHeader = load("./app/components/layout/AppHeader.vue?v=8");
+const BnNavbar = load("./app/experience/BnNavbar.vue?v=10");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=13");
+const AuthModal = load("./app/components/AuthModal.vue?v=14");
 const SetupBanner = load("./app/components/SetupBanner.vue?v=1");
 
 export default {

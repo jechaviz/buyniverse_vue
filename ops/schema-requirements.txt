@@ -13,3 +13,6 @@ auction_live_bids
 tenant_company_profiles
 tenant_location_details
 tenant_payout_accounts
+demo_access_codes
+demo_access_requests
+demo_access_attempts

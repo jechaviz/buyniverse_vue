@@ -27,7 +27,9 @@ The deployment script atomically stages dist/ outside document root, tests index
 
 ### 4.1 Production and demo
 - Production has no workspace without a federated identity and no `?demo=1`.
-- The demo is the `/demo/` path of the same host (no subdomain). The server serves it without any API (`/demo/api/...` is 404), session or database; it runs only from the sanitized client fixture (`app/data/demo.js`, which is refused outside `/demo/`), is `noindex` and is disallowed in `robots.txt`.
+- The demo is the `/demo/` path of the same host (no subdomain) and it is **private**: nothing under `/demo/` is served without its own signed, HttpOnly session cookie (scoped to `/demo`, never sent to the API). Two kinds of access: the owners' universal password (`demo_owner_password_hash` in `buyniverse-runtime.php`) and personal guest codes that an owner approves, with expiry, revocable (`ops/migrations/20261010_demo_access.sql`). Failed attempts are throttled per address.
+- Manage it on the server: `php demo_admin.php requests | approve <id> [days] | decline <id> | create "<label>" [days] | codes | revoke <id>`; `owner-hash` (password on stdin) prints the hash for the config. A code is shown once and stored only as a hash.
+- It has no API (`/demo/api/...` is 404), runs only from the sanitized client fixture (`app/data/demo.js`, refused outside `/demo/`), is `noindex` and disallowed in `robots.txt`.
 - The client refuses every same-origin `/api/` call while under `/demo/`, so the shared cookies of the real product can never reach the real API from the demo.
 - `'demo_enabled' => false` in `buyniverse-runtime.php` turns it off: `/demo/` answers 404 and the "Explore demo" buttons disappear (`/api/v1/runtime` reports `demoAvailable`).
 
