@@ -36,14 +36,21 @@ return [
         'provider' => 'smtp_ssl', // Supported: smtp_ssl (implicit TLS/465) or resend.
         'public_base_url' => 'https://buyniverse.com',
         'from_name' => 'Buyniverse',
-        'from_email' => 'admin@appniverse.com',
-        'reply_to' => 'admin@appniverse.com',
+        'from_email' => 'hi@buyniverse.com',
+        'reply_to' => 'hi@buyniverse.com',
         'smtp' => [
             'host' => 'mail.spacemail.com',
             'port' => 465,
-            'username' => 'admin@appniverse.com',
+            'username' => 'hi@buyniverse.com',
             'password' => '', // e.g. getenv('BUYNIVERSE_SMTP_PASSWORD') ?: ''
-            'password_ref' => 'secret-manager://buyniverse/smtp/admin-appniverse',
+            'password_ref' => 'secret-manager://buyniverse/smtp/hi-buyniverse',
+        ],
+        'imap' => [
+            'host' => 'mail.spacemail.com',
+            'port' => 993,
+            'security' => 'ssl',
+            'username' => 'hi@buyniverse.com',
+            'password' => '',
         ],
     ],
 
