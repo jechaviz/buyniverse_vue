@@ -58,3 +58,5 @@
 .bn-auth__legal { margin: 0; font-size: 0.74rem; color: var(--bn-faint); line-height: 1.5; }
 .bn-auth__legal a, .bn-auth__link { color: var(--bn-violet); font-weight: 600; text-decoration: none; }
 .bn-auth__legal a:hover, .bn-auth__link:hover { text-decoration: underline; }
+
+.bn-auth__gis { display: flex; justify-content: center; min-height: 44px; }

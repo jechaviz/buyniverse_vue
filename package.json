@@ -6,7 +6,7 @@
     "dev": "bun tools/dev-server.js 4178",
     "build": "bun scripts/build_dist.js",
     "qa:backend": "bun scripts/qa/backendIntegration.js && bun scripts/qa/auctionLedger.js && bun scripts/qa/companySetup.js",
-    "qa": "bun scripts/qa.js && bun scripts/qa/backendImport.js && bun scripts/qa/deepReview.js && bun scripts/qa/e2eSimulation.js && bun scripts/qa/test_job_auction.js && bun scripts/qa/auctionRealtime.js && bun scripts/qa/ledgerClient.js && bun scripts/qa/constancia.js && bun scripts/qa/fullProcurementLifecycle.js && bun scripts/qa/marketplaceCascade.js && bun scripts/qa/needFlow.js"
+    "qa": "bun scripts/qa.js && bun scripts/qa/backendImport.js && bun scripts/qa/deepReview.js && bun scripts/qa/e2eSimulation.js && bun scripts/qa/test_job_auction.js && bun scripts/qa/auctionRealtime.js && bun scripts/qa/ledgerClient.js && bun scripts/qa/constancia.js && php scripts/qa/google_gis_test.php && bun scripts/qa/fullProcurementLifecycle.js && bun scripts/qa/marketplaceCascade.js && bun scripts/qa/needFlow.js"
   },
   "devDependencies": {
     "@unocss/core": "^66.7.5",

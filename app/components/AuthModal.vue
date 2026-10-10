@@ -53,7 +53,9 @@
 
         <template v-else-if="socialProviders.length">
           <div class="bn-auth__providers">
-            <button v-for="provider in socialProviders" :key="provider.id" type="button" class="bn-auth__provider" :disabled="redirecting" @click="handleSocialAuth(provider)">
+            <div v-if="gisProvider" ref="gisHost" class="bn-auth__gis" :aria-label="t('Continue with Google')"></div>
+            <p v-if="gisError" class="bn-auth__legal" role="alert">{{ gisError }}</p>
+            <button v-for="provider in socialProviders.filter((item) => item.flow !== 'gis')" :key="provider.id" type="button" class="bn-auth__provider" :disabled="redirecting" @click="handleSocialAuth(provider)">
               <i :class="provider.icon" :style="{ color: provider.color }"></i>
               <span>{{ (mode === "register" ? t("Sign up with") : t("Continue with")) + " " + provider.name }}</span>
               <i class="fa-solid fa-arrow-right"></i>
@@ -132,6 +134,41 @@ export default {
       { id: "user-admin-admin", name: "Admin Operator", role: "Platform administrator and auditor", avatar: "AU" },
     ];
 
+    // Google through Identity Services: the official button yields a signed ID
+    // token; the server verifies it (signature, audience, nonce) before anyone is signed in.
+    const gisHost = ref(null), gisError = ref(""); let gisCsrf = "";
+    const gisProvider = computed(() => socialProviders.value.find((item) => item.flow === "gis") || null);
+    const loadGis = () => new Promise((resolve, reject) => {
+      if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client"; script.async = true;
+      script.onload = resolve; script.onerror = () => reject(new Error("Google sign-in could not load."));
+      document.head.appendChild(script);
+    });
+    const onGoogleCredential = async (response) => {
+      redirecting.value = true; gisError.value = "";
+      try {
+        const reply = await fetch(`${basePath}/api/v1/auth/google/token`, {
+          method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error",
+          headers: { Accept: "application/json", "Content-Type": "application/json", "X-Buyniverse-Request": "auth-google-v1", "X-Buyniverse-CSRF": gisCsrf },
+          body: JSON.stringify({ credential: response && response.credential }),
+        });
+        const body = await reply.json().catch(() => ({}));
+        if (!reply.ok || !body.ok) throw new Error(body.error || "Google could not verify this sign-in");
+        // A full load rehydrates the workspace of the person who just signed in.
+        const next = body.next === "onboarding" ? "onboarding?login=google" : (returnTarget.value ? returnTarget.value.replace(/^\//, "") : "dashboard");
+        window.location.assign(window.BuyniverseBase.root + next);
+      } catch (cause) { redirecting.value = false; gisError.value = t(cause && cause.message ? cause.message : "Google could not verify this sign-in"); }
+    };
+    const renderGis = async () => {
+      const provider = gisProvider.value;
+      if (!provider || !gisHost.value) return;
+      try { await loadGis(); } catch (cause) { gisError.value = t(cause.message); return; }
+      window.google.accounts.id.initialize({ client_id: provider.clientId, nonce: provider.nonce, callback: onGoogleCredential, ux_mode: "popup" });
+      gisHost.value.innerHTML = "";
+      window.google.accounts.id.renderButton(gisHost.value, { type: "standard", theme: "outline", size: "large", shape: "pill", width: 300, text: mode.value === "register" ? "signup_with" : "continue_with", locale: store.locale.value });
+    };
+
     const loadSocialProviders = async () => {
       if (isDemoRuntime.value) return;
       socialLoading.value = true;
@@ -139,9 +176,12 @@ export default {
         const response = await fetch(`${basePath}/api/v1/auth/providers`, { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || !Array.isArray(payload.providers)) throw new Error("Identity providers unavailable");
+        if (typeof payload.csrf === "string" && /^[a-f0-9]{64}$/i.test(payload.csrf)) gisCsrf = payload.csrf;
         socialProviders.value = payload.providers
           .filter((provider) => provider && typeof provider.id === "string" && PROVIDER_APPEARANCE[provider.id])
-          .map((provider) => ({ id: provider.id, name: typeof provider.name === "string" ? provider.name : provider.id, ...PROVIDER_APPEARANCE[provider.id] }));
+          .map((provider) => ({ id: provider.id, name: typeof provider.name === "string" ? provider.name : provider.id, ...PROVIDER_APPEARANCE[provider.id],
+            ...(provider.flow === "gis" && typeof provider.clientId === "string" && typeof provider.nonce === "string" ? { flow: "gis", clientId: provider.clientId, nonce: provider.nonce } : {}) }));
+        await nextTick(); void renderGis();
       } catch (_) {
         socialProviders.value = [];
       } finally {
@@ -184,7 +224,7 @@ export default {
     watch(() => props.initialMode, (value) => { mode.value = value === "register" ? "register" : "login"; });
     onBeforeUnmount(() => window.BuyniverseOverlay?.release(overlayId));
 
-    return { store, t, mode, dialog, titleId, socialProviders, socialLoading, redirecting, isDemoRuntime, identityUnavailable,
+    return { store, t, gisHost, gisError, gisProvider, mode, dialog, titleId, socialProviders, socialLoading, redirecting, isDemoRuntime, identityUnavailable,
       errorMessage, demoProfiles, loginAs, handleSocialAuth, launchDemo, supportAvailable, openSupport, onKeydown };
   },
 };

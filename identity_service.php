@@ -159,3 +159,64 @@ function social_callback(PDO $pdo, array $config, array $session, string $key, s
     } catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); throw $error; }
     social_redirect(social_base_path() . '/#/dashboard?login=' . rawurlencode($provider));
 }
+
+// ---------------------------------------------------------------------------
+// Google Identity Services (ID-token flow)
+// ---------------------------------------------------------------------------
+// Needs only the public OAuth client id (no secret, no redirect). The browser
+// obtains a signed ID token from Google; this server never trusts it by
+// itself: Google's tokeninfo endpoint verifies the signature, and we then check
+// audience, issuer, expiry, verified email and a one-time nonce bound to this
+// session, so a token for another app or an old one cannot sign anyone in.
+function social_google_config(array $config): ?array {
+    $raw = $config['identity']['google_gis'] ?? null;
+    if (!is_array($raw) || ($raw['enabled'] ?? false) !== true) return null;
+    $clientId = tenant_text($raw['client_id'] ?? '', 200);
+    return preg_match('/^[0-9]{6,}-[a-z0-9]{6,}\.apps\.googleusercontent\.com$/', $clientId) === 1 ? ['client_id'=>$clientId] : null;
+}
+function social_google_nonce(): string {
+    $nonce = social_b64url(random_bytes(24));
+    $_SESSION['gis_nonce'] = ['value'=>$nonce, 'expiresAt'=>time() + 600];
+    return $nonce;
+}
+/** Returns null when the verified claims may sign in, otherwise a reason code. */
+function social_google_claims_error(array $claims, string $clientId, ?array $pending, int $now): ?string {
+    if (!is_array($pending) || $now > (int) ($pending['expiresAt'] ?? 0)) return 'nonce_expired';
+    if (!hash_equals($clientId, (string) ($claims['aud'] ?? ''))) return 'audience';
+    if (!in_array((string) ($claims['iss'] ?? ''), ['accounts.google.com', 'https://accounts.google.com'], true)) return 'issuer';
+    if ((int) ($claims['exp'] ?? 0) <= $now) return 'expired';
+    if (!in_array($claims['email_verified'] ?? false, [true, 'true', 1, '1'], true)) return 'email_unverified';
+    $subject = (string) ($claims['sub'] ?? '');
+    if (preg_match('/^[0-9]{6,64}$/', $subject) !== 1) return 'subject';
+    if (!hash_equals((string) ($pending['value'] ?? ''), (string) ($claims['nonce'] ?? ''))) return 'nonce';
+    return null;
+}
+function social_google_login(PDO $pdo, array $config, array $session, string $key): void {
+    $gis = social_google_config($config); if ($gis === null) fail_response(404, 'Identity provider is not enabled');
+    if (!tenant_header_origin_is_safe() || !hash_equals($session['csrf'], workspace_header('X-Buyniverse-CSRF')) || workspace_header('X-Buyniverse-Request') !== 'auth-google-v1')
+        fail_response(403, 'Request verification failed');
+    social_rate_limit('gis', 10, 600);
+    $input = tenant_request_body(); $credential = (string) ($input['credential'] ?? '');
+    if (preg_match('/^[A-Za-z0-9_-]{20,3000}\.[A-Za-z0-9_-]{20,3000}\.[A-Za-z0-9_-]{10,1000}$/', $credential) !== 1) fail_response(400, 'Invalid sign-in credential');
+    $pending = $_SESSION['gis_nonce'] ?? null; unset($_SESSION['gis_nonce']);   // single use, even when the attempt fails
+    try { $claims = social_http_json('https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($credential), 'GET'); }
+    catch (Throwable $error) { fail_response(401, 'Google could not verify this sign-in'); }
+    // tokeninfo omits the nonce in some responses; the signed payload it vouched for carries it.
+    if (!isset($claims['nonce'])) { $parts = explode('.', $credential); $payload = json_decode((string) base64_decode(strtr($parts[1], '-_', '+/')), true); if (is_array($payload) && ($payload['sub'] ?? null) === ($claims['sub'] ?? 0)) $claims['nonce'] = $payload['nonce'] ?? ''; }
+    if (social_google_claims_error($claims, $gis['client_id'], is_array($pending) ? $pending : null, time()) !== null) fail_response(401, 'Google could not verify this sign-in');
+    $displayName = tenant_text($claims['name'] ?? '', 180) ?: 'Personal workspace owner';
+    $email = isset($claims['email']) && is_string($claims['email']) && filter_var($claims['email'], FILTER_VALIDATE_EMAIL) ? strtolower(trim($claims['email'])) : null;
+    unset($_SESSION['tenant_context'], $_SESSION['tenant_demo_subject']);
+    session_regenerate_id(true); $_SESSION['workspace_csrf'] = bin2hex(random_bytes(32));
+    $_SESSION['buyniverse_identity'] = ['provider'=>'google_oidc', 'subject'=>(string) $claims['sub'], 'displayName'=>$displayName, 'email'=>$email, 'emailVerified'=>true];
+    $session = workspace_session();
+    $principal = tenant_principal($pdo, $config, $session, $key);
+    $member = tenant_principal_has_membership($pdo, $principal['id']);
+    if ($member) {
+        $context = tenant_context($pdo, $config, $session, $key);
+        $pdo->beginTransaction();
+        try { tenant_audit($pdo, $context, 'identity.social_authenticated', 'principal', $context['principalId'], ['provider'=>'google_oidc', 'flow'=>'gis'], $key); $pdo->commit(); }
+        catch (Throwable $error) { if ($pdo->inTransaction()) $pdo->rollBack(); }
+    }
+    workspace_json(['ok'=>true, 'next'=>$member ? 'dashboard' : 'onboarding', 'csrf'=>$session['csrf']]);
+}

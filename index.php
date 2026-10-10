@@ -21,7 +21,7 @@ function security_headers(): void {
     // Keep this byte-for-byte aligned with .htaccess and index.html. The hash
     // authorizes only the dynamic <base> bootstrap; no broad inline-script
     // exception is allowed.
-    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'");
+    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; frame-src https://accounts.google.com/gsi/; child-src 'none'; manifest-src 'self'; script-src 'self' 'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com/gsi/ https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'");
     // The demo is never an indexable site.
     if (!empty($GLOBALS['bn_demo'])) header('X-Robots-Tag: noindex, nofollow, noarchive');
     foreach ([
@@ -221,7 +221,18 @@ if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
         $definition = social_provider_config($config, $provider);
         if ($definition !== null) $providers[] = ['id'=>$definition['id'], 'name'=>$definition['name'], 'audience'=>'individual'];
     }
-    workspace_json(['providers'=>$providers]);
+    // Google through Identity Services needs only the public client id; it is offered instead of the code flow when configured.
+    $gis = social_google_config($config);
+    if ($gis !== null) {
+        $providers = array_values(array_filter($providers, static fn($p) => $p['id'] !== 'google'));
+        array_unshift($providers, ['id'=>'google', 'name'=>'Google', 'audience'=>'individual', 'flow'=>'gis', 'clientId'=>$gis['client_id'], 'nonce'=>social_google_nonce()]);
+    }
+    workspace_json(['providers'=>$providers, 'csrf'=>workspace_session()['csrf']]);
+}
+if ($uri === '/api/v1/auth/google/token') {
+    if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') fail_response(405, 'Method not allowed');
+    $config = workspace_config(); $session = workspace_session(); $pdo = workspace_pdo($config); $key = workspace_key($config);
+    social_google_login($pdo, $config, $session, $key);
 }
 if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
