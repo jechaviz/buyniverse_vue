@@ -94,7 +94,17 @@
     "Send your offer before the round closes.": "Envía tu oferta antes de que cierre la ronda.",
     "Needs": "Necesidades",
     "Market": "Mercado",
-    "Money": "Dinero"
+    "Money": "Dinero",
+    "Round 2 · BAFO": "Ronda 2 · BAFO",
+    "Live competing offers": "Ofertas compitiendo en vivo",
+    "offers submitted": "ofertas recibidas",
+    "Current best offer": "Mejor oferta actual",
+    "saved": "ahorrado",
+    "Escrow Protected": "Protegido con Escrow",
+    "Automated CFDI 4.0": "CFDI 4.0 Automático",
+    "0% fee without savings": "0% comisión sin ahorro",
+    "Watch live auction": "Ver sala de subastas en vivo",
+    "Live reverse auction": "Subasta inversa en vivo"
   };
   if (typeof global !== "undefined") global.__buyniverseI18n_need = dict;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
