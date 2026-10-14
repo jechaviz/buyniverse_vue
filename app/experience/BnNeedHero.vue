@@ -2,14 +2,20 @@
   <section class="nh" :style="{ '--c': accent }">
     <div class="nh__grain" aria-hidden="true"></div>
     <div class="bn-wrap nh__stage">
-      <!-- Left Column: Needs input & Category Selectors -->
+      <!-- Left Column: Value Prop, Input & Category Pills -->
       <div class="nh__col">
-        <div class="nh__eyebrow"><span class="nh__eyebrow-dot"></span><span>{{ store.t("B2B Procurement & Reverse Auction Platform") }}</span></div>
+        <div class="nh__eyebrow">
+          <span class="nh__eyebrow-dot"></span>
+          <span>{{ store.t("B2B Procurement & Reverse Auction Platform") }}</span>
+        </div>
+
         <div class="nh__ttl">
           <h1 class="nh__h1">{{ store.t("I need") }}<em aria-hidden="true"><span class="nh__tx">{{ typed }}</span><span class="nh__caret"></span></em></h1>
         </div>
+
         <p class="nh__intro">{{ store.t("Publish once and the offers compete for you.") }}</p>
 
+        <!-- Search / Request Box -->
         <div class="nh__sbox">
           <form class="nh__search" role="search" novalidate data-no-validate="true" @submit.prevent="submit">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
@@ -17,115 +23,109 @@
               aria-autocomplete="list" :aria-expanded="showSug" aria-controls="nh-sug" @input="onInput" @focus="onFocus" @blur="onBlur" @keydown="onKey" />
             <button type="submit" class="nh__go">{{ store.t("Find offers") }} →</button>
           </form>
+
           <div v-if="showSug" id="nh-sug" class="nh__sug" role="listbox">
             <button v-for="(s, k) in suggestions" :key="s.text" type="button" role="option" :aria-selected="k === hl" :class="{ hl: k === hl }" :style="{ '--c': s.color }" @mousedown.prevent="pick(s)">
               <i></i>{{ s.text }}<small>{{ s.count }} {{ store.t("suppliers") }}</small>
             </button>
           </div>
         </div>
-        <div v-if="!running" class="nh__quick"><span>{{ store.t("Try") }}:</span><button v-for="p in quick" :key="p.text" type="button" @click="pick(p)">{{ p.text }}</button></div>
 
-        <div class="nh__cards" role="group" :aria-label="store.t('Category')">
-          <button type="button" class="nh__cc nh__cc--all" :class="{ on: sel < 0 }" :aria-pressed="sel < 0" @click="choose(-1)">
-            <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i>
-            <span><b>{{ store.t("All") }}</b><small>{{ suppliers.length }} {{ store.t("suppliers") }} · {{ store.t("every category") }}</small></span>
+        <!-- Clean, Lightweight Category Pills (Single horizontal row) -->
+        <div class="nh__pills" role="tablist" :aria-label="store.t('Category')">
+          <button type="button" class="nh__pill" :class="{ on: sel < 0 }" :aria-pressed="sel < 0" @click="choose(-1)">
+            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+            <span>{{ store.t("All") }}</span>
           </button>
-          <button v-for="(c, i) in cats" :key="c.key" type="button" class="nh__cc" :class="{ on: sel === i }" :style="{ '--c': c.color }" :aria-pressed="sel === i" @click="choose(i)" @pointerenter="hov = i" @pointerleave="hov = -1">
+          <button v-for="(c, i) in cats" :key="c.key" type="button" class="nh__pill" :class="{ on: sel === i }" :style="{ '--c': c.color }" :aria-pressed="sel === i" @click="choose(i)" @pointerenter="hov = i" @pointerleave="hov = -1">
             <i class="fa-solid" :class="c.icon" aria-hidden="true"></i>
-            <span><b>{{ store.t(c.label) }}</b><small>{{ totals[i] }} {{ store.t("suppliers") }}</small></span>
+            <span>{{ store.t(c.label) }}</span>
           </button>
+        </div>
+
+        <!-- Trust Badges Strip -->
+        <div class="nh__trust">
+          <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ store.t("Escrow Protected") }}</span>
+          <span><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> {{ store.t("Automated CFDI 4.0") }}</span>
+          <span><i class="fa-solid fa-percent" aria-hidden="true"></i> {{ store.t("0% fee without savings") }}</span>
         </div>
       </div>
 
-      <!-- Right Column: High-End Live Reverse Auction Terminal (No Canvas / No Sperms) -->
-      <aside class="nh__terminal" aria-live="polite">
-        <!-- Terminal Header Bar -->
-        <div class="nh__term-bar">
-          <div class="nh__term-live-group">
-            <span class="nh__term-live"><span class="nh__term-beacon"></span>{{ store.t("Live reverse auction") }}</span>
-            <span class="nh__term-folio">#RFQ-{{ folioId }}</span>
+      <!-- Right Column: Crystal-Clear Live Reverse Auction Card -->
+      <aside class="nh__card" aria-live="polite">
+        <!-- Card Header: Live pulse & timer -->
+        <div class="nh__card-top">
+          <div class="nh__card-live">
+            <span class="nh__card-beacon"></span>
+            <span>{{ store.t("Live reverse auction") }}</span>
           </div>
-          <div class="nh__term-meta-group">
-            <span class="nh__term-timer"><i class="fa-regular fa-clock" aria-hidden="true"></i> {{ timerDisplay }}</span>
-            <span class="nh__term-round">{{ store.t("Round 2 · BAFO") }}</span>
-          </div>
-        </div>
-
-        <!-- RFQ Item & Context Overview -->
-        <div class="nh__term-rfq">
-          <div class="nh__term-rfq-top">
-            <span class="nh__term-rfq-badge">{{ store.t(activeCat.label) }}</span>
-            <span class="nh__term-budget">{{ store.t("Maximum budget") }}: <b>{{ formatMoney(rfqData.budget[lang()]) }}</b></span>
-          </div>
-          <h2 class="nh__term-title">{{ rfqData.title[lang()] }}</h2>
-          <div class="nh__term-subline">
-            <span class="nh__term-specs">{{ rfqData.specs[lang()] }}</span>
-            <span class="nh__term-pool"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ rfqData.poolCount }} {{ store.t("verified-ready suppliers") }}</span>
+          <div class="nh__card-meta">
+            <span class="nh__card-folio">#RFQ-{{ folioId }}</span>
+            <span class="nh__card-timer"><i class="fa-regular fa-clock" aria-hidden="true"></i> {{ timerDisplay }}</span>
           </div>
         </div>
 
-        <!-- Price Descent Matrix with SVG Sparkline -->
-        <div class="nh__term-pricing">
-          <div class="nh__term-price-stat">
-            <span class="nh__term-price-label">{{ store.t("Current best offer") }}</span>
-            <div class="nh__term-price-val">{{ formatMoney(bestBidAmount) }}</div>
-            <div class="nh__term-savings">
+        <!-- Requisition Item Title & Specs -->
+        <div class="nh__card-item">
+          <span class="nh__card-cat">{{ store.t(activeCat.label) }}</span>
+          <h2 class="nh__card-title">{{ rfqData.title[lang()] }}</h2>
+          <p class="nh__card-specs">{{ rfqData.specs[lang()] }}</p>
+        </div>
+
+        <!-- Price Descent Hero: Initial Budget vs Winning Offer -->
+        <div class="nh__card-pricing">
+          <div class="nh__card-budget">
+            <span class="nh__card-lbl">{{ store.t("Maximum budget") }}</span>
+            <div class="nh__card-budget-val">{{ formatMoney(rfqData.budget[lang()]) }}</div>
+          </div>
+          <div class="nh__card-divider" aria-hidden="true">→</div>
+          <div class="nh__card-winner">
+            <span class="nh__card-lbl">{{ store.t("Current best offer") }}</span>
+            <div class="nh__card-winner-val">{{ formatMoney(bestBidAmount) }}</div>
+            <div class="nh__card-savings">
               <i class="fa-solid fa-arrow-trend-down" aria-hidden="true"></i>
               <span>-{{ rfqData.bids[0].pct }}% ({{ formatMoney(savingsAmount) }} {{ store.t("saved") }})</span>
             </div>
           </div>
-
-          <div class="nh__term-spark-box" aria-hidden="true">
-            <svg class="nh__term-spark" viewBox="0 0 140 40" preserveAspectRatio="none">
-              <defs>
-                <linearGradient :id="'spk-grd-' + uid" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" :stop-color="accent" stop-opacity="0.35" />
-                  <stop offset="100%" :stop-color="accent" stop-opacity="0.0" />
-                </linearGradient>
-              </defs>
-              <path :d="sparkAreaPath" :fill="'url(#spk-grd-' + uid + ')'" />
-              <path :d="sparkLinePath" fill="none" :stroke="accent" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-              <circle v-for="(pt, idx) in sparkPoints" :key="'pt-' + idx" :cx="pt.x" :cy="pt.y" :r="idx === sparkPoints.length - 1 ? 3.5 : 2" :fill="idx === sparkPoints.length - 1 ? accent : '#ffffff'" :stroke="accent" stroke-width="1.6" />
-            </svg>
-            <span class="nh__term-spark-tag">-{{ rfqData.bids[0].pct }}% BAFO</span>
-          </div>
         </div>
 
-        <!-- Competing Suppliers Live Bids Stream -->
-        <div class="nh__term-bids">
-          <div class="nh__term-bids-head">
+        <!-- Competing Suppliers Live (2 clean, highly readable rows) -->
+        <div class="nh__card-bids">
+          <div class="nh__card-bids-head">
             <span>{{ store.t("Live competing offers") }}</span>
-            <em>{{ visibleBids.length }}/{{ rfqData.bids.length }} {{ store.t("offers submitted") }}</em>
+            <em>{{ rfqData.poolCount }} {{ store.t("verified-ready suppliers") }}</em>
           </div>
 
-          <div class="nh__term-bid-list">
-            <div v-for="(bid, bIdx) in visibleBids" :key="bid.name" class="nh__term-bid" :class="{ 'is-bafo': bid.win }">
-              <div class="nh__term-bid-left">
-                <span class="nh__bid-rank" :class="{ 'is-lead': bid.win }">{{ bid.win ? '#1 BAFO ★' : '#' + (bIdx + 1) }}</span>
-                <div class="nh__bid-info">
-                  <b class="nh__bid-name">{{ bid.name }}</b>
-                  <div class="nh__bid-tags">
-                    <span class="nh__bid-cert"><i class="fa-solid fa-check" aria-hidden="true"></i> {{ bid.badge }}</span>
-                    <span class="nh__bid-eta"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> {{ store.t("Delivery in") }} {{ bid.days }} {{ store.t("days") }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="nh__term-bid-right">
-                <span class="nh__bid-price">{{ formatMoney(bidAmount(bid.pct)) }}</span>
-                <span class="nh__bid-disc" :style="{ color: bid.win ? accent : 'var(--mut)' }">-{{ bid.pct }}%</span>
-              </div>
+          <!-- Leader Bid (#1 BAFO) -->
+          <div class="nh__bid is-leader">
+            <div class="nh__bid-badge">#1 BAFO</div>
+            <div class="nh__bid-info">
+              <b class="nh__bid-name">{{ rfqData.bids[0].name }}</b>
+              <span class="nh__bid-meta"><i class="fa-solid fa-check" aria-hidden="true"></i> {{ rfqData.bids[0].badge }}</span>
+            </div>
+            <div class="nh__bid-price">
+              <b>{{ formatMoney(bestBidAmount) }}</b>
+              <small class="nh__bid-green">-{{ rfqData.bids[0].pct }}%</small>
+            </div>
+          </div>
+
+          <!-- Runner-up Bid (#2) -->
+          <div class="nh__bid is-runner">
+            <div class="nh__bid-badge">#2</div>
+            <div class="nh__bid-info">
+              <b class="nh__bid-name">{{ rfqData.bids[1].name }}</b>
+              <span class="nh__bid-meta">{{ store.t("Delivery in") }} {{ rfqData.bids[1].days }} {{ store.t("days") }}</span>
+            </div>
+            <div class="nh__bid-price">
+              <b>{{ formatMoney(bidAmount(rfqData.bids[1].pct)) }}</b>
+              <small>-{{ rfqData.bids[1].pct }}%</small>
             </div>
           </div>
         </div>
 
-        <!-- Terminal Footer: Guarantee & Action -->
-        <div class="nh__term-foot">
-          <div class="nh__term-trust">
-            <span><i class="fa-solid fa-lock" aria-hidden="true"></i> {{ store.t("Escrow Protected") }}</span>
-            <span><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> {{ store.t("Automated CFDI 4.0") }}</span>
-            <span><i class="fa-solid fa-percent" aria-hidden="true"></i> {{ store.t("0% fee without savings") }}</span>
-          </div>
-          <RouterLink to="/procurement/auction" class="nh__term-action">
+        <!-- Footer Action -->
+        <div class="nh__card-foot">
+          <RouterLink to="/procurement/auction" class="nh__card-action">
             <span>{{ store.t("Watch live auction") }}</span>
             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </RouterLink>
@@ -237,7 +237,6 @@ export default {
     const input = ref(null);
     const query = ref(""), typed = ref(""), sel = ref(-1), hov = ref(-1), guessed = ref(-1), demoCat = ref(-1);
     const showSug = ref(false), hl = ref(-1), running = ref(false);
-    const visibleCount = ref(3);
     const timerSeconds = ref(104);
     const folioId = ref("8942");
 
@@ -273,44 +272,6 @@ export default {
     const bestBidAmount = computed(() => bidAmount(rfqData.value.bids[0].pct));
     const savingsAmount = computed(() => rfqData.value.budget[lang()] - bestBidAmount.value);
 
-    const visibleBids = computed(() => rfqData.value.bids.slice(0, visibleCount.value));
-
-    // Price step-down sparkline path calculations
-    const sparkPoints = computed(() => {
-      const b = rfqData.value.budget[lang()];
-      const bids = rfqData.value.bids;
-      const vals = [b, b * (1 - bids[2].pct / 100), b * (1 - bids[1].pct / 100), b * (1 - bids[0].pct / 100)];
-      const w = 140, h = 36;
-      const max = b, min = vals[3] * 0.94;
-      const range = max - min || 1;
-      return vals.map((v, i) => {
-        const x = Math.round((i / (vals.length - 1)) * (w - 16) + 8);
-        const y = Math.round(((max - v) / range) * (h - 14) + 6);
-        return { x, y, val: v };
-      });
-    });
-
-    const sparkLinePath = computed(() => {
-      const pts = sparkPoints.value;
-      if (!pts.length) return "";
-      return pts.reduce((acc, pt, i) => {
-        if (i === 0) return `M ${pt.x} ${pt.y}`;
-        const prev = pts[i - 1];
-        const cx1 = (prev.x + pt.x) / 2;
-        const cx2 = (prev.x + pt.x) / 2;
-        return `${acc} C ${cx1} ${prev.y}, ${cx2} ${pt.y}, ${pt.x} ${pt.y}`;
-      }, "");
-    });
-
-    const sparkAreaPath = computed(() => {
-      const pts = sparkPoints.value;
-      if (!pts.length) return "";
-      const line = sparkLinePath.value;
-      const last = pts[pts.length - 1];
-      const first = pts[0];
-      return `${line} L ${last.x} 40 L ${first.x} 40 Z`;
-    });
-
     const timerDisplay = computed(() => {
       const m = Math.floor(timerSeconds.value / 60);
       const s = timerSeconds.value % 60;
@@ -322,17 +283,10 @@ export default {
     const sleep = (ms) => new Promise((res) => timers.push(setTimeout(res, ms)));
     const pause = () => { paused = true; act(); };
 
-    const animateBidsArrival = () => {
-      visibleCount.value = 1;
-      timers.push(setTimeout(() => { visibleCount.value = 2; }, 320));
-      timers.push(setTimeout(() => { visibleCount.value = 3; }, 750));
-    };
-
     const choose = (i) => {
       sel.value = sel.value === i ? -1 : i;
       pause();
       folioId.value = String(8900 + Math.floor(Math.random() * 99));
-      animateBidsArrival();
       if (!query.value.trim()) {
         typed.value = "";
         running.value = false;
@@ -348,7 +302,6 @@ export default {
       guessed.value = g ? cats.findIndex((c) => c.key === g) : -1;
       showSug.value = true;
       hl.value = -1;
-      animateBidsArrival();
     };
 
     const onFocus = () => {
