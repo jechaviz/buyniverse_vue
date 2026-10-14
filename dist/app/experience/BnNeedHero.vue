@@ -365,7 +365,6 @@ export default {
         const text = SAMPLES[cats[k].key][0][lang()];
         demoCat.value = k;
         folioId.value = String(8900 + k * 14 + (n % 7));
-        animateBidsArrival();
         for (let c = 1; c <= text.length && !paused && alive; c++) {
           typed.value = text.slice(0, c);
           await sleep(46 + Math.random() * 55);
@@ -387,7 +386,6 @@ export default {
     let idle = 0;
     onMounted(() => {
       demo();
-      animateBidsArrival();
       timerInterval = setInterval(() => {
         if (timerSeconds.value > 12) timerSeconds.value--;
         else timerSeconds.value = 118;
