@@ -411,8 +411,7 @@ export default {
 
     return {
       store, cats, input, query, typed, sel, hov, totals, accent, placeholder, quick, suggestions, showSug, hl, running,
-      uid, lang, folioId, timerDisplay, activeCat, rfqData, visibleBids, bestBidAmount, savingsAmount, formatMoney, bidAmount,
-      sparkPoints, sparkLinePath, sparkAreaPath,
+      uid, lang, folioId, timerDisplay, activeCat, rfqData, bestBidAmount, savingsAmount, formatMoney, bidAmount,
       choose, onInput, onFocus, onBlur, onKey, pick, submit
     };
   },
