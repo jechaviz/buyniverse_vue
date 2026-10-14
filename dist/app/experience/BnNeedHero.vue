@@ -4,6 +4,7 @@
     <div class="bn-wrap nh__stage">
       <!-- Left Column: Needs input & Category Selectors -->
       <div class="nh__col">
+        <div class="nh__eyebrow"><span class="nh__eyebrow-dot"></span><span>{{ store.t("B2B Procurement & Reverse Auction Platform") }}</span></div>
         <div class="nh__ttl">
           <h1 class="nh__h1">{{ store.t("I need") }}<em aria-hidden="true"><span class="nh__tx">{{ typed }}</span><span class="nh__caret"></span></em></h1>
         </div>
@@ -52,12 +53,14 @@
 
         <!-- RFQ Item & Context Overview -->
         <div class="nh__term-rfq">
-          <div class="nh__term-rfq-badge">{{ store.t(activeCat.label) }}</div>
+          <div class="nh__term-rfq-top">
+            <span class="nh__term-rfq-badge">{{ store.t(activeCat.label) }}</span>
+            <span class="nh__term-budget">{{ store.t("Maximum budget") }}: <b>{{ formatMoney(rfqData.budget[lang()]) }}</b></span>
+          </div>
           <h2 class="nh__term-title">{{ rfqData.title[lang()] }}</h2>
-          <p class="nh__term-specs">{{ rfqData.specs[lang()] }}</p>
-          <div class="nh__term-context">
-            <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ rfqData.poolCount }} {{ store.t("verified-ready suppliers") }}</span>
-            <span>{{ store.t("Maximum budget") }}: <b>{{ formatMoney(rfqData.budget[lang()]) }}</b></span>
+          <div class="nh__term-subline">
+            <span class="nh__term-specs">{{ rfqData.specs[lang()] }}</span>
+            <span class="nh__term-pool"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ rfqData.poolCount }} {{ store.t("verified-ready suppliers") }}</span>
           </div>
         </div>
 
@@ -73,7 +76,7 @@
           </div>
 
           <div class="nh__term-spark-box" aria-hidden="true">
-            <svg class="nh__term-spark" viewBox="0 0 160 52" preserveAspectRatio="none">
+            <svg class="nh__term-spark" viewBox="0 0 140 40" preserveAspectRatio="none">
               <defs>
                 <linearGradient :id="'spk-grd-' + uid" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" :stop-color="accent" stop-opacity="0.35" />
@@ -81,8 +84,8 @@
                 </linearGradient>
               </defs>
               <path :d="sparkAreaPath" :fill="'url(#spk-grd-' + uid + ')'" />
-              <path :d="sparkLinePath" fill="none" :stroke="accent" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
-              <circle v-for="(pt, idx) in sparkPoints" :key="'pt-' + idx" :cx="pt.x" :cy="pt.y" :r="idx === sparkPoints.length - 1 ? 4 : 2.5" :fill="idx === sparkPoints.length - 1 ? accent : '#ffffff'" :stroke="accent" stroke-width="1.8" />
+              <path :d="sparkLinePath" fill="none" :stroke="accent" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              <circle v-for="(pt, idx) in sparkPoints" :key="'pt-' + idx" :cx="pt.x" :cy="pt.y" :r="idx === sparkPoints.length - 1 ? 3.5 : 2" :fill="idx === sparkPoints.length - 1 ? accent : '#ffffff'" :stroke="accent" stroke-width="1.6" />
             </svg>
             <span class="nh__term-spark-tag">-{{ rfqData.bids[0].pct }}% BAFO</span>
           </div>
@@ -277,12 +280,12 @@ export default {
       const b = rfqData.value.budget[lang()];
       const bids = rfqData.value.bids;
       const vals = [b, b * (1 - bids[2].pct / 100), b * (1 - bids[1].pct / 100), b * (1 - bids[0].pct / 100)];
-      const w = 160, h = 48;
+      const w = 140, h = 36;
       const max = b, min = vals[3] * 0.94;
       const range = max - min || 1;
       return vals.map((v, i) => {
-        const x = Math.round((i / (vals.length - 1)) * (w - 20) + 10);
-        const y = Math.round(((max - v) / range) * (h - 18) + 8);
+        const x = Math.round((i / (vals.length - 1)) * (w - 16) + 8);
+        const y = Math.round(((max - v) / range) * (h - 14) + 6);
         return { x, y, val: v };
       });
     });
@@ -305,7 +308,7 @@ export default {
       const line = sparkLinePath.value;
       const last = pts[pts.length - 1];
       const first = pts[0];
-      return `${line} L ${last.x} 52 L ${first.x} 52 Z`;
+      return `${line} L ${last.x} 40 L ${first.x} 40 Z`;
     });
 
     const timerDisplay = computed(() => {

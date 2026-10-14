@@ -104,7 +104,8 @@
     "Automated CFDI 4.0": "CFDI 4.0 Automático",
     "0% fee without savings": "0% comisión sin ahorro",
     "Watch live auction": "Ver sala de subastas en vivo",
-    "Live reverse auction": "Subasta inversa en vivo"
+    "Live reverse auction": "Subasta inversa en vivo",
+    "B2B Procurement & Reverse Auction Platform": "Plataforma B2B de Compras y Subastas Inversas"
   };
   if (typeof global !== "undefined") global.__buyniverseI18n_need = dict;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
