@@ -116,7 +116,7 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const CommandPalette = load("./app/components/CommandPalette.vue?v=6");
 const Breadcrumbs = load("./app/components/Breadcrumbs.vue?v=7");
 const AppModals = load("./app/components/layout/AppModals.vue?v=4");
-const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=10");
+const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=11");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=8");
 const BnNavbar = load("./app/experience/BnNavbar.vue?v=10");
 const BnFooter = load("./app/experience/BnFooter.vue?v=4");
@@ -332,35 +332,36 @@ export default {
 
     document.documentElement.classList.toggle("dark", dark.value);
 
-    const menu = computed(() => {
-      const localize = (groups) => groups.map((group) => ({
-        ...group,
-        title: store.t(group.title),
-        items: group.items.map((item) => ({ ...item, label: store.t(item.label) })),
-      }));
-      const item = (to, icon, label, extra = {}) => ({ to, icon: `fa-solid ${icon}`, label, ...extra });
-      if (marketplaceMode.value === "buyer") return localize([
-        { title: "Needs", items: [item("/dashboard", "fa-bolt", "My needs", { match: ["/dashboard", "/procurement", "/necesito"] })] },
-        { title: "Market", items: [item("/suppliers", "fa-building-circle-check", "Suppliers"), item("/products", "fa-boxes-stacked", "Products"), item("/find-talent", "fa-users", "Talent & services", { match: ["/find-talent", "/browse-services"] })] },
-        { title: "Work", items: [item("/projects", "fa-folder", "Projects"), item("/messages", "fa-comments", "Messages")] },
-        { title: "Money", items: [item("/invoices", "fa-file-invoice-dollar", "Invoices"), item("/payments", "fa-credit-card", "Payments"), item("/expenses", "fa-money-bill-wave", "Expenses")] },
-      ]);
-      if (marketplaceMode.value === "admin") return localize([
-        { title: "Home", items: [item("/dashboard", "fa-gauge", "Dashboard")] },
-        { title: "Identity & Control", items: [item("/settings/organizations", "fa-building-shield", "Companies & access"), item("/admin/issuers", "fa-file-invoice-dollar", "Fiscal issuers"), item("/procurement/governance", "fa-scale-balanced", "Policies & audit")] },
-        { title: "Oversight", items: [item("/procurement/cockpit", "fa-binoculars", "Procurement oversight"), item("/projects", "fa-folder-tree", "Project oversight"), item("/invoices", "fa-receipt", "Invoice oversight")] },
-      ]);
-      return localize([
-        { title: "Home", items: [item("/dashboard", "fa-gauge", "Dashboard")] },
-        { title: "Deliver", items: [item("/projects", "fa-folder", "Projects"), item("/procurement/auction", "fa-gavel", "Live Offers")] },
-        { title: "Find", items: [item("/find-work", "fa-briefcase", "Find Work"), item("/saved-jobs", "fa-bookmark", "Saved Jobs")] },
-        { title: "Sell", items: [item("/leads", "fa-bullseye", "Leads"), item("/clients", "fa-user-tie", "Clients"), item("/estimates", "fa-file-invoice", "Estimates"), item("/invoices", "fa-file-invoice-dollar", "Invoices"), item("/payments", "fa-credit-card", "Payments"), item("/messages", "fa-comments", "Messages")] },
-      ]);
-    });
+    // Platform operators are whoever the server says so (platform_operators); the
+    // browser only asks. Company setup needs the company's administration rights.
+    const platformOperator = ref(false);
+    const canAccess = (permission) => {
+      if (permission === "platform.operator") return platformOperator.value;
+      if (permission === "manageCompany") {
+        const rights = tenantContext.value && tenantContext.value.permissions;
+        return Boolean(rights && (rights.manageCompany || rights.manageTenant));
+      }
+      return false;
+    };
+    const menu = computed(() => window.BuyniverseNavigation.sidebar({ mode: marketplaceMode.value, can: canAccess }).map((group) => ({
+      ...group,
+      title: store.t(group.title),
+      items: group.items.map((item) => ({ ...item, label: store.t(item.label) })),
+    })));
+    const refreshPlatformOperator = async () => {
+      platformOperator.value = false;
+      if (store.isDemo.value || !store.currentUser.value || !window.BuyniverseBase) return;
+      try {
+        const response = await fetch(`${window.BuyniverseBase.sub}/api/v1/platform/me`, { credentials: "same-origin", cache: "no-store", redirect: "error", headers: { Accept: "application/json" } });
+        const body = await response.json().catch(() => ({}));
+        platformOperator.value = response.ok && body.operator === true;
+      } catch (_) { platformOperator.value = false; }
+    };
+    watch(() => store.currentUser.value && store.currentUser.value.id, refreshPlatformOperator, { immediate: true });
 
     return {
       store, ui: store.ui, user, marketplaceMode, marketplaceModeOptions, activeModeLabel, tenantContext, switchMarketplaceMode, switchTenantContext, openPurchasingWorkspace, openWorkspaceShortcut, workspaceShortcutLabel,
-      route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, notificationsOpen,
+      route, isLanding, isOnboarding, locale, setLocale, collapsed, mobileOpen, toggleNav, dark, toggleTheme, menu, platformOperator, notificationsOpen,
       accountOpen, commandOpen, authOpen, authMode, authError, closeAuth, openAuth, showHelp, openHelp, launchDemo, ambient, accents, accent, currentAccent, setAccent, closeOverlays, visibleNotifications, saveStatus, saveStatusTitle,
       unreadNotifications, openNotification, switchUser, lockNow, resumeSession,
       fullWidth: computed(() => isLanding.value || route.path === "/find-work" || route.path.includes("/contest") || route.path.startsWith("/post-job/") || route.path.startsWith("/procurement")),

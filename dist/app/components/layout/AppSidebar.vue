@@ -11,6 +11,7 @@
 
     <nav class="ws-nav">
       <div v-for="(section, index) in menu" :key="section.title || 'group-' + index" class="ws-group" role="group" :aria-label="section.title || store.t('Main navigation')">
+        <p v-if="section.title" class="ws-group__head"><b>{{ section.n }}</b> {{ section.title }}</p>
         <RouterLink
           v-for="link in section.items"
           :key="link.to"
