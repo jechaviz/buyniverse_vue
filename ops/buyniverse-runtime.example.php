@@ -70,6 +70,11 @@ return [
             'client_secret_ref' => 'secret-manager://buyniverse/google/client-secret',
             'redirect_uri' => 'https://buyniverse.com/api/v1/auth/google/callback',
         ],
+        // Google Identity Services (GIS) ID-token popup flow:
+        'google_gis' => [
+            'enabled' => false,
+            'client_id' => 'REPLACE_GOOGLE_WEB_CLIENT_ID',
+        ],
         // Microsoft accepts personal and work or school accounts with tenant
         // "common"; pin a directory tenant ID to admit only one organization.
         'microsoft_oidc' => [
