@@ -59,7 +59,7 @@ Options -Indexes -MultiViews
   # The deployed document root is an allowlisted runtime artifact, never the
   # repository checkout. Deny source, operation and dependency paths first so
   # the generic static-file shortcut below can never expose them.
-  RewriteRule ^(?:\.git|node_modules|dist|scripts|tests?|docs)(?:/|$) - [F,L,NC]
+  RewriteRule ^(?:\.git|node_modules|dist|scripts|tests?|docs|server)(?:/|$) - [F,L,NC]
   # Server-only CFDI libraries, SAT catalogues and XSDs.
   RewriteRule ^cfdi(?:/|$) - [F,L,NC]
   RewriteRule \.(?:env|ini|sql|c|v|zip|md|py|log|lock|map|ps1|sh|bat|cmd|ya?ml|toml|bak|old|orig|swp)$ - [F,L,NC]

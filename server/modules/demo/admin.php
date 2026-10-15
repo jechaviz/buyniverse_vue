@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 // CLI-only management of the private demo's access codes. Run it on the server:
-//   php demo_admin.php requests                  pending access requests
+//   php server/modules/demo/admin.php requests                  pending access requests
 //   php demo_admin.php approve <id> [days=7]     approve a request and print its code (shown once)
 //   php demo_admin.php decline <id>
 //   php demo_admin.php create "<label>" [days]   a code without a request
@@ -18,7 +18,7 @@ if ($command === 'owner-hash') {
     if (strlen($password) < 16) { fwrite(STDERR, "Use at least 16 characters.\n"); exit(2); }
     echo password_hash($password, PASSWORD_DEFAULT) . PHP_EOL; exit(0);
 }
-$configPath = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__) . '/buyniverse-runtime.php';
+$configPath = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__, 4) . '/buyniverse-runtime.php';
 $config = is_file($configPath) ? require $configPath : [];
 $key = base64_decode((string) ($config['state_encryption_key'] ?? ''), true);
 if (!is_array($config) || $key === false || strlen($key) !== 32) { fwrite(STDERR, "Runtime configuration unavailable\n"); exit(78); }

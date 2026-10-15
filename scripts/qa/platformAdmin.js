@@ -22,7 +22,7 @@ const port = 9100 + Math.floor(Math.random() * 40);
 const base = `http://127.0.0.1:${port}`;
 const quiet = { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] };
 const php = (args) => execFileSync("php", ["-d", "display_startup_errors=0", ...args], { ...quiet, env: { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config } });
-const cli = (...args) => php([path.join(ROOT, "platform_admin.php"), ...args]);
+const cli = (...args) => php([path.join(ROOT, "server/modules/platform/admin.php"), ...args]);
 const failures = [];
 const check = (label, ok, detail = "") => { if (!ok) failures.push(`${label}${detail ? ": " + detail : ""}`); };
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

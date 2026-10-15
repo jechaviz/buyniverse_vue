@@ -242,11 +242,6 @@ async function build() {
     "fiscal_rules.php",
     "identity_service.php",
     "onboarding_service.php",
-    "setup_service.php",
-    "demo_service.php",
-    "demo_admin.php",
-    "platform_service.php",
-    "platform_admin.php",
     "supplier_compliance.php",
     "support_service.php",
     "support_admin.php",
@@ -268,6 +263,10 @@ async function build() {
       console.log(`[DIST] Included runtime file: ${file}`);
     }
   }
+
+  // Server modules (PHP, never served: see .htaccess).
+  fs.cpSync(path.join(rootDir, 'server'), path.join(distDir, 'server'), { recursive: true });
+  console.log('[DIST] Included server modules: server/');
 
   // Server-only CFDI module: PHP libraries, SAT catalogues and XSDs are copied
   // byte for byte (XSDs must not be rewritten). Apache denies web access to it.

@@ -20,7 +20,7 @@ const quiet = { encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] };
 const ownerHash = (execFileSync("php", ["-d", "display_startup_errors=0", "-r", "echo password_hash($argv[1], PASSWORD_DEFAULT);", ownerPassword], quiet).match(/\$2y\$[^\s]+/) || [])[0];
 const config = path.join(work, "runtime.php");
 fs.writeFileSync(config, `<?php $c = require ${JSON.stringify(baseConfig)}; $c['demo_owner_password_hash'] = '${ownerHash}'; return $c;`);
-const cli = (...args) => execFileSync("php", ["-d", "display_startup_errors=0", path.join(ROOT, "demo_admin.php"), ...args], { ...quiet, env: { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config } });
+const cli = (...args) => execFileSync("php", ["-d", "display_startup_errors=0", path.join(ROOT, "server/modules/demo/admin.php"), ...args], { ...quiet, env: { ...process.env, BUYNIVERSE_RUNTIME_CONFIG: config } });
 const port = 9010 + Math.floor(Math.random() * 40);
 const base = `http://127.0.0.1:${port}`;
 const failures = [];

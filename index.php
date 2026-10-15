@@ -82,8 +82,8 @@ if (str_starts_with($uri, '/demo/')) {
     $uri = substr($uri, 5); $path = substr($path, 5);
     $GLOBALS['bn_demo'] = true;
     if ($uri === '/api' || str_starts_with($uri, '/api/')) fail_response(404, 'The demo has no server');
-    // The demo is private: nothing under /demo/ is served without its own session (see demo_service.php).
-    require_once __DIR__ . '/demo_service.php';
+    // The demo is private: nothing under /demo/ is served without its own session (see server/modules/demo/service.php).
+    require_once __DIR__ . '/server/modules/demo/service.php';
     demo_guard($uri, $demoConfig);
 }
 // Sample data is served only inside the demo (or on a host the operator set to demo mode).
@@ -223,9 +223,7 @@ require_once __DIR__ . '/cfdi/Csd.php';
 require_once __DIR__ . '/cfdi/CfdiConfig.php';
 require_once __DIR__ . '/supplier_compliance.php';
 require_once __DIR__ . '/onboarding_service.php';
-require_once __DIR__ . '/setup_service.php';
-require_once __DIR__ . '/demo_service.php';
-require_once __DIR__ . '/platform_service.php';
+require_once __DIR__ . '/server/bootstrap.php';
 require_once __DIR__ . '/support_service.php';
 require_once __DIR__ . '/cfdi_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
