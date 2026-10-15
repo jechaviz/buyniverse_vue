@@ -66,6 +66,17 @@ function platform_audit(PDO $pdo): array {
     return ['company' => $company, 'platform' => $platform];
 }
 
+function platform_packs(PDO $pdo): array {
+    return array_map(static fn($p) => ['id' => (string) $p['id'], 'name' => (string) $p['name'], 'stamps' => (int) $p['stamps'], 'priceCents' => (int) $p['price_cents'],
+        'validMonths' => (int) $p['valid_months'], 'active' => (int) $p['active'] === 1], $pdo->query('SELECT * FROM platform_stamp_packs ORDER BY stamps, name')->fetchAll());
+}
+function platform_charges(PDO $pdo): array {
+    return array_map(static fn($c) => ['id' => (string) $c['id'], 'legalName' => (string) $c['legal_name'], 'workspace' => (string) $c['workspace'], 'pack' => (string) $c['pack_name'],
+        'stamps' => (int) $c['stamps'], 'amountCents' => (int) $c['amount_cents'], 'status' => (string) $c['status'], 'reference' => (string) ($c['payment_reference'] ?? ''),
+        'createdAt' => (string) $c['created_at'], 'paidAt' => $c['paid_at'] ? (string) $c['paid_at'] : null],
+        $pdo->query('SELECT c.*, e.legal_name, t.display_name AS workspace, p.name AS pack_name FROM platform_charges c INNER JOIN tenant_legal_entities e ON e.id = c.legal_entity_id
+            INNER JOIN tenant_accounts t ON t.id = c.tenant_id INNER JOIN platform_stamp_packs p ON p.id = c.pack_id ORDER BY c.created_at DESC LIMIT 200')->fetchAll());
+}
 function handle_platform(string $uri): void {
     $config = workspace_config(); $session = workspace_session();
     $route = rtrim(substr($uri, strlen('/api/v1/platform')), '/');
@@ -85,7 +96,7 @@ function handle_platform(string $uri): void {
 
         if ($route === '/overview' && $method === 'GET') {
             workspace_json(['companies' => platform_companies($pdo), 'demoRequests' => platform_demo_requests($pdo, $key), 'demoCodes' => platform_demo_codes($pdo),
-                'audit' => platform_audit($pdo), 'csrf' => $session['csrf']]);
+                'audit' => platform_audit($pdo), 'packs' => platform_packs($pdo), 'charges' => platform_charges($pdo), 'csrf' => $session['csrf']]);
         }
         if ($method !== 'POST') fail_response(405, 'Method not allowed');
         platform_require_write($session);
@@ -141,6 +152,58 @@ function handle_platform(string $uri): void {
             platform_record($pdo, $principal['id'], 'demo.code_revoked', 'demo_code ' . strtolower($m[1]), []);
             $pdo->commit();
             workspace_json(['revoked' => true, 'csrf' => $session['csrf']]);
+        }
+        if ($route === '/packs') {
+            $name = tenant_text($input['name'] ?? '', 120);
+            $stamps = filter_var($input['stamps'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 1000000]]);
+            $price = auction_amount_cents($input['priceCents'] ?? null);
+            $months = filter_var($input['validMonths'] ?? 12, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 120]]);
+            $id = isset($input['id']) && tenant_is_uuid($input['id']) ? strtolower((string) $input['id']) : tenant_uuid();
+            if ($name === '' || $stamps === false || $price === null || $months === false) fail_response(400, 'A name, stamps, a price and validity are required');
+            $pdo->prepare('INSERT INTO platform_stamp_packs (id, name, stamps, price_cents, valid_months, active) VALUES (?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE name = VALUES(name), stamps = VALUES(stamps), price_cents = VALUES(price_cents), valid_months = VALUES(valid_months), active = VALUES(active)')
+                ->execute([$id, $name, $stamps, $price, $months, ($input['active'] ?? true) !== false ? 1 : 0]);
+            platform_record($pdo, $principal['id'], 'billing.pack_saved', 'pack ' . $id, ['stamps' => $stamps, 'priceCents' => $price]);
+            workspace_json(['id' => $id, 'csrf' => $session['csrf']]);
+        }
+        if ($route === '/charges') {
+            $entity = strtolower((string) ($input['companyId'] ?? '')); $packId = strtolower((string) ($input['packId'] ?? ''));
+            if (!tenant_is_uuid($entity) || !tenant_is_uuid($packId)) fail_response(400, 'A company and a pack are required');
+            $pack = $pdo->prepare('SELECT * FROM platform_stamp_packs WHERE id = ? AND active = 1'); $pack->execute([$packId]); $pk = $pack->fetch();
+            if (!is_array($pk)) fail_response(404, 'That pack is not on sale');
+            $tenant = $pdo->prepare('SELECT tenant_id FROM tenant_legal_entities WHERE id = ?'); $tenant->execute([$entity]); $tenantId = $tenant->fetchColumn();
+            if ($tenantId === false) fail_response(404, 'Company not found');
+            $id = tenant_uuid();
+            $pdo->prepare('INSERT INTO platform_charges (id, tenant_id, legal_entity_id, pack_id, stamps, amount_cents, created_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                ->execute([$id, $tenantId, $entity, $packId, (int) $pk['stamps'], (int) $pk['price_cents'], $principal['id']]);
+            platform_record($pdo, $principal['id'], 'billing.charge_created', 'charge ' . $id, ['companyId' => $entity, 'stamps' => (int) $pk['stamps']]);
+            workspace_json(['id' => $id, 'csrf' => $session['csrf']]);
+        }
+        if (preg_match('#^/charges/([0-9a-f-]{36})/(paid|cancel)$#', $route, $m) === 1) {
+            $chargeId = strtolower($m[1]);
+            $pdo->beginTransaction();
+            $lock = $pdo->prepare('SELECT * FROM platform_charges WHERE id = ? FOR UPDATE'); $lock->execute([$chargeId]); $charge = $lock->fetch();
+            if (!is_array($charge)) { $pdo->rollBack(); fail_response(404, 'Charge not found'); }
+            if ($charge['status'] !== 'pending') { $pdo->rollBack(); fail_response(409, 'Only a pending charge can change'); }
+            if ($m[2] === 'cancel') {
+                $pdo->prepare('UPDATE platform_charges SET status = "cancelled" WHERE id = ?')->execute([$chargeId]);
+                platform_record($pdo, $principal['id'], 'billing.charge_cancelled', 'charge ' . $chargeId, []);
+                $pdo->commit();
+                workspace_json(['status' => 'cancelled', 'csrf' => $session['csrf']]);
+            }
+            $reference = tenant_text($input['reference'] ?? '', 120);
+            if (mb_strlen($reference) < 4) { $pdo->rollBack(); fail_response(400, 'The payment reference (for example the SPEI tracking key) is required'); }
+            $lockProfile = $pdo->prepare('SELECT stamps_balance FROM tenant_fiscal_profiles WHERE legal_entity_id = ? FOR UPDATE'); $lockProfile->execute([$charge['legal_entity_id']]);
+            $balance = (int) $lockProfile->fetchColumn() + (int) $charge['stamps'];
+            $pdo->prepare('UPDATE tenant_fiscal_profiles SET stamps_balance = ? WHERE legal_entity_id = ?')->execute([$balance, $charge['legal_entity_id']]);
+            $pdo->prepare('INSERT INTO cfdi_stamp_ledger (tenant_id, legal_entity_id, delta, balance_after, reason, created_by_principal_id) VALUES (?, ?, ?, ?, ?, ?)')
+                ->execute([$charge['tenant_id'], $charge['legal_entity_id'], (int) $charge['stamps'], $balance, 'pack_paid', $principal['id']]);
+            $pdo->prepare('UPDATE platform_charges SET status = "paid", payment_reference = ?, paid_by_principal_id = ?, paid_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$reference, $principal['id'], $chargeId]);
+            tenant_audit($pdo, ['principalId' => $principal['id'], 'tenant' => ['id' => $charge['tenant_id']], 'company' => ['id' => $charge['legal_entity_id']], 'location' => ['id' => null]],
+                'billing.charge_paid', 'charge', $chargeId, ['stamps' => (int) $charge['stamps'], 'balanceAfter' => $balance, 'reference' => $reference], $key);
+            platform_record($pdo, $principal['id'], 'billing.charge_paid', 'charge ' . $chargeId, ['stamps' => (int) $charge['stamps']]);
+            $pdo->commit();
+            workspace_json(['status' => 'paid', 'balance' => $balance, 'csrf' => $session['csrf']]);
         }
         fail_response(404, 'Not found');
     } catch (Throwable $error) {
