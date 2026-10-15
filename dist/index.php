@@ -27,7 +27,7 @@ function security_headers(): void {
     foreach ([
         'Strict-Transport-Security: max-age=63072000; includeSubDomains; preload',
         'X-Content-Type-Options: nosniff', 'X-Frame-Options: DENY', 'Referrer-Policy: no-referrer',
-        'Cross-Origin-Opener-Policy: same-origin', 'Cross-Origin-Resource-Policy: same-origin',
+        'Cross-Origin-Opener-Policy: same-origin-allow-popups', 'Cross-Origin-Resource-Policy: same-origin',
         'Origin-Agent-Cluster: ?1', 'X-DNS-Prefetch-Control: off', 'X-Download-Options: noopen',
         'X-Permitted-Cross-Domain-Policies: none',
         'Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()',
