@@ -225,3 +225,8 @@ button.ws-prompt { border: 0; cursor: pointer; padding-right: 14px; }
 
 /* Public bar at laptop widths: account actions fold to icons before anything overflows. */
 @media (min-width: 1024px) and (max-width: 1220px) { .bn-nav .bn-nav__label { display: none; } .bn-nav .bn-nav__ico-only { display: inline; } .bn-nav__links a { padding: 8px 9px; } .bn-nav__row { gap: 12px; } }
+
+/* Didactic menu: numbered group headings, hidden while the menu is folded to its rail. */
+.ws-group__head { margin: 14px 0 4px; padding: 0 12px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ws-faint, #8b93a7); }
+.ws-group__head b { color: var(--ws-accent, #36e3c0); font-weight: 800; margin-right: 4px; }
+.ws.is-collapsed .ws-group__head { display: none; }

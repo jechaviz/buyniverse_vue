@@ -192,7 +192,15 @@ function workspace_decrypt(array $row, string $key, string $aad = 'buyniverse-wo
     $plain = openssl_decrypt((string) $row['ciphertext'], 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) $row['iv'], (string) $row['auth_tag'], $aad);
     if ($plain === false || strlen($plain) > 786432) return null;
     $state = json_decode($plain, true);
-    return is_array($state) && workspace_safe_value($state) ? $state : null;
+    if (!is_array($state) || !workspace_safe_value($state)) return null;
+    // PHP turns an empty JSON object into an empty array; these fields are objects in the client, and an array there fails its safety check.
+    // The check above runs on the array form, which is the one it accepts.
+    foreach (['tablePreferences', 'procurementAnalytics'] as $objectField)
+        if (isset($state[$objectField]) && $state[$objectField] === []) $state[$objectField] = new stdClass();
+    if (isset($state['documentLibrary']) && is_array($state['documentLibrary']))
+        foreach (['documents', 'drafts'] as $collection)
+            if (isset($state['documentLibrary'][$collection]) && $state['documentLibrary'][$collection] === []) $state['documentLibrary'][$collection] = new stdClass();
+    return $state;
 }
 function workspace_audit(PDO $pdo, string $sessionHash, int $version, string $action, string $digest, string $key): void {
     $mac = hash_hmac('sha256', implode('|', [$sessionHash, $version, $action, $digest]), $key);
@@ -216,6 +224,8 @@ require_once __DIR__ . '/cfdi/CfdiConfig.php';
 require_once __DIR__ . '/supplier_compliance.php';
 require_once __DIR__ . '/onboarding_service.php';
 require_once __DIR__ . '/setup_service.php';
+require_once __DIR__ . '/demo_service.php';
+require_once __DIR__ . '/platform_service.php';
 require_once __DIR__ . '/support_service.php';
 require_once __DIR__ . '/cfdi_service.php';
 if ($uri === '/api/v1/auth/providers' || $uri === '/api/v1/auth/providers/') {
@@ -252,6 +262,7 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
 }
 
 if ($uri === '/api/v1/setup' || str_starts_with($uri, '/api/v1/setup/')) handle_setup($uri);
+if ($uri === '/api/v1/platform' || str_starts_with($uri, '/api/v1/platform/')) handle_platform($uri);
 if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials(?:/verify)?|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
 if (preg_match('#^/api/v1/support/(?:status|assistant|tickets)$#', $uri) === 1) handle_support($uri);
 if (str_starts_with($uri, '/api/v1/cfdi/')) handle_cfdi($uri);

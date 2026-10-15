@@ -245,6 +245,8 @@ async function build() {
     "setup_service.php",
     "demo_service.php",
     "demo_admin.php",
+    "platform_service.php",
+    "platform_admin.php",
     "supplier_compliance.php",
     "support_service.php",
     "support_admin.php",

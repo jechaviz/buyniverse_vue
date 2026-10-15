@@ -58,6 +58,18 @@
     "Complete": "Completo", "{n} fields missing": "Faltan {n} campos", "{n} place(s)": "{n} lugar(es)", "No place yet": "Ningún lugar todavía", "{n} without postal code": "{n} sin código postal",
     "All created": "Todas creadas", "{n} to create": "{n} por crear", "Loaded and current": "Cargado y vigente", "Not loaded": "Sin cargar", "Expired": "Vencido", "Waiting for the PAC": "Esperando al PAC",
     "{n} stamps": "{n} timbres", "No stamps yet": "Sin timbres todavía", "{n} people": "{n} personas", "Only you so far": "Solo tú por ahora", "Account registered": "Cuenta registrada", "No account yet": "Sin cuenta todavía", "Not needed": "No aplica",
+    // Platform administration (the SaaS owner's panel) and the navigation labels that are new
+    "Platform administration": "Administración de la plataforma", "Companies, stamps, demo access and the audit trail. Only platform operators see this screen.": "Empresas, timbres, acceso a la demo y bitácora. Solo los operadores de la plataforma ven esta pantalla.",
+    "Platform operators only": "Solo operadores de la plataforma", "Your account is not a platform operator.": "Tu cuenta no es operador de la plataforma.",
+    "Access code": "Código de acceso", "Send it to the person now. It is shown only once and is not stored.": "Envíaselo a la persona ahora. Se muestra una sola vez y no se guarda.",
+    "Companies": "Empresas", "Workspace": "Espacio de trabajo", "External": "Externa", "pending": "pendientes", "No companies yet.": "Todavía no hay empresas.",
+    "Decline": "Rechazar", "No requests yet.": "Todavía no hay solicitudes.", "Codes": "Códigos", "uses": "usos", "No codes yet.": "Todavía no hay códigos.",
+    "Adjust stamps": "Ajustar timbres", "Change (negative to take back)": "Cambio (negativo para restar)", "Why": "Motivo", "Record change": "Registrar cambio",
+    "Platform decisions": "Decisiones de la plataforma", "Company activity": "Actividad de las empresas", "Platform administration is unavailable.": "La administración de la plataforma no está disponible.",
+    "Identity & Control": "Identidad y control", "Oversight": "Supervisión", "Deliver": "Entregar", "Find": "Buscar", "Leads": "Oportunidades",
+    "Platform (SaaS)": "Plataforma (SaaS)", "Audit": "Auditoría", "Company": "Empresa", "Company setup": "Configuración de la empresa",
+    "Demo access": "Acceso a la demo", "Stamps": "Timbres", "Loading…": "Cargando…", "Approve": "Aprobar", "Days": "Días", "Platform sections": "Secciones de la plataforma",
+    "Invoicing": "Facturación", "Team": "Equipo", "Choose…": "Elige…",
     // Messages returned by the API
     "Continue with Google": "Continuar con Google", "Google sign-in could not load.": "No se pudo cargar el acceso con Google.", "Google could not verify this sign-in": "Google no pudo verificar este acceso", "Invalid sign-in credential": "Credencial de acceso no válida", "Demo access": "Acceso a la demo", "Exit the demo": "Salir de la demo", "Finish setting up your company": "Termina de configurar tu empresa", "required steps done": "pasos obligatorios listos", "Continue setup": "Continuar configuración", "You have been invited": "Te invitaron", "Join an existing company instead of creating a new workspace.": "Únete a una empresa existente en lugar de crear un espacio de trabajo nuevo.",
     "Accept and join": "Aceptar y unirme", "Set up my company": "Configurar mi empresa", "The invitation could not be accepted.": "No se pudo aceptar la invitación.",

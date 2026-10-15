@@ -39,6 +39,7 @@
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
     const Setup = load("./app/pages/SetupPage.vue?v=2");
+    const Platform = load("./app/pages/PlatformPage.vue?v=1");
 
     const NotFound = {
       template:
@@ -50,6 +51,7 @@
       r("/", Home, { experience: true }),
       r("/onboarding", Onboarding, { onboarding: true }),
       r("/setup", Setup, { onboarding: true, setup: true }),
+      r("/plataforma/:tab?", Platform, { platform: true }),
       r("/marketplace", SupplierMarket, { experience: true }),
       r("/marketplace/supplier/:supplierId", SupplierProfile, { experience: true }),
       r("/soporte", Support, { experience: true }),

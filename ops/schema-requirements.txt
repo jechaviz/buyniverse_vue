@@ -16,3 +16,5 @@ tenant_payout_accounts
 demo_access_codes
 demo_access_requests
 demo_access_attempts
+platform_operators
+platform_audit_events

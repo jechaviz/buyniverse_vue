@@ -155,3 +155,14 @@ function demo_guard(string $route, array $config): void {
     if ($isPage) demo_gate_page();
     fail_response(401, 'Demo access required');
 }
+
+/** Issues a guest code: stored only as a hash, returned once to the operator who approves. */
+function demo_issue_code(PDO $pdo, string $label, int $days): array {
+    $chars = ''; for ($i = 0; $i < 12; $i++) $chars .= DEMO_ALPHABET[random_int(0, strlen(DEMO_ALPHABET) - 1)];
+    $days = max(1, min(90, $days));
+    $raw = bin2hex(random_bytes(16));
+    $id = substr($raw, 0, 8) . '-' . substr($raw, 8, 4) . '-4' . substr($raw, 13, 3) . '-a' . substr($raw, 17, 3) . '-' . substr($raw, 20, 12);
+    $pdo->prepare('INSERT INTO demo_access_codes (id, label, code_hash, code_prefix, expires_at) VALUES (?, ?, ?, ?, ?)')
+        ->execute([$id, mb_substr($label, 0, 160), password_hash($chars, PASSWORD_DEFAULT), substr($chars, 0, 4), gmdate('Y-m-d H:i:s', time() + $days * 86400)]);
+    return ['id' => $id, 'code' => implode('-', str_split($chars, 4)), 'days' => $days];
+}
