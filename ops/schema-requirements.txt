@@ -18,3 +18,5 @@ demo_access_requests
 demo_access_attempts
 platform_operators
 platform_audit_events
+platform_stamp_packs
+platform_charges

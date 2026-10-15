@@ -60,6 +60,7 @@ for (const [file, token] of [
   ["index.php", "function workspace_demo_enabled"],
   ["platform_service.php", "function handle_platform"],
   ["ops/migrations/20261015_platform.sql", "platform_operators"],
+  ["ops/migrations/20261016_billing.sql", "platform_charges"],
   ["app/navigation.js", "BuyniverseNavigation"],
   ["app/lib/platform.js", "BuyniverseAdmin"],
   ["app/pages/PlatformPage.vue", "Platform operators only"],

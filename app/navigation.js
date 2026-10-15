@@ -39,7 +39,7 @@
     { key: "company", title: "Company", screens: [screen("/setup", "fa-list-check", "Company setup", { need: "manageCompany" })] },
     { key: "platform", title: "Platform (SaaS)", screens: [screen("/plataforma", "fa-cube", "Platform administration", {
       need: "platform.operator",
-      tabs: [["empresas", "Companies"], ["accesos", "Demo access"], ["timbres", "Stamps"], ["auditoria", "Audit"]],
+      tabs: [["empresas", "Companies"], ["accesos", "Demo access"], ["timbres", "Stamps"], ["cobranza", "Billing"], ["auditoria", "Audit"]],
     })] },
   ];
 

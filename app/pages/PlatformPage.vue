@@ -63,7 +63,42 @@
         </div>
       </section>
 
-      <!-- 6.4 audit -->
+      <!-- 6.4 billing -->
+      <section v-else-if="current === 'cobranza'" class="bn-ob__fields">
+        <div class="bn-ob__box">
+          <legend>{{ t("Stamp packs for sale") }}</legend>
+          <ul class="bn-setup__list"><li v-for="p in data.packs" :key="p.id"><div><b>{{ p.name }}</b><br /><small class="bn-ob__mono">{{ p.stamps }} · {{ money(p.priceCents) }} · {{ p.validMonths }} {{ t("months") }}</small></div><span class="bn-platform__state">{{ p.active ? t("On sale") : t("Off sale") }}</span></li>
+            <li v-if="!data.packs.length"><div>{{ t("No packs yet.") }}</div></li></ul>
+          <div class="bn-ob__grid" style="margin-top: 12px">
+            <label class="bn-field bn-ob__wide"><span>{{ t("Name") }}</span><input v-model.trim="pack.name" class="bn-input" maxlength="120" /></label>
+            <label class="bn-field"><span>{{ t("Stamps") }}</span><input v-model.number="pack.stamps" class="bn-input bn-ob__mono" type="number" min="1" /></label>
+            <label class="bn-field"><span>{{ t("Price (excluding VAT)") }}</span><input v-model="pack.price" class="bn-input bn-ob__mono" inputmode="decimal" placeholder="4500.00" /></label>
+            <label class="bn-field"><span>{{ t("Validity (months)") }}</span><input v-model.number="pack.months" class="bn-input bn-ob__mono" type="number" min="1" max="120" /></label>
+          </div>
+          <div class="bn-ob__foot" style="padding: 0; border: 0"><span></span><button type="button" class="bn-btn bn-btn--primary" :disabled="busy" @click="publishPack"><i class="fa-solid fa-tag"></i>{{ t("Publish pack") }}</button></div>
+        </div>
+        <div class="bn-ob__box">
+          <legend>{{ t("Charge a company") }}</legend>
+          <div class="bn-ob__grid">
+            <label class="bn-field"><span>{{ t("Company") }}</span><select v-model="charge.companyId" class="bn-select"><option value="">{{ t("Choose…") }}</option><option v-for="c in data.companies" :key="c.id" :value="c.id">{{ c.legalName }}</option></select></label>
+            <label class="bn-field"><span>{{ t("Pack") }}</span><select v-model="charge.packId" class="bn-select"><option value="">{{ t("Choose…") }}</option><option v-for="p in data.packs.filter((x) => x.active)" :key="p.id" :value="p.id">{{ p.name }} · {{ p.stamps }}</option></select></label>
+          </div>
+          <div class="bn-ob__foot" style="padding: 0; border: 0"><span></span><button type="button" class="bn-btn bn-btn--primary" :disabled="busy || !charge.companyId || !charge.packId" @click="createCharge"><i class="fa-solid fa-file-invoice-dollar"></i>{{ t("Create charge") }}</button></div>
+        </div>
+        <div class="bn-ob__box">
+          <legend>{{ t("Charges") }}</legend>
+          <ul class="bn-setup__list">
+            <li v-for="c in data.charges" :key="c.id"><div><b>{{ c.legalName }}</b> <small>{{ c.pack }}</small><br /><small class="bn-ob__mono">{{ money(c.amountCents) }} · {{ c.stamps }} · {{ day(c.createdAt) }}</small><br /><small v-if="c.reference" class="bn-ob__mono">{{ t("Reference") }} {{ c.reference }}</small></div>
+              <div v-if="c.status === 'pending'" class="bn-setup__inline"><input v-model.trim="payRef[c.id]" class="bn-input bn-ob__mono" maxlength="120" :aria-label="t('Payment reference')" :placeholder="t('SPEI tracking key')" />
+                <button type="button" class="bn-btn bn-btn--primary bn-btn--sm" :disabled="busy" @click="markPaid(c)">{{ t("Mark paid") }}</button>
+                <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm" :disabled="busy" @click="cancelCharge(c)">{{ t("Cancel") }}</button></div>
+              <span v-else class="bn-platform__state">{{ t(CHARGE_LABEL[c.status] || c.status) }}</span></li>
+            <li v-if="!data.charges.length"><div>{{ t("No charges yet.") }}</div></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 6.5 audit -->
       <section v-else-if="current === 'auditoria'" class="bn-ob__fields">
         <div class="bn-ob__box"><legend>{{ t("Platform decisions") }}</legend>
           <ul class="bn-setup__list"><li v-for="(e, i) in data.audit.platform" :key="'p' + i"><div><b>{{ e.action }}</b><br /><small class="bn-ob__mono">{{ e.subject }}</small></div><small>{{ day(e.at) }}</small></li></ul></div>
@@ -86,7 +121,11 @@ export default {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const t = (text) => store.t(text);
     const phase = ref("loading"), busy = ref(false), error = ref(""), notice = ref(""), shownCode = ref("");
-    const data = reactive({ companies: [], demoRequests: [], demoCodes: [], audit: { company: [], platform: [] } });
+    const data = reactive({ companies: [], demoRequests: [], demoCodes: [], audit: { company: [], platform: [] }, packs: [], charges: [] });
+    const pack = reactive({ name: "", stamps: null, price: "", months: 12 });
+    const charge = reactive({ companyId: "", packId: "" });
+    const payRef = reactive({});
+    const money = (cents) => new Intl.NumberFormat(store.locale.value === "es" ? "es-MX" : "en-US", { style: "currency", currency: "MXN" }).format(Number(cents || 0) / 100);
     const days = ref(7);
     const adj = reactive({ companyId: "", delta: null, note: "" });
     const tabs = computed(() => window.BuyniverseNavigation.tabs("/plataforma"));
@@ -101,7 +140,7 @@ export default {
       error.value = "";
       try {
         const payload = await window.BuyniverseAdmin.overview();
-        Object.assign(data, { companies: payload.companies, demoRequests: payload.demoRequests, demoCodes: payload.demoCodes, audit: payload.audit });
+        Object.assign(data, { companies: payload.companies, demoRequests: payload.demoRequests, demoCodes: payload.demoCodes, audit: payload.audit, packs: payload.packs || [], charges: payload.charges || [] });
         phase.value = "ready";
       } catch (cause) {
         if (cause && cause.status === 403) phase.value = "denied";
@@ -124,9 +163,21 @@ export default {
       Object.assign(adj, { companyId: "", delta: null, note: "" });
     }, "Stamps adjusted.");
     const open = (key) => router.push(`/plataforma/${key}`);
+    const publishPack = () => run(async () => {
+      const cents = Math.round(Number(String(pack.price).replace(/,/g, "")) * 100);
+      if (!Number.isFinite(cents) || cents <= 0) throw new Error(t("Enter a valid price."));
+      await window.BuyniverseAdmin.savePack({ name: pack.name, stamps: pack.stamps, priceCents: String(cents / 100), validMonths: pack.months });
+      Object.assign(pack, { name: "", stamps: null, price: "", months: 12 });
+    }, "Pack published.");
+    const createCharge = () => run(async () => {
+      await window.BuyniverseAdmin.createCharge(charge.companyId, charge.packId);
+      Object.assign(charge, { companyId: "", packId: "" });
+    }, "Charge created.");
+    const markPaid = (c) => run(() => window.BuyniverseAdmin.payCharge(c.id, payRef[c.id] || ""), "Payment recorded and stamps credited.");
+    const cancelCharge = (c) => run(() => window.BuyniverseAdmin.cancelCharge(c.id), "Charge cancelled.");
 
     onMounted(load);
-    return { t, phase, busy, error, notice, shownCode, data, days, adj, tabs, current, crumbs, day, decide, revoke, adjust, open, STATUS_LABEL, CODE_LABEL };
+    return { t, phase, busy, error, notice, shownCode, data, days, adj, pack, charge, payRef, money, tabs, current, crumbs, day, decide, revoke, adjust, publishPack, createCharge, markPaid, cancelCharge, open, STATUS_LABEL, CODE_LABEL, CHARGE_LABEL: { pending: "Pending", paid: "Paid", cancelled: "Cancelled" } };
   },
 };
 </script>

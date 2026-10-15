@@ -39,9 +39,10 @@ assert.strictEqual(everything.length, 5, "admin mode: three product groups plus 
 
 // breadcrumbs name the group, the screen and the tab in the same numbers
 const trail = nav.crumbs("/plataforma", "auditoria", "supplier", yes);
-assert.deepStrictEqual(trail.map((c) => c.n), ["6", "6.1", "6.1.4"]);
-assert.strictEqual(nav.tabs("/plataforma").map((t) => t.key).join(","), "empresas,accesos,timbres,auditoria");
+assert.deepStrictEqual(trail.map((c) => c.n), ["6", "6.1", "6.1.5"]);
+assert.strictEqual(nav.tabs("/plataforma").map((t) => t.key).join(","), "empresas,accesos,timbres,cobranza,auditoria");
 assert.strictEqual(nav.tabs("/plataforma")[1].n, "6.1.2");
+assert.strictEqual(nav.tabs("/plataforma")[4].n, "6.1.5");
 
 // every mode's links are unique and point somewhere
 for (const mode of nav.modes.concat(["unknown"])) {

@@ -38,5 +38,9 @@
     adjustStamps: function (companyId, delta, note) { return write("/api/v1/platform/stamps", { companyId: companyId, delta: delta, note: note }); },
     decideRequest: function (id, action, days) { return write("/api/v1/platform/demo-requests/" + encodeURIComponent(id), { action: action, days: days }); },
     revokeCode: function (id) { return write("/api/v1/platform/demo-codes/" + encodeURIComponent(id) + "/revoke", {}); },
+    savePack: function (pack) { return write("/api/v1/platform/packs", pack); },
+    createCharge: function (companyId, packId) { return write("/api/v1/platform/charges", { companyId: companyId, packId: packId }); },
+    payCharge: function (id, reference) { return write("/api/v1/platform/charges/" + encodeURIComponent(id) + "/paid", { reference: reference }); },
+    cancelCharge: function (id) { return write("/api/v1/platform/charges/" + encodeURIComponent(id) + "/cancel", {}); },
   };
 })(typeof window !== "undefined" ? window : globalThis);

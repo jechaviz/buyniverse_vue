@@ -164,6 +164,37 @@ async function main() {
     let blocked = false; try { sql("UPDATE platform_audit_events SET action = 'x' WHERE principal_id = ?", ids.Operator); } catch (_) { blocked = true; }
     check("platform decisions cannot be edited", blocked || sql("SELECT action FROM platform_audit_events WHERE action = 'x'").length === 0);
 
+    // Billing: a pack for sale, a charge to a company, a payment that credits stamps, and the rules around it.
+    r = await call("Customer", "POST", "/api/v1/platform/packs", { name: "X", stamps: 10, priceCents: "100.00" });
+    check("a non-operator cannot publish a pack", r.status === 403, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/packs", { name: "Paquete prueba", stamps: 100, priceCents: "4500.00", validMonths: 12 });
+    const packId = r.json && r.json.id;
+    check("an operator publishes a pack", r.status === 200 && !!packId, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/packs", { name: "Paquete prueba", stamps: 0, priceCents: "1.00" });
+    check("a pack needs positive stamps", r.status === 400, r.text);
+    const before = Number(sql("SELECT stamps_balance AS b FROM tenant_fiscal_profiles WHERE legal_entity_id = ?", ids.entity)[0].b);
+    r = await call("Operator", "POST", "/api/v1/platform/charges", { companyId: ids.entity, packId });
+    const chargeId = r.json && r.json.id;
+    check("a charge is created pending, with the pack's price", r.status === 200 && !!chargeId, r.text);
+    r = await call("Operator", "GET", "/api/v1/platform/overview");
+    const charge = (r.json.charges || []).find((c) => c.id === chargeId);
+    check("the charge is listed as pending at the pack price", charge && charge.status === "pending" && charge.amountCents === 450000 && charge.stamps === 100, JSON.stringify(charge));
+    r = await call("Operator", "POST", `/api/v1/platform/charges/${chargeId}/paid`, { reference: "ab" });
+    check("a payment needs its reference (tracking key)", r.status === 400, r.text);
+    check("nothing is credited before the payment is confirmed", Number(sql("SELECT stamps_balance AS b FROM tenant_fiscal_profiles WHERE legal_entity_id = ?", ids.entity)[0].b) === before);
+    r = await call("Operator", "POST", `/api/v1/platform/charges/${chargeId}/paid`, { reference: "SPEI-0001234567" });
+    check("a confirmed payment credits the stamps", r.status === 200 && r.json.balance === before + 100, r.text);
+    check("the credit is in the stamp ledger as a pack payment", sql("SELECT reason FROM cfdi_stamp_ledger WHERE legal_entity_id = ? AND reason = 'pack_paid'", ids.entity).length >= 1);
+    check("the payment is in the company audit chain", sql("SELECT action FROM tenant_audit_events WHERE resource_id = ? AND action = 'billing.charge_paid'", chargeId).length === 1);
+    r = await call("Operator", "POST", `/api/v1/platform/charges/${chargeId}/paid`, { reference: "SPEI-0001234567" });
+    check("a charge cannot be paid twice", r.status === 409, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/charges", { companyId: ids.entity, packId });
+    const cancelled = r.json && r.json.id;
+    r = await call("Operator", "POST", `/api/v1/platform/charges/${cancelled}/cancel`, {});
+    check("a pending charge can be cancelled", r.status === 200 && r.json.status === "cancelled", r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/charges/${cancelled}/paid`, { reference: "SPEI-9999999" });
+    check("a cancelled charge cannot be paid", r.status === 409, r.text);
+
     // Regression: an empty collection saved by the app came back as a JSON array and locked the person out
     // (the client wants objects). An empty record must survive the round trip as an object.
     const current = await call("Owner", "GET", "/api/v1/workspace-state");
