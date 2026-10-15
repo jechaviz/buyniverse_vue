@@ -172,7 +172,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), "
             "screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()",
         )
-        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+        self.send_header("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header("Origin-Agent-Cluster", "?1")
         self.send_header("X-DNS-Prefetch-Control", "off")
