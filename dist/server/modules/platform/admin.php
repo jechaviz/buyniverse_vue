@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 // CLI-only management of platform operators (the people who run the SaaS).
 // Run on the server, in the release directory:
-//   php platform_admin.php principals [search]     people who have signed in
+//   php server/modules/platform/admin.php principals [search]     people who have signed in
 //   php platform_admin.php operators               current operators
 //   php platform_admin.php grant <principal_id>    give platform access
 //   php platform_admin.php revoke <principal_id>   take it back
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 
-$configPath = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__) . '/buyniverse-runtime.php';
+$configPath = getenv('BUYNIVERSE_RUNTIME_CONFIG') ?: dirname(__DIR__, 4) . '/buyniverse-runtime.php';
 $config = is_file($configPath) ? require $configPath : [];
 if (!is_array($config) || empty($config['db_dsn'])) { fwrite(STDERR, "Runtime configuration unavailable\n"); exit(78); }
 $command = $argv[1] ?? '';
