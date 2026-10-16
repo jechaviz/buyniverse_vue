@@ -10,7 +10,7 @@
         </div>
 
         <div class="nh__ttl">
-          <h1 class="nh__h1">{{ store.t("I need") }}<em aria-hidden="true"><span class="nh__tx">{{ typed }}</span><span class="nh__caret"></span></em></h1>
+          <h1 class="nh__h1">{{ store.t("I need") }}<em aria-hidden="true"><span class="nh__tx">{{ typed }}</span><svg class="nh__caret bn-logo-spin" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="nhRingGradient" x1="0" y1="0" x2="1" y2="1"><stop class="ls-a" offset="0"/><stop class="ls-b" offset="1"/></linearGradient></defs><circle class="ls-ring" cx="17" cy="19" r="7" fill="none" stroke="url(#nhRingGradient)" stroke-width="4"/><g class="ls-orbit"><circle class="ls-dot" cx="12" cy="7.5" r="3" fill="#fff"/></g></svg></em></h1>
         </div>
 
         <p class="nh__intro">{{ store.t("Publish once and the offers compete for you.") }}</p>

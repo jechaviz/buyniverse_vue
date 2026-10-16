@@ -45,12 +45,21 @@
     }),
   ];
 
-  /** The groups of one mode, with the shared tail added to its "admin" group (created last if the mode has none). */
+  // Marketing is Buyniverse's own promotion, not a BestTorni group: the savings
+  // campaigns and the public calculator they send people to. Operators only.
+  var marketingGroup = { key: "marketing", title: "Marketing", screens: [
+    screen("/marketing", "fa-bullhorn", "Savings campaigns", { need: "platform.operator" }),
+    screen("/ahorro", "fa-calculator", "Savings calculator", { need: "platform.operator" }),
+  ] };
+
+  /** The groups of one mode, then Marketing, then Administración with the shared tail (created last if the mode has none). */
   function spec(mode) {
     var groups = (MODES[mode] || MODES.supplier).map(function (g) { return { key: g.key, title: g.title, screens: g.screens.slice() }; });
-    var admin = groups.find(function (g) { return g.key === "admin"; });
-    if (!admin) { admin = { key: "admin", title: "Administration", screens: [] }; groups.push(admin); }
+    var admin = groups.find(function (g) { return g.key === "admin"; }) || { key: "admin", title: "Administration", screens: [] };
+    groups = groups.filter(function (g) { return g !== admin; });
+    groups.push({ key: marketingGroup.key, title: marketingGroup.title, screens: marketingGroup.screens.slice() });
     admin.screens = admin.screens.concat(ADMIN_TAIL);
+    groups.push(admin);
     return groups;
   }
 

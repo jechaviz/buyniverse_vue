@@ -12,6 +12,7 @@
   if (global.__buyniverseI18n_access) dicts.push(global.__buyniverseI18n_access);
   if (global.__buyniverseI18n_need) dicts.push(global.__buyniverseI18n_need);
   if (global.__buyniverseI18n_setup) dicts.push(global.__buyniverseI18n_setup);
+  if (global.__buyniverseI18n_marketing) dicts.push(global.__buyniverseI18n_marketing);
 
   if (typeof globalThis !== "undefined") {
     if (globalThis.__buyniverseI18n_core) dicts.push(globalThis.__buyniverseI18n_core);

@@ -140,21 +140,21 @@ html:not(.dark) #app-boot .boot-card {
 
 #app-boot[hidden] { display: none !important; }
 
+/* The logo as a spinner (shared by the boot screen and the hero caret):
+   the white dot of the ring orbits its centre once every 1.6 s. When it is back at its start it flashes,
+   then it fades and orbits again, while the ring's colour keeps cycling through the hue wheel. */
+.bn-logo-spin { display: block; overflow: visible; }
+.bn-logo-spin .ls-a { stop-color: var(--a, #36e3c0); }
+.bn-logo-spin .ls-b { stop-color: var(--b, #4d7cff); }
+.bn-logo-spin .ls-orbit { transform-box: view-box; transform-origin: 17px 19px; animation: lsOrbit 1.6s linear infinite; }
+.bn-logo-spin .ls-dot { animation: lsFlash 1.6s ease-out infinite; }
+.bn-logo-spin .ls-ring { animation: lsHue 4.8s linear infinite; }
+
 #app-boot .boot-mark {
   display: block;
   width: 3.5rem;
   height: 3.5rem;
-  object-fit: contain;
   filter: drop-shadow(0 10px 18px rgba(63, 106, 242, 0.35));
-}
-
-#app-boot .boot-spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2.5px solid color-mix(in srgb, var(--accent) 25%, transparent);
-  border-top-color: var(--accent);
-  border-radius: 999px;
-  animation: bootSpin 0.7s linear infinite;
 }
 
 #app-boot .boot-label {
@@ -171,13 +171,23 @@ html[data-app-ready="true"] #app-boot {
   pointer-events: none;
 }
 
-@keyframes bootSpin {
+@keyframes lsOrbit {
   to { transform: rotate(360deg); }
+}
+
+/* Full-strength glow exactly at the start/return of the orbit (0% and 100%), decaying during the turn. */
+@keyframes lsFlash {
+  0%, 100% { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px var(--a, #36e3c0)) drop-shadow(0 0 14px var(--b, #4d7cff)); }
+  35%, 65% { filter: drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 2px var(--a, #36e3c0)) drop-shadow(0 0 4px rgba(77, 124, 255, 0.2)); }
+}
+
+@keyframes lsHue {
+  to { filter: hue-rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #app, #app-boot { transition: none; }
-  #app-boot .boot-spinner { animation: none; }
+  .bn-logo-spin .ls-orbit, .bn-logo-spin .ls-dot, .bn-logo-spin .ls-ring { animation: none; }
 }
 
 /* Core Layout Utilities. Anti-FOUC only: these exist so the first paint is laid out before UnoCSS arrives.
