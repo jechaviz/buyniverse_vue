@@ -18,31 +18,31 @@ assert.ok(nav && typeof nav.sidebar === "function", "navigation registers itself
 
 const yes = () => true, no = () => false;
 const buyer = nav.sidebar({ mode: "buyer", can: no });
-// The mode's groups keep their order and get stable numbers 1..4; the company and platform groups follow.
-assert.deepStrictEqual(buyer.map((g) => g.n), ["1", "2", "3", "4"], "without company or platform rights those groups are not shown");
+// The mode's groups keep their order and get stable numbers 1..3 (buyers have three groups); "Administración" follows as group 4.
+assert.deepStrictEqual(buyer.map((g) => g.n), ["1", "2", "3"], "without administration rights those groups are not shown");
 assert.strictEqual(buyer[1].items[1].n, "2.2", "numbers are assigned in the order of the full menu");
-assert.ok(!buyer.some((g) => g.key === "company" || g.key === "platform"), "no company or platform group without rights");
+assert.ok(!buyer.some((g) => g.key === "admin"), "no administration group without rights");
 
-// company setup appears for whoever may administer the company
+// company setup appears in Administración for whoever may administer the company
 const admin = nav.sidebar({ mode: "buyer", can: (p) => p === "manageCompany" });
-const company = admin.find((g) => g.key === "company");
-assert.ok(company && company.n === "5" && company.items[0].to === "/setup", "company setup is group 5 for company administrators");
-assert.ok(!admin.some((g) => g.key === "platform"), "platform stays hidden for company administrators");
+const adminGroup = admin.find((g) => g.key === "admin");
+assert.ok(adminGroup && adminGroup.n === "4" && adminGroup.items[0].to === "/setup" && adminGroup.items[0].n === "4.1", "company setup is screen 4.1 for company administrators");
+assert.ok(!adminGroup.items.some((i) => i.to === "/plataforma"), "platform stays hidden for company administrators");
 
-// platform administration is for operators only, and it has its four numbered tabs
+// platform administration is for operators only, it sits in Administración and has its five numbered tabs
 const operator = nav.sidebar({ mode: "supplier", can: (p) => p === "platform.operator" });
-const platform = operator.find((g) => g.key === "platform");
-assert.ok(platform && platform.n === "6" && platform.items[0].to === "/plataforma" && platform.items[0].n === "6.1", "platform is group 6, screen 6.1");
-assert.ok(!operator.some((g) => g.key === "company"), "an operator who is not a company administrator sees no company setup");
+const opsAdmin = operator.find((g) => g.key === "admin");
+assert.ok(opsAdmin && opsAdmin.n === "5" && opsAdmin.items.length === 1 && opsAdmin.items[0].to === "/plataforma" && opsAdmin.items[0].n === "5.2", "platform is screen 5.2 inside Administración");
+assert.ok(!operator.some((g) => g.items.some((i) => i.to === "/setup")), "an operator who is not a company administrator sees no company setup");
 const everything = nav.sidebar({ mode: "admin", can: yes });
-assert.strictEqual(everything.length, 5, "admin mode: three product groups plus company and platform");
+assert.deepStrictEqual(everything.map((g) => g.title), ["Analysis", "Administration"],"admin mode: Análisis and Administración, with company and platform inside the second");
 
 // breadcrumbs name the group, the screen and the tab in the same numbers
 const trail = nav.crumbs("/plataforma", "auditoria", "supplier", yes);
-assert.deepStrictEqual(trail.map((c) => c.n), ["6", "6.1", "6.1.5"]);
+assert.deepStrictEqual(trail.map((c) => c.n), ["5", "5.2", "5.2.5"]);
 assert.strictEqual(nav.tabs("/plataforma").map((t) => t.key).join(","), "empresas,accesos,timbres,cobranza,auditoria");
-assert.strictEqual(nav.tabs("/plataforma")[1].n, "6.1.2");
-assert.strictEqual(nav.tabs("/plataforma")[4].n, "6.1.5");
+assert.strictEqual(nav.tabs("/plataforma")[1].n, "5.2.2");
+assert.strictEqual(nav.tabs("/plataforma")[4].n, "5.2.5");
 
 // every mode's links are unique and point somewhere
 for (const mode of nav.modes.concat(["unknown"])) {

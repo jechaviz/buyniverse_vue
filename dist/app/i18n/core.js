@@ -40,6 +40,8 @@
     "Quotes": "Cotizaciones",
     "Live bids": "Ofertas en vivo",
     "Insights": "Análisis",
+    "Analysis": "Análisis",
+    "Sales & clients": "Ventas y clientes",
     "Settings & history": "Configuración e historial",
     "need attention": "requieren atención",
     "Requests, quotes, orders and savings in one place.": "Solicitudes, cotizaciones, órdenes y ahorros en un solo lugar.",
