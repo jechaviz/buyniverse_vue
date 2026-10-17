@@ -14,6 +14,7 @@ const windowScope = {
 
 new Function("window", read("../lib/web-common/browser.js"))(windowScope);
 new Function("window", read("../lib/procurement-common/browser.js"))(windowScope);
+new Function("window", read("app/lib/commerce.js"))(windowScope);
 new Function("window", read("app/lib/commercial-metrics.js"))(windowScope);
 new Function("window", read("app/data/demo.js"))(windowScope);
 new Function("window", read("app/store/procurementDomainActions.js"))(windowScope);
@@ -120,7 +121,9 @@ check(Boolean(rivalNotice) && !/John Doe|\$|50000/.test(rivalNotice.text), "Riva
 useBuyer();
 const order = store.awardLiveAuction(publication.auction, "Best compliant value with confirmed delivery capacity.");
 check(Boolean(order) && order.status === "Awaiting receipt", "Auction award creates an execution-ready purchase order");
-check(order.commercialSettlement?.serviceFee?.rate === 40 && order.commercialSettlement.serviceFee.amount === Math.round(order.commercialSettlement.totalSavings * 0.4 * 100) / 100 && order.commercialSettlement.buyerRetainedSavings === Math.round(order.commercialSettlement.totalSavings * 0.6 * 100) / 100, "Award locks the 40% service fee and buyer net savings for billing");
+const lockedFee = order.commercialSettlement?.serviceFee;
+const ruleFee = windowScope.BuyniverseCommerce.fee({ baselineCents: Math.round(Number(event.budget) * 100), awardedCents: Math.round(Number(publication.auction.currentBid) * 100), currency: order.commercialSettlement.currency });
+check(lockedFee?.rate === 25 && lockedFee.amount === ruleFee.feeCents / 100 && order.commercialSettlement.buyerRetainedSavings === Math.max(0, Math.round((order.commercialSettlement.totalSavings - lockedFee.amount) * 100) / 100), "Award locks the fee the commercial rule gives (a share of the saving with floor and cap) and the buyer's net savings for billing");
 check(event.awardedSupplierId === "sup-3" && request.status === "Awarded", "Award propagates to the sourcing event and purchase request");
 check(!store.closePurchaseOrder(order) && order.status === "Awaiting receipt", "An unmatched order cannot be closed early");
 

@@ -195,6 +195,46 @@ async function main() {
     r = await call("Operator", "POST", `/api/v1/platform/charges/${cancelled}/paid`, { reference: "SPEI-9999999" });
     check("a cancelled charge cannot be paid", r.status === 409, r.text);
 
+    // ---- Commerce: terms and the collection of award settlements (operators only).
+    const goodTerms = { scope: "default", ratePercent: 25, bracketRatePercent: 20, floorPercent: 0.4, capPercent: 8, bracketThreshold: 5000000, floorMin: 3000, mode: "informative", currency: "MXN" };
+    r = await call("Customer", "POST", "/api/v1/platform/commerce-terms", goodTerms);
+    check("a customer cannot change commercial terms", r.status === 403, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, ratePercent: 140 });
+    check("a rate above 100% is refused", r.status === 400, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, floorPercent: 9, capPercent: 8 });
+    check("a floor above the cap is refused", r.status === 400, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, mode: "free" });
+    check("an unknown mode is refused", r.status === 400, r.text);
+    r = await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, scope: ids.tenant, ratePercent: 18, mode: "charging" });
+    check("an operator sets terms for one company", r.status === 200, r.text);
+    r = await call("Operator", "GET", "/api/v1/platform/overview");
+    const mine = (r.json.commerceTerms || []).find((t) => t.scope === ids.tenant);
+    check("the company's terms are listed apart from the default", mine && mine.ratePercent === 18 && mine.mode === "charging" && (r.json.commerceTerms || []).some((t) => t.scope === "default"), JSON.stringify(r.json.commerceTerms));
+    // a pending settlement written the way the server writes it, to exercise the collection routes
+    const roomId = crypto.randomUUID();
+    const mk = (id, status) => sql("INSERT INTO award_settlements (id, tenant_id, legal_entity_id, room_id, auction_ref, currency, baseline_cents, awarded_cents, saving_cents, ratio_fee_cents, floor_cents, cap_cents, fee_cents, terms_json, terms_hash, status, settled_by_principal_id) VALUES (?, ?, ?, ?, ?, 'MXN', 1000000, 800000, 200000, 50000, 3200, 64000, 50000, '{}', ?, ?, ?)", id, ids.tenant, ids.entity, crypto.randomUUID(), "panel-" + id.slice(0, 6), "0".repeat(64), status, ids.Owner);
+    const pendingId = crypto.randomUUID(), waivedId = crypto.randomUUID(), infoId = crypto.randomUUID();
+    mk(pendingId, "pending"); mk(waivedId, "pending"); mk(infoId, "informative");
+    r = await call("Operator", "GET", "/api/v1/platform/overview");
+    check("settlements are listed with their company and fee", (r.json.settlements || []).some((x) => x.id === pendingId && x.feeCents === 50000 && x.status === "pending" && x.workspace !== ""), JSON.stringify(r.json.settlements).slice(0, 200));
+    r = await call("Customer", "POST", `/api/v1/platform/settlements/${pendingId}/paid`, { reference: "SPEI-77001122" });
+    check("a customer cannot mark a settlement paid", r.status === 403, r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${pendingId}/paid`, { reference: "ab" });
+    check("a collection needs its reference", r.status === 400, r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${pendingId}/paid`, { reference: "SPEI-77001122" });
+    check("an operator confirms a collection", r.status === 200 && r.json.status === "paid", r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${pendingId}/paid`, { reference: "SPEI-77001122" });
+    check("a collected settlement cannot be collected again", r.status === 409, r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${waivedId}/waive`, { reference: "x" });
+    check("waiving a fee needs a reason", r.status === 400, r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${waivedId}/waive`, { reference: "Cortesía de lanzamiento" });
+    check("an operator waives a fee with a reason", r.status === 200 && r.json.status === "waived", r.text);
+    r = await call("Operator", "POST", `/api/v1/platform/settlements/${infoId}/paid`, { reference: "SPEI-12345678" });
+    check("an informative settlement is not a receivable", r.status === 409, r.text);
+    const collected = sql("SELECT fee_cents, status, payment_reference FROM award_settlements WHERE id = ?", pendingId)[0];
+    check("collecting keeps the amounts and records the reference", Number(collected.fee_cents) === 50000 && collected.status === "paid" && collected.payment_reference === "SPEI-77001122", JSON.stringify(collected));
+    check("the decisions are in the platform audit", sql("SELECT action FROM platform_audit_events WHERE action IN ('commerce.settlement_paid', 'commerce.settlement_waived', 'commerce.terms_saved')").length >= 3);
+
     // Regression: an empty collection saved by the app came back as a JSON array and locked the person out
     // (the client wants objects). An empty record must survive the round trip as an object.
     const current = await call("Owner", "GET", "/api/v1/workspace-state");

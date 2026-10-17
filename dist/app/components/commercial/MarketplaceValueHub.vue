@@ -28,7 +28,7 @@
 <script>
 const { inject, computed } = Vue;
 const load = (path) => Vue.defineAsyncComponent(() => window['vue3-sfc-loader'].loadModule(path, window.sfcOptions));
-const SavingsWaterfall = load('./app/components/commercial/SavingsWaterfall.vue?v=3');
+const SavingsWaterfall = load('./app/components/commercial/SavingsWaterfall.vue?v=4');
 export default {
   components: { SavingsWaterfall },
   setup() {

@@ -4,7 +4,7 @@
     <NeedsBoard />
 
     <!-- 2. What the pipeline is delivering. -->
-    <SavingsWaterfall :model="commercial.primary" :title="store.t('Savings waterfall')" :kicker="store.t('Commercial intelligence')" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
+    <SavingsWaterfall :model="commercial.primary" :title="store.t('Savings waterfall')" :kicker="store.t('Commercial intelligence')" />
 
     <!-- 3. Context: trend and the suppliers behind it. -->
     <section class="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,.6fr)]">
@@ -80,11 +80,10 @@
 <script>
 const {inject,computed}=Vue;
 const load=(path)=>Vue.defineAsyncComponent(()=>window['vue3-sfc-loader'].loadModule(path,window.sfcOptions));
-const SavingsWaterfall=load('./app/components/commercial/SavingsWaterfall.vue?v=1');
+const SavingsWaterfall=load('./app/components/commercial/SavingsWaterfall.vue?v=2');
 const NeedsBoard=load('./app/pages/procurement/NeedsBoard.vue?v=2');
 export default {components:{SavingsWaterfall,NeedsBoard},setup(){const store=inject('store'),analytics=store.state.procurementAnalytics;
   const commercial=computed(()=>window.BuyniverseCommercialMetrics?.portfolio(store.state)||{primary:{}});
-  const setServiceFee=(rate)=>store.setCommercialTerms({rate,basis:store.state.procurementAnalytics?.commercialModel?.successFeeBasis});
   const topSuppliers=computed(()=>[...store.state.suppliers].sort((a,b)=>b.score-a.score).slice(0,4));
 
   const bar=(value,max)=>`${Math.max(6,Math.round(Number(value||0)/max*100))}%`;
@@ -97,5 +96,5 @@ export default {components:{SavingsWaterfall,NeedsBoard},setup(){const store=inj
     if(id.startsWith('inv-')||id.startsWith('FAC-'))return `/invoices/${id}`;
     return null;
   };
-  return{store,analytics,commercial,topSuppliers,bar,auditLink,setServiceFee};}}
+  return{store,analytics,commercial,topSuppliers,bar,auditLink};}}
 </script>

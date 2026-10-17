@@ -1,4 +1,4 @@
-// Public savings estimate: the numbers a buyer sees on /ahorro must follow the commercial rule exactly.
+// Public savings estimate: the numbers a buyer sees on /ahorro must follow the server's fee rule exactly.
 "use strict";
 const assert = require("assert");
 const fs = require("fs");
@@ -7,37 +7,38 @@ const path = require("path");
 const root = path.resolve(__dirname, "../..");
 const context = { window: {} };
 context.window = context;
-new Function("window", fs.readFileSync(path.join(root, "app/lib/commercial-metrics.js"), "utf8"))(context);
+new Function("window", fs.readFileSync(path.join(root, "app/lib/commerce.js"), "utf8"))(context);
 new Function("window", fs.readFileSync(path.join(root, "app/lib/savings-calculator.js"), "utf8"))(context);
-const { estimate, GAIN_SHARE_RATE } = context.BuyniverseSavings;
+const { estimate } = context.BuyniverseSavings;
 
-assert.strictEqual(GAIN_SHARE_RATE, 40, "the public estimate uses the commercial default rate");
+// 1,000,000 budget, 800,000 offer: saving 200,000; 25% = 50,000; floor 3,200 and cap 64,000 do not bite.
+const worked = estimate({ budget: 1000000, offer: 800000 });
+assert.deepStrictEqual([worked.valid, worked.savings, worked.fee, worked.net, worked.percentSaved, worked.basis, worked.currency], [true, 200000, 50000, 150000, 20, "saving", "MXN"], "worked example");
 
-// 1,000 budget, 800 offer: 200 saved, 40% of it is the fee, the buyer keeps 120.
-const worked = estimate({ budget: 1000, offer: 800 });
-assert.deepStrictEqual([worked.valid, worked.savings, worked.fee, worked.net, worked.percentSaved], [true, 200, 80, 120, 20], "worked example");
+// a small purchase hits the cap: 8% of 800 = 64, not 25% of 200 = 50 and not the 3,000 minimum
+const small = estimate({ budget: 1000, offer: 800 });
+assert.deepStrictEqual([small.fee, small.basis, small.net], [64, "cap", 136], "a small purchase never pays more than the cap");
 
-// an offer above the budget saves nothing and charges nothing
-const above = estimate({ budget: 1000, offer: 1200 });
-assert.deepStrictEqual([above.valid, above.savings, above.fee, above.net], [true, 0, 0, 0], "no savings above budget");
+// no saving: the floor (0.4% of what is awarded, at least 3,000) is what is charged, and it is more than the saving
+const none = estimate({ budget: 800000, offer: 900000 });
+assert.deepStrictEqual([none.savings, none.fee, none.net, none.basis, none.extra], [0, 3600, 0, "floor", 3600], "no saving still pays the floor");
 
-// a free offer is still a valid comparison
+// a free offer is a valid comparison; the cap is 8% of zero, so nothing is charged
 const free = estimate({ budget: 500, offer: 0 });
-assert.deepStrictEqual([free.valid, free.savings, free.net], [true, 500, 300], "an offer of zero saves the whole budget");
+assert.deepStrictEqual([free.valid, free.savings, free.fee], [true, 500, 0], "an offer of zero owes nothing");
 
-// without a budget or with a negative offer there is nothing to estimate
-assert.strictEqual(estimate({ budget: 0, offer: 10 }).valid, false, "a zero budget is not estimable");
-assert.strictEqual(estimate({ budget: 100, offer: -1 }).valid, false, "a negative offer is not estimable");
-assert.strictEqual(estimate({ budget: "abc", offer: 10 }).valid, false, "a non-number budget is not estimable");
-assert.strictEqual(estimate({}).valid, false, "empty input is not estimable");
+// invalid input
+for (const input of [{ budget: 0, offer: 10 }, { budget: 100, offer: -1 }, { budget: "abc", offer: 10 }, {}]) assert.strictEqual(estimate(input).valid, false, `not estimable: ${JSON.stringify(input)}`);
 
-// the rate can be changed by the caller and is clamped to 0..100
-assert.strictEqual(estimate({ budget: 1000, offer: 800, rate: 0 }).fee, 0, "rate 0 charges no fee");
-assert.strictEqual(estimate({ budget: 1000, offer: 800, rate: 150 }).rate, 100, "rate is capped at 100");
-assert.strictEqual(estimate({ budget: 1000, offer: 800, rate: 150 }).net, 0, "a 100% fee leaves nothing");
+// the server's terms replace the defaults, and the estimate follows them
+context.BuyniverseRuntime = { commerce: { ratePercent: 18, capPercent: 5, floorPercent: 0.4 } };
+const custom = estimate({ budget: 1000000, offer: 800000 });
+assert.deepStrictEqual([custom.fee, custom.ratePercent, custom.capPercent], [36000, 18, 5], "the estimate uses the terms the server published");
 
-// the buyer never keeps more than the savings, and the fee never exceeds them
-const sample = estimate({ budget: 12345.67, offer: 9876.54 });
-assert.ok(sample.fee <= sample.savings && sample.net === Math.round((sample.savings - sample.fee) * 100) / 100, "fee is bounded by savings and net = savings - fee");
+// the buyer never pays more than the cap of what is awarded
+for (const [b, o] of [[1e6, 1], [1e9, 5e8], [12345.67, 9876.54], [50, 49]]) {
+  const e = estimate({ budget: b, offer: o });
+  assert.ok(e.fee <= Math.round(o * 5) / 100 + 0.01, `fee ${e.fee} is within the cap for ${b}/${o}`);
+}
 
-console.log("[PASS] Public savings estimate follows the commercial rule (worked example, bounds, invalid input)");
+console.log("[PASS] Public savings estimate follows the server's rule (worked example, floor, cap, server terms, invalid input)");

@@ -14,6 +14,7 @@ const windowScope = {
 
 new Function("window", read("../lib/web-common/browser.js"))(windowScope);
 new Function("window", read("../lib/procurement-common/browser.js"))(windowScope);
+new Function("window", read("app/lib/commerce.js"))(windowScope);
 new Function("window", read("app/lib/commercial-metrics.js"))(windowScope);
 new Function("window", read("app/data/demo.js"))(windowScope);
 new Function("window", read("app/store/procurementDomainActions.js"))(windowScope);

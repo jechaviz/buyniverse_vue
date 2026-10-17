@@ -56,19 +56,28 @@ for (const person of people) {
 }
 const ids = JSON.parse(php([fixtureScript, JSON.stringify(people)]));
 
-async function call(who, method, uri, body) {
+const sqlScript = path.join(work, "sql.php");
+fs.writeFileSync(sqlScript, `<?php
+$c = require getenv('BUYNIVERSE_RUNTIME_CONFIG'); $pdo = new PDO($c['db_dsn'], $c['db_user'], $c['db_password'], [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+$s = $pdo->prepare($argv[1]); try { $s->execute(array_slice($argv, 2)); echo json_encode($s->columnCount() ? $s->fetchAll(PDO::FETCH_ASSOC) : ['ok' => true]); } catch (Throwable $e) { echo json_encode(['error' => $e->getMessage()]); }`);
+const sql = (query, ...args) => JSON.parse(php([sqlScript, query, ...args]));
+const commerce = (who, method, uri, body) => call(who, method, uri, body, "/api/v1/commerce");
+const closeRoom = (auctionRef) => sql("UPDATE auction_live_rooms SET closes_at = (CURRENT_TIMESTAMP - INTERVAL 1 MINUTE) WHERE auction_ref = ?", auctionRef);
+
+async function call(who, method, uri, body, prefix = "/api/v1/auction-realtime") {
   await pause(340); // the channel rate-limits a session to one write per 300 ms
   const s = sessionOf[who];
   const headers = { Accept: "application/json", Cookie: s.cookie, Origin: base };
   let payload;
   if (body) { payload = JSON.stringify(body); headers["Content-Type"] = "application/json"; }
   if (method !== "GET") { headers["X-Buyniverse-CSRF"] = s.csrf; headers["X-Buyniverse-Request"] = "auction-realtime-v1"; }
-  const response = await fetch(base + "/api/v1/auction-realtime" + uri, { method, headers, body: payload });
+  const response = await fetch(base + prefix + uri, { method, headers, body: payload });
   const text = await response.text(); let json = null; try { json = JSON.parse(text); } catch (_) {}
   const set = response.headers.get("set-cookie"); if (set && /buyniverse_workspace=([^;]+)/.test(set)) s.cookie = `buyniverse_workspace=${RegExp.$1}`;
   if (json && typeof json.csrf === "string") s.csrf = json.csrf;
   return { status: response.status, json, text };
 }
+const settlementOf = (r) => ((r.json || {}).settlement || {});
 const key = () => "bid-" + crypto.randomBytes(8).toString("hex");
 
 async function main() {
@@ -152,6 +161,62 @@ async function main() {
     check("the floor itself is a valid bid", r.status === 200 && r.json.bestAmount === "100.00", r.text);
     r = await call("Beta", "POST", `/rooms/${snipe}/bids`, { amount: "99", bidKey: key() });
     check("nothing can beat the floor", r.status === 422, r.text);
+
+    // ---- Award settlement: the server, not the browser, decides the fee.
+    sql("UPDATE commerce_terms SET mode = 'informative' WHERE scope = 'default'");  // earlier runs may have left the test database in charging mode
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: ref });
+    check("an open room cannot be settled", r.status === 409, r.text);
+    r = await commerce("Alfa", "POST", "/settle", { auctionRef: ref });
+    check("a bidder cannot settle", r.status === 403, r.text);
+    r = await commerce("Outsider", "POST", "/settle", { auctionRef: ref });
+    check("someone outside the tenant cannot settle", [401, 403, 404].includes(r.status), r.text);
+    r = await commerce("Organizer", "GET", "/terms");
+    check("the company reads its effective terms (25% standard, 8% cap, informative)", r.status === 200 && r.json.terms.ratePercent === 25 && r.json.terms.capPercent === 8 && r.json.terms.mode === "informative", r.text);
+
+    closeRoom(ref);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: ref });
+    // baseline 10,000, awarded 9,000: saving 1,000 (25% = 250), floor 3,000 (minimum), cap 8% of 9,000 = 720 -> the cap decides
+    check("a closed room settles from the ledger", r.status === 200 && r.json.created === true && settlementOf(r).baselineCents === 1000000 && settlementOf(r).awardedCents === 900000 && settlementOf(r).savingCents === 100000, r.text);
+    check("a small award never pays more than the cap", settlementOf(r).feeCents === 72000 && settlementOf(r).basis === "cap" && settlementOf(r).status === "informative", r.text);
+    const first = settlementOf(r).id;
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: ref });
+    check("settling twice returns the same settlement", r.status === 200 && r.json.created === false && settlementOf(r).id === first, r.text);
+    check("only one settlement exists for the room", Number(sql("SELECT COUNT(*) AS n FROM award_settlements WHERE room_id = (SELECT id FROM auction_live_rooms WHERE auction_ref = ?)", ref)[0].n) === 1);
+    const tamper = sql("UPDATE award_settlements SET fee_cents = 1, awarded_cents = 1 WHERE id = ?", first);
+    const after = sql("SELECT fee_cents, awarded_cents, status FROM award_settlements WHERE id = ?", first)[0];
+    check("the amounts of a settlement cannot be rewritten", Number(after.fee_cents) === 72000 && Number(after.awarded_cents) === 900000, JSON.stringify(after));
+    check("a settlement cannot be deleted", sql("DELETE FROM award_settlements WHERE id = ?", first).error !== undefined);
+    r = await commerce("Organizer", "GET", "/settlements");
+    check("the company lists its settlements", r.status === 200 && r.json.settlements.length === 1 && r.json.settlements[0].id === first, r.text);
+
+    // A large award: the saving decides, at 25%, and the terms in force are pinned by hash.
+    const big = "big-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: big, participantPrincipalIds: bidders, closesAt: soon, startAmount: "1000000", minStep: 100, currency: "MXN" });
+    r = await call("Alfa", "POST", `/rooms/${big}/bids`, { amount: "900000", bidKey: key() }); check("a large first bid is accepted", r.status === 200, r.text);
+    await call("Beta", "POST", `/rooms/${big}/bids`, { amount: "800000", bidKey: key() });
+    closeRoom(big);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: big });
+    check("a large award pays 25% of the saving", r.status === 200 && settlementOf(r).savingCents === 20000000 && settlementOf(r).feeCents === 5000000 && settlementOf(r).basis === "saving", r.text);
+    const stored = sql("SELECT trailing_saving_cents, terms_hash, terms_json FROM award_settlements WHERE id = ?", settlementOf(r).id || "none")[0] || {};
+    check("the settlement pins the terms it used", /^[0-9a-f]{64}$/.test(stored.terms_hash) && JSON.parse(stored.terms_json).terms.rate_bps === 2500 && Number(stored.trailing_saving_cents) === 100000, JSON.stringify(stored));
+
+    // A room nobody bid on has nothing to settle.
+    const empty = "empty-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: empty, participantPrincipalIds: bidders, closesAt: soon, startAmount: "500", minStep: 1, currency: "MXN" });
+    closeRoom(empty);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: empty });
+    check("a room without bids cannot be settled", r.status === 409, r.text);
+
+    // Charging mode: the next settlement is a receivable, not just information.
+    sql("UPDATE commerce_terms SET mode = 'charging' WHERE scope = 'default'");
+    const paid = "paid-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: paid, participantPrincipalIds: bidders, closesAt: soon, startAmount: "1000000", minStep: 100, currency: "MXN" });
+    await call("Alfa", "POST", `/rooms/${paid}/bids`, { amount: "700000", bidKey: key() });
+    closeRoom(paid);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: paid });
+    check("in charging mode the settlement is pending", r.status === 200 && settlementOf(r).status === "pending", r.text);
+    check("the 12-month saving carries into the next fee (still under the bracket)", Number((sql("SELECT trailing_saving_cents FROM award_settlements WHERE id = ?", settlementOf(r).id || "none")[0] || {}).trailing_saving_cents) === 20100000);
+    sql("UPDATE commerce_terms SET mode = 'informative' WHERE scope = 'default'");
 
     // The ledger is append-only, even for the application's own database user.
     const immutable = path.join(work, "immutable.php");

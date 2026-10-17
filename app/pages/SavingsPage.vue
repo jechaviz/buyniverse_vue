@@ -28,8 +28,8 @@
             <div><dt>{{ t("Buyniverse fee") }}</dt><dd>{{ money(result.fee) }}</dd></div>
             <div class="bn-sav__net"><dt>{{ t("You keep") }}</dt><dd>{{ money(result.net) }}</dd></div>
           </dl>
-          <p class="bn-sav__pct">{{ t("That is {percent}% below your budget.", { percent: result.percentSaved }) }}</p>
-          <p class="bn-sav__rule">{{ t("The fee is {rate}% of the saving, and it is only charged when there is one.", { rate: result.rate }) }}</p>
+          <p class="bn-sav__pct">{{ result.savings > 0 ? t("That is {percent}% below your budget.", { percent: result.percentSaved }) : t("This offer is not below your budget, so there is no saving.") }}</p>
+          <p class="bn-sav__rule">{{ rule }}</p>
         </template>
         <p v-else class="bn-sav__empty">{{ t("Enter a budget above zero and an offer of zero or more to see the estimate.") }}</p>
       </section>
@@ -40,7 +40,7 @@
       <ul>
         <li>{{ t("It is an estimate for one comparison. It is not a quote and not a promise of savings.") }}</li>
         <li>{{ t("Real results depend on the offers each buyer receives in its own purchase.") }}</li>
-        <li>{{ t("The fee applies only to the saving, and the calculation is the same one used on your dashboard.") }}</li>
+        <li>{{ t("The fee is calculated on the saving, with a floor and a cap, by the same rule as your dashboard.") }}</li>
       </ul>
       <a class="bn-btn bn-btn--primary" href="/necesito"><i class="fa-solid fa-bolt"></i>{{ t("Publish a need and compare real offers") }}</a>
     </section>
@@ -59,12 +59,19 @@ export default {
       if (vars) for (const [key, value] of Object.entries(vars)) out = out.replace(`{${key}}`, String(value));
       return out;
     };
-    const budget = ref(1000), offer = ref(800);
+    const budget = ref(1000000), offer = ref(800000);
     const result = computed(() => window.BuyniverseSavings.estimate({ budget: budget.value, offer: offer.value }));
-    const money = (value) => new Intl.NumberFormat(store.locale.value === "en" ? "en-US" : "es-MX", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value || 0);
+    const money = (value) => new Intl.NumberFormat(store.locale.value === "en" ? "en-US" : "es-MX", { style: "currency", currency: result.value.currency || "MXN", maximumFractionDigits: 2 }).format(value || 0);
+    // Which rule decided the fee, in words: a saving share, the floor, or the cap.
+    const rule = computed(() => {
+      const r = result.value;
+      if (r.basis === "floor") return t("With little or no saving, a floor applies: {floor}% of what you award, and at least a fixed minimum.", { floor: r.floorPercent });
+      if (r.basis === "cap") return t("The fee never exceeds {cap}% of what you award, and that limit applies here.", { cap: r.capPercent });
+      return t("The fee is {rate}% of the saving. It never exceeds {cap}% of what you award.", { rate: r.ratePercent, cap: r.capPercent });
+    });
     // The estimate is live as the fields change; Enter in a field just keeps the current figures.
     const recalculate = () => {};
-    return { t, budget, offer, result, money, recalculate };
+    return { t, budget, offer, result, money, rule, recalculate };
   },
 };
 </script>

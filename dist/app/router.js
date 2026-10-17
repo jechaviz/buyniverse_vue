@@ -21,7 +21,7 @@
     const Home = load("./app/pages/HomePage.vue?v=53");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=2");
-    const Savings = load("./app/pages/SavingsPage.vue?v=1");
+    const Savings = load("./app/pages/SavingsPage.vue?v=2");
     const Marketing = load("./app/pages/MarketingPage.vue?v=1");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
     const Workspace = load("./app/pages/WorkspacePage.vue?v=60");
@@ -43,7 +43,7 @@
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
     const Setup = load("./app/pages/SetupPage.vue?v=2");
-    const Platform = load("./app/pages/PlatformPage.vue?v=2");
+    const Platform = load("./app/pages/PlatformPage.vue?v=3");
 
     const NotFound = {
       template:

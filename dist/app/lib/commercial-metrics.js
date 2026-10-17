@@ -45,19 +45,22 @@
     const financialSavings = positiveDelta(budget, bestFirst);
     const buyniverseSavings = positiveDelta(bestFirst, bestFinal);
     const totalSavings = positiveDelta(budget, bestFinal);
+    // Once an award is settled its fee is final. Before that the fee is the server's rule
+    // (lib/commerce.js): a share of the saving, with a floor and a cap on what is awarded.
     const lockedTerms = auctionRecord?.commercialSettlement?.serviceFee;
-    const configuredRate = Math.min(100, Math.max(0, Number(options.successFeeRate ?? 40) || 0));
-    const configuredBasis = options.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
-    const lockedRate = amount(lockedTerms?.rate);
-    const successFeeRate = lockedRate === null ? configuredRate : Math.min(100, Math.max(0, lockedRate));
-    const successFeeBasis = lockedTerms?.basis === "buyniverse" ? "buyniverse" : configuredBasis;
-    const feeBase = successFeeBasis === "buyniverse" ? buyniverseSavings : totalSavings;
+    const currency = auctionRecord?.currency || event?.currency || options.currency || "USD";
     const lockedFee = amount(lockedTerms?.amount);
-    const outcomeShare = lockedFee === null ? rounded(feeBase * successFeeRate / 100) : Math.max(0, lockedFee);
+    const lockedRate = amount(lockedTerms?.rate);
+    const commerce = global.BuyniverseCommerce;
+    let quote = { feeCents: 0, basis: "none" };
+    if (commerce && budget !== null && bestFinal !== null) quote = commerce.fee({ baselineCents: Math.round(budget * 100), awardedCents: Math.round(bestFinal * 100), currency });
+    const successFeeRate = lockedRate !== null ? Math.min(100, Math.max(0, lockedRate)) : (commerce ? commerce.terms().ratePercent : 0);
+    const successFeeBasis = "total";
+    const outcomeShare = lockedFee === null ? rounded(quote.feeCents / 100) : Math.max(0, lockedFee);
 
     return {
       auctionId: auctionRecord?.id || null,
-      currency: auctionRecord?.currency || event?.currency || options.currency || "USD",
+      currency,
       budget,
       bestFirst,
       bestFinal,
@@ -66,6 +69,7 @@
       totalSavings,
       successFeeRate,
       successFeeBasis,
+      feeBasis: quote.basis,
       outcomeShare,
       netSavings: rounded(Math.max(0, totalSavings - outcomeShare)),
       termsLocked: Boolean(lockedTerms && isFinal(auctionRecord?.status || event?.status)),
@@ -132,11 +136,11 @@
 
   function portfolio(state, options = {}) {
     const source = state || {};
-    const rate = Number(source.procurementAnalytics?.commercialModel?.gainShareRate ?? options.successFeeRate ?? 40);
+    const rate = global.BuyniverseCommerce ? global.BuyniverseCommerce.terms().ratePercent : 0;
     const successFeeBasis = source.procurementAnalytics?.commercialModel?.successFeeBasis === "buyniverse" ? "buyniverse" : "total";
     const events = Array.isArray(source.sourcingEvents) ? source.sourcingEvents : [];
     const models = (Array.isArray(source.auctions) ? source.auctions : []).map((auctionRecord) =>
-      auction(auctionRecord, events.find((event) => event.id === auctionRecord.eventId || event.id === auctionRecord.id), { successFeeRate: rate, successFeeBasis }),
+      auction(auctionRecord, events.find((event) => event.id === auctionRecord.eventId || event.id === auctionRecord.id), { successFeeBasis }),
     );
     const byCurrency = {};
     models.forEach((model) => addCurrency(byCurrency, model.currency, model));

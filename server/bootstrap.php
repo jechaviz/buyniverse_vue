@@ -8,3 +8,4 @@ declare(strict_types=1);
 require_once __DIR__ . '/modules/setup/service.php';
 require_once __DIR__ . '/modules/demo/service.php';
 require_once __DIR__ . '/modules/platform/service.php';
+require_once __DIR__ . '/modules/commerce/service.php';

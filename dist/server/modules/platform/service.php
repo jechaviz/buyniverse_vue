@@ -35,7 +35,7 @@ function platform_companies(PDO $pdo): array {
         FROM tenant_legal_entities e INNER JOIN tenant_accounts t ON t.id = e.tenant_id LEFT JOIN tenant_fiscal_profiles p ON p.legal_entity_id = e.id
         ORDER BY e.created_at DESC LIMIT 200')->fetchAll();
     return array_map(static fn($r) => [
-        'id' => (string) $r['id'], 'workspace' => (string) $r['workspace'], 'accountKind' => (string) $r['account_kind'], 'legalName' => (string) $r['legal_name'],
+        'id' => (string) $r['id'], 'tenantId' => (string) $r['tenant_id'], 'workspace' => (string) $r['workspace'], 'accountKind' => (string) $r['account_kind'], 'legalName' => (string) $r['legal_name'],
         'rfc' => (string) ($r['rfc'] ?? ''), 'country' => (string) $r['country_code'], 'status' => (string) $r['status'],
         'issuance' => (string) ($r['issuance_mode'] ?? 'external'), 'profileStatus' => (string) ($r['profile_status'] ?? 'external'),
         'stampsBalance' => (int) ($r['stamps_balance'] ?? 0), 'certificateValidTo' => $r['certificate_valid_to'] ? (string) $r['certificate_valid_to'] : null,
@@ -77,6 +77,17 @@ function platform_charges(PDO $pdo): array {
         $pdo->query('SELECT c.*, e.legal_name, t.display_name AS workspace, p.name AS pack_name FROM platform_charges c INNER JOIN tenant_legal_entities e ON e.id = c.legal_entity_id
             INNER JOIN tenant_accounts t ON t.id = c.tenant_id INNER JOIN platform_stamp_packs p ON p.id = c.pack_id ORDER BY c.created_at DESC LIMIT 200')->fetchAll());
 }
+function platform_settlements(PDO $pdo): array {
+    return array_map(static fn($r) => ['id' => (string) $r['id'], 'workspace' => (string) $r['workspace'], 'legalName' => (string) $r['legal_name'], 'auctionRef' => (string) $r['auction_ref'],
+        'currency' => (string) $r['currency'], 'baselineCents' => (int) $r['baseline_cents'], 'awardedCents' => (int) $r['awarded_cents'], 'savingCents' => (int) $r['saving_cents'],
+        'feeCents' => (int) $r['fee_cents'], 'status' => (string) $r['status'], 'reference' => (string) ($r['payment_reference'] ?? ''), 'createdAt' => (string) $r['created_at']],
+        $pdo->query('SELECT s.*, t.display_name AS workspace, e.legal_name FROM award_settlements s INNER JOIN tenant_accounts t ON t.id = s.tenant_id
+            INNER JOIN tenant_legal_entities e ON e.id = s.legal_entity_id ORDER BY s.created_at DESC LIMIT 200')->fetchAll());
+}
+function platform_commerce_terms(PDO $pdo): array {
+    return array_map(static fn($r) => ['scope' => (string) $r['scope']] + commerce_public_terms(commerce_normalize_terms($r)),
+        $pdo->query('SELECT * FROM commerce_terms ORDER BY scope = "default" DESC, scope')->fetchAll());
+}
 function handle_platform(string $uri): void {
     $config = workspace_config(); $session = workspace_session();
     $route = rtrim(substr($uri, strlen('/api/v1/platform')), '/');
@@ -96,7 +107,8 @@ function handle_platform(string $uri): void {
 
         if ($route === '/overview' && $method === 'GET') {
             workspace_json(['companies' => platform_companies($pdo), 'demoRequests' => platform_demo_requests($pdo, $key), 'demoCodes' => platform_demo_codes($pdo),
-                'audit' => platform_audit($pdo), 'packs' => platform_packs($pdo), 'charges' => platform_charges($pdo), 'csrf' => $session['csrf']]);
+                'audit' => platform_audit($pdo), 'packs' => platform_packs($pdo), 'charges' => platform_charges($pdo),
+                'settlements' => platform_settlements($pdo), 'commerceTerms' => platform_commerce_terms($pdo), 'csrf' => $session['csrf']]);
         }
         if ($method !== 'POST') fail_response(405, 'Method not allowed');
         platform_require_write($session);
@@ -204,6 +216,48 @@ function handle_platform(string $uri): void {
             platform_record($pdo, $principal['id'], 'billing.charge_paid', 'charge ' . $chargeId, ['stamps' => (int) $charge['stamps']]);
             $pdo->commit();
             workspace_json(['status' => 'paid', 'balance' => $balance, 'csrf' => $session['csrf']]);
+        }
+        if ($route === '/commerce-terms') {
+            $scope = strtolower(trim((string) ($input['scope'] ?? 'default')));
+            if ($scope !== 'default' && !tenant_is_uuid($scope)) fail_response(400, 'The scope is "default" or a workspace id');
+            $percent = static function ($value): int {
+                if (!is_numeric($value) || (float) $value < 0 || (float) $value > 100) fail_response(400, 'A percentage is out of range');
+                return (int) round((float) $value * 100);
+            };
+            $money = static function ($value): int {
+                if (!is_numeric($value) || (float) $value < 0 || (float) $value > 1000000000) fail_response(400, 'An amount is out of range');
+                return (int) round((float) $value * 100);
+            };
+            $mode = (string) ($input['mode'] ?? 'informative');
+            if (!in_array($mode, ['informative', 'charging'], true)) fail_response(400, 'The mode is informative or charging');
+            $currency = strtoupper((string) ($input['currency'] ?? 'MXN'));
+            if (preg_match('/^[A-Z]{3}$/', $currency) !== 1) fail_response(400, 'The currency is a three-letter code');
+            $row = ['rate_bps' => $percent($input['ratePercent'] ?? null), 'bracket_rate_bps' => $percent($input['bracketRatePercent'] ?? null),
+                'floor_bps' => $percent($input['floorPercent'] ?? null), 'cap_bps' => $percent($input['capPercent'] ?? null),
+                'bracket_threshold_cents' => $money($input['bracketThreshold'] ?? null), 'floor_min_cents' => $money($input['floorMin'] ?? null)];
+            if ($row['floor_bps'] > $row['cap_bps']) fail_response(400, 'The floor cannot exceed the cap');
+            $tenant = $scope === 'default' ? null : $scope;
+            if ($tenant !== null) { $exists = $pdo->prepare('SELECT 1 FROM tenant_accounts WHERE id = ?'); $exists->execute([$tenant]); if ($exists->fetchColumn() === false) fail_response(404, 'Workspace not found'); }
+            $pdo->prepare('INSERT INTO commerce_terms (scope, tenant_id, currency, rate_bps, bracket_threshold_cents, bracket_rate_bps, floor_bps, floor_min_cents, cap_bps, mode, updated_by_principal_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE currency = VALUES(currency), rate_bps = VALUES(rate_bps), bracket_threshold_cents = VALUES(bracket_threshold_cents),
+                bracket_rate_bps = VALUES(bracket_rate_bps), floor_bps = VALUES(floor_bps), floor_min_cents = VALUES(floor_min_cents), cap_bps = VALUES(cap_bps), mode = VALUES(mode), updated_by_principal_id = VALUES(updated_by_principal_id)')
+                ->execute([$scope, $tenant, $currency, $row['rate_bps'], $row['bracket_threshold_cents'], $row['bracket_rate_bps'], $row['floor_bps'], $row['floor_min_cents'], $row['cap_bps'], $mode, $principal['id']]);
+            platform_record($pdo, $principal['id'], 'commerce.terms_saved', 'terms ' . $scope, ['mode' => $mode, 'rateBps' => $row['rate_bps']]);
+            workspace_json(['scope' => $scope, 'csrf' => $session['csrf']]);
+        }
+        if (preg_match('#^/settlements/([0-9a-f-]{36})/(paid|waive)$#', $route, $m) === 1) {
+            $settlementId = strtolower($m[1]);
+            $pdo->beginTransaction();
+            $lock = $pdo->prepare('SELECT * FROM award_settlements WHERE id = ? FOR UPDATE'); $lock->execute([$settlementId]); $settlement = $lock->fetch();
+            if (!is_array($settlement)) { $pdo->rollBack(); fail_response(404, 'Settlement not found'); }
+            if ($settlement['status'] !== 'pending') { $pdo->rollBack(); fail_response(409, 'Only a pending settlement can change'); }
+            $reference = tenant_text($input['reference'] ?? '', 120);
+            if (mb_strlen($reference) < 4) { $pdo->rollBack(); fail_response(400, $m[2] === 'paid' ? 'The payment reference (for example the SPEI tracking key) is required' : 'A reason is required to waive a fee'); }
+            $next = $m[2] === 'paid' ? 'paid' : 'waived';
+            $pdo->prepare('UPDATE award_settlements SET status = ?, payment_reference = ?, resolved_by_principal_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$next, $reference, $principal['id'], $settlementId]);
+            platform_record($pdo, $principal['id'], 'commerce.settlement_' . $next, 'settlement ' . $settlementId, ['feeCents' => (int) $settlement['fee_cents']]);
+            $pdo->commit();
+            workspace_json(['status' => $next, 'csrf' => $session['csrf']]);
         }
         fail_response(404, 'Not found');
     } catch (Throwable $error) {

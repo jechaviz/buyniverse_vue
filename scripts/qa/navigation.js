@@ -46,10 +46,11 @@ assert.ok(!nav.sidebar({ mode: "supplier", can: no }).some((g) => g.key === "mar
 
 // breadcrumbs name the group, the screen and the tab in the same numbers
 const trail = nav.crumbs("/plataforma", "auditoria", "supplier", yes);
-assert.deepStrictEqual(trail.map((c) => c.n), ["6", "6.2", "6.2.5"]);
-assert.strictEqual(nav.tabs("/plataforma").map((t) => t.key).join(","), "empresas,accesos,timbres,cobranza,auditoria");
+assert.deepStrictEqual(trail.map((c) => c.n), ["6", "6.2", "6.2.6"]);
+assert.strictEqual(nav.tabs("/plataforma").map((t) => t.key).join(","), "empresas,accesos,timbres,cobranza,comision,auditoria");
 assert.strictEqual(nav.tabs("/plataforma")[1].n, "6.2.2");
 assert.strictEqual(nav.tabs("/plataforma")[4].n, "6.2.5");
+assert.strictEqual(nav.tabs("/plataforma")[5].n, "6.2.6");
 
 // every mode's links are unique and point somewhere
 for (const mode of nav.modes.concat(["unknown"])) {

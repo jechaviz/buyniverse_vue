@@ -227,7 +227,7 @@ const AuctionRankTable = load("./app/pages/procurement/auction/AuctionRankTable.
 const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTab.vue?v=2");
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
-const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=3");
+const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=4");
 
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
@@ -265,10 +265,7 @@ export default {
     const auction = computed(() => accessibleAuctions.value.find((item) => item.id === selectedAuctionId.value) || accessibleAuctions.value[0]);
     const commercial = computed(() => {
       const event = auction.value?.eventId ? store.sourcingEvent(auction.value.eventId) : null;
-      return window.BuyniverseCommercialMetrics?.auction(auction.value, event, {
-        successFeeRate: store.state.procurementAnalytics?.commercialModel?.gainShareRate ?? 40,
-        successFeeBasis: store.state.procurementAnalytics?.commercialModel?.successFeeBasis,
-      }) || {};
+      return window.BuyniverseCommercialMetrics?.auction(auction.value, event, {}) || {};
     });
     const isOrganizer = computed(() => store.canManageProcurement(auction.value ? store.sourcingEvent(auction.value.eventId) : null));
     const realtimeStatus = computed(() => {
@@ -453,8 +450,14 @@ export default {
       if (!leader.value) return;
       const reason = await store.prompt({ title: "Record award decision", message: `Award ${leader.value.name} for ${store.money(auction.value.currentBid, auction.value.currency)}.\n\nValidated savings: ${store.money(commercial.value.totalSavings || 0, auction.value.currency)}\nBuyniverse service fee (${commercial.value.successFeeRate || 40}%): ${store.money(commercial.value.outcomeShare || 0, auction.value.currency)}\nNet buyer savings: ${store.money(commercial.value.netSavings || 0, auction.value.currency)}\n\nCapture the auditable business reason.`, placeholder: "Best compliant value and delivery commitment", confirmText: "Award and create order", multiline: true });
       if (!reason) return;
-      const order = store.awardLiveAuction(auction.value, reason);
-      if (order) router.push(`/procurement/execution?order=${order.id}`);
+      const awarded = auction.value;
+      const order = store.awardLiveAuction(awarded, reason);
+      if (!order) return;
+      // Outside the demo the server closes the room and settles the fee from its ledger; the local figure is only an estimate until then.
+      window.BuyniverseAuctionRealtime?.settleAward(awarded.id).then((settlement) => {
+        if (settlement && store.applyServerSettlement(awarded, settlement)) store.notice(store.t("Fee settled by the server"), "fa-scale-balanced");
+      });
+      router.push(`/procurement/execution?order=${order.id}`);
     };
 
     const toggleDisqualified = (p) => {

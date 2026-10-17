@@ -175,6 +175,31 @@
     return event;
   }
 
+  /**
+   * Closes the room and asks the server to settle the award. The server computes the fee from the
+   * ledger; nothing but the room reference is sent. Resolves with the settlement, or null in the demo
+   * and when the server cannot settle yet (the award itself is not blocked by that).
+   */
+  function settleAward(roomInput) {
+    var room = roomRef(roomInput);
+    if (!room || localMode()) return Promise.resolve(null);
+    var headers = function () { return { Accept: "application/json", "Content-Type": "application/json", "X-Buyniverse-Request": "auction-realtime-v1", "X-Buyniverse-CSRF": csrf() }; };
+    return ensureCsrf().then(function () {
+      var key = "close-" + Math.random().toString(16).slice(2, 14) + Date.now().toString(16);
+      return request("/rooms/" + encodeURIComponent(room) + "/events", {
+        method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers: headers(),
+        body: JSON.stringify({ type: "auction_closed", eventKey: key }),
+      }).then(rememberCsrf).catch(function () { /* already closed is fine */ });
+    }).then(function () {
+      return global.fetch(basePath + "/api/v1/commerce/settle", {
+        method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers: headers(), body: JSON.stringify({ auctionRef: room }),
+      });
+    }).then(parse).then(function (body) {
+      rememberCsrf(body);
+      return body && body.settlement && typeof body.settlement === "object" ? body.settlement : null;
+    }).catch(function () { return null; });
+  }
+
   function createRoom(input) {
     var auctionRef = roomRef(input && input.auctionRef);
     if (!auctionRef) return Promise.resolve(null);
@@ -230,6 +255,7 @@
     subscribe: subscribe,
     publish: publish,
     createRoom: createRoom,
+    settleAward: settleAward,
     endpoint: endpoint,
   };
 })(typeof window !== "undefined" ? window : globalThis);

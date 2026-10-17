@@ -14,7 +14,7 @@ const windowScope = {
   CustomEvent: function () {},
   setTimeout,
 };
-for (const file of ["../lib/web-common/browser.js", "../lib/procurement-common/browser.js", "app/lib/commercial-metrics.js", "app/lib/need-journey.js", "app/data/demo.js",
+for (const file of ["../lib/web-common/browser.js", "../lib/procurement-common/browser.js", "app/lib/commerce.js", "app/lib/commercial-metrics.js", "app/lib/need-journey.js", "app/data/demo.js",
   "app/store/procurementDomainActions.js", "app/store/needActions.js", "app/store/domainActions.js"]) new Function("window", read(file))(windowScope);
 
 const state = windowScope.BuyniverseDemo.clone();

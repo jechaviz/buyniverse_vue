@@ -134,34 +134,20 @@
         return [record.ownerId, record.requesterId, record.buyerId].includes(currentUser.id);
       },
 
-      canConfigureCommercialTerms() {
-        const permissions = this.tenantContext?.value?.permissions;
-        return Boolean(this.isAdmin?.value || permissions?.manageTenant || (this.isDemo?.value && this.isBuyer?.value));
-      },
-
-      setCommercialTerms(input = {}) {
-        if (!this.canConfigureCommercialTerms()) {
-          this.notice("Commercial terms update denied", "fa-shield-halved");
-          return false;
-        }
-        const rate = Number(input.rate);
-        if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
-          this.notice("Enter a service fee between 0% and 100%", "fa-triangle-exclamation");
-          return false;
-        }
-        state.procurementAnalytics ||= {};
-        state.procurementAnalytics.commercialModel ||= {};
-        const model = state.procurementAnalytics.commercialModel;
-        const previous = Number(model.gainShareRate);
-        model.gainShareRate = Math.round(rate * 100) / 100;
-        model.successFeeBasis = input.basis === "buyniverse" ? "buyniverse" : "total";
-        model.financialBaseline = "Approved budget";
-        state.procurementAudit.unshift({
-          id: id("commercial-terms"), at: new Date().toISOString(), actor: this.currentUser.value.name,
-          action: "Commercial terms updated", objectId: "COMMERCIAL_TERMS",
-          detail: `${Number.isFinite(previous) ? previous : 40}% → ${model.gainShareRate}% of ${model.successFeeBasis === "buyniverse" ? "auction-generated" : "validated total"} savings`, level: "info",
-        });
-        this.notice("Commercial terms saved", "fa-percent");
+      /** Replaces the browser's estimate with what the server settled (the only place a fee is decided). */
+      applyServerSettlement(auctionRef, settlement) {
+        const auction = typeof auctionRef === "string" ? this.auction(auctionRef) : auctionRef;
+        const fee = auction?.commercialSettlement?.serviceFee;
+        if (!auction || !fee || !settlement || typeof settlement !== "object") return false;
+        const cents = Number(settlement.feeCents);
+        if (!Number.isFinite(cents) || cents < 0) return false;
+        fee.amount = Math.round(cents) / 100;
+        fee.status = settlement.status === "pending" ? "pending_billing" : "informative";
+        fee.basis = "total";
+        fee.feeBasis = typeof settlement.basis === "string" ? settlement.basis : fee.feeBasis;
+        fee.serverSettlementId = String(settlement.id || "");
+        const order = this.state.purchaseOrders.find((item) => item.eventId === auction.eventId);
+        if (order?.commercialSettlement?.serviceFee) Object.assign(order.commercialSettlement.serviceFee, { amount: fee.amount, status: fee.status });
         return true;
       },
 
@@ -492,11 +478,7 @@
         const offer = { price: auction.currentBid, leadDays: 14, terms: "Net 30" };
         const order = this.createPurchaseOrderFromAward(event, winner.supplierId, offer);
         if (!order) return null;
-        const commercialModel = state.procurementAnalytics?.commercialModel || {};
-        const commercial = window.BuyniverseCommercialMetrics?.auction(auction, event, {
-          successFeeRate: commercialModel.gainShareRate ?? 40,
-          successFeeBasis: commercialModel.successFeeBasis,
-        }) || {};
+        const commercial = window.BuyniverseCommercialMetrics?.auction(auction, event, {}) || {};
         const settlement = {
           calculatedAt: new Date().toISOString(), currency: commercial.currency || event.currency || "USD",
           financialSavings: Number(commercial.financialSavings) || 0,
@@ -504,9 +486,10 @@
           totalSavings: Number(commercial.totalSavings) || 0,
           buyerRetainedSavings: Number(commercial.netSavings) || 0,
           serviceFee: {
-            rate: Number(commercial.successFeeRate) || 40,
-            basis: commercial.successFeeBasis === "buyniverse" ? "buyniverse" : "total",
-            basisAmount: commercial.successFeeBasis === "buyniverse" ? Number(commercial.buyniverseSavings) || 0 : Number(commercial.totalSavings) || 0,
+            rate: Number(commercial.successFeeRate) || 0,
+            basis: "total",
+            feeBasis: commercial.feeBasis || "none",
+            basisAmount: Number(commercial.totalSavings) || 0,
             amount: Number(commercial.outcomeShare) || 0,
             status: "pending_billing",
           },

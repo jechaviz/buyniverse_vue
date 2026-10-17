@@ -249,7 +249,10 @@ if ($uri === '/api/v1/auth/google/token') {
 if ($uri === '/api/v1/runtime' || $uri === '/api/v1/runtime/') {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
     $config = workspace_config();
-    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true, 'demoAvailable'=>workspace_mode($config) !== 'demo' && workspace_demo_enabled($config)]);
+    // The public fee terms come from the server so the calculator and the dashboard can never drift from what is charged.
+    $commerce = commerce_public_terms(commerce_normalize_terms([]));
+    if (workspace_mode($config) !== 'demo') { try { $commerce = commerce_public_terms(commerce_terms_for(workspace_pdo($config), '0')); } catch (Throwable $error) {} }
+    workspace_json(['mode'=>workspace_mode($config), 'serverAuth'=>true, 'demoAvailable'=>workspace_mode($config) !== 'demo' && workspace_demo_enabled($config), 'commerce'=>$commerce]);
 }
 if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callback)/?$#', $uri, $socialMatch)) {
     if (strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') fail_response(405, 'Method not allowed');
@@ -261,6 +264,7 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
 
 if ($uri === '/api/v1/setup' || str_starts_with($uri, '/api/v1/setup/')) handle_setup($uri);
 if ($uri === '/api/v1/platform' || str_starts_with($uri, '/api/v1/platform/')) handle_platform($uri);
+if ($uri === '/api/v1/commerce' || str_starts_with($uri, '/api/v1/commerce/')) handle_commerce($uri);
 if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials(?:/verify)?|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
 if (preg_match('#^/api/v1/support/(?:status|assistant|tickets)$#', $uri) === 1) handle_support($uri);
 if (str_starts_with($uri, '/api/v1/cfdi/')) handle_cfdi($uri);

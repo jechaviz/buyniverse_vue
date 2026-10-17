@@ -20,3 +20,5 @@ platform_operators
 platform_audit_events
 platform_stamp_packs
 platform_charges
+commerce_terms
+award_settlements

@@ -1,51 +1,43 @@
 /*
  * Public savings estimate: what a buyer keeps after Buyniverse's fee for one
- * purchase, from a budget and one offer. It reuses the same rule the dashboard
- * uses (commercial-metrics.js), so the number on the public page and the number
- * a buyer later sees for a real auction cannot drift apart.
+ * purchase, from a budget and one offer. It uses lib/commerce.js, the browser copy
+ * of the server's fee rule (same terms, same floor and cap), so the number on the
+ * public page is the number the server computes when the award closes.
  *
  * It is an estimate for one comparison, not a quote and not a promise: real
  * results depend on the offers each buyer actually receives.
  */
 (function (global) {
-  // Same default as commercial-metrics.js (gain-share on the total savings).
-  var GAIN_SHARE_RATE = 40;
+  "use strict";
 
   function number(value) {
     var parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
 
-  /** estimate({ budget, offer, rate? }) -> { valid, budget, offer, savings, fee, net, rate, percentSaved } */
+  /** estimate({ budget, offer }) -> { valid, budget, offer, savings, fee, net, percentSaved, ratePercent, basis, currency } (amounts in whole currency units) */
   function estimate(input) {
+    var commerce = global.BuyniverseCommerce;
+    if (!commerce) throw new Error("lib/commerce.js must load before savings-calculator.js");
+    var terms = commerce.terms();
     var budget = number(input && input.budget);
     var offer = number(input && input.offer);
-    var rate = number(input && input.rate);
-    rate = rate === null ? GAIN_SHARE_RATE : Math.min(100, Math.max(0, rate));
     var valid = budget !== null && offer !== null && budget > 0 && offer >= 0;
-    if (!valid) return { valid: false, budget: budget, offer: offer, savings: 0, fee: 0, net: 0, rate: rate, percentSaved: 0 };
+    var base = { valid: false, budget: budget, offer: offer, savings: 0, fee: 0, net: 0, percentSaved: 0, ratePercent: terms.ratePercent, basis: "none", currency: terms.currency, floorPercent: terms.floorPercent, capPercent: terms.capPercent };
+    if (!valid) return base;
 
-    var metrics = global.BuyniverseCommercialMetrics;
-    if (!metrics || typeof metrics.auction !== "function") throw new Error("lib/commercial-metrics.js must load before savings-calculator.js");
-    // A single awarded comparison: the budget is the starting price and the offer is the final bid.
-    var at = new Date(0).toISOString();
-    var record = {
-      id: "estimate", currency: "USD", startingPrice: budget, currentBid: offer, status: "Awarded",
-      bids: [{ supplierId: "estimate", amount: offer, at: at }],
-    };
-    var model = metrics.auction(record, { budget: budget, status: "Awarded" }, { successFeeRate: rate, successFeeBasis: "total" });
-    var savings = model.totalSavings;
-    return {
+    var quote = commerce.fee({ baselineCents: Math.round(budget * 100), awardedCents: Math.round(offer * 100) }, terms);
+    var savings = quote.savingCents / 100, fee = quote.feeCents / 100;
+    return Object.assign(base, {
       valid: true,
-      budget: budget,
-      offer: offer,
       savings: savings,
-      fee: model.outcomeShare,
-      net: model.netSavings,
-      rate: rate,
-      percentSaved: budget > 0 ? Math.round((savings / budget) * 1000) / 10 : 0,
-    };
+      fee: fee,
+      net: Math.max(0, Math.round((savings - fee) * 100) / 100),
+      extra: Math.max(0, Math.round((fee - savings) * 100) / 100),     // what the buyer pays beyond the saving when a floor applies
+      percentSaved: Math.round((savings / budget) * 1000) / 10,
+      basis: quote.basis,
+    });
   }
 
-  global.BuyniverseSavings = { estimate: estimate, GAIN_SHARE_RATE: GAIN_SHARE_RATE };
+  global.BuyniverseSavings = { estimate: estimate };
 })(typeof window !== "undefined" ? window : globalThis);

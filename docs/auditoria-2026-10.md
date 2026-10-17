@@ -11,7 +11,7 @@ Reemplaza a `propuesta-comisiones.md`, que tenía errores (ver sección 2). Todo
 | **Tasa de comisión** (`gainShareRate`) | Mismo blob; `setCommercialTerms` la cambia desde el cliente | Cualquier administrador de empresa podría ponerse 0% |
 | Claims públicos ("pago en custodia / escrow") | Texto | No existe pasarela ni custodia en el código |
 
-Conclusión: **hoy Buyniverse no puede cobrar su propio modelo de negocio** porque el ahorro, la adjudicación y la tasa los decide el cliente. Antes de cobrar un peso por ahorro, la adjudicación y su liquidación tienen que pasar al servidor.
+Conclusión: **hoy Buyniverse no puede cobrar su propio modelo de negocio** porque el ahorro, la adjudicación y la tasa los decide el cliente. Antes de cobrar un peso por ahorro, la adjudicación y su liquidación tienen que pasar al servidor. **[Resuelto el 17 oct para subastas en vivo: ver sección 4.]**
 
 ## 2. Corrección de lo último que diseñé
 1. **Dirección del riesgo equivocada.** Escribí que el riesgo era "inflar el presupuesto". Es al revés: el comprador paga comisión sobre `presupuesto − oferta final`, así que le conviene **bajar** el presupuesto para pagar menos. Si el presupuesto lo fija el comprador, el modelo de "comisión sobre ahorro" se evade solo.
@@ -26,8 +26,8 @@ Principio: cobrar solo lo que Buyniverse **mide en su servidor** y puede **atrib
 **Comprador (por adjudicación)**
 - `comisión = max(piso, tasa × ahorro verificado)`, con tope de **8% del monto adjudicado**.
 - **Ahorro verificado** = línea base bloqueada − precio adjudicado. La línea base se **congela al publicar** (con fecha y huella) y no se puede editar después de recibir la primera oferta. Así no se manipula.
-- **Tasa estándar 25%** del ahorro verificado. Mensaje publicable: "te quedas con 3 de cada 4 pesos que ahorras". Los tramos se aplican **por tramo**, sobre el ahorro verificado de los últimos 12 meses: 25% hasta USD 250 mil y 20% por el excedente.
-- **Piso por adjudicación:** 0.4% del monto adjudicado, mínimo USD 150. Es lo que protege contra la línea base baja.
+- **Tasa estándar 25%** del ahorro verificado. Mensaje publicable: "te quedas con 3 de cada 4 pesos que ahorras". Los tramos se aplican **por tramo**, sobre el ahorro verificado de los últimos 12 meses: 25% hasta MXN 5 millones y 20% por el excedente.
+- **Piso por adjudicación:** 0.4% del monto adjudicado, mínimo MXN 3,000 (≈ USD 150). Es lo que protege contra la línea base baja.
 - **Sin adjudicación, sin cobro.** Sin ahorro, solo el piso.
 
 **Proveedor**
@@ -57,12 +57,21 @@ Frente al 40% fijo de hoy, el comprador conserva más y Buyniverse cobra menos p
 4. Cláusula de fuga a 90 días. *Revisión legal antes de publicarla.*
 5. Piloto: 5 empresas de una sola categoría, con la comisión en modo "informativo" (se muestra, no se cobra) durante el primer mes.
 
-## 4. Lo que hay que construir para poder cobrar (orden)
-1. **Tabla `commercial_terms`** por empresa, editable solo por operadores de plataforma. Sale del blob del cliente. El cliente solo la muestra.
-2. **Adjudicación en servidor**: endpoint que cierra el evento, toma la línea base congelada y las ofertas del libro, y escribe un **`award_settlement` inmutable** (línea base, precio final, tasa, piso, comisión, huella).
-3. **Cargo automático** en `platform_charges` desde el settlement, con el mismo flujo de pago confirmado que ya existe.
-4. **Una sola fuente de la tasa**: `commercial-metrics`, calculadora y panel leen la del servidor (`/api/v1/runtime`).
-5. **Retirar el claim de custodia definitivamente**, o contratar un proveedor de pagos y construir la custodia. Hoy no existe.
+## 4. Estado de la obra para poder cobrar
+**[hecho, 17 oct]** El modelo de la sección 3 ya vive en el servidor:
+1. **`commerce_terms`**: términos por defecto y por empresa. Solo los operadores de plataforma los cambian (pestaña 6.2.5 Comisión). Dos modos: **informativo** (se calcula y se muestra, no se cobra) y **cobro** (la liquidación queda como cuenta por cobrar).
+2. **`award_settlements`**: una liquidación por sala, escrita una sola vez por el servidor al cerrar la adjudicación, a partir del precio inicial bloqueado de la sala y de la puja ganadora del libro. Los montos no se pueden reescribir ni borrar (triggers). Guarda los términos usados y su huella.
+3. **Cálculo único**: `server/modules/commerce/fee.php` en centavos y puntos base. La copia del navegador (`app/lib/commerce.js`) se comprueba contra **300 vectores generados por PHP**, así que la calculadora pública, los paneles y la liquidación dan el mismo número.
+4. **Fuente única de la tasa**: `/api/v1/runtime` publica los términos vigentes. El navegador ya no puede fijar su tasa (se retiró `setCommercialTerms` y el selector).
+5. **Cobro**: el operador marca la liquidación como cobrada (con clave de rastreo SPEI) o la condona (con motivo). Todo queda en la bitácora de plataforma.
+
+Cómo se opera: arrancar en **informativo** durante el piloto, revisar las liquidaciones que el servidor genera, y cambiar a **cobro** por empresa (o por defecto) cuando los números convenzan.
+
+**Todavía pendiente (no bloquea cobrar):**
+- La **línea base** es el precio inicial de la sala, no un presupuesto separado. Un comprador puede abrir la sala con un precio inicial bajo; el piso (0.4%, mínimo MXN 3,000) y el tope son lo que lo protege. Si aparecen abusos, congelar también el presupuesto del evento.
+- **Solo las subastas en vivo con libro** se liquidan en servidor. Las cotizaciones RFQ siguen en el estado del navegador.
+- **Tramos en otra moneda**: los montos fijos (piso mínimo, umbral anual) solo aplican en la moneda de los términos (MXN). En otra moneda rigen solo los porcentajes.
+- **Cláusula de fuga a 90 días** y retiro definitivo del claim de custodia: revisión legal.
 
 ## 5. Pipelines y su representación web
 **Comprador:** Necesito → (RFQ | subasta en vivo) → adjudicar → orden de compra → recepción (3 vías) → factura CFDI → pago.
@@ -99,8 +108,9 @@ Frente al 40% fijo de hoy, el comprador conserva más y Buyniverse cobra menos p
 - Claims de custodia en la cara pública (portada, pie, registro, accesos).
 - Cabeceras de caché (revalidación para código, una semana para medios).
 - Esta auditoría reemplaza a la propuesta de comisiones anterior.
+- **[17 oct] Liquidación de adjudicación en servidor, términos por empresa, panel de comisión, calculadora con la regla real** (secciones 3 y 4).
 
-## 7. Lo que no corregí, y por qué
-- **Adjudicación en servidor y `commercial_terms`:** es la obra principal (sección 4), con migración y pruebas. Cambiar la tasa del cliente sin eso solo movería el problema.
-- **Precompilación con Vite:** cambia todo el arranque; merece su propio release.
+## 7. Lo que sigue abierto, y por qué
+- **Adjudicación de RFQ en servidor:** misma obra que la subasta, sobre otras tablas.
+- **Precompilar con Vite:** cambia todo el arranque; merece su propio release.
 - **Ruta `/marketing` sin guardia en el cliente:** no expone datos sensibles (solo un generador de enlaces); el menú la oculta a quien no es operador.

@@ -89,7 +89,32 @@
     "The account holder is required": "El titular de la cuenta es obligatorio", "The CLABE is not valid": "La CLABE no es válida", "This account is already registered by another company": "Esta cuenta ya está registrada por otra empresa",
     "Invitation not found or expired": "Invitación no encontrada o vencida", "This invitation was already used": "Esta invitación ya se usó", "Company administration permission is required": "Se requiere permiso de administración de la empresa",
     "Please wait before saving again": "Espera un momento antes de guardar de nuevo", "Request verification failed": "No se pudo verificar la solicitud", "Setup is temporarily unavailable": "La configuración no está disponible por ahora",
-    "Certificate, private key and password are required.": "Se requieren el certificado, la llave privada y la contraseña.", "Insufficient company permission": "Permiso insuficiente en la empresa"
+    "Certificate, private key and password are required.": "Se requieren el certificado, la llave privada y la contraseña.", "Insufficient company permission": "Permiso insuficiente en la empresa",
+    "Commission": "Comisión",
+    "The fee is decided here and settled on the server when an award closes. A company's own terms replace the default.": "La comisión se decide aquí y se liquida en el servidor cuando se cierra una adjudicación. Los términos propios de una empresa sustituyen a los predeterminados.",
+    "Every company (default)": "Todas las empresas (predeterminado)",
+    "Standard rate on the saving (%)": "Tasa estándar sobre el ahorro (%)",
+    "Rate above the yearly threshold (%)": "Tasa sobre el umbral anual (%)",
+    "Yearly threshold (saving)": "Umbral anual (ahorro)",
+    "Floor (% of what is awarded)": "Piso (% de lo adjudicado)",
+    "Minimum floor": "Piso mínimo",
+    "Cap (% of what is awarded)": "Tope (% de lo adjudicado)",
+    "Mode": "Modo",
+    "Informative: shown, not charged": "Informativo: se muestra, no se cobra",
+    "Charging: becomes a receivable": "Cobro: se vuelve una cuenta por cobrar",
+    "Save terms": "Guardar términos",
+    "Award settlements": "Liquidaciones de adjudicación",
+    "Fee": "Comisión",
+    "SPEI tracking key or reason": "Clave de rastreo SPEI o motivo",
+    "Mark collected": "Marcar como cobrada",
+    "Waive": "Condonar",
+    "No settlements yet.": "Todavía no hay liquidaciones.",
+    "Informative": "Informativa",
+    "Collected": "Cobrada",
+    "Waived": "Condonada",
+    "Terms saved.": "Términos guardados.",
+    "Collection recorded.": "Cobro registrado.",
+    "Fee waived.": "Comisión condonada."
   };
   if (typeof global !== "undefined") global.__buyniverseI18n_setup = dict;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

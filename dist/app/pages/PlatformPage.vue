@@ -98,7 +98,37 @@
         </div>
       </section>
 
-      <!-- 6.5 audit -->
+      <!-- 6.5 commission: the fee terms and the settlements Buyniverse is owed -->
+      <section v-else-if="current === 'comision'" class="bn-ob__fields">
+        <div class="bn-ob__box">
+          <legend>{{ t("Commercial terms") }}</legend>
+          <p class="bn-ob__hint">{{ t("The fee is decided here and settled on the server when an award closes. A company's own terms replace the default.") }}</p>
+          <div class="bn-ob__grid">
+            <label class="bn-field bn-ob__wide"><span>{{ t("Applies to") }}</span><select v-model="terms.scope" class="bn-select" @change="loadTerms"><option value="default">{{ t("Every company (default)") }}</option><option v-for="c in data.companies" :key="c.id" :value="c.tenantId">{{ c.legalName }}</option></select></label>
+            <label class="bn-field"><span>{{ t("Standard rate on the saving (%)") }}</span><input v-model.number="terms.ratePercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
+            <label class="bn-field"><span>{{ t("Rate above the yearly threshold (%)") }}</span><input v-model.number="terms.bracketRatePercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
+            <label class="bn-field"><span>{{ t("Yearly threshold (saving)") }}</span><input v-model.number="terms.bracketThreshold" class="bn-input bn-ob__mono" type="number" min="0" step="1" /></label>
+            <label class="bn-field"><span>{{ t("Floor (% of what is awarded)") }}</span><input v-model.number="terms.floorPercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
+            <label class="bn-field"><span>{{ t("Minimum floor") }}</span><input v-model.number="terms.floorMin" class="bn-input bn-ob__mono" type="number" min="0" step="1" /></label>
+            <label class="bn-field"><span>{{ t("Cap (% of what is awarded)") }}</span><input v-model.number="terms.capPercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
+            <label class="bn-field"><span>{{ t("Mode") }}</span><select v-model="terms.mode" class="bn-select"><option value="informative">{{ t("Informative: shown, not charged") }}</option><option value="charging">{{ t("Charging: becomes a receivable") }}</option></select></label>
+          </div>
+          <div class="bn-ob__foot" style="padding: 0; border: 0"><span></span><button type="button" class="bn-btn bn-btn--primary" :disabled="busy" @click="saveTerms"><i class="fa-solid fa-percent"></i>{{ t("Save terms") }}</button></div>
+        </div>
+        <div class="bn-ob__box">
+          <legend>{{ t("Award settlements") }}</legend>
+          <ul class="bn-setup__list">
+            <li v-for="x in data.settlements" :key="x.id"><div><b>{{ x.legalName }}</b> <small>{{ x.auctionRef }}</small><br /><small class="bn-ob__mono">{{ t("Saving") }} {{ money(x.savingCents) }} · {{ t("Fee") }} {{ money(x.feeCents) }} · {{ day(x.createdAt) }}</small><br /><small v-if="x.reference" class="bn-ob__mono">{{ x.reference }}</small></div>
+              <div v-if="x.status === 'pending'" class="bn-setup__inline"><input v-model.trim="settleRef[x.id]" class="bn-input bn-ob__mono" maxlength="120" :aria-label="t('Payment reference')" :placeholder="t('SPEI tracking key or reason')" />
+                <button type="button" class="bn-btn bn-btn--primary bn-btn--sm" :disabled="busy" @click="collect(x)">{{ t("Mark collected") }}</button>
+                <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm" :disabled="busy" @click="waive(x)">{{ t("Waive") }}</button></div>
+              <span v-else class="bn-platform__state">{{ t(SETTLEMENT_LABEL[x.status] || x.status) }}</span></li>
+            <li v-if="!data.settlements.length"><div>{{ t("No settlements yet.") }}</div></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 6.6 audit -->
       <section v-else-if="current === 'auditoria'" class="bn-ob__fields">
         <div class="bn-ob__box"><legend>{{ t("Platform decisions") }}</legend>
           <ul class="bn-setup__list"><li v-for="(e, i) in data.audit.platform" :key="'p' + i"><div><b>{{ e.action }}</b><br /><small class="bn-ob__mono">{{ e.subject }}</small></div><small>{{ day(e.at) }}</small></li></ul></div>
@@ -121,7 +151,7 @@ export default {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const t = (text) => store.t(text);
     const phase = ref("loading"), busy = ref(false), error = ref(""), notice = ref(""), shownCode = ref("");
-    const data = reactive({ companies: [], demoRequests: [], demoCodes: [], audit: { company: [], platform: [] }, packs: [], charges: [] });
+    const data = reactive({ companies: [], demoRequests: [], demoCodes: [], audit: { company: [], platform: [] }, packs: [], charges: [], settlements: [], commerceTerms: [] });
     const pack = reactive({ name: "", stamps: null, price: "", months: 12 });
     const charge = reactive({ companyId: "", packId: "" });
     const payRef = reactive({});
@@ -140,7 +170,7 @@ export default {
       error.value = "";
       try {
         const payload = await window.BuyniverseAdmin.overview();
-        Object.assign(data, { companies: payload.companies, demoRequests: payload.demoRequests, demoCodes: payload.demoCodes, audit: payload.audit, packs: payload.packs || [], charges: payload.charges || [] });
+        Object.assign(data, { companies: payload.companies, demoRequests: payload.demoRequests, demoCodes: payload.demoCodes, audit: payload.audit, packs: payload.packs || [], charges: payload.charges || [], settlements: payload.settlements || [], commerceTerms: payload.commerceTerms || [] });
         phase.value = "ready";
       } catch (cause) {
         if (cause && cause.status === 403) phase.value = "denied";
@@ -176,8 +206,20 @@ export default {
     const markPaid = (c) => run(() => window.BuyniverseAdmin.payCharge(c.id, payRef[c.id] || ""), "Payment recorded and stamps credited.");
     const cancelCharge = (c) => run(() => window.BuyniverseAdmin.cancelCharge(c.id), "Charge cancelled.");
 
+    const SETTLEMENT_LABEL = { informative: "Informative", pending: "Pending", paid: "Collected", waived: "Waived" };
+    const terms = reactive({ scope: "default", ratePercent: 25, bracketRatePercent: 20, bracketThreshold: 5000000, floorPercent: 0.4, floorMin: 3000, capPercent: 8, mode: "informative", currency: "MXN" });
+    const settleRef = reactive({});
+    const loadTerms = () => {
+      const row = data.commerceTerms.find((x) => x.scope === terms.scope) || data.commerceTerms.find((x) => x.scope === "default");
+      if (!row) return;
+      Object.assign(terms, { ratePercent: row.ratePercent, bracketRatePercent: row.bracketRatePercent, bracketThreshold: row.bracketThresholdCents / 100, floorPercent: row.floorPercent, floorMin: row.floorMinCents / 100, capPercent: row.capPercent, mode: row.mode, currency: row.currency });
+    };
+    const saveTerms = () => run(() => window.BuyniverseAdmin.saveTerms({ ...terms }), "Terms saved.");
+    const collect = (x) => run(() => window.BuyniverseAdmin.collectSettlement(x.id, settleRef[x.id] || ""), "Collection recorded.");
+    const waive = (x) => run(() => window.BuyniverseAdmin.waiveSettlement(x.id, settleRef[x.id] || ""), "Fee waived.");
+
     onMounted(load);
-    return { t, phase, busy, error, notice, shownCode, data, days, adj, pack, charge, payRef, money, tabs, current, crumbs, day, decide, revoke, adjust, publishPack, createCharge, markPaid, cancelCharge, open, STATUS_LABEL, CODE_LABEL, CHARGE_LABEL: { pending: "Pending", paid: "Paid", cancelled: "Cancelled" } };
+    return { t, phase, busy, error, notice, shownCode, data, days, adj, pack, charge, payRef, money, tabs, current, crumbs, day, decide, revoke, adjust, publishPack, createCharge, markPaid, cancelCharge, open, terms, settleRef, loadTerms, saveTerms, collect, waive, SETTLEMENT_LABEL, STATUS_LABEL, CODE_LABEL, CHARGE_LABEL: { pending: "Pending", paid: "Paid", cancelled: "Cancelled" } };
   },
 };
 </script>

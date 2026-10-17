@@ -43,6 +43,8 @@
       .then(function (payload) {
         runtime.mode = payload && payload.mode === "demo" ? "demo" : "production";
         runtime.demoAvailable = runtime.mode !== "demo" && payload && payload.demoAvailable === true;
+        // The fee terms the server will apply; the calculator and the dashboards read them from here.
+        runtime.commerce = payload && payload.commerce && typeof payload.commerce === "object" && Number.isFinite(Number(payload.commerce.ratePercent)) ? payload.commerce : null;
         return { mode: runtime.mode, serverAuth: payload && payload.serverAuth === true, demoAvailable: runtime.demoAvailable };
       })
       .then(loadFixture)

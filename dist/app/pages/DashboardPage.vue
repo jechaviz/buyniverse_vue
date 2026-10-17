@@ -100,7 +100,7 @@ const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loa
 const AdminDatabaseCard = load("./app/pages/dashboard/AdminDatabaseCard.vue?v=1");
 const AdminControlCenter = load("./app/pages/dashboard/AdminControlCenter.vue?v=1");
 const MarketplaceValueHub = load("./app/components/commercial/MarketplaceValueHub.vue?v=2");
-const NeedsHome = load("./app/pages/dashboard/NeedsHome.vue?v=1");
+const NeedsHome = load("./app/pages/dashboard/NeedsHome.vue?v=2");
 
 export default {
   components: { AdminDatabaseCard, AdminControlCenter, MarketplaceValueHub, NeedsHome },

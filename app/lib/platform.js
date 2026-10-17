@@ -42,5 +42,8 @@
     createCharge: function (companyId, packId) { return write("/api/v1/platform/charges", { companyId: companyId, packId: packId }); },
     payCharge: function (id, reference) { return write("/api/v1/platform/charges/" + encodeURIComponent(id) + "/paid", { reference: reference }); },
     cancelCharge: function (id) { return write("/api/v1/platform/charges/" + encodeURIComponent(id) + "/cancel", {}); },
+    saveTerms: function (terms) { return write("/api/v1/platform/commerce-terms", terms); },
+    collectSettlement: function (id, reference) { return write("/api/v1/platform/settlements/" + encodeURIComponent(id) + "/paid", { reference: reference }); },
+    waiveSettlement: function (id, reason) { return write("/api/v1/platform/settlements/" + encodeURIComponent(id) + "/waive", { reference: reason }); },
   };
 })(typeof window !== "undefined" ? window : globalThis);

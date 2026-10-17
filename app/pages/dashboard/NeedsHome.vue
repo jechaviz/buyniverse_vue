@@ -12,7 +12,7 @@
 
     <NeedsRiver class="rise" style="--i: 3" />
     <NeedsBoard class="rise" style="--i: 4" />
-    <SavingsWaterfall v-if="primary.budget" class="rise" style="--i: 5" :model="primary" :configurable="store.canConfigureCommercialTerms()" @change-service-fee="setServiceFee" />
+    <SavingsWaterfall v-if="primary.budget" class="rise" style="--i: 5" :model="primary" />
 
     <footer class="hm-foot rise" style="--i: 6">
       <RouterLink to="/dashboard/transactions"><i class="fa-solid fa-receipt"></i>{{ store.t("Transactions") }}</RouterLink>
@@ -28,7 +28,7 @@ const load = (path) => defineAsyncComponent(() => window["vue3-sfc-loader"].load
 const AnimatedNumber = load("./app/components/AnimatedNumber.vue?v=1");
 const NeedsRiver = load("./app/pages/procurement/NeedsRiver.vue?v=1");
 const NeedsBoard = load("./app/pages/procurement/NeedsBoard.vue?v=2");
-const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=4");
+const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=5");
 
 export default {
   components: { AnimatedNumber, NeedsRiver, NeedsBoard, SavingsWaterfall },
@@ -41,9 +41,8 @@ export default {
     const greeting = hour < 12 ? "Good morning" : hour < 19 ? "Good afternoon" : "Good evening";
     const headline = computed(() => (attention.value ? "Something needs you" : counts.value.total ? "Everything is moving" : "What do you need today?"));
     const primary = computed(() => (window.BuyniverseCommercialMetrics?.portfolio(store.state) || { primary: {} }).primary || {});
-    const setServiceFee = (rate) => store.setCommercialTerms({ rate, basis: store.state.procurementAnalytics?.commercialModel?.successFeeBasis });
     const firstName = computed(() => String(store.currentUser.value?.name || "").split(/\s+/)[0]);
-    return { store, counts, attention, greeting, headline, primary, setServiceFee, firstName };
+    return { store, counts, attention, greeting, headline, primary, firstName };
   },
 };
 </script>
