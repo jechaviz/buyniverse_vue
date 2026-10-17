@@ -13,15 +13,15 @@
     "List your company": "Registra tu empresa", "Home": "Inicio", "Breadcrumb": "Ruta de navegación",
     "The marketplace where companies find, compare and hire suppliers for every kind of purchase, from software licences to freight.":
       "El marketplace donde las empresas encuentran, comparan y contratan proveedores para todo tipo de compra, desde licencias de software hasta fletes.",
-    "CFDI 4.0 invoicing · Escrow payments · Audited reverse auctions": "Facturación CFDI 4.0 · Pagos en custodia · Subastas inversas auditadas",
+    "CFDI 4.0 invoicing · Milestone payments · Audited reverse auctions": "Facturación CFDI 4.0 · Pagos por hitos · Subastas inversas auditadas",
 
     // Home
     "Live reverse auctions running now": "Subastas inversas en vivo ahora mismo",
     "Win corporate buyers": "Gana compradores corporativos", "without cold calls.": "sin llamadas en frío.",
     "Every purchase your company makes,": "Cada compra de tu empresa,", "one universe of suppliers.": "un universo de proveedores.",
-    "Answer published requests from verified companies, compete in transparent reverse auctions and get paid through escrow.":
+    "Answer published requests from verified companies, compete in transparent reverse auctions and get paid by milestone.":
       "Responde solicitudes publicadas por empresas verificadas, compite en subastas inversas transparentes y cobra mediante pago en custodia.",
-    "Find and compare verified suppliers for software, hardware, services, MRO, packaging and freight. Shortlist them, run a quote round or a live reverse auction, and pay through escrow.":
+    "Find and compare verified suppliers for software, hardware, services, MRO, packaging and freight. Shortlist them, run a quote round or a live reverse auction, and pay by milestone.":
       "Encuentra y compara proveedores verificados de software, hardware, servicios, MRO, empaque y fletes. Preselecciónalos, lanza una ronda de cotización o una subasta inversa en vivo, y paga mediante custodia.",
     "What are you looking for?": "¿Qué estás buscando?", "Sector": "Sector", "All sectors": "Todos los sectores",
     "Search open projects": "Buscar proyectos abiertos", "Laptops, SOC audit, recycled mailers…": "Laptops, auditoría SOC, sobres reciclados…",

@@ -45,7 +45,7 @@
 
         <!-- Trust Badges Strip -->
         <div class="nh__trust">
-          <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ store.t("Escrow Protected") }}</span>
+          <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ store.t("Milestone payments") }}</span>
           <span><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> {{ store.t("Automated CFDI 4.0") }}</span>
           <span><i class="fa-solid fa-percent" aria-hidden="true"></i> {{ store.t("0% fee without savings") }}</span>
         </div>
@@ -170,7 +170,7 @@ const AUCTION_PRESETS = {
     currency: { es: "MXN", en: "USD" },
     poolCount: 24,
     bids: [
-      { name: "DevStudio Latam Specialists", badge: "Top Rated Plus · Escrow Protegido", days: 1, pct: 22.0, win: true },
+      { name: "DevStudio Latam Specialists", badge: "Top Rated Plus · Verificado", days: 1, pct: 22.0, win: true },
       { name: "CloudTalent Solutions", badge: "Entrevista Técnica Aprobada", days: 3, pct: 15.0, win: false },
       { name: "CodeCraft Staffing Agency", badge: "Talento Certificado", days: 5, pct: 8.0, win: false },
     ],

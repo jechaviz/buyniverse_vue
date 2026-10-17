@@ -10,8 +10,8 @@
           <h1 class="bn-h1" v-else>{{ store.t("Every purchase your company makes,") }} <span class="bn-grad">{{ store.t("one universe of suppliers.") }}</span></h1>
           <p class="bn-lead" style="max-width: 560px">
             {{ supplierMode
-              ? store.t("Answer published requests from verified companies, compete in transparent reverse auctions and get paid through escrow.")
-              : store.t("Find and compare verified suppliers for software, hardware, services, MRO, packaging and freight. Shortlist them, run a quote round or a live reverse auction, and pay through escrow.") }}
+              ? store.t("Answer published requests from verified companies, compete in transparent reverse auctions and get paid by milestone.")
+              : store.t("Find and compare verified suppliers for software, hardware, services, MRO, packaging and freight. Shortlist them, run a quote round or a live reverse auction, and pay by milestone.") }}
           </p>
 
           <form class="bn-search" role="search" novalidate data-no-validate="true" @submit.prevent="search">
@@ -118,7 +118,7 @@
     <section class="hp-cta">
       <div class="bn-wrap">
         <h2 class="hp-cta__h">{{ store.t(supplierMode ? "Put your company in front of buyers who are ready to purchase." : "Publish once. Let them compete.") }}</h2>
-        <p class="hp-cta__p">{{ store.t(supplierMode ? "Answer verified requests and get paid through escrow." : "You only pay a share of the savings we find. No savings, no fee.") }}</p>
+        <p class="hp-cta__p">{{ store.t(supplierMode ? "Answer verified requests and get paid by milestone." : "You only pay a share of the savings we find. No savings, no fee.") }}</p>
         <div class="hp-cta__row">
           <RouterLink v-if="supplierMode" to="/onboarding" class="hp-go">{{ store.t("List your company") }}</RouterLink>
           <RouterLink v-else to="/necesito" class="hp-go">{{ store.t("I need…") }} →</RouterLink>
@@ -204,7 +204,7 @@ export default {
       "Verified suppliers send offers, or bid each other down in a live reverse auction with anti-sniping.",
       "Compare price, delivery, risk and ESG side by side, and award with a full audit trail.",
       "Order, receipt and issues in one place. A short shipment is flagged, not forgotten.",
-      "Three-way match with the CFDI invoice, then release payment through escrow.",
+      "Three-way match with the CFDI invoice, then release the payment by milestone.",
     ][i], color: ["#36e3c0", "#4d9dff", "#a37bff", "#ffb44d", "#ff6b8b"][i] }));
 
     // Route-backed tab so "saved" is linkable and survives reload.

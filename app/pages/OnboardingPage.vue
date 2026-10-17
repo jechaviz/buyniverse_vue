@@ -40,7 +40,7 @@
                 <div>
                   <p class="bn-ob__legend">{{ t("How will you use Buyniverse?") }}</p>
                   <div class="bn-ob__options">
-                    <button type="button" class="bn-ob__option" :aria-pressed="hasRole('buyer')" @click="toggleRole('buyer')"><i class="fa-solid fa-cart-shopping"></i><div><b>{{ t("Buy") }}</b><span>{{ t("Request quotes, run reverse auctions and pay through escrow.") }}</span></div></button>
+                    <button type="button" class="bn-ob__option" :aria-pressed="hasRole('buyer')" @click="toggleRole('buyer')"><i class="fa-solid fa-cart-shopping"></i><div><b>{{ t("Buy") }}</b><span>{{ t("Request quotes, run reverse auctions and pay by milestone.") }}</span></div></button>
                     <button type="button" class="bn-ob__option" :aria-pressed="hasRole('supplier')" @click="toggleRole('supplier')"><i class="fa-solid fa-store"></i><div><b>{{ t("Sell") }}</b><span>{{ t("Offer products, services or talent. Requires your tax identity.") }}</span></div></button>
                   </div>
                 </div>

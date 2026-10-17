@@ -14,7 +14,7 @@
         </ol>
         <div class="bn-auth__trust">
           <span><i class="fa-solid fa-key"></i>{{ t("No stored passwords") }}</span>
-          <span><i class="fa-solid fa-vault"></i>{{ t("Escrow payments") }}</span>
+          <span><i class="fa-solid fa-vault"></i>{{ t("Milestone payments") }}</span>
           <span><i class="fa-solid fa-clipboard-check"></i>{{ t("Audit trail") }}</span>
         </div>
       </aside>

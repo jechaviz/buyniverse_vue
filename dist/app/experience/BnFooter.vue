@@ -18,7 +18,7 @@
       <hr class="bn-divider" style="margin: 36px 0 20px" />
       <div class="bn-row" style="justify-content: space-between; flex-wrap: wrap; font-size: 0.82rem; color: var(--bn-faint)">
         <span>© {{ year }} Buyniverse</span>
-        <span>{{ store.t("CFDI 4.0 invoicing · Escrow payments · Audited reverse auctions") }}</span>
+        <span>{{ store.t("CFDI 4.0 invoicing · Milestone payments · Audited reverse auctions") }}</span>
       </div>
     </div>
   </footer>
