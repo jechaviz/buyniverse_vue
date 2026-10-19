@@ -119,7 +119,7 @@
         <div class="bn-ob__box">
           <legend>{{ t("Award settlements") }}</legend>
           <ul class="bn-setup__list">
-            <li v-for="x in data.settlements" :key="x.id"><div><b>{{ x.legalName }}</b> <small>{{ x.auctionRef }}</small><br /><small class="bn-ob__mono">{{ t("Saving") }} {{ money(x.savingCents) }} · {{ t("Fee") }} {{ money(x.feeCents) }} · {{ day(x.createdAt) }}</small><br /><small v-if="x.reference" class="bn-ob__mono">{{ x.reference }}</small></div>
+            <li v-for="x in data.settlements" :key="x.id"><div><b>{{ x.legalName }}</b> <small>{{ x.auctionRef }} · {{ t(x.kind === "rfq" ? "RFQ" : "Auction") }}{{ x.baselineSource === "market" ? " · " + t("market baseline") : "" }}</small><br /><small class="bn-ob__mono">{{ t("Saving") }} {{ money(x.savingCents) }} · {{ t("Fee") }} {{ money(x.feeCents) }} · {{ day(x.createdAt) }}</small><br /><small v-if="x.reference" class="bn-ob__mono">{{ x.reference }}</small></div>
               <div v-if="x.status === 'pending'" class="bn-setup__inline"><input v-model.trim="settleRef[x.id]" class="bn-input bn-ob__mono" maxlength="120" :aria-label="t('Payment reference')" :placeholder="t('SPEI tracking key or reason')" />
                 <button type="button" class="bn-btn bn-btn--primary bn-btn--sm" :disabled="busy" @click="collect(x)">{{ t("Mark collected") }}</button>
                 <button type="button" class="bn-btn bn-btn--ghost bn-btn--sm" :disabled="busy" @click="waive(x)">{{ t("Waive") }}</button></div>

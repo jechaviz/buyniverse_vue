@@ -43,7 +43,7 @@
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
     const Setup = load("./app/pages/SetupPage.vue?v=2");
-    const Platform = load("./app/pages/PlatformPage.vue?v=4");
+    const Platform = load("./app/pages/PlatformPage.vue?v=5");
 
     const NotFound = {
       template:

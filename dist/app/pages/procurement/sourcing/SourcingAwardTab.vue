@@ -60,6 +60,10 @@
       >
         <i class="fa-solid fa-trophy mr-1.5"></i>Choose supplier
       </button>
+      <div v-if="settled" class="mt-3 rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-800/60">
+        <div class="flex justify-between"><span class="text-slate-500">{{ t("Service fee") }}</span><b>{{ formatMoney(settled.amount, event.commercialSettlement.currency) }}</b></div>
+        <p class="mt-1 text-[10px] text-slate-500">{{ settled.baselineSource === "market" ? t("Saving measured against the market: the median of the quotes.") : t("Saving measured against your budget.") }}</p>
+      </div>
       <p v-if="event.awardedSupplierId" class="mt-3 text-center text-[10px] font-bold text-emerald-500">
         <i class="fa-solid fa-circle-check mr-1"></i>Supplier already selected
       </p>
@@ -68,6 +72,7 @@
 </template>
 <script>
 export default {
+  inject: ["store"],
   props: {
     event: Object,
     rankedQuotes: Array,
@@ -79,5 +84,10 @@ export default {
     formatMoney: Function,
   },
   emits: ["update:awardSupplierId", "update:awardReason", "award"],
+  computed: {
+    // The fee the server settled for this award, once it has answered.
+    settled() { const fee = this.event?.commercialSettlement?.serviceFee; return fee && fee.serverSettlementId ? fee : null; },
+  },
+  methods: { t(text) { return this.store.t(text); } },
 };
 </script>

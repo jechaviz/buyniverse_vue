@@ -209,7 +209,7 @@ const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.v
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
 const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
 const SourcingComparisonTab = load("./app/pages/procurement/sourcing/SourcingComparisonTab.vue?v=1");
-const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=1");
+const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=2");
 const SourcingTimelineTab = load("./app/pages/procurement/sourcing/SourcingTimelineTab.vue?v=1");
 const SourcingSupplierResponseTab = load("./app/pages/procurement/sourcing/SourcingSupplierResponseTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");

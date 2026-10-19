@@ -81,7 +81,7 @@
         auctionRef: auction.realtimeRoomRef,
         participantPrincipalIds,
         closesAt: auction.closingAt || auction.endAt,
-        startAmount: auction.currentBid, minStep: Math.max(1, Number(auction.minStep) || 1), floor: auction.floor,
+        startAmount: auction.currentBid, minStep: Math.max(1, Number(auction.minStep) || 1), floor: auction.floor, budget: event?.budget,
         currency: auction.currency, autoExtend: auction.autoExtend !== false,
         antiSnipingSeconds: auction.antiSnipingSeconds, maxExtensions: auction.maxExtensions,
       }).then((room) => {
@@ -132,6 +132,26 @@
         if (!record || !currentUser || !(this.isAdmin?.value || this.isBuyer?.value)) return false;
         if (this.isAdmin?.value) return true;
         return [record.ownerId, record.requesterId, record.buyerId].includes(currentUser.id);
+      },
+
+      /** Stores the fee the server settled for an RFQ award on the event and its order. */
+      applyServerRfqSettlement(event, order, settlement) {
+        const cents = Number(settlement?.feeCents);
+        if (!event || !order || !Number.isFinite(cents) || cents < 0) return false;
+        const baseline = Number(settlement.baselineCents) / 100, awarded = Number(settlement.awardedCents) / 100;
+        const record = {
+          calculatedAt: new Date().toISOString(), currency: settlement.currency || event.currency || "MXN",
+          financialSavings: Math.max(0, baseline - awarded), buyniverseSavings: 0, totalSavings: Math.max(0, baseline - awarded),
+          buyerRetainedSavings: Math.max(0, Math.round((baseline - awarded - cents / 100) * 100) / 100),
+          serviceFee: {
+            rate: window.BuyniverseCommerce ? window.BuyniverseCommerce.terms().ratePercent : 0, basis: "total", feeBasis: String(settlement.basis || "none"),
+            baselineSource: String(settlement.baselineSource || "budget"), basisAmount: Math.max(0, baseline - awarded), amount: cents / 100,
+            status: settlement.status === "pending" ? "pending_billing" : "informative", serverSettlementId: String(settlement.id || ""),
+          },
+        };
+        event.commercialSettlement = record;
+        order.commercialSettlement = record;
+        return true;
       },
 
       /** Replaces the browser's estimate with what the server settled (the only place a fee is decided). */
@@ -204,6 +224,13 @@
           link: `/procurement/execution?order=${order.id}`, icon: "fa-trophy",
         }));
         this.notice("Supplier selected and purchase order created", "fa-trophy");
+        // Outside the demo the server closes the RFQ and settles the fee from the sealed quotes.
+        const winner = supplierUserIds([supplierId])[0];
+        if (!this.isDemo?.value && window.BuyniverseRfq && winner) {
+          window.BuyniverseRfq.award(event.id, winner).then((settlement) => {
+            if (settlement && this.applyServerRfqSettlement(event, order, settlement)) this.notice("Fee settled by the server", "fa-scale-balanced");
+          });
+        }
         return order;
       },
 
@@ -216,6 +243,13 @@
         }
         event.publishedAt = new Date().toISOString();
         this.procurementTransition(event, "Published", `${event.invitedSupplierIds.length} suppliers invited`);
+        // Outside the demo the server keeps an RFQ's budget, quotes and award; the budget is fixed when it opens.
+        if (event.type !== "Auction" && !this.isDemo?.value && window.BuyniverseRfq) {
+          const principals = supplierUserIds(event.invitedSupplierIds).filter((value) => /^[a-f0-9-]{36}$/i.test(String(value)));
+          window.BuyniverseRfq.open({ eventRef: event.id, participantPrincipalIds: principals, closesAt: event.deadline, budget: event.budget, currency: event.currency })
+            .then((opened) => { event.serverRfq = opened ? "ready" : "unavailable"; })
+            .catch(() => { event.serverRfq = "unavailable"; });
+        }
         if (event.type === "Auction") {
           const auction = this.startLiveAuction(event.id);
           return auction ? { event, auction } : null;
@@ -283,6 +317,10 @@
           });
         }
         this.notice(existing ? "Response updated" : "Response submitted", "fa-circle-check");
+        if (!this.isDemo?.value && window.BuyniverseRfq && event.type !== "Auction") {
+          window.BuyniverseRfq.quote(event.id, { price, leadDays, terms })
+            .catch(() => this.notice("Your quote is saved here, but the server did not receive it yet", "fa-triangle-exclamation"));
+        }
         return quote;
       },
 

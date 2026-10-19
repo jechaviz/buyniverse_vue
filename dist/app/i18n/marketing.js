@@ -28,6 +28,10 @@
     "The fee for each closed award, computed by the server from the live-auction ledger.": "La comisión de cada adjudicación cerrada, calculada por el servidor a partir del libro de la subasta en vivo.",
     "No awards settled yet.": "Todavía no hay adjudicaciones liquidadas.",
 
+    "Saving measured against the market: the median of the quotes.": "Ahorro medido contra el mercado: la mediana de las cotizaciones.",
+    "Saving measured against your budget.": "Ahorro medido contra tu presupuesto.",
+    "RFQ": "RFQ",
+    "market baseline": "base de mercado",
     "Fee settled by the server": "Comisión liquidada por el servidor",
     "Floor applied": "Se aplicó el piso",
     "Cap applied": "Se aplicó el tope",

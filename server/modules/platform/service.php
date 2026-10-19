@@ -80,9 +80,10 @@ function platform_charges(PDO $pdo): array {
 function platform_settlements(PDO $pdo): array {
     return array_map(static fn($r) => ['id' => (string) $r['id'], 'workspace' => (string) $r['workspace'], 'legalName' => (string) $r['legal_name'], 'auctionRef' => (string) $r['auction_ref'],
         'currency' => (string) $r['currency'], 'baselineCents' => (int) $r['baseline_cents'], 'awardedCents' => (int) $r['awarded_cents'], 'savingCents' => (int) $r['saving_cents'],
-        'feeCents' => (int) $r['fee_cents'], 'status' => (string) $r['status'], 'reference' => (string) ($r['payment_reference'] ?? ''), 'createdAt' => (string) $r['created_at']],
-        $pdo->query('SELECT s.*, t.display_name AS workspace, e.legal_name FROM award_settlements s INNER JOIN tenant_accounts t ON t.id = s.tenant_id
-            INNER JOIN tenant_legal_entities e ON e.id = s.legal_entity_id ORDER BY s.created_at DESC LIMIT 200')->fetchAll());
+        'feeCents' => (int) $r['fee_cents'], 'status' => (string) $r['status'], 'reference' => (string) ($r['payment_reference'] ?? ''), 'createdAt' => (string) $r['created_at'],
+        'kind' => (string) ($r['kind'] ?? 'auction'), 'baselineSource' => (string) ($r['baseline_source'] ?? 'start_price')],
+        $pdo->query('SELECT s.*, t.display_name AS workspace, e.legal_name, m.kind, m.baseline_source FROM award_settlements s INNER JOIN tenant_accounts t ON t.id = s.tenant_id
+            INNER JOIN tenant_legal_entities e ON e.id = s.legal_entity_id LEFT JOIN award_settlement_meta m ON m.settlement_id = s.id ORDER BY s.created_at DESC LIMIT 200')->fetchAll());
 }
 function platform_commerce_terms(PDO $pdo): array {
     return array_map(static fn($r) => ['scope' => (string) $r['scope']] + commerce_public_terms(commerce_normalize_terms($r)),

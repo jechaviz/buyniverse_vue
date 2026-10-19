@@ -217,6 +217,20 @@ async function main() {
     r = await commerce("Organizer", "POST", "/settle", { auctionRef: empty });
     check("a room without bids cannot be settled", r.status === 409, r.text);
 
+    // The declared budget can only raise the baseline: above the start price it is the baseline, below it it is ignored.
+    const bud = "bud-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: bud, participantPrincipalIds: bidders, closesAt: soon, startAmount: "10000", minStep: 1, budget: "20000", currency: "MXN" });
+    await call("Alfa", "POST", `/rooms/${bud}/bids`, { amount: "9000", bidKey: key() });
+    closeRoom(bud);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: bud });
+    check("a declared budget above the start price is the baseline", r.status === 200 && settlementOf(r).baselineCents === 2000000 && settlementOf(r).savingCents === 1100000 && settlementOf(r).baselineSource === "budget" && settlementOf(r).kind === "auction", r.text);
+    const lowBud = "lowbud-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: lowBud, participantPrincipalIds: bidders, closesAt: soon, startAmount: "10000", minStep: 1, budget: "5000", currency: "MXN" });
+    await call("Alfa", "POST", `/rooms/${lowBud}/bids`, { amount: "9000", bidKey: key() });
+    closeRoom(lowBud);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: lowBud });
+    check("a declared budget below the start price cannot lower the baseline", r.status === 200 && settlementOf(r).baselineCents === 1000000 && settlementOf(r).baselineSource === "start_price", r.text);
+
     // Charging mode: the next settlement is a receivable, not just information.
     sql("UPDATE commerce_terms SET mode = 'charging' WHERE scope = 'default'");
     const paid = "paid-" + crypto.randomBytes(4).toString("hex");
@@ -225,7 +239,7 @@ async function main() {
     closeRoom(paid);
     r = await commerce("Organizer", "POST", "/settle", { auctionRef: paid });
     check("in charging mode the settlement is pending", r.status === 200 && settlementOf(r).status === "pending", r.text);
-    check("the 12-month saving carries into the next fee (still under the bracket)", Number((sql("SELECT trailing_saving_cents FROM award_settlements WHERE id = ?", settlementOf(r).id || "none")[0] || {}).trailing_saving_cents) === 20100000);
+    check("the 12-month saving carries into the next fee (still under the bracket)", Number((sql("SELECT trailing_saving_cents FROM award_settlements WHERE id = ?", settlementOf(r).id || "none")[0] || {}).trailing_saving_cents) === 21300000);
     sql("UPDATE commerce_terms SET mode = 'informative' WHERE scope = 'default'");
 
     // The ledger is append-only, even for the application's own database user.

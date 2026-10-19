@@ -22,3 +22,8 @@ platform_stamp_packs
 platform_charges
 commerce_terms
 award_settlements
+rfq_events
+rfq_participants
+rfq_quotes
+auction_live_budget
+award_settlement_meta

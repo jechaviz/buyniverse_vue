@@ -124,6 +124,9 @@ function handle_auction_realtime(string $uri, array $config, array $session, PDO
             $step = auction_amount_cents($input['minStep'] ?? 1);
             if ($start === null || $floor === null || $step === null || $floor > $start) fail_response(400, 'A valid start price, floor and minimum step are required');
             $step = max(100, $step);
+            // The budget the organiser declares is written once and can only raise the baseline of the settlement.
+            $declaredBudget = isset($input['budget']) && $input['budget'] !== '' ? auction_amount_cents($input['budget']) : null;
+            $budgetWrite = static function (PDO $pdo, string $roomId) use ($declaredBudget): void { if ($declaredBudget !== null) $pdo->prepare('INSERT IGNORE INTO auction_live_budget (room_id, budget_cents) VALUES (?, ?)')->execute([$roomId, $declaredBudget]); };
             $currency = strtoupper(tenant_text($input['currency'] ?? 'MXN', 3)); if (preg_match('/^[A-Z]{3}$/', $currency) !== 1) $currency = 'MXN';
             $autoExtend = ($input['autoExtend'] ?? true) !== false ? 1 : 0;
             $antiSniping = max(5, min(600, (int) ($input['antiSnipingSeconds'] ?? 60)));
@@ -139,6 +142,7 @@ function handle_auction_realtime(string $uri, array $config, array $session, PDO
                 if (!hash_equals((string) $room['owner_principal_id'], (string) $context['principalId'])) { $pdo->rollBack(); fail_response(409, 'Live room is owned by another organizer'); }
                 // A room opened before the ledger existed gains its terms once; they never change afterwards.
                 $termsWrite->execute([$room['id'], $currency, $start, $step, $floor, $start, $autoExtend, $antiSniping, $maxExtensions]);
+                $budgetWrite($pdo, (string) $room['id']);
                 $pdo->commit(); workspace_json(['roomId'=>(string)$room['id'], 'auctionRef'=>$auctionRef, 'closesAt'=>auction_iso((string)$room['closes_at']), 'created'=>false, 'csrf'=>$session['csrf']]);
             }
             $placeholders = implode(',', array_fill(0, count($principalIds), '?'));
@@ -150,6 +154,7 @@ function handle_auction_realtime(string $uri, array $config, array $session, PDO
             $pdo->prepare('INSERT INTO auction_live_rooms (id, tenant_id, legal_entity_id, location_id, auction_ref, owner_principal_id, closes_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
                 ->execute([$roomId, $context['tenant']['id'], $context['company']['id'], $context['location']['id'] ?? null, $auctionRef, $context['principalId'], $closeAt]);
             $termsWrite->execute([$roomId, $currency, $start, $step, $floor, $start, $autoExtend, $antiSniping, $maxExtensions]);
+            $budgetWrite($pdo, $roomId);
             $participantWrite = $pdo->prepare('INSERT INTO auction_live_participants (room_id, principal_id, role_key) VALUES (?, ?, ?)');
             $participantWrite->execute([$roomId, $context['principalId'], 'organizer']);
             foreach ($principalIds as $principalId) $participantWrite->execute([$roomId, $principalId, 'bidder']);

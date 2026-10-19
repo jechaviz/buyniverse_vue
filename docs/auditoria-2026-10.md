@@ -67,11 +67,16 @@ Frente al 40% fijo de hoy, el comprador conserva más y Buyniverse cobra menos p
 
 Cómo se opera: arrancar en **informativo** durante el piloto, revisar las liquidaciones que el servidor genera, y cambiar a **cobro** por empresa (o por defecto) cuando los números convenzan.
 
+**RFQ y línea base [hecho, 19 oct]:**
+- **RFQ sellado en servidor** (`server/modules/rfq`): el presupuesto se fija al abrir y no cambia; las cotizaciones son inmutables (cada revisión es una fila nueva, cuenta la última) y el organizador no las ve hasta que cierra. La adjudicación liquida con la misma regla de comisión.
+- **Línea base de mercado:** en un RFQ la base es el mayor entre el presupuesto y la **mediana de las cotizaciones**. Declarar un presupuesto bajo ya no esconde un ahorro que las propias cotizaciones muestran; un presupuesto alto sigue siendo la cifra del comprador. Con una sola cotización no hay mercado y rige el presupuesto.
+- **Subastas en vivo:** el presupuesto declarado al abrir la sala se guarda una vez; la base es el mayor entre el precio inicial y ese presupuesto, así que un presupuesto menor no la baja.
+- Cada liquidación guarda cómo se halló su base (`award_settlement_meta`), y el panel de plataforma y la página de facturación de la empresa lo muestran.
+
 **Todavía pendiente (no bloquea cobrar):**
-- La **línea base** es el precio inicial de la sala, no un presupuesto separado. Un comprador puede abrir la sala con un precio inicial bajo; el piso (0.4%, mínimo MXN 3,000) y el tope son lo que lo protege. Si aparecen abusos, congelar también el presupuesto del evento.
-- **Solo las subastas en vivo con libro** se liquidan en servidor. Las cotizaciones RFQ siguen en el estado del navegador.
-- **Tramos en otra moneda**: los montos fijos (piso mínimo, umbral anual) solo aplican en la moneda de los términos (MXN). En otra moneda rigen solo los porcentajes.
-- **Cláusula de fuga a 90 días** y retiro definitivo del claim de custodia: revisión legal.
+- Una subasta en vivo no tiene cotizaciones por encima del precio inicial, así que no puede tener base de mercado. La protección contra un precio inicial bajo sigue siendo el piso y el tope. La vía para un caso grande es una ronda RFQ primero (base de mercado) y la subasta después.
+- **Moneda:** montos fijos y umbral anual por moneda con filas `default:USD`; otra moneda sin fila usa solo porcentajes.
+- **Cláusula de fuga a 90 días** y retiro definitivo del claim de custodia en el flujo de freelancers: revisión legal y de producto.
 
 ## 5. Pipelines y su representación web
 **Comprador:** Necesito → (RFQ | subasta en vivo) → adjudicar → orden de compra → recepción (3 vías) → factura CFDI → pago.
@@ -111,6 +116,5 @@ Cómo se opera: arrancar en **informativo** durante el piloto, revisar las liqui
 - **[17 oct] Liquidación de adjudicación en servidor, términos por empresa, panel de comisión, calculadora con la regla real** (secciones 3 y 4).
 
 ## 7. Lo que sigue abierto, y por qué
-- **Adjudicación de RFQ en servidor:** misma obra que la subasta, sobre otras tablas.
 - **Precompilar con Vite:** cambia todo el arranque; merece su propio release.
 - **Ruta `/marketing` sin guardia en el cliente:** no expone datos sensibles (solo un generador de enlaces); el menú la oculta a quien no es operador.

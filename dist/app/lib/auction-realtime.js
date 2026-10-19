@@ -212,7 +212,7 @@
         method: "POST", credentials: "same-origin", cache: "no-store", redirect: "error", headers: headers,
         body: JSON.stringify({
           auctionRef: auctionRef, participantPrincipalIds: ids, closesAt: text(input && input.closesAt, 40),
-          startAmount: money(input && input.startAmount), minStep: money(input && input.minStep), floor: money(input && input.floor),
+          startAmount: money(input && input.startAmount), minStep: money(input && input.minStep), floor: money(input && input.floor), budget: input && input.budget ? money(input.budget) : "",
           currency: text(input && input.currency, 3), autoExtend: !(input && input.autoExtend === false),
           antiSnipingSeconds: Number(input && input.antiSnipingSeconds) || 60, maxExtensions: Number(input && input.maxExtensions) || 0,
         }),

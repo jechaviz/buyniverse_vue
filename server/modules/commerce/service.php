@@ -43,38 +43,65 @@ function commerce_settlement_payload(array $row): array {
     ];
 }
 
+/**
+ * Writes one settlement, once. $p: tenantId, entityId, sourceId (the room or RFQ id, unique), ref, winnerPrincipalId, currency,
+ * baselineCents, awardedCents, kind ('auction'|'rfq'), baselineSource, quotesCounted, marketCents. Must run inside the caller's transaction.
+ */
+function commerce_insert_settlement(PDO $pdo, array $context, string $key, array $p): array {
+    $effective = commerce_terms_for($pdo, $p['tenantId'], $p['currency']);
+    $trailing = $pdo->prepare('SELECT COALESCE(SUM(saving_cents), 0) FROM award_settlements WHERE tenant_id = ? AND currency = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL 12 MONTH)');
+    $trailing->execute([$p['tenantId'], $p['currency']]); $trailingSaving = (int) $trailing->fetchColumn();
+    $fee = commerce_compute_fee($p['baselineCents'], $p['awardedCents'], $trailingSaving, $effective, $p['currency']);
+    $id = tenant_uuid();
+    $status = $effective['mode'] === 'charging' ? 'pending' : 'informative';
+    $snapshot = json_encode(['terms' => $effective, 'roomCurrency' => $p['currency'], 'basis' => $fee['basis'], 'kind' => $p['kind'], 'baselineSource' => $p['baselineSource']], JSON_UNESCAPED_SLASHES);
+    $pdo->prepare('INSERT INTO award_settlements (id, tenant_id, legal_entity_id, room_id, auction_ref, winner_principal_id, currency, baseline_cents, awarded_cents, saving_cents,
+        trailing_saving_cents, ratio_fee_cents, floor_cents, cap_cents, fee_cents, terms_json, terms_hash, status, settled_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        ->execute([$id, $p['tenantId'], $p['entityId'], $p['sourceId'], $p['ref'], $p['winnerPrincipalId'], $p['currency'], $p['baselineCents'], $p['awardedCents'], $fee['savingCents'],
+            $trailingSaving, $fee['ratioFeeCents'], $fee['floorCents'], $fee['capCents'], $fee['feeCents'], $snapshot, commerce_terms_hash($effective, $p['currency']), $status, $context['principalId']]);
+    $pdo->prepare('INSERT INTO award_settlement_meta (settlement_id, kind, baseline_source, quotes_counted, market_cents) VALUES (?, ?, ?, ?, ?)')
+        ->execute([$id, $p['kind'], $p['baselineSource'], (int) ($p['quotesCounted'] ?? 0), $p['marketCents'] ?? null]);
+    tenant_audit($pdo, $context, 'commerce.award_settled', 'award_settlement', $id,
+        ['ref' => $p['ref'], 'kind' => $p['kind'], 'baselineSource' => $p['baselineSource'], 'savingCents' => $fee['savingCents'], 'feeCents' => $fee['feeCents'], 'basis' => $fee['basis'], 'status' => $status], $key);
+    $row = $pdo->prepare('SELECT * FROM award_settlements WHERE id = ?'); $row->execute([$id]);
+    $payload = commerce_settlement_payload($row->fetch());
+    $payload['basis'] = $fee['basis']; $payload['kind'] = $p['kind']; $payload['baselineSource'] = $p['baselineSource'];
+    return $payload;
+}
+
+/** The stored settlement for a room or RFQ, if one was already written. */
+function commerce_stored_settlement(PDO $pdo, string $sourceId): ?array {
+    $existing = $pdo->prepare('SELECT s.*, m.kind, m.baseline_source FROM award_settlements s LEFT JOIN award_settlement_meta m ON m.settlement_id = s.id WHERE s.room_id = ? LIMIT 1');
+    $existing->execute([$sourceId]); $row = $existing->fetch();
+    if (!is_array($row)) return null;
+    $payload = commerce_settlement_payload($row);
+    $payload['kind'] = (string) ($row['kind'] ?? 'auction'); $payload['baselineSource'] = (string) ($row['baseline_source'] ?? 'start_price');
+    return $payload;
+}
+
 /** Settles a closed live room for its organiser. Idempotent: a second call returns the stored settlement. */
 function commerce_settle_room(PDO $pdo, array $context, string $auctionRef, string $key): array {
     $pdo->beginTransaction();
     $room = auction_realtime_room($pdo, $context, $auctionRef, true);
     if ($room === null) { $pdo->rollBack(); fail_response(404, 'Live room not found'); }
     if ((string) $room['role_key'] !== 'organizer') { $pdo->rollBack(); fail_response(403, 'Only the organiser can settle the award'); }
-    $existing = $pdo->prepare('SELECT * FROM award_settlements WHERE room_id = ? LIMIT 1'); $existing->execute([$room['id']]); $stored = $existing->fetch();
-    if (is_array($stored)) { $pdo->commit(); return ['created' => false, 'settlement' => commerce_settlement_payload($stored)]; }
+    $stored = commerce_stored_settlement($pdo, (string) $room['id']);
+    if ($stored !== null) { $pdo->commit(); return ['created' => false, 'settlement' => $stored]; }
     $closed = (string) $room['status'] === 'closed' || strtotime((string) $room['closes_at'] . ' UTC') < time();
     if (!$closed) { $pdo->rollBack(); fail_response(409, 'The room is still open'); }
     $terms = auction_realtime_terms($pdo, (string) $room['id'], true);
     if ($terms === null || (int) $terms['bid_count'] < 1) { $pdo->rollBack(); fail_response(409, 'There is no winning bid to settle'); }
 
-    $tenantId = (string) $context['tenant']['id'];
-    $effective = commerce_terms_for($pdo, $tenantId, (string) $terms['currency']);
-    $currency = (string) $terms['currency'];
-    $trailing = $pdo->prepare('SELECT COALESCE(SUM(saving_cents), 0) FROM award_settlements WHERE tenant_id = ? AND currency = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL 12 MONTH)');
-    $trailing->execute([$tenantId, $currency]); $trailingSaving = (int) $trailing->fetchColumn();
-
-    $baseline = (int) $terms['start_cents']; $awarded = (int) $terms['best_cents'];
-    $fee = commerce_compute_fee($baseline, $awarded, $trailingSaving, $effective, $currency);
-    $id = tenant_uuid();
-    $status = $effective['mode'] === 'charging' ? 'pending' : 'informative';
-    $snapshot = json_encode(['terms' => $effective, 'roomCurrency' => $currency, 'basis' => $fee['basis']], JSON_UNESCAPED_SLASHES);
-    $pdo->prepare('INSERT INTO award_settlements (id, tenant_id, legal_entity_id, room_id, auction_ref, winner_principal_id, currency, baseline_cents, awarded_cents, saving_cents,
-        trailing_saving_cents, ratio_fee_cents, floor_cents, cap_cents, fee_cents, terms_json, terms_hash, status, settled_by_principal_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-        ->execute([$id, $tenantId, $room['legal_entity_id'], $room['id'], $auctionRef, $terms['leader_principal_id'], $currency, $baseline, $awarded, $fee['savingCents'],
-            $trailingSaving, $fee['ratioFeeCents'], $fee['floorCents'], $fee['capCents'], $fee['feeCents'], $snapshot, commerce_terms_hash($effective, $currency), $status, $context['principalId']]);
-    tenant_audit($pdo, $context, 'commerce.award_settled', 'award_settlement', $id,
-        ['auctionRef' => $auctionRef, 'savingCents' => $fee['savingCents'], 'feeCents' => $fee['feeCents'], 'basis' => $fee['basis'], 'status' => $status], $key);
-    $row = $pdo->prepare('SELECT * FROM award_settlements WHERE id = ?'); $row->execute([$id]);
-    $payload = commerce_settlement_payload($row->fetch()); $payload['basis'] = $fee['basis'];
+    // The baseline is the higher of the locked start price and the budget the organiser declared when opening the room.
+    $declared = $pdo->prepare('SELECT budget_cents FROM auction_live_budget WHERE room_id = ?'); $declared->execute([$room['id']]); $budget = $declared->fetchColumn();
+    $start = (int) $terms['start_cents'];
+    $useBudget = $budget !== false && (int) $budget > $start;
+    $payload = commerce_insert_settlement($pdo, $context, $key, [
+        'tenantId' => (string) $context['tenant']['id'], 'entityId' => $room['legal_entity_id'], 'sourceId' => $room['id'], 'ref' => $auctionRef,
+        'winnerPrincipalId' => $terms['leader_principal_id'], 'currency' => (string) $terms['currency'],
+        'baselineCents' => $useBudget ? (int) $budget : $start, 'awardedCents' => (int) $terms['best_cents'],
+        'kind' => 'auction', 'baselineSource' => $useBudget ? 'budget' : 'start_price',
+    ]);
     $pdo->commit();
     return ['created' => true, 'settlement' => $payload];
 }
@@ -94,8 +121,8 @@ function handle_commerce(string $uri): void {
         }
         if ($route === '/settlements' && $method === 'GET') {
             tenant_require_permission($context, 'manageCompany');
-            $list = $pdo->prepare('SELECT * FROM award_settlements WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 100'); $list->execute([$context['tenant']['id']]);
-            workspace_json(['settlements' => array_map('commerce_settlement_payload', $list->fetchAll()), 'csrf' => $session['csrf']]);
+            $list = $pdo->prepare('SELECT s.*, m.kind, m.baseline_source FROM award_settlements s LEFT JOIN award_settlement_meta m ON m.settlement_id = s.id WHERE s.tenant_id = ? ORDER BY s.created_at DESC LIMIT 100'); $list->execute([$context['tenant']['id']]);
+            workspace_json(['settlements' => array_map(static fn($r) => commerce_settlement_payload($r) + ['kind' => (string) ($r['kind'] ?? 'auction'), 'baselineSource' => (string) ($r['baseline_source'] ?? 'start_price')], $list->fetchAll()), 'csrf' => $session['csrf']]);
         }
         if ($route === '/settle' && $method === 'POST') {
             auction_realtime_require_write($session); tenant_require_permission($context, 'manageCompany');

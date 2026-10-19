@@ -265,6 +265,7 @@ if (preg_match('#^/api/v1/auth/(google|microsoft|linkedin|facebook)/(start|callb
 if ($uri === '/api/v1/setup' || str_starts_with($uri, '/api/v1/setup/')) handle_setup($uri);
 if ($uri === '/api/v1/platform' || str_starts_with($uri, '/api/v1/platform/')) handle_platform($uri);
 if ($uri === '/api/v1/commerce' || str_starts_with($uri, '/api/v1/commerce/')) handle_commerce($uri);
+if ($uri === '/api/v1/rfq' || str_starts_with($uri, '/api/v1/rfq/')) handle_rfq($uri);
 if (preg_match('#^/api/v1/onboarding(?:/(?:fiscal-credentials(?:/verify)?|compliance|compliance-documents))?/?$#', $uri) === 1) handle_onboarding($uri);
 if (preg_match('#^/api/v1/support/(?:status|assistant|tickets)$#', $uri) === 1) handle_support($uri);
 if (str_starts_with($uri, '/api/v1/cfdi/')) handle_cfdi($uri);
