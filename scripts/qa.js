@@ -64,6 +64,7 @@ for (const [file, token] of [
   ["ops/migrations/20261015_platform.sql", "platform_operators"],
   ["ops/migrations/20261016_billing.sql", "platform_charges"],
   ["ops/migrations/20261017_commerce.sql", "award_settlements"],
+  ["ops/migrations/20261019_commerce_currency.sql", "default:USD"],
   ["server/modules/commerce/fee.php", "function commerce_compute_fee"],
   ["server/modules/commerce/service.php", "function commerce_settle_room"],
   ["ops/schema-requirements.txt", "award_settlements"],

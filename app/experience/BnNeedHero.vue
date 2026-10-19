@@ -47,7 +47,7 @@
         <div class="nh__trust">
           <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ store.t("Milestone payments") }}</span>
           <span><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> {{ store.t("Automated CFDI 4.0") }}</span>
-          <span><i class="fa-solid fa-percent" aria-hidden="true"></i> {{ store.t("0% fee without savings") }}</span>
+          <span><i class="fa-solid fa-percent" aria-hidden="true"></i> {{ store.t("No award, no fee") }}</span>
         </div>
       </div>
 

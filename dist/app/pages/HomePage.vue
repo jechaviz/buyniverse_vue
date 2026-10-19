@@ -118,7 +118,7 @@
     <section class="hp-cta">
       <div class="bn-wrap">
         <h2 class="hp-cta__h">{{ store.t(supplierMode ? "Put your company in front of buyers who are ready to purchase." : "Publish once. Let them compete.") }}</h2>
-        <p class="hp-cta__p">{{ store.t(supplierMode ? "Answer verified requests and get paid by milestone." : "You only pay a share of the savings we find. No savings, no fee.") }}</p>
+        <p class="hp-cta__p">{{ store.t(supplierMode ? "Answer verified requests and get paid by milestone." : "You pay only when you award: a share of the saving, with a floor and a cap.") }}</p>
         <div class="hp-cta__row">
           <RouterLink v-if="supplierMode" to="/onboarding" class="hp-go">{{ store.t("List your company") }}</RouterLink>
           <RouterLink v-else to="/necesito" class="hp-go">{{ store.t("I need…") }} →</RouterLink>
@@ -133,7 +133,7 @@
 const { inject, ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent } = Vue;
 const { useRoute, useRouter } = VueRouter;
 const load = (p) => defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
-const BnNeedHero = load("./app/experience/BnNeedHero.vue?v=6");
+const BnNeedHero = load("./app/experience/BnNeedHero.vue?v=7");
 const AnimatedNumber = load("./app/components/AnimatedNumber.vue?v=1");
 
 // The explainer film still shows the previous brand mark; it returns once it is re-rendered with the ring and the dot.

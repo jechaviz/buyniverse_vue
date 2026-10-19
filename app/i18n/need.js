@@ -102,7 +102,7 @@
     "saved": "ahorrado",
     "Milestone payments": "Pagos por hitos",
     "Automated CFDI 4.0": "CFDI 4.0 Automático",
-    "0% fee without savings": "0% comisión sin ahorro",
+    "No award, no fee": "Sin adjudicación, sin comisión",
     "Watch live auction": "Ver sala de subastas en vivo",
     "Live reverse auction": "Subasta inversa en vivo",
     "B2B Procurement & Reverse Auction Platform": "Plataforma B2B de Compras y Subastas Inversas"

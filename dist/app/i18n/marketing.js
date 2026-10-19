@@ -23,6 +23,11 @@
     "The fee is calculated on the saving, with a floor and a cap, by the same rule as your dashboard.": "La comisión se calcula sobre el ahorro, con un piso y un tope, y es el mismo cálculo que usa tu panel.",
     "Publish a need and compare real offers": "Publica una necesidad y compara ofertas reales",
     "This offer is not below your budget, so there is no saving.": "Esta oferta no está por debajo de tu presupuesto, así que no hay ahorro.",
+    "Stamps are credited by Buyniverse once a payment is confirmed. Manage them in your company setup.": "Buyniverse acredita los timbres cuando se confirma un pago. Adminístralos en la configuración de tu empresa.",
+    "Award fees": "Comisiones de adjudicación",
+    "The fee for each closed award, computed by the server from the live-auction ledger.": "La comisión de cada adjudicación cerrada, calculada por el servidor a partir del libro de la subasta en vivo.",
+    "No awards settled yet.": "Todavía no hay adjudicaciones liquidadas.",
+
     "Fee settled by the server": "Comisión liquidada por el servidor",
     "Floor applied": "Se aplicó el piso",
     "Cap applied": "Se aplicó el tope",

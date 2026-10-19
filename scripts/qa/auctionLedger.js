@@ -200,6 +200,16 @@ async function main() {
     const stored = sql("SELECT trailing_saving_cents, terms_hash, terms_json FROM award_settlements WHERE id = ?", settlementOf(r).id || "none")[0] || {};
     check("the settlement pins the terms it used", /^[0-9a-f]{64}$/.test(stored.terms_hash) && JSON.parse(stored.terms_json).terms.rate_bps === 2500 && Number(stored.trailing_saving_cents) === 100000, JSON.stringify(stored));
 
+    // A USD room settles with the USD terms: the fixed minimum floor is USD 150, not MXN 3,000.
+    const usd = "usd-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/rooms", { auctionRef: usd, participantPrincipalIds: bidders, closesAt: soon, startAmount: "10000", minStep: 1, currency: "USD" });
+    r = await call("Alfa", "POST", `/rooms/${usd}/bids`, { amount: "9900", bidKey: key() });
+    check("a USD bid is accepted", r.status === 200, r.text);
+    closeRoom(usd);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: usd });
+    // saving 100 (25% = 25), floor max(USD 150 minimum, 0.4% of 9,900 = 39.60) = 150, cap 8% of 9,900 = 792 -> the floor decides
+    check("a USD room uses the USD floor minimum", r.status === 200 && settlementOf(r).currency === "USD" && settlementOf(r).savingCents === 10000 && settlementOf(r).feeCents === 15000 && settlementOf(r).basis === "floor", r.text);
+
     // A room nobody bid on has nothing to settle.
     const empty = "empty-" + crypto.randomBytes(4).toString("hex");
     await call("Organizer", "POST", "/rooms", { auctionRef: empty, participantPrincipalIds: bidders, closesAt: soon, startAmount: "500", minStep: 1, currency: "MXN" });

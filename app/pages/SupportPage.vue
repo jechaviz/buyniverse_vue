@@ -97,7 +97,7 @@ const SUGGESTIONS = {
   suppliers: ["What do I need to sell on Buyniverse?", "Requirements for suppliers in Mexico", "My postal code does not match my state"],
   invoicing: ["How do I upload my CSD?", "How do I cancel a CFDI?", "When do I issue a payment complement?"],
   buying: ["How do I launch a reverse auction?", "How do I compare suppliers?"],
-  payments: ["When is an escrow payment released?", "How much does Buyniverse charge?"],
+  payments: ["When is a milestone payment released?", "How much does Buyniverse charge?"],
 };
 const STATUS = { open: "Open", in_progress: "In progress", waiting_customer: "Waiting for you", resolved: "Resolved", closed: "Closed" };
 
@@ -178,7 +178,7 @@ export default {
     };
 
     onMounted(async () => {
-      kb.value = await fetch(`${basePath}/app/data/support/kb.json?v=1`, { cache: "force-cache" }).then((r) => r.json()).catch(() => ({ areas: [], articles: [] }));
+      kb.value = await fetch(`${basePath}/app/data/support/kb.json?v=2`, { cache: "force-cache" }).then((r) => r.json()).catch(() => ({ areas: [], articles: [] }));
       const topic = String(route.query.topic || "");
       if (kb.value.areas.some((item) => item.id === topic)) chooseArea(topic);
       if (demo.value) return;

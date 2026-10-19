@@ -18,9 +18,9 @@
 
     // Page Components
     const Dashboard = load("./app/pages/DashboardPage.vue?v=37");
-    const Home = load("./app/pages/HomePage.vue?v=53");
+    const Home = load("./app/pages/HomePage.vue?v=54");
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
-    const Support = load("./app/pages/SupportPage.vue?v=2");
+    const Support = load("./app/pages/SupportPage.vue?v=3");
     const Savings = load("./app/pages/SavingsPage.vue?v=2");
     const Marketing = load("./app/pages/MarketingPage.vue?v=1");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
@@ -34,7 +34,7 @@
     const Identity = load("./app/pages/IdentityPage.vue?v=34");
     const AdminIssuers = load("./app/pages/AdminIssuersPage.vue?v=31");
     const TenantAdmin = load("./app/pages/TenantAdminPage.vue?v=2");
-    const Billing = load("./app/pages/BillingPage.vue?v=32");
+    const Billing = load("./app/pages/BillingPage.vue?v=33");
     const Contest = load("./app/pages/ContestPage.vue?v=34");
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=41");
@@ -43,7 +43,7 @@
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
     const Setup = load("./app/pages/SetupPage.vue?v=2");
-    const Platform = load("./app/pages/PlatformPage.vue?v=3");
+    const Platform = load("./app/pages/PlatformPage.vue?v=4");
 
     const NotFound = {
       template:

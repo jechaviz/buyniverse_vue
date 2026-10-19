@@ -8,10 +8,21 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/fee.php';
 
-function commerce_terms_for(PDO $pdo, string $tenantId): array {
-    $statement = $pdo->prepare('SELECT * FROM commerce_terms WHERE scope IN (?, "default") ORDER BY scope = "default" LIMIT 1');
-    $statement->execute([$tenantId]); $row = $statement->fetch();
-    return commerce_normalize_terms(is_array($row) ? $row : []);
+/**
+ * The terms for a company and a currency. Candidates, most specific first: "<tenant>:<CUR>", "<tenant>", "default:<CUR>", "default".
+ * A row of the room's own currency wins; if there is none, the first existing row applies by percentages only.
+ */
+function commerce_terms_for(PDO $pdo, string $tenantId, string $currency = 'MXN'): array {
+    $suffix = $currency === 'MXN' ? '' : ':' . $currency;
+    $candidates = array_values(array_unique([$tenantId . $suffix, $tenantId, 'default' . $suffix, 'default']));
+    $marks = implode(',', array_fill(0, count($candidates), '?'));
+    $statement = $pdo->prepare("SELECT * FROM commerce_terms WHERE scope IN ($marks)");
+    $statement->execute($candidates);
+    $rows = [];
+    foreach ($statement->fetchAll() as $row) $rows[(string) $row['scope']] = $row;
+    foreach ($candidates as $scope) if (isset($rows[$scope]) && (string) $rows[$scope]['currency'] === $currency) return commerce_normalize_terms($rows[$scope]);
+    foreach ($candidates as $scope) if (isset($rows[$scope])) return commerce_normalize_terms($rows[$scope]);
+    return commerce_normalize_terms([]);
 }
 
 /** The terms in the shape a buyer or the public calculator may see. */
@@ -46,7 +57,7 @@ function commerce_settle_room(PDO $pdo, array $context, string $auctionRef, stri
     if ($terms === null || (int) $terms['bid_count'] < 1) { $pdo->rollBack(); fail_response(409, 'There is no winning bid to settle'); }
 
     $tenantId = (string) $context['tenant']['id'];
-    $effective = commerce_terms_for($pdo, $tenantId);
+    $effective = commerce_terms_for($pdo, $tenantId, (string) $terms['currency']);
     $currency = (string) $terms['currency'];
     $trailing = $pdo->prepare('SELECT COALESCE(SUM(saving_cents), 0) FROM award_settlements WHERE tenant_id = ? AND currency = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL 12 MONTH)');
     $trailing->execute([$tenantId, $currency]); $trailingSaving = (int) $trailing->fetchColumn();

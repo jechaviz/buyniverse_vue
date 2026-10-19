@@ -105,6 +105,7 @@
           <p class="bn-ob__hint">{{ t("The fee is decided here and settled on the server when an award closes. A company's own terms replace the default.") }}</p>
           <div class="bn-ob__grid">
             <label class="bn-field bn-ob__wide"><span>{{ t("Applies to") }}</span><select v-model="terms.scope" class="bn-select" @change="loadTerms"><option value="default">{{ t("Every company (default)") }}</option><option v-for="c in data.companies" :key="c.id" :value="c.tenantId">{{ c.legalName }}</option></select></label>
+            <label class="bn-field"><span>{{ t("Currency") }}</span><select v-model="terms.currency" class="bn-select" @change="loadTerms"><option value="MXN">MXN</option><option value="USD">USD</option></select></label>
             <label class="bn-field"><span>{{ t("Standard rate on the saving (%)") }}</span><input v-model.number="terms.ratePercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
             <label class="bn-field"><span>{{ t("Rate above the yearly threshold (%)") }}</span><input v-model.number="terms.bracketRatePercent" class="bn-input bn-ob__mono" type="number" min="0" max="100" step="0.01" /></label>
             <label class="bn-field"><span>{{ t("Yearly threshold (saving)") }}</span><input v-model.number="terms.bracketThreshold" class="bn-input bn-ob__mono" type="number" min="0" step="1" /></label>
@@ -210,9 +211,10 @@ export default {
     const terms = reactive({ scope: "default", ratePercent: 25, bracketRatePercent: 20, bracketThreshold: 5000000, floorPercent: 0.4, floorMin: 3000, capPercent: 8, mode: "informative", currency: "MXN" });
     const settleRef = reactive({});
     const loadTerms = () => {
-      const row = data.commerceTerms.find((x) => x.scope === terms.scope) || data.commerceTerms.find((x) => x.scope === "default");
+      const key = terms.scope + (terms.currency === "MXN" ? "" : ":" + terms.currency);
+      const row = data.commerceTerms.find((x) => x.scope === key) || data.commerceTerms.find((x) => x.scope === terms.scope) || data.commerceTerms.find((x) => x.scope === "default");
       if (!row) return;
-      Object.assign(terms, { ratePercent: row.ratePercent, bracketRatePercent: row.bracketRatePercent, bracketThreshold: row.bracketThresholdCents / 100, floorPercent: row.floorPercent, floorMin: row.floorMinCents / 100, capPercent: row.capPercent, mode: row.mode, currency: row.currency });
+      Object.assign(terms, { ratePercent: row.ratePercent, bracketRatePercent: row.bracketRatePercent, bracketThreshold: row.bracketThresholdCents / 100, floorPercent: row.floorPercent, floorMin: row.floorMinCents / 100, capPercent: row.capPercent, mode: row.mode });
     };
     const saveTerms = () => run(() => window.BuyniverseAdmin.saveTerms({ ...terms }), "Terms saved.");
     const collect = (x) => run(() => window.BuyniverseAdmin.collectSettlement(x.id, settleRef[x.id] || ""), "Collection recorded.");

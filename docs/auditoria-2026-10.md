@@ -28,7 +28,7 @@ Principio: cobrar solo lo que Buyniverse **mide en su servidor** y puede **atrib
 - **Ahorro verificado** = línea base bloqueada − precio adjudicado. La línea base se **congela al publicar** (con fecha y huella) y no se puede editar después de recibir la primera oferta. Así no se manipula.
 - **Tasa estándar 25%** del ahorro verificado. Mensaje publicable: "te quedas con 3 de cada 4 pesos que ahorras". Los tramos se aplican **por tramo**, sobre el ahorro verificado de los últimos 12 meses: 25% hasta MXN 5 millones y 20% por el excedente.
 - **Piso por adjudicación:** 0.4% del monto adjudicado, mínimo MXN 3,000 (≈ USD 150). Es lo que protege contra la línea base baja.
-- **Sin adjudicación, sin cobro.** Sin ahorro, solo el piso.
+- **Sin adjudicación, sin cobro.** Con adjudicación y sin ahorro se cobra el piso (por eso ningún texto público debe decir "sin ahorro, sin comisión").
 
 **Proveedor**
 - Responder invitaciones: gratis, hasta 3 al mes. **Sin comisión por adjudicación** (no infla precios).

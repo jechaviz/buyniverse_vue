@@ -48,7 +48,7 @@
     "You have not saved any open project yet.": "Aún no has guardado ningún proyecto abierto.",
     "No public projects are open right now.": "No hay proyectos públicos abiertos en este momento.",
     "Put your company in front of buyers who are ready to purchase.": "Pon a tu empresa frente a compradores listos para comprar.",
-    "You only pay a share of the savings we find. No savings, no fee.": "Solo pagas una parte del ahorro que encontramos. Sin ahorro, no hay comisión.",
+    "You pay only when you award: a share of the saving, with a floor and a cap.": "Solo pagas cuando adjudicas: una parte del ahorro, con un piso y un tope.",
     "Start comparing suppliers": "Empieza a comparar proveedores", "Watch a live auction": "Ver una subasta en vivo",
     "Laptops & endpoints": "Laptops y equipos", "Security audit": "Auditoría de seguridad", "Sustainable packaging": "Empaque sustentable",
     "Customs brokerage": "Agencia aduanal", "Suppliers in Monterrey": "Proveedores en Monterrey",

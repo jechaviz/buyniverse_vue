@@ -46,5 +46,16 @@
     return { savingCents: saving, ratioFeeCents: ratioFee, floorCents: floor, capCents: cap, feeCents: amount, standardPartCents: standardPart, excessPartCents: excessPart, basis: basis };
   }
 
-  global.BuyniverseCommerce = { fee: fee, terms: terms, DEFAULTS: DEFAULTS, share: share };
+  /** The company's own award settlements (the server answers only a company administrator). [] in the demo and on any error. */
+  function settlements() {
+    var runtime = global.BuyniverseRuntime;
+    if (!runtime || runtime.mode === "demo" || typeof global.fetch !== "function") return Promise.resolve([]);
+    var base = (global.BuyniverseBase && global.BuyniverseBase.sub) || "";
+    return global.fetch(base + "/api/v1/commerce/settlements", { credentials: "same-origin", cache: "no-store", redirect: "error", headers: { Accept: "application/json" } })
+      .then(function (response) { return response.ok ? response.json() : { settlements: [] }; })
+      .then(function (body) { return Array.isArray(body.settlements) ? body.settlements : []; })
+      .catch(function () { return []; });
+  }
+
+  global.BuyniverseCommerce = { fee: fee, terms: terms, settlements: settlements, DEFAULTS: DEFAULTS, share: share };
 })(typeof window !== "undefined" ? window : globalThis);

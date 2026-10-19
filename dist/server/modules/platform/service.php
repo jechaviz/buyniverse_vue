@@ -237,6 +237,7 @@ function handle_platform(string $uri): void {
                 'bracket_threshold_cents' => $money($input['bracketThreshold'] ?? null), 'floor_min_cents' => $money($input['floorMin'] ?? null)];
             if ($row['floor_bps'] > $row['cap_bps']) fail_response(400, 'The floor cannot exceed the cap');
             $tenant = $scope === 'default' ? null : $scope;
+            $scope = $currency === 'MXN' ? $scope : $scope . ':' . $currency;     // MXN keeps the plain scope; another currency adds ":<CUR>"
             if ($tenant !== null) { $exists = $pdo->prepare('SELECT 1 FROM tenant_accounts WHERE id = ?'); $exists->execute([$tenant]); if ($exists->fetchColumn() === false) fail_response(404, 'Workspace not found'); }
             $pdo->prepare('INSERT INTO commerce_terms (scope, tenant_id, currency, rate_bps, bracket_threshold_cents, bracket_rate_bps, floor_bps, floor_min_cents, cap_bps, mode, updated_by_principal_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE currency = VALUES(currency), rate_bps = VALUES(rate_bps), bracket_threshold_cents = VALUES(bracket_threshold_cents),

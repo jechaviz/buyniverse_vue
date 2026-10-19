@@ -58,12 +58,12 @@
       "icon": "fa-vault",
       "persona": "Marta",
       "title": {
-        "es": "Pagos y custodia",
-        "en": "Payments and escrow"
+        "es": "Pagos y comisión",
+        "en": "Payments and fee"
       },
       "focus": {
-        "es": "Custodia, liberación de pagos y comisión por ahorro.",
-        "en": "Escrow, payment release and the savings-share fee."
+        "es": "Pagos por hitos, conciliación y comisión por ahorro.",
+        "en": "Milestone payments, matching and the savings-share fee."
       }
     }
   ],
@@ -845,23 +845,23 @@
         "3-way"
       ],
       "title": {
-        "es": "Pagos en custodia",
-        "en": "Escrow payments"
+        "es": "Pagos por hitos",
+        "en": "Milestone payments"
       },
       "summary": {
-        "es": "El comprador deposita en custodia y el pago se libera al proveedor cuando se confirma la recepción y la factura concilia con la orden (conciliación a tres vías).",
-        "en": "The buyer funds escrow and the payment is released to the supplier once receipt is confirmed and the invoice matches the order (three-way match)."
+        "es": "Buyniverse no custodia fondos: el pago se hace directamente entre comprador y proveedor. La plataforma registra la recepción y la conciliación a tres vías (orden, recepción y factura) que autorizan cada pago por hito.",
+        "en": "Buyniverse does not hold funds: payment goes directly between buyer and supplier. The platform records the receipt and the three-way match (order, receipt and invoice) that authorise each milestone payment."
       },
       "steps": {
         "es": [
           "Registra la recepción de la orden.",
           "Revisa la conciliación de la factura contra orden y recepción.",
-          "Libera el pago; queda en la bitácora de auditoría."
+          "Autoriza el pago por hito; queda en la bitácora de auditoría."
         ],
         "en": [
           "Record receipt of the order.",
           "Review the invoice match against order and receipt.",
-          "Release the payment; it is recorded in the audit trail."
+          "Authorise the milestone payment; it is recorded in the audit trail."
         ]
       },
       "links": []
@@ -883,19 +883,19 @@
         "en": "Buyniverse's fee"
       },
       "summary": {
-        "es": "Solo pagas una parte del ahorro que encontramos: si no hay ahorro, no hay comisión. La cascada de ahorro muestra presupuesto, mejor primera oferta y mejor puja final.",
-        "en": "You only pay a share of the savings we find: no savings, no fee. The savings waterfall shows budget, best first offer and best final bid."
+        "es": "Solo pagas cuando adjudicas: una parte del ahorro verificado, con un piso y un tope sobre lo adjudicado. Sin adjudicación no hay comisión; con poco o ningún ahorro se aplica el piso. La calculadora pública y tu panel usan la misma regla.",
+        "en": "You pay only when you award: a share of the verified saving, with a floor and a cap on what is awarded. No award, no fee; with little or no saving the floor applies. The public calculator and your dashboard use the same rule."
       },
       "steps": {
         "es": [
-          "Revisa el ahorro de cada evento en su panel comercial.",
-          "El ahorro financiero es presupuesto menos mejor primera oferta.",
-          "El ahorro Buyniverse es la mejor primera oferta menos la mejor puja final."
+          "Calcula tu caso en la calculadora de ahorro (/ahorro).",
+          "La comisión es una parte del ahorro; nunca supera el tope sobre lo adjudicado.",
+          "Con poco o ningún ahorro se cobra el piso, que protege contra presupuestos artificialmente bajos."
         ],
         "en": [
-          "Review each event's savings in its commercial panel.",
-          "Financial savings are budget minus best first offer.",
-          "Buyniverse savings are best first offer minus best final bid."
+          "Work out your case in the savings calculator (/ahorro).",
+          "The fee is a share of the saving; it never exceeds the cap on what is awarded.",
+          "With little or no saving the floor applies, which protects against artificially low budgets."
         ]
       },
       "links": []

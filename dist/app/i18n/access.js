@@ -208,7 +208,7 @@
     "When do I issue a payment complement?": "¿Cuándo emito un complemento de pago?",
     "How do I launch a reverse auction?": "¿Cómo lanzo una subasta inversa?",
     "How do I compare suppliers?": "¿Cómo comparo proveedores?",
-    "When is an escrow payment released?": "¿Cuándo se libera un pago en custodia?",
+    "When is a milestone payment released?": "¿Cuándo se libera un pago por hito?",
     "Open": "Abierto",
     "In progress": "En curso",
     "Waiting for you": "Esperando tu respuesta",

@@ -210,6 +210,12 @@ async function main() {
     r = await call("Operator", "GET", "/api/v1/platform/overview");
     const mine = (r.json.commerceTerms || []).find((t) => t.scope === ids.tenant);
     check("the company's terms are listed apart from the default", mine && mine.ratePercent === 18 && mine.mode === "charging" && (r.json.commerceTerms || []).some((t) => t.scope === "default"), JSON.stringify(r.json.commerceTerms));
+    r = await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, currency: "USD", floorMin: 200 });
+    check("an operator sets the USD terms apart from the MXN ones", r.status === 200 && r.json.scope === "default:USD", r.text);
+    r = await call("Operator", "GET", "/api/v1/platform/overview");
+    const usdRow = (r.json.commerceTerms || []).find((t) => t.scope === "default:USD"), mxnRow = (r.json.commerceTerms || []).find((t) => t.scope === "default");
+    check("the USD terms keep their own fixed minimum and the MXN ones are untouched", usdRow && usdRow.currency === "USD" && usdRow.floorMinCents === 20000 && mxnRow && mxnRow.floorMinCents === 300000, JSON.stringify(r.json.commerceTerms));
+    await call("Operator", "POST", "/api/v1/platform/commerce-terms", { ...goodTerms, currency: "USD", floorMin: 150, bracketThreshold: 250000 });   // back to the default the ledger suite expects
     // a pending settlement written the way the server writes it, to exercise the collection routes
     const roomId = crypto.randomUUID();
     const mk = (id, status) => sql("INSERT INTO award_settlements (id, tenant_id, legal_entity_id, room_id, auction_ref, currency, baseline_cents, awarded_cents, saving_cents, ratio_fee_cents, floor_cents, cap_cents, fee_cents, terms_json, terms_hash, status, settled_by_principal_id) VALUES (?, ?, ?, ?, ?, 'MXN', 1000000, 800000, 200000, 50000, 3200, 64000, 50000, '{}', ?, ?, ?)", id, ids.tenant, ids.entity, crypto.randomUUID(), "panel-" + id.slice(0, 6), "0".repeat(64), status, ids.Owner);
