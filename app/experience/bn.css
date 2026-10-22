@@ -294,7 +294,7 @@ html.dark .bn, .bn .bn-cinema {
 /* Footer ------------------------------------------------------------------ */
 .bn-footer { margin-top: auto; background: var(--bn-surface); border-top: 1px solid var(--bn-line); padding: 56px 0 28px; }
 .bn-footer__grid { display: grid; gap: 32px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (min-width: 900px) { .bn-footer__grid { grid-template-columns: 1.6fr repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .bn-footer__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .bn-footer h4 { font: 600 0.82rem var(--bn-display); color: var(--bn-ink); margin: 0 0 12px; }
 .bn-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .bn-footer a { color: var(--bn-muted); text-decoration: none; font-size: 0.9rem; }

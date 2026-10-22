@@ -40,7 +40,10 @@
       "/messages": { es: "Mensajería Segura", en: "Secure Messaging" },
       "/post-job": { es: "Publicar Proyecto", en: "Post a Project" },
       "/admin/issuers": { es: "Configuración de Emisores", en: "Fiscal Issuers Configuration" },
-      "/profile/billing": { es: "Facturación y Folios", en: "Billing & Folios" }
+      "/profile/billing": { es: "Facturación y Folios", en: "Billing & Folios" },
+      "/privacidad": { es: "Aviso de privacidad", en: "Privacy notice" }, "/privacy": { es: "Aviso de privacidad", en: "Privacy notice" },
+      "/terminos": { es: "Términos de servicio", en: "Terms of service" }, "/terms": { es: "Términos de servicio", en: "Terms of service" },
+      "/ahorro": { es: "Calculadora de ahorro", en: "Savings calculator" }
     };
 
     let pageTitle = routeTitles[to.path]?.[currentLang];

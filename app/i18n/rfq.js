@@ -4,6 +4,10 @@
   // The labels RFQ and RFP stay as small tags; the sentences around them are meant to need no training.
   var dict = {
     "Your answer": "Tu respuesta",
+    "Company": "Empresa",
+    "Support": "Soporte",
+    "Privacy notice": "Aviso de privacidad",
+    "Terms of service": "Términos de servicio",
     "Progress": "Avance",
     "Ask for prices (RFQ)": "Pedir precios (RFQ)",
     "Approve proposals": "Aprobar propuestas",

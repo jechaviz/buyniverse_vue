@@ -9,6 +9,8 @@
     if (path === "/soporte") return true;
     // The savings calculator is the page the Marketing campaigns send people to.
     if (path === "/ahorro") return true;
+    // The privacy notice and the terms must be readable by everyone, signed in or not.
+    if (["/privacidad", "/terminos", "/privacy", "/terms"].includes(path)) return true;
     if (path.startsWith("/gig/") || path.startsWith("/job/") || path.startsWith("/profile/") || path.startsWith("/agency/")) return true;
     return false;
   }
@@ -22,6 +24,7 @@
     const SupplierMarket = load("./app/pages/SupplierMarketPage.vue?v=2");
     const Support = load("./app/pages/SupportPage.vue?v=3");
     const Savings = load("./app/pages/SavingsPage.vue?v=2");
+    const Legal = load("./app/pages/LegalPage.vue?v=3");
     const Marketing = load("./app/pages/MarketingPage.vue?v=1");
     const SupplierProfile = load("./app/pages/SupplierProfilePage.vue?v=3");
     const Workspace = load("./app/pages/WorkspacePage.vue?v=60");
@@ -60,6 +63,10 @@
       r("/marketplace/supplier/:supplierId", SupplierProfile, { experience: true }),
       r("/soporte", Support, { experience: true }),
       r("/ahorro", Savings, { experience: true }),
+      r("/privacidad", Legal, { experience: true, legal: "privacy" }),
+      r("/privacy", Legal, { experience: true, legal: "privacy" }),
+      r("/terminos", Legal, { experience: true, legal: "terms" }),
+      r("/terms", Legal, { experience: true, legal: "terms" }),
       r("/marketing", Marketing, { marketing: true }),
       r("/find-work", Home, { modes: ["supplier"], experience: true }),
       r("/dashboard/:section?", Dashboard, { view: "dashboard", to: "/dashboard/timesheets" }),

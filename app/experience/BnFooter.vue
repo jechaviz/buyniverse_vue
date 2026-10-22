@@ -36,6 +36,7 @@ export default {
       { title: "Buy", items: [{ to: "/marketplace", label: "Find suppliers" }, { to: "/browse-services", label: "Services" }, { to: "/find-talent", label: "Talent" }, { to: "/procurement/auction", label: "Live auctions" }] },
       { title: "Sectors", items: [{ to: "/marketplace?sector=technology", label: "Technology" }, { to: "/marketplace?sector=services", label: "Professional services" }, { to: "/marketplace?sector=operations", label: "Operations & industry" }, { to: "/marketplace?sector=logistics", label: "Logistics" }] },
       { title: "Sell", items: [{ to: "/find-work", label: "Find work" }, { to: "/procurement/sourcing", label: "Open RFQs" }, { to: "/onboarding", label: "List your company" }] },
+      { title: "Company", items: [{ to: "/ahorro", label: "Savings calculator" }, { to: "/soporte", label: "Support" }, { to: "/privacidad", label: "Privacy notice" }, { to: "/terminos", label: "Terms of service" }] },
     ];
     return { store: inject("store"), columns, year: new Date().getFullYear() };
   },

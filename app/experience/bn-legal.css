@@ -1,0 +1,22 @@
+/* Privacy notice and terms of service (/privacidad, /terminos). Reading comes first: a narrow measure and generous line height. */
+.bn-legal { background: var(--bn-bg); color: var(--bn-text); font-family: var(--bn-sans); padding-bottom: 72px; }
+.bn-legal__hero { padding: 52px 0 24px; background: radial-gradient(70% 90% at 90% 0%, color-mix(in srgb, var(--bn-violet) 16%, transparent), transparent 60%); }
+.bn-legal__eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 700 0.76rem var(--bn-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--bn-mint); }
+.bn-legal__title { margin: 0; font: 800 clamp(1.9rem, 4vw, 2.7rem)/1.1 var(--bn-sans); letter-spacing: -0.02em; }
+.bn-legal__meta { margin: 10px 0 0; font-size: 0.88rem; color: var(--bn-muted, #9aa3b5); }
+.bn-legal__switch { display: flex; gap: 8px; margin-top: 18px; }
+.bn-legal__switch a { padding: 8px 16px; border-radius: 999px; font: 700 0.86rem var(--bn-sans); color: var(--bn-muted, #9aa3b5); border: 1px solid color-mix(in srgb, var(--bn-text) 14%, transparent); text-decoration: none; }
+.bn-legal__switch a.is-on { background: var(--bn-violet); border-color: var(--bn-violet); color: #fff; }
+.bn-legal__body { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-top: 28px; align-items: start; }
+.bn-legal__toc { position: sticky; top: 90px; font-size: 0.86rem; }
+.bn-legal__toc ol { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.bn-legal__toc a { color: var(--bn-muted, #9aa3b5); text-decoration: none; }
+.bn-legal__toc a:hover { color: var(--bn-text); }
+.bn-legal__text { max-width: 72ch; line-height: 1.7; }
+.bn-legal__text section { padding-top: 6px; scroll-margin-top: 90px; }
+.bn-legal__text h2 { margin: 28px 0 8px; font: 800 1.15rem var(--bn-sans); }
+.bn-legal__text p { margin: 0 0 12px; color: color-mix(in srgb, var(--bn-text) 86%, transparent); }
+.bn-legal__text ul { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; color: color-mix(in srgb, var(--bn-text) 86%, transparent); }
+.bn-legal__contact { margin-top: 32px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--bn-text) 12%, transparent); }
+.bn-legal__contact a { color: var(--bn-mint); }
+@media (max-width: 800px) { .bn-legal__body { grid-template-columns: minmax(0, 1fr); } .bn-legal__toc { position: static; } }

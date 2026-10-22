@@ -5,7 +5,7 @@
         <div class="bn-auth__brand"><img src="assets/brand/buyniverse-ring.svg?v=1" alt="" width="40" height="40" />buyniverse</div>
         <div>
           <h3>{{ mode === "register" ? t("Every purchase, a universe of suppliers.") : t("Welcome back.") }}</h3>
-          <p>{{ mode === "register" ? t("One secure identity. Then you choose how your company takes part.") : t("Your requests, auctions and escrow payments, right where you left them.") }}</p>
+          <p>{{ mode === "register" ? t("One secure identity. Then you choose how your company takes part.") : t("Your requests, auctions and milestone payments, right where you left them.") }}</p>
         </div>
         <ol class="bn-auth__steps">
           <li><span class="bn-auth__step-no">1</span><div><b>{{ t("Verify who you are") }}</b><span>{{ t("Use the account you already have. Buyniverse never sees or stores its password.") }}</span></div></li>

@@ -119,8 +119,8 @@ const AppModals = load("./app/components/layout/AppModals.vue?v=5");
 const AppSidebar = load("./app/components/layout/AppSidebar.vue?v=11");
 const AppHeader = load("./app/components/layout/AppHeader.vue?v=8");
 const BnNavbar = load("./app/experience/BnNavbar.vue?v=10");
-const BnFooter = load("./app/experience/BnFooter.vue?v=4");
-const AuthModal = load("./app/components/AuthModal.vue?v=14");
+const BnFooter = load("./app/experience/BnFooter.vue?v=6");
+const AuthModal = load("./app/components/AuthModal.vue?v=15");
 const SetupBanner = load("./app/components/SetupBanner.vue?v=1");
 
 export default {

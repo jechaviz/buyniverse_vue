@@ -8,7 +8,7 @@
     "Every purchase, a universe of suppliers.": "Cada compra, un universo de proveedores.",
     "Welcome back.": "Qué gusto verte de nuevo.",
     "One secure identity. Then you choose how your company takes part.": "Una sola identidad segura. Después eliges cómo participa tu empresa.",
-    "Your requests, auctions and escrow payments, right where you left them.": "Tus solicitudes, subastas y pagos en custodia, justo donde los dejaste.",
+    "Your requests, auctions and milestone payments, right where you left them.": "Tus solicitudes, subastas y pagos por hitos, justo donde los dejaste.",
     "Verify who you are": "Verifica quién eres",
     "Use the account you already have. Buyniverse never sees or stores its password.": "Usa la cuenta que ya tienes. Buyniverse nunca ve ni guarda su contraseña.",
     "Choose your role": "Elige tu rol",
