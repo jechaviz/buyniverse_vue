@@ -75,8 +75,8 @@
             <button v-if="canManage(event) && event.status === 'Draft'" class="btn-brand text-xs py-2 px-3.5" @click="publish">
               <i class="fa-solid fa-tower-broadcast mr-1.5 text-xs"></i>Publish
             </button>
-            <button v-if="event.type === 'Auction' && store.auction(event.id)" class="btn-brand text-xs py-2 px-3.5" @click="router.push(`/procurement/auction?auction=${event.id}`)">
-              <i class="fa-solid fa-gavel mr-1.5 text-xs"></i>Live bids
+            <button v-if="liveRoundId" class="btn-brand text-xs py-2 px-3.5" @click="router.push(`/procurement/auction?auction=${encodeURIComponent(liveRoundId)}`)">
+              <i class="fa-solid fa-gavel mr-1.5 text-xs"></i>{{ store.t("Live round") }}
             </button>
             <button v-if="['Published', 'Sent'].includes(event.status) && event.quotes.length && canManage(event)" class="btn-brand text-xs py-2 px-3.5" @click="beginComparison">
               <i class="fa-solid fa-scale-balanced mr-1.5 text-xs"></i>Compare
@@ -84,6 +84,12 @@
           </div>
         </div>
       </header>
+
+      <ol v-if="event.type !== 'Auction'" class="flex flex-wrap items-center gap-2 border-b border-slate-100 px-4 py-3 text-xs dark:border-slate-800" :aria-label="store.t('Progress')">
+        <li v-for="(step, index) in journey" :key="step.key" class="flex items-center gap-2 rounded-full px-3 py-1.5 font-bold" :class="step.state === 'current' ? 'bg-brand text-white' : step.state === 'done' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'">
+          <span class="grid h-5 w-5 place-items-center rounded-full bg-white/25 text-[10px]">{{ step.state === 'done' ? '✓' : index + 1 }}</span>{{ store.t(step.label) }}
+        </li>
+      </ol>
 
       <nav class="flex gap-1 overflow-x-auto border-b border-slate-200/70 bg-slate-50/50 px-4 pt-2 dark:border-slate-700 dark:bg-slate-800/35">
         <button
@@ -146,6 +152,7 @@
         :allow-simulation="store.isDemo.value && canManage(event)"
         @export="exportBidSheet"
         @simulate="simulateQuote"
+        @approve="approveQuote"
       />
 
       <SourcingComparisonTab
@@ -173,6 +180,9 @@
         :format-money="store.money"
         @update:award-supplier-id="awardSupplierId = $event"
         @update:award-reason="awardReason = $event"
+        :approved-count="approvedCount"
+        :round-open="Boolean(liveRoundId)"
+        @contest="startRound"
         @award="award"
       />
 
@@ -207,11 +217,11 @@ const DataTable = load("./app/components/DataTable.vue?v=29");
 const SourcingWizardModal = load("./app/pages/procurement/sourcing/SourcingWizardModal.vue?v=4");
 const SourcingLotsTab = load("./app/pages/procurement/sourcing/SourcingLotsTab.vue?v=1");
 const SourcingSuppliersTab = load("./app/pages/procurement/sourcing/SourcingSuppliersTab.vue?v=1");
-const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=2");
+const SourcingBidSheetTab = load("./app/pages/procurement/sourcing/SourcingBidSheetTab.vue?v=3");
 const SourcingComparisonTab = load("./app/pages/procurement/sourcing/SourcingComparisonTab.vue?v=1");
-const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=2");
+const SourcingAwardTab = load("./app/pages/procurement/sourcing/SourcingAwardTab.vue?v=3");
 const SourcingTimelineTab = load("./app/pages/procurement/sourcing/SourcingTimelineTab.vue?v=1");
-const SourcingSupplierResponseTab = load("./app/pages/procurement/sourcing/SourcingSupplierResponseTab.vue?v=1");
+const SourcingSupplierResponseTab = load("./app/pages/procurement/sourcing/SourcingSupplierResponseTab.vue?v=2");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 
 const freshWizard = () => ({
@@ -303,10 +313,38 @@ export default {
         currency: event.value.currency || "USD",
         ownQuote: ownQuote ? {
           price: ownQuote.price, leadDays: ownQuote.leadDays, terms: ownQuote.terms,
-          notes: ownQuote.notes, submittedAt: ownQuote.submittedAt, updatedAt: ownQuote.updatedAt,
+          notes: ownQuote.notes, submittedAt: ownQuote.submittedAt, updatedAt: ownQuote.updatedAt, approved: ownQuote.approved === true,
         } : null,
+        liveRoundId: event.value.contestAuctionId || null,
       };
     });
+
+    // The live round that follows the proposals, if there is one.
+    const liveRoundId = computed(() => {
+      const id = event.value?.contestAuctionId || (event.value?.type === "Auction" ? event.value.id : "");
+      return id && store.auction(id) ? id : "";
+    });
+    const approvedCount = computed(() => (event.value?.quotes || []).filter((quote) => quote.approved && quote.compliant !== false).length);
+    // Four plain steps: ask for prices, approve proposals, bid live, winner.
+    const journey = computed(() => {
+      const current = event.value;
+      if (!current) return [];
+      const awarded = Boolean(current.awardedSupplierId) || current.status === "Awarded";
+      const live = Boolean(liveRoundId.value) && !awarded;
+      const published = current.status !== "Draft";
+      const at = awarded ? 4 : live ? 2 : !published ? 0 : approvedCount.value >= 2 ? 2 : 1;
+      return [
+        { key: "ask", label: "Ask for prices (RFQ)" }, { key: "approve", label: "Approve proposals" },
+        { key: "live", label: "Live round" }, { key: "winner", label: "Winner" },
+      ].map((step, index) => ({ ...step, state: index < at ? "done" : index === at ? "current" : "todo" }));
+    });
+    const approveQuote = (quote) => store.approveProposal(event.value, quote.supplierId, !quote.approved);
+    const startRound = async () => {
+      if (!canManage(event.value)) return store.notice("The live round cannot start now", "fa-shield-halved");
+      if (!(await store.confirm({ title: "Start the live round?", message: "The approved suppliers will bid down from the best proposal. The lowest price when time ends wins.", confirmText: "Start live round" }))) return;
+      const auction = await store.startContest(event.value);
+      if (auction) router.push(`/procurement/auction?auction=${encodeURIComponent(auction.id)}`);
+    };
     const organizerRowActions = [
       { key: "delete", label: "Delete record", icon: "fa-trash-can", tone: "danger" },
       { key: "edit", label: "Edit record", icon: "fa-pen" },
@@ -338,7 +376,7 @@ export default {
     const criteria = [
       { key: "price", label: "Price" }, { key: "quality", label: "Quality" }, { key: "delivery", label: "Delivery" }, { key: "risk", label: "Risk" }, { key: "esg", label: "ESG" },
     ];
-    const typeLabel = (type) => ({ RFI: "Information request", RFQ: "Quote request", RFP: "Proposal request", Auction: "Live bid", Negotiation: "Negotiation" })[type] || type;
+    const typeLabel = (type) => ({ RFI: "Information request", RFQ: "Ask for prices (RFQ)", RFP: "Proposal request (RFP)", Auction: "Live round", Negotiation: "Negotiation" })[type] || type;
     const statusLabel = (status) => ({ Published: "Open", Sent: "Sent", Comparing: "Comparing", Running: "Live", Awarded: "Supplier selected" })[status] || status;
 
     const deadlineDate = computed({
@@ -592,7 +630,7 @@ export default {
       wizard, wizardForm, wizardError, format, linkFor, openEvent, canManage, updateCell, statusClass, saveDeadline, record,
       addLot, removeLot, goNext, initials, toggleSupplier, sendInvites, publish, beginComparison, cloneEvent, archiveEvent,
       archiveEvents, exportBidSheet, simulateQuote, applyScenario, award, closeWizard, toggleWizardSupplier,
-      nextWizard, saveWizard, submitSupplierResponse,
+      nextWizard, saveWizard, submitSupplierResponse, liveRoundId, approvedCount, journey, approveQuote, startRound,
     };
   },
 };

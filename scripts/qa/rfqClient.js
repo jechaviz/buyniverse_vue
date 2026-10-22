@@ -47,12 +47,15 @@ const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
   invited.forEach((supplierId, index) => { const user = state.users.find((u) => u.supplierProfileId === supplierId); if (user) user.id = uuid(index + 1); });
   const principalOf = (supplierId) => state.users.find((u) => u.supplierProfileId === supplierId).id;
 
-  const calls = { open: [], quote: [], award: [] };
+  const calls = { open: [], quote: [], award: [], approve: [], contest: [] };
+  let contestFails = false;
   let settlement = { id: "s-1", feeCents: 625000, baselineCents: 12000000, awardedCents: 9500000, savingCents: 2500000, basis: "saving", baselineSource: "market", currency: "USD", status: "informative" };
   windowScope.BuyniverseRfq = {
     open: (input) => { calls.open.push(input); return Promise.resolve({ eventId: "e-1" }); },
     quote: (eventRef, input) => { calls.quote.push({ eventRef, ...input }); return Promise.resolve({ accepted: true }); },
     award: (eventRef, principal) => { calls.award.push({ eventRef, principal }); return Promise.resolve(settlement); },
+    approve: (eventRef, principal, on) => { calls.approve.push({ eventRef, principal, on }); return Promise.resolve({ approved: on }); },
+    contest: (eventRef, input) => { calls.contest.push({ eventRef, ...input }); return contestFails ? Promise.resolve(null) : Promise.resolve({ auctionRef: eventRef + '-live', startCents: 9500000 }); },
   };
 
   const request = { id: "PR-RFQ-CLIENT", title: "RFQ client test", ownerId: "user-client-brenda", requesterId: "user-client-brenda", approverId: "user-admin-admin", status: "Approved", currency: "USD", amount: 50000, items: [] };
@@ -102,6 +105,35 @@ const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
   await new Promise((resolve) => setTimeout(resolve, 5));
   check(Boolean(order2) && down.status === "Awarded" && !down.commercialSettlement, "If the server cannot settle, the award stands and no estimate is invented");
 
+  console.log("=== PROPOSALS -> APPROVAL -> LIVE ROUND ===");
+  store.isDemo.value = false;
+  const round = mk("RFQ-ROUND"); state.sourcingEvents.unshift(round);
+  store.publishSourcingEvent(round);
+  for (const [sup, price] of [["sup-3", 95000], ["sup-2", 120000], ["sup-5", 125000]]) {
+    store.currentUser.value = actor(principalOf(sup)); store.isBuyer.value = false; store.isSupplier.value = true; store.currentSupplierId.value = sup;
+    store.submitSourcingResponse(round, { price, leadDays: 5, terms: "Net 30", notes: "" });
+  }
+  store.currentUser.value = actor("user-client-brenda"); store.isBuyer.value = true; store.isSupplier.value = false;
+  check((await store.startContest(round)) === null && state.auctions.every((a) => a.eventId !== "RFQ-ROUND"), "The live round does not start without approved proposals");
+  check(store.approveProposal(round, "sup-3", true) && round.quotes.find((q) => q.supplierId === "sup-3").approved === true, "The buyer approves a proposal");
+  check(calls.approve.length === 1 && calls.approve[0].principal === principalOf("sup-3") && calls.approve[0].on === true, "The approval reaches the server with the supplier's principal");
+  check((await store.startContest(round)) === null, "One approved proposal is not enough to start the live round");
+  store.approveProposal(round, "sup-2", true);
+  store.approveProposal(round, "sup-5", true); store.approveProposal(round, "sup-5", false);
+  check(round.quotes.find((q) => q.supplierId === "sup-5").approved === false && calls.approve.length === 4, "An approval can be withdrawn, and the server hears it");
+
+  contestFails = true;
+  check((await store.startContest(round)) === null && round.status !== "Running" && state.auctions.every((a) => a.eventId !== "RFQ-ROUND"), "If the server cannot start the round, nothing starts locally");
+  contestFails = false;
+  const live = await store.startContest(round);
+  check(Boolean(live) && live.id === "RFQ-ROUND-live" && live.eventId === "RFQ-ROUND" && round.status === "Running" && round.contestAuctionId === "RFQ-ROUND-live", "The live round opens and the event points to it");
+  check(live.currentBid === 95000 && live.leadingSupplierId === "sup-3" && live.participants.length === 2 && live.participants.every((p) => ["sup-3", "sup-2"].includes(p.supplierId)), "It starts at the best approved proposal; only approved suppliers take part");
+  check(live.bids.length === 1 && live.bids[0].amount === 95000 && live.bids[0].supplierId === "sup-3" && live.realtimeRoomRef === "RFQ-ROUND-live" && live.realtimeChannel === "server", "The best proposal is the opening bid and the room is the server's");
+  check(calls.contest.length === 2 && calls.contest[1].eventRef === "RFQ-ROUND", "The server was asked to start the round");
+  check(state.notifications.some((n) => n.userId === principalOf("sup-2") && n.title === "Live round started") && !state.notifications.some((n) => n.userId === principalOf("sup-5") && n.title === "Live round started"), "Approved suppliers are told; the one left out is not");
+  check(!store.approveProposal(round, "sup-5", true), "Approvals are frozen once the round runs");
+  check((await store.startContest(round)) === null, "The round cannot start twice");
+
   console.log("=== DEMO again: the award does not call the server ===");
   store.isDemo.value = true; const before = calls.award.length;
   const demo2 = mk("RFQ-DEMO-2"); state.sourcingEvents.unshift(demo2);
@@ -111,6 +143,14 @@ const uuid = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
   store.currentUser.value = actor("user-client-brenda"); store.isBuyer.value = true; store.isSupplier.value = false;
   store.awardSourcingEvent(demo2, "sup-3", "Best compliant price.");
   await new Promise((resolve) => setTimeout(resolve, 5));
-  check(calls.award.length === before && calls.quote.length === 4 && calls.open.length === 2, "In the demo no RFQ call reaches the server");
+  check(calls.award.length === before && calls.quote.length === 7 && calls.open.length === 3, "In the demo no RFQ call reaches the server");
+  const approvesBefore = calls.approve.length, contestsBefore = calls.contest.length;
+  const demo3 = mk("RFQ-DEMO-3"); state.sourcingEvents.unshift(demo3); store.publishSourcingEvent(demo3);
+  store.currentUser.value = actor(principalOf("sup-3")); store.isBuyer.value = false; store.isSupplier.value = true; store.currentSupplierId.value = "sup-3";
+  store.submitSourcingResponse(demo3, { price: 90000, leadDays: 5, terms: "Net 30", notes: "" });
+  store.currentUser.value = actor("user-client-brenda"); store.isBuyer.value = true; store.isSupplier.value = false;
+  store.approveProposal(demo3, "sup-3", true);
+  const local = demo3.quotes.find((q) => q.supplierId === "sup-3");
+  check(local.approved === true && calls.approve.length === approvesBefore, "In the demo an approval stays in the browser");
   console.log("=== RFQ CLIENT PASSED ===");
 })().catch((error) => { console.error(error); process.exit(1); });

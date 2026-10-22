@@ -1,7 +1,16 @@
 <template>
   <div class="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <section v-if="event.type !== 'Auction' && !event.awardedSupplierId" class="rounded-xl border border-brand/20 bg-brand-50/40 p-4 xl:col-span-2 dark:bg-brand/10">
+      <p class="text-[10px] font-800 uppercase tracking-wider text-brand">{{ t("Recommended") }}</p>
+      <h3 class="mt-1 text-base font-800">{{ t("Let the approved suppliers compete") }}</h3>
+      <p class="mt-1 max-w-3xl text-xs leading-5 text-slate-600 dark:text-slate-300">{{ t("They start from their own prices and bid down in a live round. The lowest price when time ends wins. Only suppliers you approved can take part.") }}</p>
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <button class="btn-brand" :disabled="roundOpen || approvedCount < 2" @click="$emit('contest')"><i class="fa-solid fa-gavel mr-1.5"></i>{{ t(roundOpen ? "Live round running" : "Start live round") }}</button>
+        <span class="text-xs text-slate-500">{{ approvedCount }} {{ t("approved") }} · {{ t("You need at least two. Approve them in the Proposals tab.") }}</span>
+      </div>
+    </section>
     <div>
-      <h3 class="text-sm font-800">Choose supplier</h3>
+      <h3 class="text-sm font-800">{{ event.type !== 'Auction' ? t("Or choose a supplier directly") : t("Choose supplier") }}</h3>
       <p class="mt-1 text-xs text-slate-500">The supplier and reason are saved in history.</p>
       <div class="mt-4 grid gap-3 md:grid-cols-2">
         <button
@@ -80,10 +89,12 @@ export default {
     awardReason: String,
     selectedAwardQuote: Object,
     selectedAwardSupplier: Object,
+    approvedCount: { type: Number, default: 0 },
+    roundOpen: Boolean,
     supplierName: Function,
     formatMoney: Function,
   },
-  emits: ["update:awardSupplierId", "update:awardReason", "award"],
+  emits: ["update:awardSupplierId", "update:awardReason", "award", "contest"],
   computed: {
     // The fee the server settled for this award, once it has answered.
     settled() { const fee = this.event?.commercialSettlement?.serviceFee; return fee && fee.serverSettlementId ? fee : null; },

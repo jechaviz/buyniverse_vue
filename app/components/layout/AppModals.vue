@@ -58,6 +58,20 @@
       </div>
     </Transition>
 
+    <!-- Text prompt (store.prompt) -->
+    <TextInputDialog
+      :open="Boolean(ui.inputDialog)"
+      :title="t(ui.inputDialog?.title || '')"
+      :description="t(ui.inputDialog?.message || '')"
+      :label="t('Your answer')"
+      :placeholder="ui.inputDialog?.placeholder || ''"
+      :initial-value="ui.inputDialog?.value || ''"
+      :confirm-label="t(ui.inputDialog?.confirmText || 'Submit')"
+      :max-length="1000"
+      @submit="$emit('resolve-input', $event)"
+      @close="$emit('resolve-input', null)"
+    />
+
     <!-- Loading Toast Overlay -->
     <Transition name="toast">
       <div v-if="ui.loading" class="fixed inset-0 z-65 grid place-items-center bg-slate-950/35 backdrop-blur-[2px]" role="status">
@@ -70,12 +84,15 @@
   </div>
 </template>
 <script>
+const TextInputDialog = load("./app/components/TextInputDialog.vue?v=3");
+
 export default {
+  components: { TextInputDialog },
   props: {
     ui: Object,
     locale: { type: String, default: "en" },
   },
-  emits: ["resume-session", "resolve-confirm"],
+  emits: ["resume-session", "resolve-confirm", "resolve-input"],
   data() {
     return {
       lockOverlayId: `session-lock-${Math.random().toString(36).slice(2, 9)}`,

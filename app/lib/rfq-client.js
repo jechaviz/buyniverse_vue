@@ -54,6 +54,20 @@
       if (demo() || !r || !price || !Number.isInteger(days)) return Promise.resolve(null);
       return post("/events/" + encodeURIComponent(r) + "/quotes", { amount: price, leadDays: days, terms: String((input && input.terms) || "").slice(0, 80), quoteKey: key() });
     },
+    /** Approves (or withdraws) a supplier's proposal; only approved suppliers go on to the live round. */
+    approve: function (eventRef, supplierPrincipalId, on) {
+      var r = ref(eventRef);
+      if (demo() || !r || !/^[a-f0-9-]{36}$/i.test(String(supplierPrincipalId || ""))) return Promise.resolve(null);
+      return post("/events/" + encodeURIComponent(r) + "/approve", { supplierPrincipalId: supplierPrincipalId, approved: on !== false });
+    },
+    /** Starts the live round among the approved suppliers, at the best approved proposal. Resolves with { auctionRef, startCents, ... }. */
+    contest: function (eventRef, input) {
+      var r = ref(eventRef);
+      if (demo() || !r) return Promise.resolve(null);
+      var payload = { closesAt: String((input && input.closesAt) || "").slice(0, 40) };
+      if (input && Number(input.minStep) > 0) payload.minStep = Number(input.minStep).toFixed(2);
+      return post("/events/" + encodeURIComponent(r) + "/contest", payload);
+    },
     /** Closes the RFQ (the organiser) and awards it; resolves with the settlement the server computed, or null. */
     award: function (eventRef, supplierPrincipalId) {
       var r = ref(eventRef);

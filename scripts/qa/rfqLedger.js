@@ -191,6 +191,65 @@ async function main() {
     r = await call("Organizer", "POST", `/events/${one}/award`, { supplierPrincipalId: ids.Alfa });
     check("with one quote there is no market and the budget is the baseline", r.status === 200 && settlementOf(r).baselineCents === 8000000 && settlementOf(r).baselineSource === "budget", r.text);
 
+    // ---- proposals -> approval -> live bidding round (the contest) -> settlement against the market
+    const flow = "flow-" + crypto.randomBytes(4).toString("hex");
+    await call("Organizer", "POST", "/events", { eventRef: flow, participantPrincipalIds: suppliers, closesAt: soon, budget: "100000", currency: "MXN" });
+    const bidApi = (who, method, uri, body) => call(who, method, uri, body, "/api/v1/auction-realtime");
+    r = await call("Organizer", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Alfa });
+    check("a supplier without a proposal cannot be approved", r.status === 409, r.text);
+    for (const [who, amount] of [["Alfa", "95000"], ["Beta", "120000"], ["Gamma", "125000"]]) await call(who, "POST", `/events/${flow}/quotes`, { amount, leadDays: 5, terms: "Net 30", quoteKey: key() });
+    r = await call("Alfa", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Alfa });
+    check("a supplier cannot approve proposals", r.status === 403, r.text);
+    r = await call("Organizer", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Alfa });
+    check("the organiser approves a proposal", r.status === 200 && r.json.approved === true && r.json.approvedCount === 1, r.text);
+    r = await call("Organizer", "POST", `/events/${flow}/contest`, {});
+    check("a bidding round needs at least two approved proposals", r.status === 409, r.text);
+    await call("Organizer", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Gamma });
+    r = await call("Organizer", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Gamma, approved: false });
+    check("an approval can be withdrawn before the round starts", r.status === 200 && r.json.approvedCount === 1, r.text);
+    r = await call("Organizer", "POST", `/events/${flow}/approve`, { supplierPrincipalId: ids.Beta });
+    check("two approved proposals", r.status === 200 && r.json.approvedCount === 2, r.text);
+    r = await call("Beta", "GET", `/events/${flow}/state`);
+    check("a supplier learns whether its proposal was approved", r.status === 200 && r.json.approved === true, r.text);
+    r = await call("Gamma", "GET", `/events/${flow}/state`);
+    check("a supplier that was not approved is told so", r.status === 200 && r.json.approved === false && !("contestRef" in r.json), r.text);
+
+    r = await call("Organizer", "POST", `/events/${flow}/contest`, { closesAt: soon });
+    // the round opens at the best approved proposal (Alfa, 95,000); the default step is 0.5% of it
+    check("the bidding round opens at the best approved proposal", r.status === 200 && r.json.startCents === 9500000 && r.json.entrants === 2 && r.json.auctionRef === `${flow}-live` && r.json.minStepCents === 47500, r.text);
+    r = await call("Organizer", "POST", `/events/${flow}/contest`, {});
+    check("the round cannot be started twice", r.status === 409, r.text);
+    r = await call("Gamma", "POST", `/events/${flow}/quotes`, { amount: "100000", leadDays: 5, terms: "x", quoteKey: key() });
+    check("proposals close when the round starts", r.status === 409, r.text);
+    r = await call("Organizer", "POST", `/events/${flow}/award`, { supplierPrincipalId: ids.Alfa });
+    check("the bidding round, not a direct award, decides the winner", r.status === 409, r.text);
+    r = await call("Alfa", "GET", `/events/${flow}/state`);
+    check("approved suppliers get the reference of the live round", r.status === 200 && r.json.contestRef === `${flow}-live` && r.json.status === "contest", r.text);
+
+    r = await bidApi("Alfa", "GET", `/rooms/${flow}-live/state`);
+    check("the first proposal is the opening bid: Alfa leads at 95,000", r.status === 200 && r.json.bestAmount === "95000.00" && r.json.leading === true && r.json.bidCount === 1, r.text);
+    r = await bidApi("Gamma", "POST", `/rooms/${flow}-live/bids`, { amount: "90000", bidKey: key() });
+    check("a supplier that was not approved cannot bid", [403, 404].includes(r.status), r.text);
+    r = await bidApi("Beta", "POST", `/rooms/${flow}-live/bids`, { amount: "94800", bidKey: key() });
+    check("a bid must beat the best by the step", r.status === 422, r.text);
+    r = await bidApi("Beta", "POST", `/rooms/${flow}-live/bids`, { amount: "94000", bidKey: key() });
+    check("an approved supplier lowers the price and takes the lead", r.status === 200 && r.json.leading === true && r.json.bestAmount === "94000.00", r.text);
+
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: `${flow}-live` });
+    check("the round cannot be settled while it runs", r.status === 409, r.text);
+    closeRoom(`${flow}-live`);
+    r = await commerce("Organizer", "POST", "/settle", { auctionRef: `${flow}-live` });
+    const sc = settlementOf(r);
+    // baseline = the market: the median of the three proposals (95,000, 120,000, 125,000) is 120,000, above the budget (100,000) and the start (95,000)
+    // saving 120,000 - 94,000 = 26,000; 25% = 6,500; floor 3,000; cap 8% of 94,000 = 7,520 -> the saving decides
+    check("the contest settles against the market of the whole RFQ", r.status === 200 && sc.baselineCents === 12000000 && sc.awardedCents === 9400000 && sc.savingCents === 2600000 && sc.feeCents === 650000 && sc.basis === "saving" && sc.baselineSource === "market", r.text);
+    const metaC = sql("SELECT baseline_source, quotes_counted, market_cents FROM award_settlement_meta WHERE settlement_id = ?", sc.id)[0] || {};
+    check("the basis records the proposals counted and the market", metaC.baseline_source === "market" && Number(metaC.quotes_counted) === 3 && Number(metaC.market_cents) === 12000000, JSON.stringify(metaC));
+    check("the winner is the leader of the round, and the RFQ is awarded to them", sql("SELECT status, awarded_principal_id FROM rfq_events WHERE event_ref = ?", flow).some((row) => row.status === "awarded" && row.awarded_principal_id === ids.Beta));
+    r = await call("Organizer", "POST", `/events/${flow}/award`, { supplierPrincipalId: ids.Alfa });
+    check("an RFQ settled through its round cannot be awarded again", r.status === 409, r.text);
+    check("the market of a contest cannot be rewritten", (() => { sql("UPDATE auction_live_rfq SET market_cents = 1"); return Number((sql("SELECT market_cents AS m FROM auction_live_rfq ORDER BY created_at DESC LIMIT 1")[0] || {}).m) !== 1; })());
+
     // ---- charging mode makes it a receivable
     sql("UPDATE commerce_terms SET mode = 'charging' WHERE scope = 'default'");
     const paid = "paid-" + crypto.randomBytes(4).toString("hex");

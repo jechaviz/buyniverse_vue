@@ -288,19 +288,35 @@
         window.setTimeout(() => { if (ui.toast?.message === message) ui.toast = null; }, 3200);
       },
 
+      // The dialogs are shown by AppModals from ui.modal and ui.inputDialog, and settled by resolveConfirm / resolveInput.
+      // A second dialog never leaves the first one hanging: it is declined.
       confirm({ title = "Are you sure?", message = "", confirmText = "Confirm", cancelText = "Cancel", danger = false } = {}) {
-        return new Promise((resolve) => { ui.confirmDialog = { title, message, confirmText, cancelText, danger, resolve }; });
+        ui.modal?.resolve?.(false);
+        return new Promise((resolve) => { ui.modal = { title, message, confirmText, cancelText, danger, resolve }; });
+      },
+
+      resolveConfirm(accepted) {
+        const dialog = ui.modal;
+        ui.modal = null;
+        dialog?.resolve?.(accepted === true);
       },
 
       prompt({ title = "Input requested", message = "", value = "", placeholder = "", confirmText = "Submit", cancelText = "Cancel", multiline = false, rows = 4 } = {}) {
+        ui.inputDialog?.resolve?.(null);
         return new Promise((resolve) => { ui.inputDialog = { title, message, value: String(value || ""), placeholder, confirmText, cancelText, multiline, rows, resolve }; });
+      },
+
+      resolveInput(value) {
+        const dialog = ui.inputDialog;
+        ui.inputDialog = null;
+        dialog?.resolve?.(typeof value === "string" ? value : null);
       },
 
       lockSession(reason = "Manual privacy lock") {
         // Settle open dialogs so callers awaiting them do not hang behind the lock.
-        ui.confirmDialog?.resolve?.(false);
+        ui.modal?.resolve?.(false);
         ui.inputDialog?.resolve?.(null);
-        ui.confirmDialog = null;
+        ui.modal = null;
         ui.inputDialog = null;
         ui.loading = false;
         ui.locked = true;

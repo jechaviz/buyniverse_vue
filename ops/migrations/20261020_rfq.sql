@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `rfq_events` (
     `currency` CHAR(3) NOT NULL DEFAULT 'MXN',
     `budget_cents` BIGINT UNSIGNED NOT NULL,
     `closes_at` DATETIME NOT NULL,
-    `status` ENUM('open','closed','awarded','cancelled') NOT NULL DEFAULT 'open',
+    `status` ENUM('open','closed','contest','awarded','cancelled') NOT NULL DEFAULT 'open',
     `awarded_principal_id` CHAR(36) NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `uq_rfq_event_ref` (`tenant_id`, `legal_entity_id`, `event_ref`),
@@ -56,6 +56,31 @@ BEFORE UPDATE ON `rfq_events`
 FOR EACH ROW SET
     NEW.tenant_id = OLD.tenant_id, NEW.legal_entity_id = OLD.legal_entity_id, NEW.event_ref = OLD.event_ref, NEW.owner_principal_id = OLD.owner_principal_id,
     NEW.currency = OLD.currency, NEW.budget_cents = OLD.budget_cents, NEW.closes_at = OLD.closes_at, NEW.created_at = OLD.created_at;
+
+-- The buyer approves proposals; only approved suppliers go on to the live bidding round (the contest).
+CREATE TABLE IF NOT EXISTS `rfq_approvals` (
+    `event_id` CHAR(36) NOT NULL,
+    `supplier_principal_id` CHAR(36) NOT NULL,
+    `approved_by_principal_id` CHAR(36) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`event_id`, `supplier_principal_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- The live round that follows an RFQ. Its settlement uses the market of the whole RFQ: the median of every
+-- supplier's latest proposal, approved or not.
+CREATE TABLE IF NOT EXISTS `auction_live_rfq` (
+    `room_id` CHAR(36) NOT NULL PRIMARY KEY,
+    `event_id` CHAR(36) NOT NULL,
+    `market_cents` BIGINT UNSIGNED NULL,
+    `proposals_counted` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_auction_live_rfq_event` (`event_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TRIGGER IF EXISTS `auction_live_rfq_frozen`;
+CREATE TRIGGER `auction_live_rfq_frozen`
+BEFORE UPDATE ON `auction_live_rfq`
+FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'the market of a contest is immutable';
 
 -- The budget the organiser declared for a live room, written once. A settlement uses the higher of it and the start price.
 CREATE TABLE IF NOT EXISTS `auction_live_budget` (

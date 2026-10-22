@@ -257,6 +257,86 @@
         return { event, auction: null };
       },
 
+      // The buyer approves the proposals that may compete. Only approved suppliers go on to the live round.
+      approveProposal(eventRef, supplierId, on = true) {
+        const event = typeof eventRef === "string" ? this.sourcingEvent(eventRef) : eventRef;
+        const quote = event?.quotes?.find((item) => item.supplierId === supplierId);
+        if (!event || !quote || event.type === "Auction" || !this.canManageProcurement(event) || ["Running", "Awarded"].includes(event.status)) {
+          this.notice("This proposal cannot be approved now", "fa-shield-halved");
+          return false;
+        }
+        quote.approved = on !== false;
+        const supplier = state.suppliers.find((item) => item.id === supplierId);
+        this.procurementEvent(event, quote.approved ? "Proposal approved" : "Proposal approval withdrawn", supplier?.name || supplierId, "success");
+        if (quote.approved) {
+          supplierUserIds([supplierId]).forEach((userId) => this.addNotification({
+            userId, title: "Your proposal was approved", text: `${event.title}: you can compete live against the other approved suppliers.`,
+            link: `/procurement/sourcing?event=${event.id}&tab=response`, icon: "fa-circle-check",
+          }));
+        }
+        const principal = supplierUserIds([supplierId])[0];
+        if (!this.isDemo?.value && window.BuyniverseRfq && principal) {
+          window.BuyniverseRfq.approve(event.id, principal, quote.approved)
+            .catch(() => this.notice("The approval is saved here, but the server did not receive it yet", "fa-triangle-exclamation"));
+        }
+        return true;
+      },
+
+      // Opens the live round among the approved suppliers. It starts at the best approved proposal, which is also the first bid.
+      async startContest(eventRef, input = {}) {
+        const event = typeof eventRef === "string" ? this.sourcingEvent(eventRef) : eventRef;
+        if (!event || event.type === "Auction" || !this.canManageProcurement(event) || ["Running", "Awarded"].includes(event.status) || event.contestAuctionId || state.auctions.some((item) => item.id === `${event.id}-live`)) {
+          this.notice("The live round cannot start now", "fa-shield-halved");
+          return null;
+        }
+        const entrants = (event.quotes || []).filter((quote) => quote.approved && quote.compliant !== false && positive(quote.price));
+        if (entrants.length < 2) { this.notice("Approve at least two proposals to start the live round", "fa-triangle-exclamation"); return null; }
+        const best = entrants.reduce((low, quote) => (quote.price < low.price ? quote : low));
+        const start = Number(best.price);
+        const requestedClose = Date.parse(input.closesAt);
+        const closingAt = Number.isFinite(requestedClose) && requestedClose > Date.now() ? new Date(requestedClose).toISOString() : new Date(Date.now() + 30 * 60000).toISOString();
+        const minStep = Math.max(1, Math.round(start * 0.005));
+        let roomRef = `${event.id}-live`;
+        // Outside the demo the server creates the live room from the stored proposals; it is the authority for the round.
+        if (!this.isDemo?.value && window.BuyniverseRfq) {
+          try {
+            const opened = await window.BuyniverseRfq.contest(event.id, { closesAt: closingAt });
+            if (!opened) throw new Error("no room");
+            roomRef = opened.auctionRef || roomRef;
+          } catch (_) {
+            this.notice("The server could not start the live round. Check that every proposal reached it, then try again.", "fa-triangle-exclamation");
+            return null;
+          }
+        }
+        const auction = scoped({
+          id: roomRef, eventId: event.id, title: clean(event.title, 240), hostId: event.ownerId,
+          status: "Running", mode: "Reverse", currency: event.currency || "USD", currentBid: start,
+          startingPrice: start, reserve: start, floor: Math.max(1, Math.round(start * 0.5)), minStep,
+          startedAt: new Date().toISOString(), closingAt, endAt: closingAt,
+          antiSnipingSeconds: 60, extensionCount: 0, maxExtensions: 5, leadingSupplierId: best.supplierId,
+          participants: entrants.map((quote) => ({
+            supplierId: quote.supplierId, name: state.suppliers.find((supplier) => supplier.id === quote.supplierId)?.name || quote.supplierId,
+            bidCount: quote.supplierId === best.supplierId ? 1 : 0, lastBid: quote.supplierId === best.supplierId ? start : null,
+            rank: quote.supplierId === best.supplierId ? 1 : "—", autoBid: false, cap: Math.max(1, Math.round(start * 0.5)),
+            risk: Number(state.suppliers.find((supplier) => supplier.id === quote.supplierId)?.risk) || 0,
+          })),
+          bids: [{ id: id("bid"), supplierId: best.supplierId, amount: start, at: new Date().toISOString(), delta: 0, source: "Starting proposal" }],
+          audit: [], createdAt: new Date().toISOString(),
+          realtimeRoomRef: roomRef, realtimeChannel: this.isDemo?.value ? "browser" : "server", realtimeRoomReady: !this.isDemo?.value,
+        });
+        state.auctions.unshift(auction);
+        event.status = "Running";
+        event.contestAuctionId = auction.id;
+        this.procurementEvent(event, "Live round opened", `${entrants.length} approved suppliers · from ${start}`, "success");
+        this.procurementEvent(auction, "Live round opened", `${entrants.length} approved suppliers`, "success");
+        supplierUserIds(entrants.map((quote) => quote.supplierId)).forEach((userId) => this.addNotification({
+          userId, title: "Live round started", text: `${event.title}: the live round is open. Lower your price to win.`,
+          link: `/procurement/auction?auction=${encodeURIComponent(auction.id)}`, icon: "fa-gavel",
+        }));
+        this.notice("Live round started", "fa-gavel");
+        return auction;
+      },
+
       // A supplier may submit or amend only its own commercial response.  The
       // server implementation applies the same tenant/invitation checks; this
       // client-side guard keeps the demo and the optimistic UI on that exact

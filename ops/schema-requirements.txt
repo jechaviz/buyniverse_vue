@@ -27,3 +27,5 @@ rfq_participants
 rfq_quotes
 auction_live_budget
 award_settlement_meta
+rfq_approvals
+auction_live_rfq

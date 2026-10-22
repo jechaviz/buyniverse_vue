@@ -95,13 +95,20 @@ function commerce_settle_room(PDO $pdo, array $context, string $auctionRef, stri
     // The baseline is the higher of the locked start price and the budget the organiser declared when opening the room.
     $declared = $pdo->prepare('SELECT budget_cents FROM auction_live_budget WHERE room_id = ?'); $declared->execute([$room['id']]); $budget = $declared->fetchColumn();
     $start = (int) $terms['start_cents'];
-    $useBudget = $budget !== false && (int) $budget > $start;
+    // A bidding round that follows an RFQ also has the market of that RFQ: the median of every supplier's proposal.
+    $link = $pdo->prepare('SELECT event_id, market_cents, proposals_counted FROM auction_live_rfq WHERE room_id = ?'); $link->execute([$room['id']]); $contest = $link->fetch();
+    $market = is_array($contest) && $contest['market_cents'] !== null ? (int) $contest['market_cents'] : null;
+    $baseline = $start; $source = 'start_price';
+    if ($budget !== false && (int) $budget > $baseline) { $baseline = (int) $budget; $source = 'budget'; }
+    if ($market !== null && $market > $baseline) { $baseline = $market; $source = 'market'; }
     $payload = commerce_insert_settlement($pdo, $context, $key, [
         'tenantId' => (string) $context['tenant']['id'], 'entityId' => $room['legal_entity_id'], 'sourceId' => $room['id'], 'ref' => $auctionRef,
         'winnerPrincipalId' => $terms['leader_principal_id'], 'currency' => (string) $terms['currency'],
-        'baselineCents' => $useBudget ? (int) $budget : $start, 'awardedCents' => (int) $terms['best_cents'],
-        'kind' => 'auction', 'baselineSource' => $useBudget ? 'budget' : 'start_price',
+        'baselineCents' => $baseline, 'awardedCents' => (int) $terms['best_cents'],
+        'kind' => 'auction', 'baselineSource' => $source,
+        'quotesCounted' => is_array($contest) ? (int) $contest['proposals_counted'] : 0, 'marketCents' => $market,
     ]);
+    if (is_array($contest)) $pdo->prepare('UPDATE rfq_events SET status = "awarded", awarded_principal_id = ? WHERE id = ?')->execute([$terms['leader_principal_id'], $contest['event_id']]);
     $pdo->commit();
     return ['created' => true, 'settlement' => $payload];
 }

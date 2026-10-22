@@ -5,6 +5,8 @@ declare(strict_types=1);
 // the organiser until the RFQ closes) and the award, and settles Buyniverse's fee with the same rule as a live auction.
 // The baseline of an RFQ is the higher of the budget and the market: the median of the suppliers' latest quotes, so
 // declaring a low budget cannot hide a saving that the quotes themselves show.
+// After the proposals the buyer approves some; only the approved ones go on to a live bidding round (the "contest"),
+// which opens at the best approved proposal. Its settlement uses the market of the whole RFQ.
 // Loaded by server/bootstrap.php; routed by index.php.
 
 function rfq_require_write(array $session): void {
@@ -33,6 +35,13 @@ function rfq_latest_quotes(PDO $pdo, string $eventId): array {
     $statement->execute([$eventId]);
     $out = [];
     foreach ($statement->fetchAll() as $row) $out[strtolower((string) $row['supplier_principal_id'])] = $row;
+    return $out;
+}
+
+/** Approved suppliers of an RFQ: [principalId => true]. */
+function rfq_approved(PDO $pdo, string $eventId): array {
+    $statement = $pdo->prepare('SELECT supplier_principal_id FROM rfq_approvals WHERE event_id = ?'); $statement->execute([$eventId]);
+    $out = []; foreach ($statement->fetchAll() as $row) $out[strtolower((string) $row['supplier_principal_id'])] = true;
     return $out;
 }
 
@@ -68,7 +77,7 @@ function handle_rfq(string $uri): void {
             foreach (is_array($input['participantPrincipalIds'] ?? null) ? $input['participantPrincipalIds'] : [] as $id) if (tenant_is_uuid($id)) $ids[strtolower($id)] = true;
             $ids = array_keys($ids);
             $budget = auction_amount_cents($input['budget'] ?? null);
-            if ($ref === '' || count($ids) < 2 || count($ids) > 50 || $budget === null) fail_response(400, 'A valid RFQ, a budget and two to fifty invited suppliers are required');
+            if ($ref === '' || strlen($ref) > 100 || count($ids) < 2 || count($ids) > 50 || $budget === null) fail_response(400, 'A valid RFQ, a budget and two to fifty invited suppliers are required');
             $currency = strtoupper(tenant_text($input['currency'] ?? 'MXN', 3)); if (preg_match('/^[A-Z]{3}$/', $currency) !== 1) $currency = 'MXN';
             $requested = strtotime((string) ($input['closesAt'] ?? ''));
             $closeAt = gmdate('Y-m-d H:i:s', min(time() + 90 * 86400, max(time() + 60, $requested === false ? time() + 7 * 86400 : $requested)));
@@ -94,7 +103,7 @@ function handle_rfq(string $uri): void {
             workspace_json(['eventId' => $eventId, 'eventRef' => $ref, 'created' => true, 'closesAt' => gmdate('c', strtotime($closeAt . ' UTC')), 'csrf' => $session['csrf']]);
         }
 
-        if (preg_match('#^/events/([A-Za-z0-9][A-Za-z0-9._-]{0,119})/(state|quotes|close|award)$#', $route, $m) !== 1) fail_response(404, 'Not found');
+        if (preg_match('#^/events/([A-Za-z0-9][A-Za-z0-9._-]{0,119})/(state|quotes|approve|close|contest|award)$#', $route, $m) !== 1) fail_response(404, 'Not found');
         [$ref, $action] = [$m[1], $m[2]];
 
         if ($action === 'state' && $method === 'GET') {
@@ -104,8 +113,13 @@ function handle_rfq(string $uri): void {
             $payload = ['eventRef' => $ref, 'role' => (string) $event['role_key'], 'status' => (string) $event['status'], 'closed' => rfq_is_closed($event),
                 'closesAt' => gmdate('c', strtotime((string) $event['closes_at'] . ' UTC')), 'currency' => (string) $event['currency'], 'csrf' => $session['csrf']];
             $latest = rfq_latest_quotes($pdo, (string) $event['id']);
-            if ($organizer) { $payload['budgetCents'] = (int) $event['budget_cents']; $payload['quoteCount'] = count($latest); }   // how many, never what, until it closes
-            else { $mine = $latest[strtolower((string) $context['principalId'])] ?? null; $payload['myQuote'] = $mine ? rfq_quote_payload($mine) : null; }
+            $approved = rfq_approved($pdo, (string) $event['id']);
+            if ($organizer) { $payload['budgetCents'] = (int) $event['budget_cents']; $payload['quoteCount'] = count($latest); $payload['approvedCount'] = count($approved); }   // how many, never what, until it closes
+            else { $mine = $latest[strtolower((string) $context['principalId'])] ?? null; $payload['myQuote'] = $mine ? rfq_quote_payload($mine) : null; $payload['approved'] = isset($approved[strtolower((string) $context['principalId'])]); }
+            if ((string) $event['status'] === 'contest' || (string) $event['status'] === 'awarded') {
+                $link = $pdo->prepare('SELECT r.auction_ref FROM auction_live_rfq l INNER JOIN auction_live_rooms r ON r.id = l.room_id WHERE l.event_id = ?'); $link->execute([$event['id']]);
+                $contestRef = $link->fetchColumn(); if ($contestRef !== false) $payload['contestRef'] = (string) $contestRef;
+            }
             workspace_json($payload);
         }
 
@@ -146,6 +160,66 @@ function handle_rfq(string $uri): void {
             workspace_json(['quotes' => $list, 'csrf' => $session['csrf']]);
         }
 
+        if ($action === 'approve' && $method === 'POST') {
+            rfq_require_write($session); tenant_require_permission($context, 'manageCompany');
+            $input = tenant_request_body(); $supplier = strtolower((string) ($input['supplierPrincipalId'] ?? '')); $on = ($input['approved'] ?? true) !== false;
+            if (!tenant_is_uuid($supplier)) fail_response(400, 'Choose the supplier');
+            $pdo->beginTransaction();
+            $event = rfq_event_for($pdo, $context, $ref, true);
+            if ($event === null) { $pdo->rollBack(); fail_response(404, 'RFQ not found'); }
+            if ((string) $event['role_key'] !== 'organizer') { $pdo->rollBack(); fail_response(403, 'Only the organiser can approve proposals'); }
+            if (!in_array((string) $event['status'], ['open', 'closed'], true)) { $pdo->rollBack(); fail_response(409, 'Proposals can no longer be approved'); }
+            $latest = rfq_latest_quotes($pdo, (string) $event['id']);
+            if ($on) {
+                if (!isset($latest[$supplier])) { $pdo->rollBack(); fail_response(409, 'That supplier has not sent a proposal'); }
+                $pdo->prepare('INSERT IGNORE INTO rfq_approvals (event_id, supplier_principal_id, approved_by_principal_id) VALUES (?, ?, ?)')->execute([$event['id'], $supplier, $context['principalId']]);
+            } else {
+                $pdo->prepare('DELETE FROM rfq_approvals WHERE event_id = ? AND supplier_principal_id = ?')->execute([$event['id'], $supplier]);
+            }
+            tenant_audit($pdo, $context, $on ? 'rfq.proposal_approved' : 'rfq.proposal_unapproved', 'rfq_event', (string) $event['id'], ['eventRef' => $ref], $key);
+            $count = count(rfq_approved($pdo, (string) $event['id']));
+            $pdo->commit();
+            workspace_json(['approved' => $on, 'approvedCount' => $count, 'csrf' => $session['csrf']]);
+        }
+
+        if ($action === 'contest' && $method === 'POST') {
+            rfq_require_write($session); tenant_require_permission($context, 'manageCompany');
+            $input = tenant_request_body();
+            $pdo->beginTransaction();
+            $event = rfq_event_for($pdo, $context, $ref, true);
+            if ($event === null) { $pdo->rollBack(); fail_response(404, 'RFQ not found'); }
+            if ((string) $event['role_key'] !== 'organizer') { $pdo->rollBack(); fail_response(403, 'Only the organiser can start the bidding round'); }
+            if (!in_array((string) $event['status'], ['open', 'closed'], true)) { $pdo->rollBack(); fail_response(409, 'The bidding round already started or the RFQ is awarded'); }
+            $latest = rfq_latest_quotes($pdo, (string) $event['id']); $approved = rfq_approved($pdo, (string) $event['id']);
+            $entrants = array_values(array_filter(array_keys($approved), static fn($id) => isset($latest[$id])));
+            if (count($entrants) < 2) { $pdo->rollBack(); fail_response(409, 'Approve at least two proposals to start the bidding round'); }
+            // The round opens at the best approved proposal, which is also the first bid in the ledger.
+            $start = null; $leader = null;
+            foreach ($entrants as $id) { $amount = (int) $latest[$id]['amount_cents']; if ($start === null || $amount < $start) { $start = $amount; $leader = $id; } }
+            $step = isset($input['minStep']) && $input['minStep'] !== '' ? auction_amount_cents($input['minStep']) : max(100, intdiv($start, 200));
+            if ($step === null) { $pdo->rollBack(); fail_response(400, 'The minimum step is not valid'); }
+            $step = max(100, $step);
+            $requested = strtotime((string) ($input['closesAt'] ?? ''));
+            $closeAt = gmdate('Y-m-d H:i:s', min(time() + 45 * 86400, max(time() + 60, $requested === false ? time() + 7200 : $requested)));
+            $roomRef = $ref . '-live'; $roomId = tenant_uuid();
+            $pdo->prepare('INSERT INTO auction_live_rooms (id, tenant_id, legal_entity_id, location_id, auction_ref, owner_principal_id, closes_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+                ->execute([$roomId, $context['tenant']['id'], $event['legal_entity_id'], $context['location']['id'] ?? null, $roomRef, $context['principalId'], $closeAt]);
+            $pdo->prepare('INSERT INTO auction_live_terms (room_id, currency, start_cents, min_step_cents, floor_cents, best_cents, leader_principal_id, bid_count, auto_extend, anti_sniping_seconds, extension_seconds, max_extensions) VALUES (?, ?, ?, ?, 0, ?, ?, 1, 1, 60, 60, 5)')
+                ->execute([$roomId, $event['currency'], $start, $step, $start, $leader]);
+            $pdo->prepare('INSERT INTO auction_live_bids (room_id, bidder_principal_id, amount_cents, bid_key) VALUES (?, ?, ?, ?)')->execute([$roomId, $leader, $start, 'opening-proposal']);
+            $part = $pdo->prepare('INSERT INTO auction_live_participants (room_id, principal_id, role_key) VALUES (?, ?, ?)');
+            $part->execute([$roomId, $context['principalId'], 'organizer']);
+            foreach ($entrants as $id) $part->execute([$roomId, $id, 'bidder']);
+            $pdo->prepare('INSERT INTO auction_live_budget (room_id, budget_cents) VALUES (?, ?)')->execute([$roomId, (int) $event['budget_cents']]);
+            $amounts = array_map(static fn($r) => (int) $r['amount_cents'], array_values($latest));
+            $market = count($amounts) >= 2 ? rfq_median($amounts) : null;
+            $pdo->prepare('INSERT INTO auction_live_rfq (room_id, event_id, market_cents, proposals_counted) VALUES (?, ?, ?, ?)')->execute([$roomId, $event['id'], $market, count($amounts)]);
+            $pdo->prepare('UPDATE rfq_events SET status = "contest" WHERE id = ?')->execute([$event['id']]);
+            tenant_audit($pdo, $context, 'rfq.contest_started', 'rfq_event', (string) $event['id'], ['eventRef' => $ref, 'entrants' => count($entrants), 'startCents' => $start, 'closesAt' => $closeAt], $key);
+            $pdo->commit();
+            workspace_json(['auctionRef' => $roomRef, 'entrants' => count($entrants), 'startCents' => $start, 'minStepCents' => $step, 'closesAt' => gmdate('c', strtotime($closeAt . ' UTC')), 'csrf' => $session['csrf']]);
+        }
+
         if ($action === 'close' && $method === 'POST') {
             rfq_require_write($session); tenant_require_permission($context, 'manageCompany');
             $pdo->beginTransaction();
@@ -175,6 +249,8 @@ function handle_rfq(string $uri): void {
                 if (!$same) fail_response(409, 'This RFQ was already awarded to another supplier');
                 workspace_json(['created' => false, 'settlement' => $stored, 'csrf' => $session['csrf']]);
             }
+            if ((string) $event['status'] === 'awarded') { $pdo->rollBack(); fail_response(409, 'This RFQ was already awarded'); }
+            if ((string) $event['status'] === 'contest') { $pdo->rollBack(); fail_response(409, 'The bidding round decides the winner; settle it when it ends'); }
             if (!rfq_is_closed($event)) { $pdo->rollBack(); fail_response(409, 'Close the RFQ before awarding it'); }
             $latest = rfq_latest_quotes($pdo, (string) $event['id']);
             if (!isset($latest[$winner])) { $pdo->rollBack(); fail_response(409, 'That supplier has no quote to award'); }

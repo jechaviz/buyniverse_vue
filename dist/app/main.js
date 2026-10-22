@@ -163,6 +163,7 @@ const ui = reactive({
   loading: false,
   loadingMessage: "",
   modal: null,
+  inputDialog: null,
   locked: false,
   saveState: "connecting",
   lastSavedAt: null,
@@ -560,7 +561,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=75"));
+  const app = createApp(load("./app/App.vue?v=76"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

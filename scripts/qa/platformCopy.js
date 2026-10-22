@@ -9,7 +9,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const scope = { navigator: { language: "es-MX" }, localStorage: { getItem: () => "es", setItem() {}, removeItem() {} }, dispatchEvent() {}, CustomEvent: function (t, i) { this.type = t; this.detail = i?.detail; } };
 new Function("window", read("../lib/web-common/browser.js"))(scope);
 // every dictionary the app loads, in the same order as index.html
-for (const file of ["core", "common", "marketplace", "workspace", "fiscal", "procurement", "experience", "access", "need", "setup", "marketing"]) new Function("window", read(`app/i18n/${file}.js`))(scope);
+for (const file of ["core", "common", "marketplace", "workspace", "fiscal", "procurement", "experience", "access", "need", "setup", "marketing", "rfq"]) new Function("window", read(`app/i18n/${file}.js`))(scope);
 new Function("window", read("app/i18n.js"))(scope);
 scope.BuyniverseI18n.setLocale("es");
 const t = scope.BuyniverseI18n.t;
