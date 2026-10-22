@@ -170,7 +170,7 @@ class SecureStaticHandler(SimpleHTTPRequestHandler):
             "accelerometer=(), autoplay=(), camera=(), display-capture=(), "
             "encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), "
             "microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), "
-            "screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()",
+            "screen-wake-lock=(), sync-xhr=(), usb=(), xr-spatial-tracking=()",
         )
         self.send_header("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")

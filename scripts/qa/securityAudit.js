@@ -31,6 +31,7 @@ function runSecurityAudit(root, read, vueFiles) {
     if (!server.includes(h)) throw new Error(`Banking grade server header or guard missing: ${h}`);
   }
   if (server.includes("document-domain")) throw new Error("Permissions-Policy contains an unsupported document-domain directive");
+  if (server.includes("web-share")) throw new Error("Permissions-Policy contains web-share, which browsers do not recognise and log as a warning");
   if (server.includes('raw_path.startswith("/buyniverse_vue/"):\n            return True')) throw new Error("Static server exposes the full project directory");
 
   // The PHP boundary spans the entry point and the services it loads.
@@ -79,6 +80,7 @@ function runSecurityAudit(root, read, vueFiles) {
   if (catalogIds.size < 40 || requiredMailTemplates.some((id) => !catalogIds.has(id)))
     throw new Error("Bilingual transactional mail catalog is incomplete");
   if (phpShim.includes("document-domain")) throw new Error("PHP Permissions-Policy contains an unsupported document-domain directive");
+  if (phpShim.includes("web-share")) throw new Error("PHP Permissions-Policy contains web-share, which browsers do not recognise and log as a warning");
   for (const token of ["'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE='", "X-Permitted-Cross-Domain-Policies", "X-Download-Options", "Strict-Transport-Security"]) {
     if (!phpShim.includes(token)) throw new Error(`PHP response hardening is missing ${token}`);
   }
