@@ -1,3 +1,14 @@
+# La demo: catálogo real y gente virtual
+
+## El catálogo es real (ElectroPrice)
+ElectroPrice (https://electroprice.appniverse.com) es un vendedor real de electrónica en México y, en Buyniverse, el proveedor con lista de precios para compras de hardware. El catálogo de la demo son **162 productos reales** de su inventario: marca, número de parte, precio en MXN, existencias y las especificaciones capturadas, en 17 grupos.
+- Origen: las capturas de precios de sus mayoristas (carpeta `out/` de `electroprice-ec`, mayo 2026). `scripts/extract_electroprice_catalog.js` elige la muestra y la guarda en `scripts/data/electroprice-catalog.json`; `scripts/build_demo_catalog.js` la convierte en el catálogo de la demo. No se inventa ningún dato de producto.
+- Los precios son los capturados, antes de IVA; los que venían en USD se convirtieron con el tipo de cambio de la propia captura (17.54). Cuando un producto aparece en dos mayoristas, el precio es el menor y la "referencia" es el mayor.
+- Los nombres de los mayoristas no salen del script: la demo solo muestra a ElectroPrice.
+- No hay dato en la captura del tiempo de entrega ni de las condiciones de pago: se muestran 3 días y "prepago" como valores de la demo. Su calificación y riesgo también son métricas de muestra.
+- Los demás proveedores de hardware de la demo (Mayoreo Cómputo MX, ByteBodega…) **son ficticios y no tienen lista de precios**: cotizan bajo pedido. Existen para que una cotización y una puja tengan rivales.
+- Para renovar la muestra: `node scripts/extract_electroprice_catalog.js`, `node scripts/build_demo_catalog.js`, `node scripts/build_demo_cast.js` y `node scripts/build_marketplace_catalog.js`.
+
 # La demo con gente virtual
 
 La demo (`/demo/`) no tiene servidor ni base de datos. Para que se vea como un producto vivo, un elenco de **personas virtuales** hace lo que haría gente real. Todo corre en el navegador, solo para verlo.
@@ -20,7 +31,7 @@ La demo (`/demo/`) no tiene servidor ni base de datos. Para que se vea como un p
 
 ## Qué NO es
 
-- **No se envía ningún correo.** Los correos son filas en la bandeja simulada de la demo. Las 72 personas virtuales usan direcciones `@yopmail.com` (un buzón público desechable); el enlace "abrir en Yopmail" de cada destinatario abre una bandeja que seguirá vacía.
+- **No se envía ningún correo.** Los correos son filas en la bandeja simulada de la demo. Las personas virtuales (76) usan direcciones `@yopmail.com` (un buzón público desechable); el enlace "abrir en Yopmail" de cada destinatario abre una bandeja que seguirá vacía.
 - Ninguna de estas personas puede iniciar sesión ni administrar nada (tipo `Contact`, sin acceso, fuera del selector de usuarios).
 - No existe fuera de la demo: en producción `castTick` y `startDemoAuction` no hacen nada (hay prueba).
 
@@ -28,7 +39,7 @@ La demo (`/demo/`) no tiene servidor ni base de datos. Para que se vea como un p
 
 | Pieza | Archivo |
 |---|---|
-| Las personas (72) | `app/data/demo.js`, bloque generado por `scripts/build_demo_cast.js` |
+| Las personas (76) | `app/data/demo.js`, bloque generado por `scripts/build_demo_cast.js` |
 | Lo que dicen y hacen (guion, es/en) | `app/lib/demo-cast.js` |
 | El motor (pujas, chat, correo, tareas) | `app/store/castActions.js` |
 | Pantallas | `pages/procurement/auction/AuctionCastTab.vue`, `pages/procurement/execution/OrderTeamTab.vue`, `components/SimulatedMailbox.vue` |

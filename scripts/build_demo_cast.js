@@ -28,7 +28,7 @@ const ROLES = [
 ];
 
 // How each supplier's sales lead behaves in a live auction.
-const STYLE = { "sup-2": "cautious", "sup-3": "aggressive", "sup-4": "steady", "sup-5": "steady", "sup-16": "steady", "sup-19": "steady", "sup-20": "steady", "sup-21": "steady", "sup-22": "cautious", "sup-23": "cautious", "sup-24": "bluffer", "sup-25": "aggressive", "sup-26": "sniper", "sup-27": "aggressive", "sup-28": "sniper", "sup-29": "cautious", "sup-30": "bluffer" };
+const STYLE = { "sup-2": "cautious", "sup-3": "aggressive", "sup-4": "steady", "sup-5": "steady", "sup-16": "steady", "sup-19": "steady", "sup-20": "steady", "sup-21": "steady", "sup-22": "cautious", "sup-23": "cautious", "sup-24": "bluffer", "sup-25": "aggressive", "sup-26": "sniper", "sup-27": "aggressive", "sup-28": "sniper", "sup-29": "cautious", "sup-30": "bluffer", "sup-31": "steady" };
 
 const BUYER_TEAM = [
   { id: "user-team-marcos", name: "Marcos Villarreal", role: "requester", es: "Gerente de TI (solicitante)", en: "IT manager (requester)", email: "marcos.villarreal.innovate@yopmail.com" },

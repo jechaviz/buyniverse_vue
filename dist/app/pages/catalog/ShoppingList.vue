@@ -14,7 +14,7 @@
       <li v-for="line in view" :key="line.id" class="sl-line">
         <div class="sl-line-top">
           <div class="min-w-0">
-            <p class="sl-name">{{ line.raw.custom ? line.description : t(line.description) }}</p>
+            <p class="sl-name">{{ line.raw.custom ? line.description : line.description }}</p>
             <p v-if="line.spec" class="sl-sub">{{ line.spec }}</p>
           </div>
           <button type="button" class="sl-x" :aria-label="t('Remove')" @click="remove(line.id)"><i class="fa-solid fa-xmark"></i></button>
@@ -116,7 +116,7 @@ export default {
       const estimate = Number(raw.budget) > 0 ? Number(raw.budget) : product ? Number(product.referencePrice || product.rate) : 0;
       const quantity = Number(raw.quantity) || 1;
       const saving = offer && product ? Math.max(0, (Number(product.referencePrice || offer.price) - offer.price) * quantity) : 0;
-      return { id: raw.id, raw, product, offer, estimate, saving, description: raw.description, spec: raw.spec || (product ? Object.values(product.specs || {}).slice(0, 3).map((value) => window.BuyniverseCatalogText.spec(value, store.locale.value)).join(' · ') : '') };
+      return { id: raw.id, raw, product, offer, estimate, saving, description: raw.description, spec: raw.spec || (product ? Object.values(product.specs || {}).slice(2, 5).join(' · ') : '') };
     }));
     const pricedLines = computed(() => view.value.filter((line) => line.offer));
     const quickLines = computed(() => view.value.filter((line) => !line.offer));

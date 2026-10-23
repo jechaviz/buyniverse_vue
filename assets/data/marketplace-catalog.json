@@ -42,8 +42,7 @@
     "responseHours": 4,
     "verified": true,
     "reviews": 128,
-    "accent": "violet",
-    "priceList": true
+    "accent": "violet"
    }
   },
   {
@@ -755,6 +754,51 @@
    }
   },
   {
+   "id": "sup-31",
+   "name": "ElectroPrice",
+   "status": "Preferred",
+   "rating": 4.6,
+   "score": 90,
+   "risk": 15,
+   "esg": 77,
+   "onTime": 92,
+   "responseRate": 94,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "networking",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "Electrónica y tecnología con envío a todo México",
+    "about": "Tienda en línea de electrónica en México: laptops, monitores, impresoras, redes, almacenamiento y más de las mejores marcas, con envío a todo el país. Precios y existencias actualizados desde sus mayoristas.",
+    "founded": null,
+    "employees": "—",
+    "leadDays": 3,
+    "minOrder": 0,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 2,
+    "verified": true,
+    "reviews": 0,
+    "accent": "amber",
+    "priceList": true,
+    "website": "https://electroprice.appniverse.com"
+   }
+  },
+  {
    "id": "sup-19",
    "name": "Mayoreo Cómputo MX",
    "status": "Preferred",
@@ -773,28 +817,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "CDMX",
     "city": "cdmx",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2011,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 2,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 3,
-    "verified": true,
+    "verified": false,
     "reviews": 60,
     "accent": "amber",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -816,28 +859,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "NL",
     "city": "monterrey",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2007,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 3,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 4,
-    "verified": true,
+    "verified": false,
     "reviews": 36,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -859,28 +901,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "JAL",
     "city": "guadalajara",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2005,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 2,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 2,
-    "verified": true,
+    "verified": false,
     "reviews": 36,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -902,28 +943,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "BCN",
     "city": "tijuana",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2008,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 4,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 6,
-    "verified": true,
+    "verified": false,
     "reviews": 41,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -945,28 +985,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "QRO",
     "city": "queretaro",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2006,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 3,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 3,
-    "verified": true,
+    "verified": false,
     "reviews": 42,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -988,28 +1027,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "JAL",
     "city": "guadalajara",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2006,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 3,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 5,
-    "verified": true,
+    "verified": false,
     "reviews": 41,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -1031,28 +1069,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "NL",
     "city": "monterrey",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2008,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 5,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 8,
-    "verified": true,
+    "verified": false,
     "reviews": 42,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -1074,28 +1111,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "CO",
     "region": "DC",
     "city": "bogota",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2006,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 9,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 12,
-    "verified": true,
+    "verified": false,
     "reviews": 41,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -1117,28 +1153,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "CDMX",
     "city": "cdmx",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2005,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 2,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 2,
-    "verified": true,
+    "verified": false,
     "reviews": 36,
     "accent": "emerald",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -1160,28 +1195,27 @@
     "category": "hardware",
     "capabilities": [
      "computing",
-     "peripherals",
-     "price-list"
+     "quotes-on-request"
     ],
     "country": "MX",
     "region": "QRO",
     "city": "queretaro",
-    "headline": "IT hardware with a live price list",
-    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
-    "founded": 2008,
-    "employees": "11-50",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": null,
+    "employees": "—",
     "leadDays": 3,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 4,
-    "verified": true,
+    "verified": false,
     "reviews": 41,
     "accent": "violet",
-    "priceList": true
+    "priceList": false
    }
   },
   {
@@ -1210,17 +1244,17 @@
     "city": "veracruz",
     "headline": "No price list: send the list, get an offer within hours",
     "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
-    "founded": 2006,
-    "employees": "11-50",
+    "founded": null,
+    "employees": "—",
     "leadDays": 5,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 2,
-    "verified": true,
+    "verified": false,
     "reviews": 42,
     "accent": "violet",
     "priceList": false
@@ -1252,17 +1286,17 @@
     "city": "merida",
     "headline": "No price list: send the list, get an offer within hours",
     "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
-    "founded": 2014,
-    "employees": "11-50",
+    "founded": null,
+    "employees": "—",
     "leadDays": 7,
-    "minOrder": 500,
+    "minOrder": 0,
     "currency": "MXN",
     "languages": [
      "Spanish"
     ],
     "coverage": "National",
     "responseHours": 3,
-    "verified": true,
+    "verified": false,
     "reviews": 80,
     "accent": "amber",
     "priceList": false

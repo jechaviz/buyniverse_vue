@@ -29,19 +29,23 @@ const state = windowScope.BuyniverseDemo.clone();
 const Need = windowScope.BuyniverseNeed;
 const catalog = state.products.filter((p) => p.id.startsWith("cat-"));
 const groups = [...new Set(catalog.map((p) => p.category))];
-check(catalog.length >= 90 && groups.length >= 14, `the catalog has ${catalog.length} products in ${groups.length} groups`);
+check(catalog.length >= 150 && groups.length >= 14, `the catalog has ${catalog.length} products in ${groups.length} groups`);
 for (const wanted of ["Monitors", "Laptops", "Desktops", "Printers", "Keyboards & mice", "Networking"]) check(groups.includes(wanted), `the catalog has ${wanted}`);
-check(catalog.every((p) => p.offers.length >= 2 && p.currency === "MXN" && Object.keys(p.specs).length >= 3), "every product has specs, MXN prices and at least two supplier offers");
+const electroprice = state.suppliers.find((s) => s.name === "ElectroPrice");
+check(electroprice && electroprice.marketplace.priceList === true && electroprice.marketplace.website === "https://electroprice.appniverse.com", "ElectroPrice, the real seller, is the supplier with the price list");
+check(catalog.every((p) => p.offers.length === 1 && p.offers[0].supplierId === electroprice.id && p.currency === "MXN" && Object.keys(p.specs).length >= 2), "every catalog product is ElectroPrice's, with MXN prices and its captured specifications");
+check(catalog.every((p) => p.sku && p.brand && p.rate > 0 && p.offers[0].stock >= 3 && p.referencePrice >= p.rate), "every product has a real part number, brand, price and stock, and a reference not below its price");
+check(catalog.some((p) => p.referencePrice > p.rate), "some products show a real spread between sources");
+check(!/(CVA|CTONLINE|CT ONLINE|INGRAM|SYSCOM)/i.test(JSON.stringify(catalog)), "the wholesale providers' names never reach the demo");
 const supplierIds = new Set(state.suppliers.map((s) => s.id));
 check(catalog.every((p) => p.offers.every((o) => supplierIds.has(o.supplierId) && o.price > 0 && o.leadDays >= 1)), "every offer belongs to a supplier in the demo and has a price and lead time");
-check(catalog.every((p) => p.offers.every((o, i, list) => i === 0 || list[i - 1].price <= o.price)), "offers come cheapest first");
 check(new Set(state.products.map((p) => p.id)).size === state.products.length && new Set(state.suppliers.map((s) => s.id)).size === state.suppliers.length, "no duplicate product or supplier ids");
 
 // Who can answer quickly: suppliers with no price list, or none for these items.
 const monitor = catalog.find((p) => p.category === "Monitors");
 const anyHour = Need.quickQuoteSuppliers(state, [monitor.id], 0);
 const inThree = Need.quickQuoteSuppliers(state, [monitor.id], 3);
-check(anyHour.length >= 3 && anyHour.every((s) => s.marketplace.category === "hardware"), "several hardware suppliers can quote a monitor on request");
+check(anyHour.length >= 3 && anyHour.every((s) => s.marketplace.category === "hardware") && !anyHour.includes(electroprice), "several hardware suppliers can quote a monitor on request; ElectroPrice already has its price");
 check(inThree.length >= 2 && inThree.length <= anyHour.length && inThree.every((s) => s.marketplace.responseHours <= 3), "asking for an answer within 3 hours leaves only the suppliers that can do it");
 check(anyHour.every((s, i, list) => i === 0 || list[i - 1].marketplace.responseHours <= s.marketplace.responseHours), "the fastest suppliers come first");
 check(anyHour.some((s) => s.marketplace.priceList === false), "a supplier with no price list is among the quick quoters");

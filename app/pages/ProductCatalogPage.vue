@@ -32,11 +32,11 @@
         <div class="ct-grid">
           <article v-for="product in visible" :key="product.id" class="ct-card group flex flex-col" :class="{ 'is-on': selectedProductId === product.id }">
             <div class="flex items-start justify-between gap-2"><span class="ct-kind">{{ t(product.category) }}</span><span v-if="product.compliantOffers === product.offers.length" class="text-[10px] font-bold text-emerald-600"><i class="fa-solid fa-shield-halved mr-1"></i>{{ t('Qualified') }}</span></div>
-            <button class="mt-3 text-left text-lg font-800 leading-6 hover:text-brand" @click="selectProduct(product.id)">{{ t(product.description) }}</button>
+            <button class="mt-3 text-left text-lg font-800 leading-6 hover:text-brand" @click="selectProduct(product.id)">{{ product.description }}</button>
             <p class="mt-1 text-[11px] text-slate-400">{{ product.sku }} · {{ t(product.unit) }}</p>
             <p v-if="product.keySpecs" class="ct-specs">{{ product.keySpecs }}</p>
             <div class="mt-4 flex items-end justify-between"><div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ t('Best verified price') }}</p><p class="text-xl font-800">{{ money(product.best.price, product.currency) }}</p></div><div class="text-right"><p v-if="product.savingsPercent" class="text-[11px] font-bold text-emerald-600"><i class="fa-solid fa-arrow-trend-down mr-1"></i>{{ product.savingsPercent }}% {{ t('less') }}</p><p class="text-[10px] text-slate-400">{{ t('vs reference') }}</p></div></div>
-            <div class="ct-meta"><span><i class="fa-solid fa-building-circle-check mr-1 text-brand"></i>{{ product.offers.length }} {{ t('offers') }}</span><span><i class="fa-regular fa-clock mr-1 text-brand"></i>{{ product.best.leadDays }} {{ t('days') }}</span><span><i class="fa-solid fa-cubes-stacked mr-1 text-brand"></i>{{ product.best.stock }}</span></div>
+            <div class="ct-meta"><span><i class="fa-solid fa-building-circle-check mr-1 text-brand"></i>{{ product.offers.length }} {{ product.offers.length === 1 ? t('offer') : t('offers') }}</span><span><i class="fa-regular fa-clock mr-1 text-brand"></i>{{ product.best.leadDays }} {{ t('days') }}</span><span><i class="fa-solid fa-cubes-stacked mr-1 text-brand"></i>{{ product.best.stock }}</span></div>
             <p v-if="product.quickCount" class="ct-quick"><i class="fa-solid fa-bolt"></i> {{ product.quickCount }} {{ t('more can quote in') }} ≈ {{ product.quickHours }} h</p>
             <div class="mt-auto flex gap-2 pt-3">
               <button type="button" class="ct-ghost flex-1" :class="{ 'is-on': selectedProductId === product.id }" @click="selectProduct(product.id)"><i class="fa-solid fa-scale-balanced mr-1"></i>{{ selectedProductId === product.id ? t('Comparing offers') : t('Compare offers') }}</button>
@@ -55,7 +55,7 @@
         </div>
 
         <div v-show="tab === 'offers'" class="ct-sheet" aria-live="polite">
-          <div class="border-b border-slate-200/80 p-4 dark:border-slate-800"><div class="flex items-start justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-wide text-brand">{{ t('Offer comparison') }}</p><h2 class="mt-1 text-lg font-800">{{ selected ? t(selected.description) : t('Select a product') }}</h2><p v-if="selected" class="mt-1 text-xs text-slate-500">{{ selected.sku }} · {{ selected.offers.length }} {{ t('qualified supplier offers') }}</p></div><i class="fa-solid fa-scale-balanced text-xl text-brand/50"></i></div></div>
+          <div class="border-b border-slate-200/80 p-4 dark:border-slate-800"><div class="flex items-start justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-wide text-brand">{{ t('Offer comparison') }}</p><h2 class="mt-1 text-lg font-800">{{ selected ? selected.description : t('Select a product') }}</h2><p v-if="selected" class="mt-1 text-xs text-slate-500">{{ selected.sku }} · {{ selected.offers.length }} {{ t('qualified supplier offers') }}</p></div><i class="fa-solid fa-scale-balanced text-xl text-brand/50"></i></div></div>
           <template v-if="selected">
             <dl v-if="specRows.length" class="ct-spec-table"><div v-for="row in specRows" :key="row.key"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div></dl>
             <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60"><label class="text-[11px] font-bold text-slate-500">{{ t('Quantity') }}<input v-model.number="quantity" class="field mt-1 h-9 w-28" type="number" min="1" max="100000" step="1" inputmode="numeric" /></label><span class="ml-3 text-xs text-slate-500">{{ t('Reference') }}: <s>{{ money(selected.referencePrice * quantity, selected.currency) }}</s></span></div>
@@ -87,16 +87,15 @@ const { inject, computed, ref, watch, nextTick } = Vue;
 
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const GROUP_ICONS = { Monitors: 'fa-display', Laptops: 'fa-laptop', Desktops: 'fa-desktop', Printers: 'fa-print', 'Keyboards & mice': 'fa-keyboard', Networking: 'fa-network-wired', Storage: 'fa-hard-drive', 'Power & UPS': 'fa-plug-circle-bolt', Tablets: 'fa-tablet-screen-button', 'Headsets & webcams': 'fa-headset', 'Docks & cables': 'fa-usb', 'Displays & TVs': 'fa-tv', Phones: 'fa-mobile-screen', 'Security cameras': 'fa-video', Components: 'fa-microchip', Software: 'fa-compact-disc' };
-const SPEC_LABELS = { size: 'Size', resolution: 'Resolution', refresh_rate: 'Refresh rate', panel: 'Panel', ports: 'Ports', processor: 'Processor', memory: 'Memory', storage: 'Storage', display: 'Display', battery: 'Battery', graphics: 'Graphics', form_factor: 'Form factor', technology: 'Technology', color: 'Colour', speed: 'Speed', connectivity: 'Connectivity', paper_size: 'Paper size', type: 'Type', compatibility: 'Compatibility', material: 'Material', warranty: 'Warranty', wireless_standard: 'Wireless', management: 'Management', power: 'Power', capacity: 'Capacity', interface: 'Interface', output_power: 'Output power', runtime: 'Runtime', outlets: 'Outlets', os: 'System', camera: 'Camera', noise_cancelling: 'Noise cancelling', weight: 'Item weight', hdr: 'HDR', lens: 'Lens', night_vision: 'Night vision', license_type: 'License', term: 'Term', users: 'Users', platform: 'Platform', language: 'Language' };
+const SPEC_LABELS = { brand: 'Brand', model: 'Model', about: 'About' };
 
 export default {
-  components: { ShoppingList: load('./app/pages/catalog/ShoppingList.vue?v=2') },
+  components: { ShoppingList: load('./app/pages/catalog/ShoppingList.vue?v=3') },
   setup() {
     const store = inject('store');
     const query = ref(''), category = ref(''), brand = ref(''), sort = ref('category'), showOnlySavings = ref(false), selectedProductId = ref(''), selectedOfferId = ref(''), quantity = ref(1), shown = ref(24), tab = ref('offers');
     const side = ref(null), listPanel = ref(null);
     const t = (key) => store.t(key);
-    const specText = (value) => window.BuyniverseCatalogText.spec(value, store.locale.value);
     const money = (value, currency) => store.money(value, currency || 'USD');
     const canBuy = computed(() => store.isBuyer.value || store.isAdmin.value);
     if (!Array.isArray(store.state.shoppingList)) store.state.shoppingList = [];
@@ -109,7 +108,7 @@ export default {
       const referencePrice = Math.max(Number(raw.referencePrice || raw.rate || 0), ...offers.map((offer) => offer.price));
       const savingsPercent = referencePrice > 0 && best ? Math.max(0, Math.round((1 - best.price / referencePrice) * 100)) : 0;
       const quick = raw.brand ? window.BuyniverseNeed.quickQuoteSuppliers(store.state, [raw.id], 0).filter((supplier) => !offers.some((offer) => offer.supplierId === supplier.id)) : [];
-      return { ...raw, description: String(raw.description || raw.name || raw.id), sku: String(raw.sku || raw.id.toUpperCase()), unit: String(raw.unit || 'Each'), offers, best, referencePrice, savingsPercent, compliantOffers: qualified.length, keySpecs: Object.values(raw.specs || {}).slice(0, 3).map(specText).join(' · '), quickCount: quick.length, quickHours: quick.length ? Math.min(...quick.map((supplier) => Number(supplier.marketplace.responseHours || 24))) : 0 };
+      return { ...raw, description: String(raw.description || raw.name || raw.id), sku: String(raw.sku || raw.id.toUpperCase()), unit: String(raw.unit || 'Each'), offers, best, referencePrice, savingsPercent, compliantOffers: qualified.length, keySpecs: Object.values(raw.specs || {}).slice(0, 4).join(' · '), quickCount: quick.length, quickHours: quick.length ? Math.min(...quick.map((supplier) => Number(supplier.marketplace.responseHours || 24))) : 0 };
     }).filter((product) => product.best));
     const groups = computed(() => {
       const counts = new Map();
@@ -127,7 +126,7 @@ export default {
     const groupRank = (product) => { const i = groups.value.findIndex((group) => group.name === product.category); return i < 0 ? 999 : i; };
     const visible = computed(() => catalog.value.slice(0, shown.value));
     const selected = computed(() => products.value.find((product) => product.id === selectedProductId.value) || catalog.value[0] || null);
-    const specRows = computed(() => Object.entries(selected.value?.specs || {}).map(([key, value]) => ({ key, label: t(SPEC_LABELS[key] || key), value: specText(value) })));
+    const specRows = computed(() => Object.entries(selected.value?.specs || {}).map(([key, value]) => ({ key, label: t(SPEC_LABELS[key] || key), value })));
     const quickers = computed(() => !selected.value ? [] : window.BuyniverseNeed.quickQuoteSuppliers(store.state, [selected.value.id], 0).filter((supplier) => !selected.value.offers.some((offer) => offer.supplierId === supplier.id)).slice(0, 5));
     const metrics = computed(() => {
       const allOffers = products.value.flatMap((product) => product.offers);
@@ -154,12 +153,12 @@ export default {
       const same = store.state.shoppingList.find((line) => line.productId === product.id && line.offerId === offerId);
       if (same) same.quantity = Math.min(100000, (Number(same.quantity) || 0) + amount);
       else store.state.shoppingList.push({ id: `sl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, productId: product.id, description: product.description, quantity: amount, offerId });
-      store.notice(`${t(product.description)} · ${t('added to your list')}`, 'fa-cart-plus');
+      store.notice(`${product.description} · ${t('added to your list')}`, 'fa-cart-plus');
     };
     const openList = () => { tab.value = 'list'; nextTick(() => side.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
     const describeIt = () => { openList(); nextTick(() => { const panel = listPanel.value; if (panel && panel.$el) panel.$el.querySelector('.sl-custom')?.click(); }); };
     const resetFilters = () => { query.value = ''; category.value = ''; brand.value = ''; sort.value = 'category'; showOnlySavings.value = false; };
-    return { store, t, money, specText, query, category, brand, sort, showOnlySavings, groups, brands, products, catalog, visible, shown, metrics, selected, specRows, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
+    return { store, t, money, query, category, brand, sort, showOnlySavings, groups, brands, products, catalog, visible, shown, metrics, selected, specRows, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
   },
 };
 </script>

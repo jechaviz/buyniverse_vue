@@ -1,0 +1,2786 @@
+{
+ "supplier": "ElectroPrice",
+ "site": "https://electroprice.appniverse.com",
+ "currency": "MXN",
+ "usdRate": 17.54,
+ "note": "Real products, brands, part numbers, prices and stock captured from ElectroPrice's wholesale providers, May 2026. Prices before tax. USD prices converted at usdRate.",
+ "products": [
+  {
+   "group": "Components",
+   "sku": "AX5U6000C3016G-CLANRSG",
+   "name": "Memoria RAM Adata Lancer Neon RGB",
+   "brand": "Adata",
+   "specs": {
+    "brand": "Adata",
+    "model": "LANCER NEON RGB",
+    "Memoria interna": "16 GB",
+    "Tipo de memoria interna": "DDR5",
+    "Forma de factor de memoria": "UDIMM",
+    "Componente para": "PC/ Servidor"
+   },
+   "price": 4716.33,
+   "reference": 4716.33,
+   "stock": 11,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "KF436C18BB2A/16",
+   "name": "Memoria RAM Kingston Technology Fury Beast RGB",
+   "brand": "Kingston Technology",
+   "specs": {
+    "brand": "Kingston Technology",
+    "model": "FURY Beast RGB",
+    "Memoria interna": "16 GB",
+    "Tipo de memoria interna": "DDR4",
+    "Forma de factor de memoria": "288-pin DIMM",
+    "Componente para": "PC/ Servidor",
+    "Velocidad de memoria del reloj": "3600 MHz"
+   },
+   "price": 2587.15,
+   "reference": 2587.15,
+   "stock": 30,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "KVR16N11S8/4WP",
+   "name": "Memoria RAM Kingston Technology Valueram",
+   "brand": "Kingston Technology",
+   "specs": {
+    "brand": "Kingston Technology",
+    "model": "VALUERAM",
+    "Memoria interna": "4 GB",
+    "Velocidad de memoria del reloj": "1600 MHz",
+    "Forma de factor de memoria": "240-pin DIMM",
+    "Tipo de memoria interna": "DDR3",
+    "Componente para": "PC/ Servidor"
+   },
+   "price": 570.05,
+   "reference": 570.05,
+   "stock": 50,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "100-100001591BOX",
+   "name": "Microprocesadores AMD Ryzen 5 8400F",
+   "brand": "AMD",
+   "specs": {
+    "brand": "AMD",
+    "model": "AMD RYZEN 5 8400F",
+    "Frecuencia del procesador": "4,7 GHz",
+    "Número de núcleos de procesador": "6 núcleos",
+    "Familia de procesador": "AMD Ryzen 5",
+    "Socket de procesador": "Zócalo AM5"
+   },
+   "price": 2490.68,
+   "reference": 2564.7,
+   "stock": 83,
+   "sources": 2
+  },
+  {
+   "group": "Components",
+   "sku": "100-100001590BOX",
+   "name": "Microprocesadores AMD Ryzen 7 8700F",
+   "brand": "AMD",
+   "specs": {
+    "brand": "AMD",
+    "model": "AMD RYZEN 7 8700F",
+    "Frecuencia del procesador": "5 GHz",
+    "Caché del procesador": "16 MB",
+    "Número de núcleos de procesador": "8 núcleos",
+    "Familia de procesador": "AMD Ryzen 7",
+    "Socket de procesador": "Zócalo AM5"
+   },
+   "price": 3629.73,
+   "reference": 4047.36,
+   "stock": 15,
+   "sources": 2
+  },
+  {
+   "group": "Components",
+   "sku": "CM8070104290806",
+   "name": "Microprocesadores Intel CM8070104290806",
+   "brand": "Intel",
+   "specs": {
+    "brand": "Intel",
+    "model": "CM8070104290806",
+    "Familia de procesador": "Intel Core i5",
+    "Número de núcleos de procesador": "6 núcleos",
+    "Socket de procesador": "LGA 1200"
+   },
+   "price": 1314.45,
+   "reference": 1314.45,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "100-100000263BOX",
+   "name": "Procesador AMD Ryzen 7 5700G",
+   "brand": "AMD",
+   "specs": {
+    "brand": "AMD",
+    "model": "RYZEN 7 5700G",
+    "Frecuencia del procesador": "3,8 GHz",
+    "Caché del procesador": "16 MB",
+    "Número de núcleos de procesador": "8 núcleos",
+    "Familia de procesador": "AMD Ryzen 7",
+    "Socket de procesador": "Zócalo AM4"
+   },
+   "price": 2654.68,
+   "reference": 3780.92,
+   "stock": 421,
+   "sources": 2
+  },
+  {
+   "group": "Components",
+   "sku": "BX8071514900",
+   "name": "Procesador Intel I9-14900",
+   "brand": "Intel",
+   "specs": {
+    "brand": "Intel",
+    "model": "I9-14900",
+    "Familia de procesador": "Intel Core i9",
+    "Socket de procesador": "LGA 1700",
+    "Número de núcleos de procesador": "24 núcleos",
+    "Caché del procesador": "36 MB",
+    "Frecuencia del procesador": "5,8 GHz"
+   },
+   "price": 9832.22,
+   "reference": 9832.22,
+   "stock": 54,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "BX80768245K",
+   "name": "Procesadores para Servidores Intel 1851",
+   "brand": "Intel",
+   "specs": {
+    "brand": "Intel",
+    "model": "1851",
+    "Caché del procesador": "24 MB",
+    "Frecuencia del procesador": "5,2 GHz",
+    "Familia de procesador": "Intel Core Ultra 5",
+    "Socket de procesador": "FCLGA1851",
+    "Número de núcleos de procesador": "14 núcleos"
+   },
+   "price": 3751.1,
+   "reference": 3751.1,
+   "stock": 6,
+   "sources": 1
+  },
+  {
+   "group": "Components",
+   "sku": "GV-N506TEAGLE OC-8GD",
+   "name": "Tarjeta de video Gigabyte GV-N506TEAGLE OC-8GD",
+   "brand": "Gigabyte",
+   "specs": {
+    "brand": "Gigabyte",
+    "model": "GV-N506TEAGLE OC-8GD",
+    "Familia de procesadores de gráficos": "NVIDIA",
+    "Tipo de memoria de adaptador gráfico": "GDDR7",
+    "Procesador gráfico": "GeForce RTX 5060 Ti",
+    "Tipo de interfaz": "PCI Express x8 5.0"
+   },
+   "price": 7084.23,
+   "reference": 7084.23,
+   "stock": 96,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "8N5DF",
+   "name": "All In One Dell PRO 24",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "DELL PRO 24",
+    "Memoria interna": "16 GB",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Capacidad total de almacenaje": "512 GB SSD",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Familia de procesador": "Intel Core Ultra 7"
+   },
+   "price": 22220,
+   "reference": 22220,
+   "stock": 167,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "13FA003ULS",
+   "name": "All in One Lenovo 13FA003ULS",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "13FA003ULS",
+    "Memoria interna": "16 GB",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Capacidad total de almacenaje": "512 GB SSD",
+    "Familia de procesador": "AMD Ryzen 5",
+    "Sistema operativo instalado": "Windows 11 Pro"
+   },
+   "price": 17391,
+   "reference": 17391,
+   "stock": 34,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "42134",
+   "name": "Mini PC Lanix 42134",
+   "brand": "Lanix",
+   "specs": {
+    "brand": "Lanix",
+    "model": "42134",
+    "Memoria interna": "32 GB",
+    "Familia de procesador": "Intel Core i7",
+    "Capacidad de almacenamiento interno": "1 TB SSD",
+    "tipos de memoria compatibles": "DDR4-SODIMM"
+   },
+   "price": 14350.5,
+   "reference": 14350.5,
+   "stock": 153,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "R7PKP",
+   "name": "PCs de Escritorio Dell SFF",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "DELL SFF",
+    "Memoria interna": "16 GB",
+    "Capacidad de disco duro": "512 GB",
+    "Familia de procesador": "Intel Core i7",
+    "Modelo del procesador": "i7-14700"
+   },
+   "price": 17810.53,
+   "reference": 17810.53,
+   "stock": 33,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "EV-I312-VERTECPLUS",
+   "name": "PCs de Escritorio Evotec EV-i312-VERTECPLUS",
+   "brand": "Evotec",
+   "specs": {
+    "brand": "Evotec",
+    "model": "EV-i312-VERTECPLUS",
+    "Memoria interna": "8 GB",
+    "Familia de procesador": "Intel Core i3",
+    "Tipo de memoria interna": "DDR4",
+    "Capacidad de disco duro": "480 GB SSD",
+    "Modelo del procesador": "i3-12100"
+   },
+   "price": 7689.87,
+   "reference": 7689.87,
+   "stock": 20,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "EV-INTCEL-VERTEC",
+   "name": "PCs de Escritorio Evotec Ev-intcel-vertec",
+   "brand": "Evotec",
+   "specs": {
+    "brand": "Evotec",
+    "model": "EV-INTCEL-VERTEC",
+    "Memoria interna": "8 GB",
+    "Familia de procesador": "Intel Celeron",
+    "Capacidad de disco duro": "240 GB SSD",
+    "Modelo del procesador": "N100"
+   },
+   "price": 4648.59,
+   "reference": 4648.59,
+   "stock": 33,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "C7UZ0AT#ABM",
+   "name": "PCs de Escritorio HP ProDesk 2 SFF G1i",
+   "brand": "HP",
+   "specs": {
+    "brand": "HP",
+    "model": "HP ProDesk 2 SFF G1i",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "Intel Core i7",
+    "Capacidad de disco duro": "1 TB SSD"
+   },
+   "price": 17666.8,
+   "reference": 17666.8,
+   "stock": 6,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "CN4S4LT#ABM",
+   "name": "PCs de Escritorio HP ProDesk 4 SFF G1i",
+   "brand": "HP",
+   "specs": {
+    "brand": "HP",
+    "model": "HP ProDesk 4 SFF G1i",
+    "Memoria interna": "16 GB",
+    "Capacidad de disco duro": "512 GB",
+    "Familia de procesador": "Intel Core Ultra 7"
+   },
+   "price": 18515.8,
+   "reference": 18515.8,
+   "stock": 70,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "13DG001NLS",
+   "name": "PCs de escritorio Lenovo 13DG001NLS",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "13DG001NLS",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "Intel Core i5",
+    "Capacidad de disco duro": "512 GB SSD",
+    "Modelo del procesador": "i5-13420H"
+   },
+   "price": 15091,
+   "reference": 15091,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Desktops",
+   "sku": "NA-R55576-TROOPER",
+   "name": "PCs de escritorio Naceb Technology NA-R55576-TROOPER",
+   "brand": "Naceb Technology",
+   "specs": {
+    "brand": "Naceb Technology",
+    "model": "NA-R55576-TROOPER",
+    "Memoria interna": "32 GB",
+    "Tipo de memoria interna": "DDR4",
+    "Familia de procesador": "AMD Ryzen 5",
+    "Capacidad de disco duro": "1 TB SSD",
+    "Modelo del procesador": "5 5500"
+   },
+   "price": 18198.6,
+   "reference": 18198.6,
+   "stock": 24,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "MSE-305",
+   "name": "Pantalla de Proyección Multimedia Screens MSE-305",
+   "brand": "Multimedia Screens",
+   "specs": {
+    "brand": "Multimedia Screens",
+    "model": "MSE-305",
+    "Relación de aspecto": "1:1",
+    "Tipo de unidad": "Eléctrica",
+    "Diagonal": "170 pulgadas",
+    "Ubicación": "Techo / Pared"
+   },
+   "price": 4982.76,
+   "reference": 4982.76,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "43UA781C",
+   "name": "Pantalla LG 43UA781C",
+   "brand": "LG",
+   "specs": {
+    "brand": "LG",
+    "model": "43UA781C",
+    "Resolución de la pantalla": "3840 x 2160 Pixeles",
+    "Diagonal de la pantalla": "43 pulgadas",
+    "Frecuencia del procesador": "50 Hz"
+   },
+   "price": 5607.61,
+   "reference": 5607.61,
+   "stock": 36,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "9H.JMW77.13L",
+   "name": "Proyector Benq MW826STH",
+   "brand": "Benq",
+   "specs": {
+    "brand": "Benq",
+    "model": "MW826STH",
+    "Tecnología de proyección": "DLP",
+    "Brillo de proyector": "3500 lúmenes ANSI",
+    "Duración de lámpara": "15000 h",
+    "Resolución original del proyector": "WXGA"
+   },
+   "price": 12787.1,
+   "reference": 12787.1,
+   "stock": 13,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "9H.JRF77.13L",
+   "name": "Proyector Benq TH575",
+   "brand": "Benq",
+   "specs": {
+    "brand": "Benq",
+    "model": "TH575",
+    "Resolución original del proyector": "Full HD",
+    "Tecnología de proyección": "DLP",
+    "Brillo de proyector": "3800 lúmenes ANSI",
+    "Duración de lámpara": "15000 h"
+   },
+   "price": 13454.8,
+   "reference": 13454.8,
+   "stock": 10,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "9H.JRV77.1LL",
+   "name": "Proyectores Benq LH550H",
+   "brand": "Benq",
+   "specs": {
+    "brand": "Benq",
+    "model": "LH550H",
+    "Brillo de proyector": "3000 lúmenes ANSI",
+    "Tecnología de proyección": "DLP",
+    "Resolución original del proyector": "1080p (1920x1080)"
+   },
+   "price": 16262.4,
+   "reference": 16262.4,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "V11HA85020",
+   "name": "Proyectores Epson EpiqVision CO-FH02",
+   "brand": "Epson",
+   "specs": {
+    "brand": "Epson",
+    "model": "EpiqVision CO-FH02",
+    "Brillo de proyector": "3000 lúmenes ANSI",
+    "Tecnología de proyección": "3LCD"
+   },
+   "price": 10908.1,
+   "reference": 10908.1,
+   "stock": 15,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "IN0002SL",
+   "name": "Proyectores Infocus IN0002SL",
+   "brand": "Infocus",
+   "specs": {
+    "brand": "Infocus",
+    "model": "IN0002SL",
+    "Resolución original del proyector": "SVGA (800x600)",
+    "Tecnología de proyección": "DLP",
+    "Brillo de proyector": "4000 lúmenes ANSI"
+   },
+   "price": 4903.66,
+   "reference": 4903.66,
+   "stock": 351,
+   "sources": 1
+  },
+  {
+   "group": "Displays & TVs",
+   "sku": "L570D",
+   "name": "Proyectores Vankyo L570D",
+   "brand": "Vankyo",
+   "specs": {
+    "brand": "Vankyo",
+    "model": "L570D",
+    "Brillo de proyector": "200 lúmenes ANSI"
+   },
+   "price": 4059.37,
+   "reference": 4059.37,
+   "stock": 36,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "ARCHER T2U PLUS",
+   "name": "Adaptador USB 2.0 AC600 Inalámbrico Tp-link Archer T2U Plus",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "Archer T2U Plus",
+    "Tecnología de conectividad": "Alámbrico",
+    "Interfaz de host": "USB",
+    "Tipo de antena": "Externo",
+    "Tasa de transferencia (máx)": "600 Mbit/s",
+    "Ancho de banda": "2.4 GHz / 5 GHz"
+   },
+   "price": 199.25,
+   "reference": 199.25,
+   "stock": 516,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "PC-101260",
+   "name": "Adaptador USB C a HDMI 4K Perfect Choice PC-101260",
+   "brand": "Perfect Choice",
+   "specs": {
+    "brand": "Perfect Choice",
+    "model": "PC-101260",
+    "Conector 2": "HDMI",
+    "Interfaz": "USB C"
+   },
+   "price": 211.18,
+   "reference": 211.18,
+   "stock": 18,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "ARCHER T2U NANO",
+   "name": "Adaptador USB Dual Band Tp-link Archer T2U Nano",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "Archer T2U Nano",
+    "Tecnología de conectividad": "Alámbrico",
+    "Interfaz de host": "USB",
+    "Tipo de antena": "Interno",
+    "Ancho de banda": "5 GHz"
+   },
+   "price": 159.44,
+   "reference": 159.44,
+   "stock": 999,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "308434",
+   "name": "Cable HDMI 4K Manhattan 308434",
+   "brand": "Manhattan",
+   "specs": {
+    "brand": "Manhattan",
+    "model": "308434",
+    "Conector 1": "HDMI",
+    "Conector 2": "HDMI",
+    "Tipo de género": "Macho/Macho",
+    "Longitud de cable": "15 m"
+   },
+   "price": 417.8,
+   "reference": 423.94,
+   "stock": 511,
+   "sources": 2
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "323260",
+   "name": "Cable HDMI 4K Manhattan 323260",
+   "brand": "Manhattan",
+   "specs": {
+    "brand": "Manhattan",
+    "model": "323260",
+    "Conector 1": "HDMI",
+    "Conector 2": "HDMI",
+    "Tipo de género": "Macho/Macho",
+    "Longitud de cable": "15 m"
+   },
+   "price": 417.8,
+   "reference": 423.94,
+   "stock": 8,
+   "sources": 2
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "322539",
+   "name": "Cable HDMI Manhattan 322539",
+   "brand": "Manhattan",
+   "specs": {
+    "brand": "Manhattan",
+    "model": "322539",
+    "Conector 1": "HDMI",
+    "Conector 2": "HDMI",
+    "Tipo de género": "Macho/Macho",
+    "Longitud de cable": "10 m"
+   },
+   "price": 196.62,
+   "reference": 199.43,
+   "stock": 485,
+   "sources": 2
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "150156",
+   "name": "Cable USB V2.0 Brobotix 150156",
+   "brand": "Brobotix",
+   "specs": {
+    "brand": "Brobotix",
+    "model": "150156",
+    "Tipo de género": "Macho/hembra",
+    "Longitud de cable": "20 m",
+    "Conector 1": "USB Tipo A macho",
+    "Conector 2": "USB Tipo A hembra"
+   },
+   "price": 504.98,
+   "reference": 504.98,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "372782",
+   "name": "Cable USB V2.0 Extensión Activa Brobotix 372782",
+   "brand": "Brobotix",
+   "specs": {
+    "brand": "Brobotix",
+    "model": "372782",
+    "Tipo de género": "Macho/hembra",
+    "Longitud de cable": "15 m",
+    "Conector 1": "USB Tipo A macho",
+    "Conector 2": "USB Tipo A hembra"
+   },
+   "price": 336.59,
+   "reference": 336.59,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "6005453",
+   "name": "Docking station Brobotix 6005453",
+   "brand": "Brobotix",
+   "specs": {
+    "brand": "Brobotix",
+    "model": "6005453",
+    "Interfaz de host": "USB C",
+    "Número de puertos HDMI": "5",
+    "Marca compatible": "Windows / macOS"
+   },
+   "price": 264.33,
+   "reference": 264.33,
+   "stock": 9,
+   "sources": 1
+  },
+  {
+   "group": "Docks & cables",
+   "sku": "UH9120C",
+   "name": "HUB Tp-link UH9120C",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "UH9120C",
+    "Velocidad de transferencia de datos": "5000 Mbit/s",
+    "Cantidad de puertos": "9 puertos",
+    "Interfaz de host": "USB 3.2 Gen 1"
+   },
+   "price": 558.12,
+   "reference": 558.12,
+   "stock": 37,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "PC-117155",
+   "name": "Audifonos BT con Cancelacion de Ruido ANC Plegable - 45 Horas de USO Perfect Choice",
+   "brand": "Perfect Choice",
+   "specs": {
+    "brand": "Perfect Choice",
+    "model": "PC-117155",
+    "about": "Disfruta tu música hasta por 45 horas de reproducción, su sonido de alta calidad es inigualable"
+   },
+   "price": 428.11,
+   "reference": 428.11,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "981-001285",
+   "name": "Audifonos Diadema Logitech H390 Supresion de Ruido Control de Volumen USB Blanco",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "981-001285"
+   },
+   "price": 497.27,
+   "reference": 497.27,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "981-000060",
+   "name": "Audifonos Diadema Logitech H390 Supresion de Ruido Control de Volumen USB Negro",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "981-000060"
+   },
+   "price": 497.27,
+   "reference": 497.27,
+   "stock": 30,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "981-001416",
+   "name": "Audifonos Diadema Logitech Zone 300 Inalambricos Bluetooth Recargable Type C Blanco",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "981-001416"
+   },
+   "price": 1056.83,
+   "reference": 1056.83,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "TWS-8",
+   "name": "Audifonos Inalambricos Bluetooth Backdrop TWS-8 Sport Color Negro",
+   "brand": "Backdrop",
+   "specs": {
+    "brand": "Backdrop",
+    "model": "TWS-8",
+    "about": "Escucha tu msica favorita realizando ejercicio y en todo momento sin cables desde tu telfono mvil, "
+   },
+   "price": 151.78,
+   "reference": 151.78,
+   "stock": 11,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "PHANTOM H1",
+   "name": "Audifonos Inalambricos Ocelot Gaming Phantom H1 / Rgb/ Bluetooth/ Dongle USB / Cable AUX 3.5MM",
+   "brand": "Ocelot Gaming",
+   "specs": {
+    "brand": "Ocelot Gaming",
+    "model": "PHANTOM H1",
+    "about": "Sonido: estereomodo: 2"
+   },
+   "price": 571.8,
+   "reference": 571.8,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "8X214A6",
+   "name": "Diadema HP Poly 8X214A6 Blackwire C3210/ Alambrica Monoaural Usb-a Usb-c Reduccion de Ruido con",
+   "brand": "Poly",
+   "specs": {
+    "brand": "Poly",
+    "model": "8X214A6"
+   },
+   "price": 743.57,
+   "reference": 743.57,
+   "stock": 15,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "8X228A6",
+   "name": "Diadema HP Poly 8X228A6 Blackwire C3220 | Alambrica Binaural | Usb-a Usb-c | Reduccion de Ruido",
+   "brand": "Poly",
+   "specs": {
+    "brand": "Poly",
+    "model": "8X228A6"
+   },
+   "price": 826.94,
+   "reference": 826.94,
+   "stock": 60,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "8X231AA",
+   "name": "Diadema HP Poly 8X231AA Blackwire C5220/ Alambrica Binaural Usb-a Usb-c 3,5MM Microfono",
+   "brand": "Poly",
+   "specs": {
+    "brand": "Poly",
+    "model": "8X231AA"
+   },
+   "price": 2000.73,
+   "reference": 2000.73,
+   "stock": 10,
+   "sources": 1
+  },
+  {
+   "group": "Headsets & webcams",
+   "sku": "TZACDII02",
+   "name": "Diadema Techzone TZACDII02 Alambrica USB Sonido Estereo Manos Libres Negro",
+   "brand": "Tech Zone Accesorios",
+   "specs": {
+    "brand": "Tech Zone Accesorios",
+    "model": "TZACDII02",
+    "about": "Diadema alámbrica color negro"
+   },
+   "price": 252.72,
+   "reference": 252.72,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "AC-936255",
+   "name": "KIT Acteck Creator Virtuos Fitt MK770 / Teclado y Mouse Vertical / Inalambrico / USB /",
+   "brand": "Acteck",
+   "specs": {
+    "brand": "Acteck",
+    "model": "AC-936255"
+   },
+   "price": 650.69,
+   "reference": 727.44,
+   "stock": 11,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "PC-201281",
+   "name": "Kit de Teclado y Mouse Perfect Choice PC-201281",
+   "brand": "Perfect Choice",
+   "specs": {
+    "brand": "Perfect Choice",
+    "model": "PC-201281",
+    "Alcance inalámbrico": "10 m",
+    "Resolución de movimiento": "1000 DPI"
+   },
+   "price": 207.63,
+   "reference": 211.09,
+   "stock": 8,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "PC-201076",
+   "name": "Kit teclado y mouse (PC-201076) Alambrico USB Perfect Choice",
+   "brand": "Perfect Choice",
+   "specs": {
+    "brand": "Perfect Choice",
+    "model": "PC-201076",
+    "Resolución de movimiento": "1000 DPI",
+    "Formato del teclado": "Completo"
+   },
+   "price": 121.88,
+   "reference": 124.06,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "EMR213",
+   "name": "Mouse Acer EMR213-BK",
+   "brand": "Acer",
+   "specs": {
+    "brand": "Acer",
+    "model": "EMR213-BK",
+    "Interfaz del dispositivo": "Inalámbrico",
+    "Resolución de movimiento": "1600 DPI",
+    "Cantidad de botones": "6 botones"
+   },
+   "price": 260,
+   "reference": 260,
+   "stock": 53,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "910-003636",
+   "name": "Mouse Logitech M185",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "M185",
+    "Interfaz del dispositivo": "Inalámbrico",
+    "Tecnología de detección de movimientos": "Óptico",
+    "Cantidad de botones": "3 botones"
+   },
+   "price": 248.09,
+   "reference": 267.06,
+   "stock": 58,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "910-002225",
+   "name": "Mouse Logitech M185",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "M185",
+    "Interfaz del dispositivo": "Inalámbrico",
+    "Tecnología de detección de movimientos": "Óptico",
+    "Cantidad de botones": "2 botones"
+   },
+   "price": 248.09,
+   "reference": 267.06,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "910-005449",
+   "name": "Mouse Logitech MX Vertical",
+   "brand": "Logitech",
+   "specs": {
+    "brand": "Logitech",
+    "model": "MX VERTICAL",
+    "Tecnología de detección de movimientos": "Óptico",
+    "Resolución de movimiento": "4000 DPI",
+    "Cantidad de botones": "4 botones",
+    "Interfaz del dispositivo": "RF Wireless + Bluetooth"
+   },
+   "price": 1491.8,
+   "reference": 1605.88,
+   "stock": 186,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "190336",
+   "name": "Mouse Manhattan 190336",
+   "brand": "Manhattan",
+   "specs": {
+    "brand": "Manhattan",
+    "model": "190336",
+    "Interfaz del dispositivo": "RF inalámbrico",
+    "Tecnología de detección de movimientos": "Óptico",
+    "Resolución de movimiento": "1600 DPI",
+    "Cantidad de botones": "6 botones"
+   },
+   "price": 309.76,
+   "reference": 309.76,
+   "stock": 11,
+   "sources": 1
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "PC-045199",
+   "name": "Mouse Perfect Choice PC-045199",
+   "brand": "Perfect Choice",
+   "specs": {
+    "brand": "Perfect Choice",
+    "model": "PC-045199",
+    "Interfaz del dispositivo": "Inalámbrico",
+    "Resolución de movimiento": "3200 DPI"
+   },
+   "price": 244.37,
+   "reference": 248.44,
+   "stock": 38,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "TZMOUINA-06",
+   "name": "Mouse Techzone TZMOUINA-06 Inalambrico Recargable Ergono 02 Vertical 2.4GHZ Hasta 1600 DPI",
+   "brand": "Tech Zone Accesorios",
+   "specs": {
+    "brand": "Tech Zone Accesorios",
+    "model": "TZMOUINA-06",
+    "about": "Dale fluidez a tu trabajo con la comoda forma de este mouse ergonomico con bateria recargable"
+   },
+   "price": 238.04,
+   "reference": 243.33,
+   "stock": 29,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "AC-943468",
+   "name": "Teclado Acteck Vantage Aero TI555 / Inalambrico Dongle USB / Español / Multimedia / Windows /",
+   "brand": "Acteck",
+   "specs": {
+    "brand": "Acteck",
+    "model": "AC-943468"
+   },
+   "price": 237.93,
+   "reference": 251.37,
+   "stock": 110,
+   "sources": 2
+  },
+  {
+   "group": "Keyboards & mice",
+   "sku": "AKF003ES",
+   "name": "Teclado Ergonomico Targus AKF003ES Plegable Bluetooth Negro",
+   "brand": "Targus",
+   "specs": {
+    "brand": "Targus",
+    "model": "AKF003ES"
+   },
+   "price": 416.05,
+   "reference": 438.68,
+   "stock": 13,
+   "sources": 2
+  },
+  {
+   "group": "Laptops",
+   "sku": "0Y8RM",
+   "name": "Laptop Dell 15",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "DELL 15",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "Intel Core i7",
+    "Diagonal de la pantalla": "15.6 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Home",
+    "Modelo del procesador": "i7-1355U"
+   },
+   "price": 13855.79,
+   "reference": 13855.79,
+   "stock": 568,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "Y5C5C",
+   "name": "Laptop Dell PRO 14",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "PRO 14",
+    "Memoria interna": "16 GB",
+    "Diagonal de la pantalla": "14 Pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Familia de procesador": "Intel Core Ultra 5"
+   },
+   "price": 20705.26,
+   "reference": 20705.26,
+   "stock": 494,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "2HWN3",
+   "name": "Laptop Dell PRO 14",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "PRO 14",
+    "Memoria interna": "16 GB",
+    "Capacidad de disco duro": "512 GB SSD",
+    "Diagonal de la pantalla": "14 Pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Familia de procesador": "Intel Core Ultra 7",
+    "Modelo del procesador": "7 255U"
+   },
+   "price": 21171.58,
+   "reference": 21171.58,
+   "stock": 283,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "90NR0KV1-M005X0",
+   "name": "Laptop Gaming Asus Business 90NR0KV1-M005X0",
+   "brand": "Asus Business",
+   "specs": {
+    "brand": "Asus Business",
+    "model": "90NR0KV1-M005X0",
+    "Memoria interna": "16 GB",
+    "Capacidad de disco duro": "1 TB SSD",
+    "Sistema operativo instalado": "Windows 11 Home"
+   },
+   "price": 31493.8,
+   "reference": 31493.8,
+   "stock": 10,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "90NR0KQ1-M00130",
+   "name": "Laptop Gaming Asus Business FA401UH-RG004W",
+   "brand": "Asus Business",
+   "specs": {
+    "brand": "Asus Business",
+    "model": "FA401UH-RG004W",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "AMD Ryzen 7",
+    "Sistema operativo instalado": "Windows 11 Home"
+   },
+   "price": 28089.6,
+   "reference": 28089.6,
+   "stock": 97,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "B0CP3LA",
+   "name": "Laptop HP 15-FC0080LA",
+   "brand": "HP",
+   "specs": {
+    "brand": "HP",
+    "model": "HP 15-FC0080LA",
+    "Memoria interna": "16 GB",
+    "Capacidad de disco duro": "512 GB SSD",
+    "Familia de procesador": "AMD Ryzen 7",
+    "Diagonal de la pantalla": "16 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Home",
+    "Modelo del procesador": "7 7730U"
+   },
+   "price": 10573.7,
+   "reference": 10573.7,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "C78E0AT#ABM",
+   "name": "Laptop HP 250R",
+   "brand": "HP",
+   "specs": {
+    "brand": "HP",
+    "model": "HP 250R",
+    "Memoria interna": "8 GB",
+    "Diagonal de la pantalla": "15.6 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Home"
+   },
+   "price": 11017.9,
+   "reference": 11017.9,
+   "stock": 82,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "CH2N7LT#ABM",
+   "name": "Laptop HP ProBook 4 G1i",
+   "brand": "HP",
+   "specs": {
+    "brand": "HP",
+    "model": "HP ProBook 4 G1i",
+    "Memoria interna": "24 GB",
+    "Diagonal de la pantalla": "16 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Familia de procesador": "Intel Core Ultra 7",
+    "Modelo del procesador": "255U"
+   },
+   "price": 19288.4,
+   "reference": 19288.4,
+   "stock": 56,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "42136",
+   "name": "Laptop Lanix 42136",
+   "brand": "Lanix",
+   "specs": {
+    "brand": "Lanix",
+    "model": "42136",
+    "Memoria interna": "8 GB",
+    "Familia de procesador": "Intel Core i5",
+    "Diagonal de la pantalla": "15.6 pulgadas",
+    "Capacidad de disco duro": "512 GB SSD",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Modelo del procesador": "i5-13500H"
+   },
+   "price": 8346.02,
+   "reference": 8346.02,
+   "stock": 50,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "XBOOK 42117",
+   "name": "Laptop Lanix Xbook 42117",
+   "brand": "Lanix",
+   "specs": {
+    "brand": "Lanix",
+    "model": "XBOOK 42117",
+    "Memoria interna": "8 GB",
+    "Familia de procesador": "Intel Core i3",
+    "Diagonal de la pantalla": "15.6 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro"
+   },
+   "price": 8338.28,
+   "reference": 8338.28,
+   "stock": 49,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "XBOOK 42119",
+   "name": "Laptop Lanix Xbook 42119",
+   "brand": "Lanix",
+   "specs": {
+    "brand": "Lanix",
+    "model": "XBOOK 42119",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "Intel Core i3",
+    "Diagonal de la pantalla": "15.6 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro"
+   },
+   "price": 9155.81,
+   "reference": 9155.81,
+   "stock": 39,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "21SB0010LM",
+   "name": "Laptop Lenovo 21SB0010LM",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "21SB0010LM",
+    "Memoria interna": "16 GB",
+    "Diagonal de la pantalla": "16 pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro",
+    "Familia de procesador": "Intel Core Ultra 7"
+   },
+   "price": 27884.2,
+   "reference": 27884.2,
+   "stock": 137,
+   "sources": 1
+  },
+  {
+   "group": "Laptops",
+   "sku": "83K1004BLM",
+   "name": "Laptop Lenovo Ideapad 3",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "IDEAPAD 3",
+    "Memoria interna": "8 GB",
+    "Familia de procesador": "Intel Core i5",
+    "Sistema operativo instalado": "Windows 11 Home",
+    "Modelo del procesador": "i5-13420H",
+    "Diagonal de la pantalla": "15.3 pulgadas"
+   },
+   "price": 10550.4,
+   "reference": 11184.2,
+   "stock": 34,
+   "sources": 2
+  },
+  {
+   "group": "Laptops",
+   "sku": "21TA000FLM",
+   "name": "Laptop Lenovo TP E14 G7 C5/16GB/512/11P 21TA000FLM",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "TP E14 G7 C5/16GB/512/11P 21TA000FLM",
+    "Memoria interna": "16 GB",
+    "Diagonal de la pantalla": "14 Pulgadas",
+    "Sistema operativo instalado": "Windows 11 Pro"
+   },
+   "price": 17368.4,
+   "reference": 19351.71,
+   "stock": 167,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "AC-935845",
+   "name": "Monitor Acteck SP270",
+   "brand": "Acteck",
+   "specs": {
+    "brand": "Acteck",
+    "model": "SP270",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "8 ms",
+    "Diagonal de la pantalla": "27 pulgadas",
+    "Máxima velocidad de actualización": "75 Hz"
+   },
+   "price": 1393.55,
+   "reference": 1556.76,
+   "stock": 366,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "24G50F",
+   "name": "Monitor AOC 24G50F",
+   "brand": "AOC",
+   "specs": {
+    "brand": "AOC",
+    "model": "24G50F",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Máxima velocidad de actualización": "144 Hz",
+    "Tiempo de respuesta": "0.5 ms"
+   },
+   "price": 1400.17,
+   "reference": 1558.25,
+   "stock": 275,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "27G50F",
+   "name": "Monitor AOC 27G50F",
+   "brand": "AOC",
+   "specs": {
+    "brand": "AOC",
+    "model": "27G50F",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Diagonal de la pantalla": "27 pulgadas",
+    "Máxima velocidad de actualización": "144 Hz",
+    "Tiempo de respuesta": "0.5 ms"
+   },
+   "price": 1688,
+   "reference": 1835.28,
+   "stock": 878,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "9H.LMELJ.LBE",
+   "name": "Monitor Benq GW2490E",
+   "brand": "Benq",
+   "specs": {
+    "brand": "Benq",
+    "model": "GW2490E",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "5 ms",
+    "Diagonal de la pantalla": "23.8 pulgadas",
+    "Máxima velocidad de actualización": "100 Hz"
+   },
+   "price": 1559.14,
+   "reference": 1559.14,
+   "stock": 401,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "210-BMKK",
+   "name": "Monitor Dell P2425HE",
+   "brand": "Dell",
+   "specs": {
+    "brand": "Dell",
+    "model": "P2425HE",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "8 ms",
+    "Diagonal de la pantalla": "23.8 pulgadas",
+    "Máxima velocidad de actualización": "100 Hz"
+   },
+   "price": 3822.11,
+   "reference": 3822.11,
+   "stock": 56,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "BR-940702",
+   "name": "Monitor Gaming Balam Rush BR-940702",
+   "brand": "Balam Rush",
+   "specs": {
+    "brand": "Balam Rush",
+    "model": "BR-940702",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "1 ms",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Pantalla": "FHD",
+    "Brillo de pantalla": "280 cd/m²"
+   },
+   "price": 2182.48,
+   "reference": 2182.48,
+   "stock": 19,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "RIFT R24F2-BKCMX",
+   "name": "Monitor Gaming XPG Rift R24F2-BKCMX",
+   "brand": "XPG",
+   "specs": {
+    "brand": "XPG",
+    "model": "RIFT R24F2-BKCMX",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "1 ms",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Máxima velocidad de actualización": "120 Hz"
+   },
+   "price": 1583.51,
+   "reference": 1621.05,
+   "stock": 7,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "RIFT R27F6-BKCMX",
+   "name": "Monitor Gaming XPG Rift R27F6-BKCMX",
+   "brand": "XPG",
+   "specs": {
+    "brand": "XPG",
+    "model": "RIFT R27F6-BKCMX",
+    "Tiempo de respuesta": "1 ms",
+    "Diagonal de la pantalla": "27 pulgadas",
+    "Máxima velocidad de actualización": "165 Hz"
+   },
+   "price": 1976.76,
+   "reference": 2178.12,
+   "stock": 4,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "XSPMG07B",
+   "name": "Monitor Gaming Xzeal XSPMG07B",
+   "brand": "Xzeal",
+   "specs": {
+    "brand": "Xzeal",
+    "model": "XSPMG07B",
+    "Tiempo de respuesta": "5 ms",
+    "Diagonal de la pantalla": "23.8 pulgadas",
+    "Pantalla": "FHD",
+    "Máxima velocidad de actualización": "100 Hz"
+   },
+   "price": 1227.22,
+   "reference": 1227.22,
+   "stock": 272,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "12NAGAR1LA",
+   "name": "Monitor Lenovo 12NAGAR1LA",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "12NAGAR1LA",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "4 ms",
+    "Diagonal de la pantalla": "23.8 pulgadas",
+    "Máxima velocidad de actualización": "60 Hz"
+   },
+   "price": 4200,
+   "reference": 4200,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "63FDUAR6US",
+   "name": "Monitor Lenovo 63FDUAR6US",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "63FDUAR6US",
+    "Tiempo de respuesta": "6 ms",
+    "Máxima velocidad de actualización": "60 Hz",
+    "Diagonal de la pantalla": "14 Pulgadas",
+    "Resolución de la pantalla": "2240 x 1400 Pixeles"
+   },
+   "price": 6091,
+   "reference": 6091,
+   "stock": 13,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "63D8MAR3LA",
+   "name": "Monitor Lenovo ThinkVision T24v-30 Monitor",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "ThinkVision T24v-30 Monitor",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "4 ms",
+    "Diagonal de la pantalla": "23.8 pulgadas",
+    "Máxima velocidad de actualización": "75 Hz"
+   },
+   "price": 4515.79,
+   "reference": 4515.79,
+   "stock": 22,
+   "sources": 1
+  },
+  {
+   "group": "Monitors",
+   "sku": "LS22D300GALXZX",
+   "name": "Monitor Samsung LS22D300GALXZX",
+   "brand": "Samsung",
+   "specs": {
+    "brand": "Samsung",
+    "model": "LS22D300GALXZX",
+    "Tiempo de respuesta": "5 ms",
+    "Diagonal de la pantalla": "22 pulgadas",
+    "Máxima velocidad de actualización": "100 Hz"
+   },
+   "price": 1348.44,
+   "reference": 1441.05,
+   "stock": 14,
+   "sources": 2
+  },
+  {
+   "group": "Monitors",
+   "sku": "LS24D300GALXZX",
+   "name": "Monitor Samsung LS24D300GALXZX",
+   "brand": "Samsung",
+   "specs": {
+    "brand": "Samsung",
+    "model": "LS24D300GALXZX",
+    "Resolución de la pantalla": "1920 x 1080 Pixeles",
+    "Tiempo de respuesta": "5 ms",
+    "Diagonal de la pantalla": "24 pulgadas",
+    "Máxima velocidad de actualización": "100 Hz"
+   },
+   "price": 1499.46,
+   "reference": 1588.42,
+   "stock": 663,
+   "sources": 2
+  },
+  {
+   "group": "Networking",
+   "sku": "EAP235-WALL",
+   "name": "Access Point Omada EAP235-Wall",
+   "brand": "Omada",
+   "specs": {
+    "brand": "Omada",
+    "model": "EAP235-Wall",
+    "Ganancia de la antena (max)": "4 dBi",
+    "Tipo de antena": "Interno",
+    "Tasa de transferencia (máx)": "10,100,1000 Mbit/s"
+   },
+   "price": 1068.36,
+   "reference": 1068.36,
+   "stock": 35,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "TL-WN8200ND",
+   "name": "Adaptador USB Tp-link TL-WN8200ND",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "TL-WN8200ND",
+    "Tecnología de conectividad": "Inalámbrico",
+    "Interfaz de host": "USB",
+    "Tasa de transferencia (máx)": "300 Mbit/s",
+    "Ancho de banda": "2.4 GHz"
+   },
+   "price": 217.67,
+   "reference": 229.25,
+   "stock": 664,
+   "sources": 2
+  },
+  {
+   "group": "Networking",
+   "sku": "RT-AC1200_V2",
+   "name": "Router Asus RT-AC1200_V2",
+   "brand": "Asus",
+   "specs": {
+    "brand": "Asus",
+    "model": "RT-AC1200_V2",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Ancho de banda": "2.4 GHz / 5 GHz",
+    "Frecuencia de banda": "Doble banda"
+   },
+   "price": 428.68,
+   "reference": 428.68,
+   "stock": 39,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "DH-AC12",
+   "name": "Router Dahua Technology DH-AC12",
+   "brand": "Dahua Technology",
+   "specs": {
+    "brand": "Dahua Technology",
+    "model": "DH-AC12",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Frecuencia de banda": "2.4 GHz / 5 GHz"
+   },
+   "price": 246.79,
+   "reference": 246.79,
+   "stock": 100,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "DH-AX30",
+   "name": "Router Dahua Technology DH-AX30",
+   "brand": "Dahua Technology",
+   "specs": {
+    "brand": "Dahua Technology",
+    "model": "DH-AX30",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Frecuencia de banda": "2.4 GHz / 5 GHz"
+   },
+   "price": 407.45,
+   "reference": 407.45,
+   "stock": 192,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "ARCHER C6",
+   "name": "Router Inalámbrico Tp-link Archer C6",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "Archer C6",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Ancho de banda": "2.4 GHz / 5 GHz",
+    "Frecuencia de banda": "Doble banda"
+   },
+   "price": 454.11,
+   "reference": 478.32,
+   "stock": 371,
+   "sources": 2
+  },
+  {
+   "group": "Networking",
+   "sku": "MR30G",
+   "name": "Router Mercusys AC1200",
+   "brand": "Mercusys",
+   "specs": {
+    "brand": "Mercusys",
+    "model": "AC1200",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Ancho de banda": "2.4 GHz / 5 GHz",
+    "Frecuencia de banda": "Doble banda"
+   },
+   "price": 303.44,
+   "reference": 303.44,
+   "stock": 6,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "MW306R",
+   "name": "Router Mercusys MW306R",
+   "brand": "Mercusys",
+   "specs": {
+    "brand": "Mercusys",
+    "model": "MW306R",
+    "Tipo de antena": "Externo",
+    "Cantidad de antenas": "3",
+    "Frecuencia de banda": "Banda única"
+   },
+   "price": 151.37,
+   "reference": 151.72,
+   "stock": 843,
+   "sources": 2
+  },
+  {
+   "group": "Networking",
+   "sku": "NX10",
+   "name": "Router Netis AX1500",
+   "brand": "Netis",
+   "specs": {
+    "brand": "Netis",
+    "model": "AX1500",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo"
+   },
+   "price": 471.65,
+   "reference": 471.65,
+   "stock": 13,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "TL-WR840N",
+   "name": "Router Tp-link TL-WR840N",
+   "brand": "Tp-link",
+   "specs": {
+    "brand": "Tp-link",
+    "model": "TL-WR840N",
+    "Cantidad de antenas": "2"
+   },
+   "price": 198.73,
+   "reference": 209.25,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Networking",
+   "sku": "MR62X",
+   "name": "Routers Mercusys MR62X",
+   "brand": "Mercusys",
+   "specs": {
+    "brand": "Mercusys",
+    "model": "MR62X",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo",
+    "Frecuencia de banda": "Doble banda"
+   },
+   "price": 379.21,
+   "reference": 379.21,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "NX31",
+   "name": "Routers Netis NX31",
+   "brand": "Netis",
+   "specs": {
+    "brand": "Netis",
+    "model": "NX31",
+    "Cantidad de antenas": "4",
+    "Tipo de antena": "Externo"
+   },
+   "price": 801.58,
+   "reference": 801.58,
+   "stock": 24,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "GWN7803P",
+   "name": "Switch Grandstream GWN7803P",
+   "brand": "Grandstream",
+   "specs": {
+    "brand": "Grandstream",
+    "model": "GWN7803P",
+    "Consumo energético": "360 W",
+    "Cantidad de puertos": "24 puertos"
+   },
+   "price": 3796.88,
+   "reference": 3796.88,
+   "stock": 14,
+   "sources": 1
+  },
+  {
+   "group": "Networking",
+   "sku": "NW235NXT02",
+   "name": "Switch Nexxt Solutions Home NW235NXT02",
+   "brand": "Nexxt Solutions Home",
+   "specs": {
+    "brand": "Nexxt Solutions Home",
+    "model": "NW235NXT02",
+    "Consumo energético": "65 W",
+    "Cantidad de puertos": "5 puertos"
+   },
+   "price": 487.96,
+   "reference": 487.96,
+   "stock": 42,
+   "sources": 1
+  },
+  {
+   "group": "Phones",
+   "sku": "GXP2160",
+   "name": "Teléfono IP Grandstream GXP2160",
+   "brand": "Grandstream",
+   "specs": {
+    "brand": "Grandstream",
+    "model": "GXP2160",
+    "Nº de líneas": "6 líneas"
+   },
+   "price": 1922.91,
+   "reference": 1922.91,
+   "stock": 9,
+   "sources": 1
+  },
+  {
+   "group": "Phones",
+   "sku": "GXP2170",
+   "name": "Teléfono IP Grandstream GXP2170",
+   "brand": "Grandstream",
+   "specs": {
+    "brand": "Grandstream",
+    "model": "GXP2170",
+    "Nº de líneas": "12 líneas"
+   },
+   "price": 1819.78,
+   "reference": 1819.78,
+   "stock": 9,
+   "sources": 1
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "BE600M1-LM",
+   "name": "No Break APC BE600M1-LM",
+   "brand": "APC",
+   "specs": {
+    "brand": "APC",
+    "model": "BE600M1-LM",
+    "Capacidad de potencia de salida (VA)": "600 VA",
+    "Potencia de salida": "330 W",
+    "Tiempo de recarga de la batería": "10 h",
+    "Tipo": "No Break"
+   },
+   "price": 1292,
+   "reference": 1299.54,
+   "stock": 269,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "BE850M2-LM",
+   "name": "No Break APC BE850M2-LM",
+   "brand": "APC",
+   "specs": {
+    "brand": "APC",
+    "model": "BE850M2-LM",
+    "Capacidad de potencia de salida (VA)": "850 VA",
+    "Potencia de salida": "450 W",
+    "Tiempo de recarga de la batería": "8 h",
+    "Tipo": "No Break"
+   },
+   "price": 2132.86,
+   "reference": 2136.55,
+   "stock": 247,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "SRT5KRMXLT",
+   "name": "No Break capacidad 5000vas, 4800 watts, 208v, APC SRT5KRMXLT",
+   "brand": "APC",
+   "specs": {
+    "brand": "APC",
+    "model": "SRT5KRMXLT",
+    "Capacidad de potencia de salida (VA)": "5000 VA",
+    "Potencia de salida": "4250 W",
+    "Tipo": "No Break"
+   },
+   "price": 57833.94,
+   "reference": 57833.94,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "UT1000GU",
+   "name": "No Break CyberPower UT1000GU",
+   "brand": "CyberPower",
+   "specs": {
+    "brand": "CyberPower",
+    "model": "UT1000GU",
+    "Potencia de salida": "500 W",
+    "Capacidad de potencia de salida (VA)": "1000 VA",
+    "Tipo": "No Break"
+   },
+   "price": 1652.8,
+   "reference": 1658.89,
+   "stock": 198,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "UT750GU",
+   "name": "No Break CyberPower UT750GU",
+   "brand": "CyberPower",
+   "specs": {
+    "brand": "CyberPower",
+    "model": "UT750GU",
+    "Capacidad de potencia de salida (VA)": "750 VA",
+    "Potencia de salida": "375 W",
+    "Tipo": "No Break"
+   },
+   "price": 1203.93,
+   "reference": 1205.56,
+   "stock": 344,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "R-UPR1008",
+   "name": "No Breaks y UPS CDP R-upr 1008",
+   "brand": "CDP",
+   "specs": {
+    "brand": "CDP",
+    "model": "R-UPR 1008",
+    "Potencia de salida": "500 W",
+    "Capacidad de potencia de salida (VA)": "1000 VA",
+    "Tipo": "No Break"
+   },
+   "price": 1163.04,
+   "reference": 1472.19,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "R-UPR508",
+   "name": "No Breaks y UPS CDP R-upr 508",
+   "brand": "CDP",
+   "specs": {
+    "brand": "CDP",
+    "model": "R-UPR 508",
+    "Capacidad de potencia de salida (VA)": "500 VA",
+    "Potencia de salida": "250 W",
+    "Tipo": "No Break"
+   },
+   "price": 815.22,
+   "reference": 904.03,
+   "stock": 578,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "R-UPR758",
+   "name": "No Breaks y UPS CDP R-upr 758",
+   "brand": "CDP",
+   "specs": {
+    "brand": "CDP",
+    "model": "R-UPR 758",
+    "Capacidad de potencia de salida (VA)": "750 VA",
+    "Potencia de salida": "375 W",
+    "Tiempo de recarga de la batería": "4 h",
+    "Tipo": "No Break"
+   },
+   "price": 1000,
+   "reference": 1181.03,
+   "stock": 623,
+   "sources": 2
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "GP1200",
+   "name": "No Breaks y UPS SKE GP1200",
+   "brand": "SKE",
+   "specs": {
+    "brand": "SKE",
+    "model": "GP1200",
+    "Capacidad de potencia de salida (VA)": "1200 VA",
+    "Potencia de salida": "720 W",
+    "Tiempo de recarga de la batería": "8 h",
+    "Tipo": "No Break"
+   },
+   "price": 1250,
+   "reference": 1250,
+   "stock": 155,
+   "sources": 1
+  },
+  {
+   "group": "Power & UPS",
+   "sku": "VS650T",
+   "name": "UPS Tripp-lite VS650T",
+   "brand": "Tripp-lite",
+   "specs": {
+    "brand": "Tripp-lite",
+    "model": "VS650T",
+    "Capacidad de potencia de salida (VA)": "650 VA",
+    "Potencia de salida": "360 W",
+    "Tipo": "UPS"
+   },
+   "price": 1183.15,
+   "reference": 1183.15,
+   "stock": 310,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "DCPL3560CDW",
+   "name": "Impresora Brother DCPL3560CDW",
+   "brand": "Brother",
+   "specs": {
+    "brand": "Brother",
+    "model": "DCPL3560CDW",
+    "Tecnología de impresión": "Láser",
+    "Resolución máxima": "2400 x 1200 DPI",
+    "Memoria interna": "512 MB"
+   },
+   "price": 5696.9,
+   "reference": 5696.9,
+   "stock": 63,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "C11CH72301",
+   "name": "Impresora multifuncional Epson L15150",
+   "brand": "Epson",
+   "specs": {
+    "brand": "Epson",
+    "model": "L15150",
+    "Tecnología de impresión": "Inyección de tinta",
+    "Resolución máxima": "4800 x 1200 DPI"
+   },
+   "price": 21965.8,
+   "reference": 21965.8,
+   "stock": 10,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "EC-PM-80330",
+   "name": "Impresora Térmica Ec-line EC-80330",
+   "brand": "Ec-line",
+   "specs": {
+    "brand": "Ec-line",
+    "model": "EC-80330",
+    "Tecnología de conectividad": "Alámbrico",
+    "Resolución máxima": "203 x 203 DPI",
+    "Tecnología de impresión": "Térmica directa",
+    "Velocidad de impresión": "300 mm/s"
+   },
+   "price": 2332.12,
+   "reference": 2332.12,
+   "stock": 119,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "EC-PM-80340",
+   "name": "Impresora Térmica Ec-line EC-80340",
+   "brand": "Ec-line",
+   "specs": {
+    "brand": "Ec-line",
+    "model": "EC-80340",
+    "Tecnología de conectividad": "Alámbrico",
+    "Resolución máxima": "203 x 203 DPI",
+    "Tecnología de impresión": "Térmica directa"
+   },
+   "price": 2710.81,
+   "reference": 2710.81,
+   "stock": 30,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "TZBE301",
+   "name": "Impresora Térmica Techzone TZBE301",
+   "brand": "Techzone",
+   "specs": {
+    "brand": "Techzone",
+    "model": "TZBE301",
+    "Tecnología de impresión": "Térmico",
+    "Velocidad de impresión": "300 mm/s",
+    "Resolución máxima": "203p/l",
+    "Tecnología de conectividad": "Serial/USB/Ethernet/RJ11"
+   },
+   "price": 2210.23,
+   "reference": 2210.23,
+   "stock": 31,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "MFCL3780CDW",
+   "name": "Multifuncional Brother MFCL3780CDW",
+   "brand": "Brother",
+   "specs": {
+    "brand": "Brother",
+    "model": "MFCL3780CDW",
+    "Tecnología de impresión": "Láser",
+    "Resolución máxima": "2400 x 1200 DPI",
+    "Memoria interna": "512 MB",
+    "Ciclo de trabajo (máximo)": "50000 páginas por mes"
+   },
+   "price": 7833.37,
+   "reference": 7833.37,
+   "stock": 163,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "C11CH96301",
+   "name": "Multifuncional Epson L14150",
+   "brand": "Epson",
+   "specs": {
+    "brand": "Epson",
+    "model": "L14150",
+    "Tecnología de impresión": "Inyección de tinta",
+    "Resolución máxima": "4800 x 1200 DPI"
+   },
+   "price": 17609,
+   "reference": 17609,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "MA4500IX",
+   "name": "Multifuncional Kyocera Ecosys MA4500ix",
+   "brand": "Kyocera",
+   "specs": {
+    "brand": "Kyocera",
+    "model": "ECOSYS MA4500ix",
+    "Resolución máxima": "1200 x 1200 DPI",
+    "Ciclo de trabajo (máximo)": "150000 páginas por mes",
+    "Tecnología de impresión": "Láser Monocromática"
+   },
+   "price": 10835.16,
+   "reference": 10835.16,
+   "stock": 5,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "TASKALFA 308CI",
+   "name": "Multifuncional Laser Color Kyocera TASKalfa 308ci",
+   "brand": "Kyocera",
+   "specs": {
+    "brand": "Kyocera",
+    "model": "TASKalfa 308ci",
+    "Resolución máxima": "600 x 600 DPI",
+    "Tecnología de impresión": "Láser",
+    "Ciclo de trabajo (máximo)": "100000 páginas por mes"
+   },
+   "price": 18665.19,
+   "reference": 18665.19,
+   "stock": 24,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "M6550NW",
+   "name": "Multifuncional Pantum M6550NW",
+   "brand": "Pantum",
+   "specs": {
+    "brand": "Pantum",
+    "model": "M6550NW",
+    "Resolución máxima": "1200 x 1200 DPI",
+    "Tecnología de impresión": "Láser",
+    "Memoria interna": "128 MB",
+    "Ciclo de trabajo (máximo)": "20000 páginas por mes"
+   },
+   "price": 2245.47,
+   "reference": 2245.47,
+   "stock": 10,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "DCPT730DW",
+   "name": "Multifuncionales Brother DCPT730DW",
+   "brand": "Brother",
+   "specs": {
+    "brand": "Brother",
+    "model": "DCPT730DW",
+    "Tecnología de impresión": "Inyección de tinta",
+    "Memoria interna": "128 MB",
+    "Resolución máxima": "6000 x 1200 DPI",
+    "Ciclo de trabajo (máximo)": "2500 páginas por mes"
+   },
+   "price": 3987.27,
+   "reference": 3987.27,
+   "stock": 999,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "5951C015AA",
+   "name": "Multifuncionales Canon Mf462dw",
+   "brand": "Canon",
+   "specs": {
+    "brand": "Canon",
+    "model": "Mf462dw",
+    "Resolución máxima": "1200 x 1200 DPI",
+    "Tecnología de impresión": "Láser"
+   },
+   "price": 4776.58,
+   "reference": 4776.58,
+   "stock": 34,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "110C142SA0",
+   "name": "Multifuncionales Kyocera MA4000X/L",
+   "brand": "Kyocera",
+   "specs": {
+    "brand": "Kyocera",
+    "model": "MA4000X/L",
+    "Ciclo de trabajo (máximo)": "80000 páginas por mes",
+    "Memoria interna": "1 GB"
+   },
+   "price": 6730.1,
+   "reference": 6730.1,
+   "stock": 30,
+   "sources": 1
+  },
+  {
+   "group": "Printers",
+   "sku": "SCT3170SR",
+   "name": "Plotter Epson SureColor T3170",
+   "brand": "Epson",
+   "specs": {
+    "brand": "Epson",
+    "model": "SureColor T3170",
+    "Tamaño máximo de impresión": "A1 (594 x 841 mm)",
+    "Tecnología de impresión": "Inyección de tinta",
+    "Resolución máxima": "2400 x 1200 DPI"
+   },
+   "price": 12147.4,
+   "reference": 12147.4,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "HAC-HFW1509MHN-A-LED",
+   "name": "Cámara Bala Dahua Technology DH-HAC-HFW1509MHN-A-LED-0360B-S2",
+   "brand": "Dahua Technology",
+   "specs": {
+    "brand": "Dahua Technology",
+    "model": "DH-HAC-HFW1509MHN-A-LED-0360B-S2",
+    "Colocación soportada": "Interior y exterior",
+    "Total de megapixeles": "5 MP",
+    "Material de la carcasa": "Metal, Plástico",
+    "Máxima resolución": "2880 x 1620 Pixeles",
+    "Tipo de montaje": "Techo / Pared"
+   },
+   "price": 787.72,
+   "reference": 787.72,
+   "stock": 36,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "HAC-HDW1200TQ-IL-T",
+   "name": "Cámara Domo Dahua Technology HAC-HDW1200TQ-IL-T",
+   "brand": "Dahua Technology",
+   "specs": {
+    "brand": "Dahua Technology",
+    "model": "HAC-HDW1200TQ-IL-T",
+    "Colocación soportada": "Interior y exterior",
+    "Megapixeles": "2 MP",
+    "Tipo de montaje": "Techo/Pared/Poste"
+   },
+   "price": 535.85,
+   "reference": 535.85,
+   "stock": 127,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "DH-320IPBN-28",
+   "name": "Cámara domo IP Provision-isr DH-320IPBN-28",
+   "brand": "Provision-isr",
+   "specs": {
+    "brand": "Provision-isr",
+    "model": "DH-320IPBN-28",
+    "Máxima resolución": "1920 x 1080 Pixeles",
+    "Tipo de montaje": "Techo",
+    "Colocación soportada": "Interior y exterior",
+    "Megapixeles": "2 MP"
+   },
+   "price": 662.14,
+   "reference": 662.14,
+   "stock": 102,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "DI-33K0AP-28",
+   "name": "Cámara Domo Provision-isr DI-33K0AP-28",
+   "brand": "Provision-isr",
+   "specs": {
+    "brand": "Provision-isr",
+    "model": "DI-33K0AP-28",
+    "Máxima resolución": "1920 x 1080 Pixeles",
+    "Total de megapixeles": "2 MP",
+    "Formato de vídeo soportado": "720p, 1080p"
+   },
+   "price": 622.67,
+   "reference": 622.67,
+   "stock": 82,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "DH-HAC-HFW1200RLN-IL-T",
+   "name": "Camara Hdcvi Plus/ Dahua/ DH-HAC-HFW1200RL-IL-T/ Bullet de 2 MP/ Audio Bidireccional/",
+   "brand": "Dahua",
+   "specs": {
+    "brand": "Dahua",
+    "model": "DH-HAC-HFW1200RLN-IL-T"
+   },
+   "price": 404.3,
+   "reference": 415.87,
+   "stock": 70,
+   "sources": 2
+  },
+  {
+   "group": "Security cameras",
+   "sku": "DH-IPC-HDPW1431R1N-0280B-S4",
+   "name": "Cámara IP Domo Dahua Technology DH-IPC-HDPW1431R1N-0280B-S4",
+   "brand": "Dahua Technology",
+   "specs": {
+    "brand": "Dahua Technology",
+    "model": "DH-IPC-HDPW1431R1N-0280B-S4",
+    "Colocación soportada": "Interior y exterior",
+    "Máxima resolución": "2688 x 1520 Pixeles",
+    "Megapixeles": "4 MP",
+    "Tipo de montaje": "Techo/Pared/Poste"
+   },
+   "price": 990.48,
+   "reference": 990.48,
+   "stock": 18,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "SH-4100A5S-2L(MM)",
+   "name": "DVR Provision-isr SH-4100A5S-2L(MM)",
+   "brand": "Provision-isr",
+   "specs": {
+    "brand": "Provision-isr",
+    "model": "SH-4100A5S-2L(MM)",
+    "Máxima resolución de video": "1920 x 1080 Pixeles",
+    "Canales de entrada de vídeo": "6",
+    "Formatos de compresión de video": "H.264, H.265, HEVC"
+   },
+   "price": 464.99,
+   "reference": 464.99,
+   "stock": 145,
+   "sources": 1
+  },
+  {
+   "group": "Security cameras",
+   "sku": "CS-X5S/8W",
+   "name": "Grabadores Digitales NVR Ezviz CS-X5S/8W",
+   "brand": "Ezviz",
+   "specs": {
+    "brand": "Ezviz",
+    "model": "CS-X5S/8W",
+    "Canales de entrada de vídeo": "8",
+    "Capacidad máxima de almacenaje": "8 TB"
+   },
+   "price": 666.52,
+   "reference": 666.52,
+   "stock": 11,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "P84102-DM5",
+   "name": "Servidores Hewlett Packard Enterprise DL380 Gen11 12cores",
+   "brand": "Hewlett Packard Enterprise",
+   "specs": {
+    "brand": "Hewlett Packard Enterprise",
+    "model": "DL380 Gen11 12cores",
+    "Memoria interna": "32 GB",
+    "Familia de procesador": "Intel Xeon Silver"
+   },
+   "price": 102950.5,
+   "reference": 102950.5,
+   "stock": 4,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "P75341-DM5",
+   "name": "Servidores Hewlett Packard Enterprise ML350 Gen11",
+   "brand": "Hewlett Packard Enterprise",
+   "specs": {
+    "brand": "Hewlett Packard Enterprise",
+    "model": "ML350 Gen11",
+    "Frecuencia del procesador": "2 GHz",
+    "Familia de procesador": "Intel Xeon Silver"
+   },
+   "price": 139463.35,
+   "reference": 139463.35,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "7DH4A00GLA",
+   "name": "Servidores Lenovo ST45 V3",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "ST45 V3",
+    "Memoria interna": "16 GB",
+    "Familia de procesador": "AMD EPYC",
+    "Frecuencia del procesador": "3.8 GHz"
+   },
+   "price": 31721.27,
+   "reference": 31721.27,
+   "stock": 232,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "DS1525+",
+   "name": "Servidores Synology DS1525+",
+   "brand": "Synology",
+   "specs": {
+    "brand": "Synology",
+    "model": "DS1525+",
+    "about": "Synology nas diskstation modelo ds1525+ expansión hasta 15 bahías 2 puertos 2"
+   },
+   "price": 15406.96,
+   "reference": 15406.96,
+   "stock": 7,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "DS1825+",
+   "name": "Servidores Synology DS1825+",
+   "brand": "Synology",
+   "specs": {
+    "brand": "Synology",
+    "model": "DS1825+",
+    "Memoria interna": "8 GB",
+    "Frecuencia del procesador": "2.2 GHz"
+   },
+   "price": 22983.01,
+   "reference": 22983.01,
+   "stock": 15,
+   "sources": 1
+  },
+  {
+   "group": "Servers",
+   "sku": "2288H V7-S24NAF",
+   "name": "Servidores Xfusion 2288H V7-S24NAF",
+   "brand": "Xfusion",
+   "specs": {
+    "brand": "Xfusion",
+    "model": "2288H V7-S24NAF",
+    "Procesador compatible": "Intel Xeon"
+   },
+   "price": 105571.86,
+   "reference": 105571.86,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Software",
+   "sku": "CFQ7TTC0LDPBP1YA",
+   "name": "365 Business Standard Microsoft CFQ7TTC0LDPBP1YA",
+   "brand": "Microsoft",
+   "specs": {
+    "brand": "Microsoft",
+    "model": "CFQ7TTC0LDPBP1YA",
+    "Versión de Software": "365 Business Standard."
+   },
+   "price": 2410.7,
+   "reference": 2410.7,
+   "stock": 12,
+   "sources": 1
+  },
+  {
+   "group": "Software",
+   "sku": "FQC-10553",
+   "name": "Microsoft OEM Windows 11 Profesional 64 Bits Español Latam 1 PK DSP DVD Sust WIN 10 PRO",
+   "brand": "Microsoft",
+   "specs": {
+    "brand": "Microsoft",
+    "model": "FQC-10553"
+   },
+   "price": 2473.14,
+   "reference": 2503.66,
+   "stock": 45,
+   "sources": 2
+  },
+  {
+   "group": "Software",
+   "sku": "CFQ7TTC0HDB0P1MM",
+   "name": "Project Plan 3 Microsoft CFQ7TTC0HDB0P1MM",
+   "brand": "Microsoft",
+   "specs": {
+    "brand": "Microsoft",
+    "model": "CFQ7TTC0HDB0P1MM",
+    "Versión de Software": "Project Plan 3"
+   },
+   "price": 578.64,
+   "reference": 578.64,
+   "stock": 6,
+   "sources": 1
+  },
+  {
+   "group": "Software",
+   "sku": "P77100-DN1",
+   "name": "Sistema Operativo Hewlett Packard Enterprise ROK Microsoft Windows Server 2025 Standard",
+   "brand": "Hewlett Packard Enterprise",
+   "specs": {
+    "brand": "Hewlett Packard Enterprise",
+    "model": "ROK Microsoft Windows Server 2025 Standard",
+    "about": "Rok microsoft windows server 2025 standard 16 núcleos en/fr/es/xc sw -"
+   },
+   "price": 17214.98,
+   "reference": 17214.98,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Software",
+   "sku": "P77103-DN1",
+   "name": "Sistema operativo Hewlett Packard Enterprise ROK Microsoft Windows Server Essentials 2025",
+   "brand": "Hewlett Packard Enterprise",
+   "specs": {
+    "brand": "Hewlett Packard Enterprise",
+    "model": "ROK Microsoft Windows Server Essentials 2025",
+    "about": "Rok microsoft windows server essentials 2025 10 núcleos sw en/fr/es/xc -"
+   },
+   "price": 6694.67,
+   "reference": 6694.67,
+   "stock": 28,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "HDTCA20XW3AA",
+   "name": "Disco Duro Externo Toshiba Canvio Advance V10",
+   "brand": "Toshiba",
+   "specs": {
+    "brand": "Toshiba",
+    "model": "Canvio Advance V10",
+    "Interfaz del disco duro": "USB 3.0",
+    "Tamaño de disco duro": "2.5 pulgadas",
+    "Capacidad de disco duro": "2 TB"
+   },
+   "price": 1279.37,
+   "reference": 1279.37,
+   "stock": 23,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "WD11PURZ",
+   "name": "Disco Duro Western Digital WD11PURZ",
+   "brand": "Western Digital",
+   "specs": {
+    "brand": "Western Digital",
+    "model": "WD11PURZ",
+    "Tamaño de disco duro": "3.5 pulgadas",
+    "Velocidad de rotación de disco duro": "5400 RPM",
+    "Capacidad de disco duro": "1 TB",
+    "Tipo": "Unidad de disco duro",
+    "Interfaz del disco duro": "SATA III"
+   },
+   "price": 2170.57,
+   "reference": 2170.57,
+   "stock": 16,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "WDBA5G0040BBK-WESN",
+   "name": "Disco Duro Western Digital WDBA5G0040BBK-WESN",
+   "brand": "Western Digital",
+   "specs": {
+    "brand": "Western Digital",
+    "model": "WDBA5G0040BBK-WESN",
+    "Tamaño de disco duro": "2.5 pulgadas",
+    "Capacidad de disco duro": "4 TB",
+    "Tipo": "Unidad de disco duro"
+   },
+   "price": 2751.15,
+   "reference": 2751.15,
+   "stock": 3,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "AD4S320016G22-SGN",
+   "name": "Memoria RAM Adata AD4S320016G22-SGN",
+   "brand": "Adata",
+   "specs": {
+    "brand": "Adata",
+    "model": "AD4S320016G22-SGN",
+    "Memoria interna": "16 GB",
+    "Componente para": "Portátil",
+    "Tipo de memoria interna": "DDR4",
+    "Forma de factor de memoria": "SO-DIMM",
+    "Velocidad de memoria del reloj": "3200 MHz"
+   },
+   "price": 2104.8,
+   "reference": 2136.72,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "KF432C16BB1/16",
+   "name": "Memoria RAM Kingston Technology Fury Beast",
+   "brand": "Kingston Technology",
+   "specs": {
+    "brand": "Kingston Technology",
+    "model": "FURY Beast",
+    "Memoria interna": "16 GB",
+    "Tipo de memoria interna": "DDR4",
+    "Forma de factor de memoria": "288-pin DIMM",
+    "Velocidad de memoria del reloj": "3200 MHz",
+    "Componente para": "PC/ Servidor"
+   },
+   "price": 2167.42,
+   "reference": 2275.99,
+   "stock": 54,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "KF432S20IB/16",
+   "name": "Memoria RAM Kingston Technology Fury Impact",
+   "brand": "Kingston Technology",
+   "specs": {
+    "brand": "Kingston Technology",
+    "model": "FURY IMPACT",
+    "Memoria interna": "16 GB",
+    "Componente para": "Portátil",
+    "Tipo de memoria interna": "DDR4",
+    "Forma de factor de memoria": "260-pin SO-DIMM",
+    "Velocidad de memoria del reloj": "3200 MHz"
+   },
+   "price": 2084.28,
+   "reference": 2262.66,
+   "stock": 79,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "ASU630SS-240GQ-R",
+   "name": "SSD Adata ASU630SS-240GQ-R",
+   "brand": "Adata",
+   "specs": {
+    "brand": "Adata",
+    "model": "ASU630SS-240GQ-R",
+    "Disco de estado sólido, capacidad": "240 GB",
+    "Velocidad de transferencia de datos": "6 Gbit/s",
+    "Velocidad de escritura": "450 MB/s",
+    "Velocidad de lectura": "520 MB/s",
+    "Interfaces de disco de estado sólido": "SATA III"
+   },
+   "price": 769.83,
+   "reference": 773.69,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "ASU630SS-480GQ-R",
+   "name": "SSD Adata ASU630SS-480GQ-R",
+   "brand": "Adata",
+   "specs": {
+    "brand": "Adata",
+    "model": "ASU630SS-480GQ-R",
+    "Interfaces de disco de estado sólido": "SATA",
+    "Disco de estado sólido, capacidad": "480 GB",
+    "Velocidad de escritura": "450 MB/s",
+    "Velocidad de lectura": "520 MB/s"
+   },
+   "price": 1217.98,
+   "reference": 1220.08,
+   "stock": 999,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "SKC600/1024G",
+   "name": "SSD Kingston Technology KC600",
+   "brand": "Kingston Technology",
+   "specs": {
+    "brand": "Kingston Technology",
+    "model": "KC600",
+    "Disco de estado sólido, capacidad": "1024 GB",
+    "Velocidad de transferencia de datos": "6 Gbit/s",
+    "Velocidad de escritura": "520 MB/s",
+    "Velocidad de lectura": "550 MB/s",
+    "Interfaces de disco de estado sólido": "SATA III"
+   },
+   "price": 3906.33,
+   "reference": 4021.22,
+   "stock": 4,
+   "sources": 2
+  },
+  {
+   "group": "Storage",
+   "sku": "WDS250G2G0C",
+   "name": "SSD Sandisk WDS250G2G0C",
+   "brand": "Sandisk",
+   "specs": {
+    "brand": "Sandisk",
+    "model": "WDS250G2G0C",
+    "Interfaces de disco de estado sólido": "PCI Express 3.0",
+    "Disco de estado sólido, capacidad": "250 GB",
+    "Velocidad de escritura": "3500 MB/s",
+    "Velocidad de lectura": "2400 MB/s"
+   },
+   "price": 974.7,
+   "reference": 974.7,
+   "stock": 564,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "WDS480G350B",
+   "name": "SSD Sandisk WDS480G350B",
+   "brand": "Sandisk",
+   "specs": {
+    "brand": "Sandisk",
+    "model": "WDS480G350B",
+    "Disco de estado sólido, capacidad": "480 GB",
+    "Velocidad de lectura": "2400 MB/s",
+    "Velocidad de escritura": "1650 MB/s"
+   },
+   "price": 1445.12,
+   "reference": 1445.12,
+   "stock": 164,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "WDS500G5G0A",
+   "name": "SSD Sandisk WDS500G5G0A",
+   "brand": "Sandisk",
+   "specs": {
+    "brand": "Sandisk",
+    "model": "WDS500G5G0A",
+    "Disco de estado sólido, capacidad": "500 GB",
+    "Interfaces de disco de estado sólido": "SATA",
+    "Velocidad de lectura": "545 MB/s"
+   },
+   "price": 1423.2,
+   "reference": 1423.2,
+   "stock": 227,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "STMSSDM21B",
+   "name": "SSD Stylos STMSSDM21B",
+   "brand": "Stylos",
+   "specs": {
+    "brand": "Stylos",
+    "model": "STMSSDM21B",
+    "Disco de estado sólido, capacidad": "512 GB",
+    "Interfaces de disco de estado sólido": "PCI Express 3.0",
+    "Velocidad de lectura": "3000 MB/s",
+    "Velocidad de escritura": "2500 Mb/s"
+   },
+   "price": 1249.2,
+   "reference": 1249.2,
+   "stock": 26,
+   "sources": 1
+  },
+  {
+   "group": "Storage",
+   "sku": "STMSSDM22B",
+   "name": "SSD Stylos STMSSDM22B",
+   "brand": "Stylos",
+   "specs": {
+    "brand": "Stylos",
+    "model": "STMSSDM22B",
+    "Interfaces de disco de estado sólido": "PCI Express 3.0",
+    "Disco de estado sólido, capacidad": "1 TB",
+    "Velocidad de lectura": "3000 MB/s",
+    "Velocidad de escritura": "2500 Mb/s"
+   },
+   "price": 1847.49,
+   "reference": 1847.49,
+   "stock": 138,
+   "sources": 1
+  },
+  {
+   "group": "Tablets",
+   "sku": "ZAFR0211MX",
+   "name": "Lenovo Idea Tablet TAB con Teclado y Pluma / TB336FU / Mediatek 6300 2.4GHZ / 8GB / 128GB / 11",
+   "brand": "Lenovo",
+   "specs": {
+    "brand": "Lenovo",
+    "model": "ZAFR0211MX",
+    "about": "Añade un toque de encanto artístico al tiempo que ofrece un agarre cómodo, lo que lo hace perfecto para transmitir, jugar, leer o navegar"
+   },
+   "price": 5135.31,
+   "reference": 5135.31,
+   "stock": 5,
+   "sources": 1
+  }
+ ]
+}

@@ -379,7 +379,7 @@
         if (!this.isDemo || !this.isDemo.value) return null;
         input = input || {};
         var Need = global.BuyniverseNeed, minutes = Math.max(2, Math.min(30, Math.round(Number(input.minutes) || 6)));
-        var invited = state.suppliers.filter(function (s) { return s.marketplace && s.marketplace.category === "hardware" && s.marketplace.priceList !== false && supplierMember(s.id, "sales") && s.id !== "sup-1"; })
+        var invited = state.suppliers.filter(function (s) { return s.marketplace && s.marketplace.category === "hardware" && supplierMember(s.id, "sales") && s.id !== "sup-1"; })
           .sort(function (a, b) { return Number(b.score) - Number(a.score); }).slice(0, 6);
         if (invited.length < 2) { this.notice("Fewer than two suppliers fit this need yet", "fa-triangle-exclamation"); return null; }
         var es = localeOf(this) === "es";
