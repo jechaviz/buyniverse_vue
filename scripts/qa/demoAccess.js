@@ -78,6 +78,15 @@ async function main() {
     check("with the session the app is served", cookieLine === 200 && /app\/boot\.js/.test((await go(owner, "GET", "/demo/")).text));
     check("with the session the sample data is served", (await go(owner, "GET", "/demo/app/data/demo.js")).status === 200);
     check("the demo still has no API", (await go(owner, "GET", "/demo/api/v1/runtime")).status === 404);
+    // A browser's own form post under Referrer-Policy: no-referrer carries "Origin: null" (this is what real users send).
+    const formPost = async (origin, site) => {
+      const c = jar(); const { token: t } = await gate(c);
+      const headers = { Cookie: c.header(), "Content-Type": "application/x-www-form-urlencoded", Origin: origin, ...(site ? { "Sec-Fetch-Site": site } : {}) };
+      return (await fetch(base + "/demo/__demo/access", { method: "POST", headers, body: new URLSearchParams({ t, code: ownerPassword }), redirect: "manual" })).status;
+    };
+    check("a browser form post with Origin: null from the same site opens the demo", (await formPost("null", "same-origin")) === 303);
+    check("Origin: null from another site is refused", (await formPost("null", "cross-site")) === 403);
+    check("a foreign Origin is refused", (await formPost("https://evil.example", "same-origin")) === 403);
     const raw = await fetch(base + "/demo/__demo/access", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Cookie: `buyniverse_demo_gate=${token}` }, body: new URLSearchParams({ t: token, code: ownerPassword }), redirect: "manual" });
     const setCookie = raw.headers.getSetCookie().find((line) => line.startsWith("buyniverse_demo=")) || "";
     check("the session cookie is HttpOnly, Strict and scoped to /demo", /HttpOnly/i.test(setCookie) && /SameSite=Strict/i.test(setCookie) && /path=\/demo/i.test(setCookie), setCookie.slice(0, 160));

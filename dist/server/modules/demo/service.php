@@ -21,6 +21,9 @@ function demo_key(array $config): ?string {
 function demo_is_https(): bool { return (($_SERVER['HTTPS'] ?? '') === 'on') || strtolower(workspace_header('X-Forwarded-Proto')) === 'https'; }
 function demo_origin_ok(): bool {
     $origin = workspace_header('Origin'); if ($origin === '') return true;
+    // The site sends Referrer-Policy: no-referrer, so a browser's own form POST carries "Origin: null". It is accepted only when the
+    // browser also says the request is same-origin; the gate cookie and token still have to match.
+    if ($origin === 'null') return in_array(strtolower(workspace_header('Sec-Fetch-Site')), ['same-origin', ''], true);
     $host = strtolower((string) (parse_url($origin, PHP_URL_HOST) ?? ''));
     return $host !== '' && hash_equals(workspace_request_host(), $host);
 }
