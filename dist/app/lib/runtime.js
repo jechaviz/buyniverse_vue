@@ -17,7 +17,7 @@
     if (runtime.mode !== "demo" || global.BuyniverseDemo) return Promise.resolve(result);
     return new Promise(function (resolve, reject) {
       var script = global.document.createElement("script");
-      script.src = "app/data/demo.js?v=14";
+      script.src = "app/data/demo.js?v=15";
       script.onload = function () { resolve(result); };
       script.onerror = function () { reject(new Error("Demo fixture unavailable")); };
       global.document.head.appendChild(script);

@@ -63,6 +63,7 @@ async function main() {
     check("the gate answers no POST outside its own forms", (await go(anon, "POST", "/demo/")).status === 405);
     check("the real product is not gated and not noindex", (await go(anon, "GET", "/")).status === 200 && !(await fetch(base + "/")).headers.get("x-robots-tag"));
     check("the demo data is refused outside /demo/ even with a session cookie", (await go(anon, "GET", "/app/data/demo.js")).status === 404);
+    check("the demo catalog shards are refused without a session and outside /demo/", (await go(anon, "GET", "/demo/app/data/electroprice/laptops.json")).status === 401 && (await go(anon, "GET", "/app/data/electroprice/laptops.json")).status === 404);
 
     // Wrong codes and forged forms.
     let r = await go(anon, "POST", "/demo/__demo/access", { t: "forged", code: ownerPassword });
@@ -77,6 +78,7 @@ async function main() {
     const cookieLine = (await fetch(base + "/demo/", { headers: { Cookie: owner.header() } })).status;
     check("with the session the app is served", cookieLine === 200 && /app\/boot\.js/.test((await go(owner, "GET", "/demo/")).text));
     check("with the session the sample data is served", (await go(owner, "GET", "/demo/app/data/demo.js")).status === 200);
+    check("with the session the catalog is served", (await go(owner, "GET", "/demo/app/data/electroprice/index.json")).status === 200 && (await go(owner, "GET", "/demo/app/data/electroprice/laptops.json")).status === 200);
     check("the demo still has no API", (await go(owner, "GET", "/demo/api/v1/runtime")).status === 404);
     // A browser's own form post under Referrer-Policy: no-referrer carries "Origin: null" (this is what real users send).
     const formPost = async (origin, site) => {

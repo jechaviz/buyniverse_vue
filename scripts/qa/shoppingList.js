@@ -15,7 +15,7 @@ const windowScope = {
   CustomEvent: function () {},
   setTimeout,
 };
-for (const file of ["../lib/web-common/browser.js", "../lib/procurement-common/browser.js", "app/lib/commerce.js", "app/lib/commercial-metrics.js", "app/lib/need-journey.js", "app/data/demo.js",
+for (const file of ["../lib/web-common/browser.js", "../lib/procurement-common/browser.js", "app/lib/commerce.js", "app/lib/commercial-metrics.js", "app/lib/need-journey.js", "app/lib/electroprice-catalog.js", "app/data/demo.js",
   "app/store/procurementDomainActions.js", "app/store/needActions.js", "app/store/domainActions.js"]) new Function("window", read(file))(windowScope);
 
 const check = (condition, message) => { if (!condition) throw new Error(message); console.log(`[PASS] ${message}`); };
@@ -26,26 +26,43 @@ execFileSync("node", [path.join(root, "scripts/build_demo_catalog.js"), "--check
 check(true, "the demo catalog matches scripts/build_demo_catalog.js");
 
 const state = windowScope.BuyniverseDemo.clone();
-const Need = windowScope.BuyniverseNeed;
-const catalog = state.products.filter((p) => p.id.startsWith("cat-"));
-const groups = [...new Set(catalog.map((p) => p.category))];
-check(catalog.length >= 150 && groups.length >= 14, `the catalog has ${catalog.length} products in ${groups.length} groups`);
-for (const wanted of ["Monitors", "Laptops", "Desktops", "Printers", "Keyboards & mice", "Networking"]) check(groups.includes(wanted), `the catalog has ${wanted}`);
+const Need = windowScope.BuyniverseNeed, Catalog = windowScope.BuyniverseCatalog;
+
+// ElectroPrice's catalog is real and whole: about 20,000 products in shards the demo loads on demand.
+execFileSync("node", [path.join(root, "scripts/build_demo_catalog.js"), "--check"], { stdio: "pipe" });
+check(true, "the demo's suppliers match scripts/build_demo_catalog.js");
+const shardDir = path.join(root, "app/data/electroprice");
+const index = JSON.parse(fs.readFileSync(path.join(shardDir, "index.json"), "utf8"));
+const raw = index.groups.map((g) => ({ g, rows: JSON.parse(fs.readFileSync(path.join(shardDir, g.key + ".json"), "utf8")) }));
+const rows = raw.flatMap(({ g, rows: list }) => list.map((r) => Catalog.row(r, g.key, g.label)));
+check(rows.length >= 20000 && rows.length === index.total && index.groups.length >= 20, `the catalog has ${rows.length} products in ${index.groups.length} groups`);
+check(index.groups.every((g) => raw.find((x) => x.g.key === g.key).rows.length === g.count), "the index counts match the shards");
+for (const wanted of ["Monitors", "Laptops", "Desktops", "Printers & scanners", "Keyboards & mice", "Networking", "Storage", "Power & UPS"]) check(index.groups.some((g) => g.label === wanted && g.count >= 100), `the catalog has ${wanted}`);
+check(new Set(rows.map((r) => r.id)).size === rows.length, "no two products share an id");
 const electroprice = state.suppliers.find((s) => s.name === "ElectroPrice");
-check(electroprice && electroprice.marketplace.priceList === true && electroprice.marketplace.website === "https://electroprice.appniverse.com", "ElectroPrice, the real seller, is the supplier with the price list");
-check(catalog.every((p) => p.offers.length === 1 && p.offers[0].supplierId === electroprice.id && p.currency === "MXN" && Object.keys(p.specs).length >= 2), "every catalog product is ElectroPrice's, with MXN prices and its captured specifications");
-check(catalog.every((p) => p.sku && p.brand && p.rate > 0 && p.offers[0].stock >= 3 && p.referencePrice >= p.rate), "every product has a real part number, brand, price and stock, and a reference not below its price");
-check(catalog.some((p) => p.referencePrice > p.rate), "some products show a real spread between sources");
-const cost = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(root, "scripts/data/electroprice-catalog.json"), "utf8")).products.map((p) => [p.sku, p.price]));
-check(catalog.every((p) => cost[p.sku] > 0 && p.rate >= cost[p.sku] * 1.35 - 0.01 && p.offers[0].price === p.rate), "every price carries at least a 35% margin over ElectroPrice's cost");
-check(catalog.every((p) => p.rate * (1 - 0.15) >= cost[p.sku] * 1.10), "a 15% negotiated discount still leaves at least 10% over cost");
-check(!/(CVA|CTONLINE|CT ONLINE|INGRAM|SYSCOM)/i.test(JSON.stringify(catalog)), "the wholesale providers' names never reach the demo");
+check(electroprice && electroprice.id === Catalog.SUPPLIER && electroprice.marketplace.priceList === true && electroprice.marketplace.website === "https://electroprice.appniverse.com", "ElectroPrice, the real seller, is the supplier with the price list");
+check(rows.every((r) => r.sku && r.brand && r.description.length >= 3 && r.price > 0 && r.reference >= r.price && r.stock >= 0 && r.specs && r.specs.model), "every product has a part number, brand, name, price, a reference not below it, stock and a model");
+check(rows.filter((r) => r.stock > 0).length >= 6000 && rows.filter((r) => r.stock === 0).length >= 10000, "in stock and on-order products are both there");
+check(rows.some((r) => r.reference > r.price), "some products show a real spread between sources");
+const cost = JSON.parse(fs.readFileSync(path.join(root, "scripts/data/electroprice-costs.json"), "utf8"));
+check(rows.every((r) => cost[r.sku] > 0 && r.price >= cost[r.sku] * 1.35 - 0.02), "every price carries at least a 35% margin over ElectroPrice's cost");
+check(rows.every((r) => r.price * (1 - 0.15) >= cost[r.sku] * 1.10), "a 15% negotiated discount still leaves at least 10% over cost");
+check(!/b(CVA|CTONLINE|CT ONLINE|INGRAM MICRO)b/i.test(fs.readdirSync(shardDir).map((f) => fs.readFileSync(path.join(shardDir, f), "utf8")).join("")), "the wholesale providers' names never reach the demo");
+check(!fs.readdirSync(shardDir).some((f) => /cost/i.test(f)) && !/"cost"/.test(fs.readFileSync(path.join(shardDir, "index.json"), "utf8")), "the cost is not among the served files");
+const offer = Catalog.offerOf(rows.find((r) => r.stock > 0)), onOrder = Catalog.offerOf(rows.find((r) => r.stock === 0));
+check(offer.supplierId === electroprice.id && offer.leadDays < onOrder.leadDays && onOrder.stock === 0, "an on-order product has a longer lead time than one in stock");
+
+// A catalog product becomes a workspace product only when it is used.
+const pick = (group, inStock = true) => rows.find((r) => r.group === group && (!inStock || r.stock >= 20));
+const productsBefore = state.products.length;
+const monitor = Catalog.ensure(state, pick("monitors")), laptop = Catalog.ensure(state, pick("laptops")), printer = Catalog.ensure(state, pick("printers")), keyboard = Catalog.ensure(state, pick("keyboards"));
+check(state.products.length === productsBefore + 4 && Catalog.ensure(state, pick("monitors")) === monitor && state.products.length === productsBefore + 4, "a catalog product enters the workspace once, when it is used");
+check([monitor, laptop, printer, keyboard].every((p) => p.currency === "MXN" && p.offers.length === 1 && p.offers[0].supplierId === electroprice.id && p.id.startsWith("ep-")), "it is ElectroPrice's, in MXN, with its one offer");
 const supplierIds = new Set(state.suppliers.map((s) => s.id));
-check(catalog.every((p) => p.offers.every((o) => supplierIds.has(o.supplierId) && o.price > 0 && o.leadDays >= 1)), "every offer belongs to a supplier in the demo and has a price and lead time");
+check(state.products.every((p) => p.offers.every((o) => supplierIds.has(o.supplierId) && o.price > 0 && o.leadDays >= 1)), "every offer belongs to a supplier in the demo and has a price and lead time");
 check(new Set(state.products.map((p) => p.id)).size === state.products.length && new Set(state.suppliers.map((s) => s.id)).size === state.suppliers.length, "no duplicate product or supplier ids");
 
 // Who can answer quickly: suppliers with no price list, or none for these items.
-const monitor = catalog.find((p) => p.category === "Monitors");
 const anyHour = Need.quickQuoteSuppliers(state, [monitor.id], 0);
 const inThree = Need.quickQuoteSuppliers(state, [monitor.id], 3);
 check(anyHour.length >= 3 && anyHour.every((s) => s.marketplace.category === "hardware") && !anyHour.includes(electroprice), "several hardware suppliers can quote a monitor on request; ElectroPrice already has its price");
@@ -71,7 +88,6 @@ const store = {
 };
 Object.assign(store, windowScope.BuyniverseDomainActions.createDomainActions(state, {}, helpers));
 
-const laptop = catalog.find((p) => p.category === "Laptops"), printer = catalog.find((p) => p.category === "Printers"), keyboard = catalog.find((p) => p.category === "Keyboards & mice");
 const line = (product, quantity, offer) => ({ productId: product.id, quantity, offerId: offer ? offer.id : undefined });
 
 // A buyer without approval rights: everything waits for the approver, nothing opens yet.

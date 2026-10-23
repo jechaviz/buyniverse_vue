@@ -1,14 +1,16 @@
 # La demo: catálogo real y gente virtual
 
-## El catálogo es real (ElectroPrice)
-ElectroPrice (https://electroprice.appniverse.com) es un vendedor real de electrónica en México y, en Buyniverse, el proveedor con lista de precios para compras de hardware. El catálogo de la demo son **162 productos reales** de su inventario: marca, número de parte, precio en MXN, existencias y las especificaciones capturadas, en 17 grupos.
-- Origen: las capturas de precios de sus mayoristas (carpeta `out/` de `electroprice-ec`, mayo 2026). `scripts/extract_electroprice_catalog.js` elige la muestra y la guarda en `scripts/data/electroprice-catalog.json`; `scripts/build_demo_catalog.js` la convierte en el catálogo de la demo. No se inventa ningún dato de producto.
-- **Los precios capturados son el costo de ElectroPrice.** El precio que ve el comprador es ese costo más un margen del 35% sobre costo (`MARKUP` en `scripts/build_demo_catalog.js`), para que al negociar por volumen quede 10-15% sobre el costo (un descuento de hasta 15% sigue dejando más de 10%). La prueba lo verifica.
-- Los costos son los capturados, antes de IVA; los que venían en USD se convirtieron con el tipo de cambio de la propia captura (17.54). Cuando un producto aparece en dos mayoristas, el costo es el menor y la "referencia" parte del mayor.
-- Los nombres de los mayoristas no salen del script: la demo solo muestra a ElectroPrice.
-- No hay dato en la captura del tiempo de entrega ni de las condiciones de pago: se muestran 3 días y "prepago" como valores de la demo. Su calificación y riesgo también son métricas de muestra.
-- Los demás proveedores de hardware de la demo (Mayoreo Cómputo MX, ByteBodega…) **son ficticios y no tienen lista de precios**: cotizan bajo pedido. Existen para que una cotización y una puja tengan rivales.
-- Para renovar la muestra: `node scripts/extract_electroprice_catalog.js`, `node scripts/build_demo_catalog.js`, `node scripts/build_demo_cast.js` y `node scripts/build_marketplace_catalog.js`.
+## El catálogo es real y completo (ElectroPrice)
+ElectroPrice (https://electroprice.appniverse.com) es un vendedor real de electrónica en México y, en Buyniverse, el proveedor con lista de precios para compras de hardware. El catálogo de la demo es **todo su catálogo: 20,576 productos reales** en 22 grupos (6,240 en existencia y el resto bajo pedido), con marca, número de parte, nombre, precio en MXN y las especificaciones capturadas.
+- Origen: las capturas de precios de sus mayoristas (`out/` de `electroprice-ec`, mayo 2026). `scripts/extract_electroprice_catalog.js` las une por número de parte y escribe `app/data/electroprice/` (un archivo por grupo más `index.json`, 4.3 MB en total) y `scripts/data/electroprice-costs.json` (solo para la prueba; nunca se sirve). No se inventa ningún dato de producto.
+- La demo los carga por grupos en segundo plano (`app/lib/electroprice-catalog.js`) y se puede buscar mientras cargan. Solo se convierte en producto del espacio de trabajo lo que se agrega a una lista.
+- **Los precios capturados son el costo de ElectroPrice.** El precio que ve el comprador es ese costo más un 35% sobre costo (`MARKUP` en el extractor), para que al negociar por volumen quede 10-15% sobre el costo (un descuento de hasta 15% sigue dejando más de 10%). El costo no sale del repositorio y la prueba verifica los dos márgenes en los 20,576 productos.
+- Los costos son los capturados, antes de IVA; los que venían en USD se convirtieron con el tipo de cambio de la propia captura (17.54). Si un producto está en dos mayoristas, el costo es el menor entre los que tienen existencia y la "referencia" parte del mayor.
+- Un producto con existencia se entrega en 3 días; uno bajo pedido, en 12. Ese dato no viene en las capturas: es un valor de la demo, igual que las condiciones de pago ("prepago") y la calificación y el riesgo de ElectroPrice.
+- Los nombres de los mayoristas no salen del script: la demo solo muestra a ElectroPrice (la prueba lo verifica). No se publican las imágenes (apuntan a los servidores de los mayoristas).
+- Los archivos del catálogo solo se entregan dentro de `/demo/` con sesión (`.htaccess`, `index.php` y pruebas en `demoAccess.js` y `backendIntegration.js`).
+- Los demás proveedores de hardware de la demo (Mayoreo Cómputo MX, ByteBodega…) **son ficticios y no tienen lista de precios**: cotizan bajo pedido, para que una cotización y una puja tengan rivales.
+- Para renovar: `node scripts/extract_electroprice_catalog.js`, `node scripts/build_demo_catalog.js`, `node scripts/build_demo_cast.js` y `node scripts/build_marketplace_catalog.js`.
 
 # La demo con gente virtual
 

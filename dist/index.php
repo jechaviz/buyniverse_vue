@@ -88,6 +88,7 @@ if (str_starts_with($uri, '/demo/')) {
 }
 // Sample data is served only inside the demo (or on a host the operator set to demo mode).
 if (preg_match('#(?:^|/)app/data/demo\.js$#', $path) === 1 && !$GLOBALS['bn_demo'] && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
+if (preg_match('#(?:^|/)app/data/electroprice/[^/]+$#', $path) === 1 && !$GLOBALS['bn_demo'] && workspace_mode(workspace_config()) !== 'demo') fail_response(404, 'Not found');
 foreach ([__DIR__ . '/dist', __DIR__] as $root) {
     $file = static_file($root, $path);
     if ($file === null) continue;

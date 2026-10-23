@@ -58,6 +58,8 @@ Options -Indexes -MultiViews
   # The demo fixture is decided by the server (404 outside a demo host), so it
   # must not be picked up by the static-file shortcut below.
   RewriteRule (?:^|/)app/data/demo\.js$ index.php [L,NC]
+  # The same goes for the demo catalog (ElectroPrice shards): it is demo-only data.
+  RewriteRule (?:^|/)app/data/electroprice/[^/]+$ index.php [L,NC]
 
   # This public static artifact is otherwise read-only. Use rewrite instead of
   # <LimitExcept>, which LiteSpeed can apply inconsistently to HEAD requests.

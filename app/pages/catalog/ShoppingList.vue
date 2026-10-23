@@ -116,7 +116,7 @@ export default {
       const estimate = Number(raw.budget) > 0 ? Number(raw.budget) : product ? Number(product.referencePrice || product.rate) : 0;
       const quantity = Number(raw.quantity) || 1;
       const saving = offer && product ? Math.max(0, (Number(product.referencePrice || offer.price) - offer.price) * quantity) : 0;
-      return { id: raw.id, raw, product, offer, estimate, saving, description: raw.description, spec: raw.spec || (product ? Object.values(product.specs || {}).slice(2, 5).join(' · ') : '') };
+      return { id: raw.id, raw, product, offer, estimate, saving, description: raw.description, spec: raw.spec || (product ? Object.values(product.specs || {}).slice(1, 4).join(' · ') : '') };
     }));
     const pricedLines = computed(() => view.value.filter((line) => line.offer));
     const quickLines = computed(() => view.value.filter((line) => !line.offer));

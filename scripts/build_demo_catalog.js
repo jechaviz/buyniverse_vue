@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Builds the demo's hardware catalog: what a buyer puts on a shopping list.
+ * Builds the demo's hardware suppliers: ElectroPrice, a real seller of electronics in Mexico (electroprice.appniverse.com)
+ * and, in Buyniverse, the supplier with a price list for hardware, plus fictional rivals.
  *
- * The products are real. ElectroPrice (electroprice.appniverse.com) is a real seller of electronics in Mexico and, in
- * Buyniverse, the supplier with a price list for hardware: scripts/data/electroprice-catalog.json is a curated sample of
- * its catalog (real products, brands, part numbers, stock and specifications, and the prices it pays; see
- * scripts/extract_electroprice_catalog.js). The products are not invented; the selling price is that cost plus a 35% markup.
+ * The products are not in demo.js: ElectroPrice's whole catalog (about 20,000 real products) is written by
+ * scripts/extract_electroprice_catalog.js as shards in app/data/electroprice/, which the demo loads on demand
+ * (app/lib/electroprice-catalog.js). Prices there are its cost plus a 35% markup.
  *
  * The other hardware suppliers of the demo are fictional and have no price list: they answer a quick quote. They exist
  * because a quote round and a live round need rivals, and the virtual people (scripts/build_demo_cast.js) play them.
@@ -17,19 +17,17 @@ const fs = require("fs");
 const path = require("path");
 
 const target = path.join(__dirname, "..", "app", "data", "demo.js");
-const sample = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "electroprice-catalog.json"), "utf8"));
+const index = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "app", "data", "electroprice", "index.json"), "utf8"));
 const START = "  // <generated:catalog> scripts/build_demo_catalog.js, do not edit by hand";
 const END = "  // </generated:catalog>";
 
 // The captured prices are ElectroPrice's cost. What a buyer sees is cost plus this markup, so that there is room to
 // negotiate: at least 35% on cost, leaving 10-15% when the price is bargained down for volume.
-const MARKUP = 0.35;
-const sell = (cost) => Math.round(cost * (1 + MARKUP) * 100) / 100;
 
 // ElectroPrice: real. Its rating, score and risk are the demo's own sample metrics for a supplier with no history here yet.
 const ELECTROPRICE = {
   id: "sup-31", name: "ElectroPrice", contact: "Equipo ElectroPrice", city: "cdmx", region: "CDMX", rating: 4.6, score: 90, risk: 15, hours: 2, lead: 3,
-  headline: "Electrónica y tecnología con envío a todo México", about: "Tienda en línea de electrónica en México: laptops, monitores, impresoras, redes, almacenamiento y más de las mejores marcas, con envío a todo el país. Precios y existencias actualizados desde sus mayoristas.", site: sample.site,
+  headline: "Electrónica y tecnología con envío a todo México", about: "Tienda en línea de electrónica en México: laptops, monitores, impresoras, redes, almacenamiento y más de las mejores marcas, con envío a todo el país. Precios y existencias actualizados desde sus mayoristas.", site: index.site,
 };
 // Fictional suppliers with no price list: they quote on request, fast.
 const QUICK = [
@@ -50,15 +48,6 @@ const QUICK = [
 const hash = (text) => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
 const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-const products = sample.products.map((item, index) => {
-  const id = "cat-" + String(index + 1).padStart(3, "0");
-  return {
-    id, sku: item.sku, description: item.name, brand: item.brand, model: item.specs.model || item.sku, rate: sell(item.price), referencePrice: sell(Math.max(item.reference, item.price)), unit: "Each", currency: sample.currency,
-    category: item.group, preferredSupplierId: ELECTROPRICE.id, procurementRule: "Approved catalog item", specs: item.specs,
-    offers: [{ id: `offer-${id}-ep`, supplierId: ELECTROPRICE.id, price: sell(item.price), leadDays: ELECTROPRICE.lead, stock: item.stock, terms: "Prepaid", compliant: true }],
-  };
-});
-
 const sup = (v, listed) => ({
   id: v.id, name: v.name, category: "Technology", contact: v.contact, email: slug(v.contact.split(" ")[0]) + "@" + slug(v.name) + ".example", totalSpend: 0, status: v.score >= 90 ? "Preferred" : v.score >= 85 ? "Reliable" : "Qualified",
   rating: v.rating, score: v.score, risk: v.risk, esg: 70 + Math.round(hash(v.id + "e") * 15), onTime: 88 + Math.round(hash(v.id + "o") * 9), responseRate: 88 + Math.round(hash(v.id + "r") * 11), certifications: ["ISO 9001"],
@@ -75,9 +64,7 @@ const newSuppliers = [sup(ELECTROPRICE, true), ...QUICK.map((v) => sup(v, false)
 const block = [
   START,
   "  const catalogSuppliers = " + JSON.stringify(newSuppliers) + ";",
-  "  const catalogProducts = " + JSON.stringify(products) + ";",
   "  suppliers.push(...catalogSuppliers);",
-  "  products.push(...catalogProducts);",
   "  // Existing hardware supplier of the demo that answers on request, with no price list.",
   "  suppliers.forEach((supplier) => { if (supplier.id === 'sup-16' && supplier.marketplace) supplier.marketplace.priceList = false; });",
   END,
@@ -94,7 +81,7 @@ else {
 }
 if (process.argv.includes("--check")) {
   if (next !== source) { console.error("app/data/demo.js catalog block is out of date: run node scripts/build_demo_catalog.js"); process.exit(1); }
-  console.log("demo catalog up to date (" + products.length + " products)"); process.exit(0);
+  console.log("demo suppliers up to date"); process.exit(0);
 }
 fs.writeFileSync(target, next);
-console.log("wrote " + products.length + " ElectroPrice products and " + newSuppliers.length + " suppliers");
+console.log("wrote " + newSuppliers.length + " suppliers");

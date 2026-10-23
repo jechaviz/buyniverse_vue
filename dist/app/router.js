@@ -41,7 +41,7 @@
     const Contest = load("./app/pages/ContestPage.vue?v=34");
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=41");
-    const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=7");
+    const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=9");
     const Procurement = load("./app/pages/ProcurementPage.vue?v=45");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");

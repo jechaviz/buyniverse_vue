@@ -78,6 +78,8 @@ async function main() {
     check("the demo cannot write", (await fetch(base + "/demo/", { method: "POST" })).status === 405);
     check("the demo fixture is refused without a demo session", (await fetch(base + "/demo/app/data/demo.js")).status === 401);
     check("the demo fixture is refused outside /demo/", (await fetch(base + "/app/data/demo.js")).status === 404);
+    check("the demo catalog is refused without a demo session", (await fetch(base + "/demo/app/data/electroprice/index.json")).status === 401);
+    check("the demo catalog is refused outside /demo/", (await fetch(base + "/app/data/electroprice/index.json")).status === 404 && (await fetch(base + "/app/data/electroprice/laptops.json")).status === 404);
     check("the demo is not indexable", /noindex/.test((await fetch(base + "/demo/")).headers.get("x-robots-tag") || ""));
     check("production is not marked noindex", !(await fetch(base + "/")).headers.get("x-robots-tag"));
 

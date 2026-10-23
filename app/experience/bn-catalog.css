@@ -131,3 +131,7 @@
 .sl-result-title i { margin-right: 8px; color: var(--ambient); }
 .sl-result-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px !important; }
 .sl-result-links a { color: var(--ambient); font-weight: 700; }
+
+.ct-loading { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: -12px 0 0; padding: 10px 16px; border-radius: 14px; background: color-mix(in srgb, var(--ambient, #36e3c0) 9%, var(--c-plane)); color: var(--c-ink2); font-size: .78rem; font-weight: 600; }
+.ct-loading i { color: var(--ambient, #36e3c0); }
+.ct-loading small { color: var(--c-ink3); font-weight: 500; }
