@@ -169,3 +169,9 @@
 .ct-sku { margin: 6px 0 0; color: var(--c-ink3); font: 600 .7rem var(--font-mono, monospace); overflow-wrap: anywhere; }
 .ct-hero .ct-priceline, .ct-hero .ct-ship, .ct-hero .ct-brandline { margin-left: 0; margin-right: 0; }
 .ct-about { margin: 0; padding-top: 14px !important; padding-bottom: 4px !important; color: var(--c-ink2); font-size: .8rem; line-height: 1.55; }
+
+/* Photo tiles: a spinner until the photo arrives; an image icon only when there is none or it failed. */
+.ct-photo-none { display: none; }
+.ct-photo:not(:has(img)) .ct-photo-none, .ct-hero-photo:not(:has(img)) .ct-photo-none, .is-failed .ct-photo-none { display: block; }
+.ct-spin { color: #9aa3b5; font-size: 1.5rem; }
+.is-loaded .ct-spin, .is-failed .ct-spin { display: none; }

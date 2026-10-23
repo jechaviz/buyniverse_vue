@@ -35,8 +35,9 @@
         <div class="ct-grid">
           <article v-for="product in visible" :key="product.id" class="ct-card ct-shop group flex flex-col" :class="{ 'is-on': selectedProductId === product.id }">
             <button type="button" class="ct-photo" :aria-label="product.description" @click="selectProduct(product.id)">
-              <i class="fa-regular fa-image ct-photo-ph"></i>
-              <img v-if="product.image" :src="product.image" :alt="product.description" :referrerpolicy="product.imageReferrer" loading="lazy" decoding="async" @error="photoFailed" />
+              <i v-if="product.image" class="fa-solid fa-circle-notch fa-spin ct-photo-ph ct-spin" aria-hidden="true"></i>
+              <i class="fa-regular fa-image ct-photo-ph ct-photo-none" aria-hidden="true"></i>
+              <img v-if="product.image" :src="product.image" :alt="product.description" :referrerpolicy="product.imageReferrer" loading="lazy" decoding="async" @load="photoLoaded" @error="photoFailed" />
               <span v-if="product.stock === 0" class="ct-flag is-order"><i class="fa-regular fa-clock"></i> {{ t('On order') }}</span>
               <span v-else class="ct-flag is-stock"><i class="fa-solid fa-circle-check"></i> {{ t('In stock') }}</span>
               <span v-if="product.savingsPercent" class="ct-off">−{{ product.savingsPercent }}%</span>
@@ -66,7 +67,7 @@
         <div v-show="tab === 'offers'" class="ct-sheet" aria-live="polite">
           <template v-if="selected">
             <div class="ct-hero">
-              <div class="ct-hero-photo"><i class="fa-regular fa-image ct-photo-ph"></i><img v-if="selected.image" :key="selected.id" :src="selected.image" :alt="selected.description" :referrerpolicy="selected.imageReferrer" decoding="async" @error="photoFailed" /></div>
+              <div class="ct-hero-photo" :key="selected.id"><i v-if="selected.image" class="fa-solid fa-circle-notch fa-spin ct-photo-ph ct-spin" aria-hidden="true"></i><i class="fa-regular fa-image ct-photo-ph ct-photo-none" aria-hidden="true"></i><img v-if="selected.image" :src="selected.image" :alt="selected.description" :referrerpolicy="selected.imageReferrer" decoding="async" @load="photoLoaded" @error="photoFailed" /></div>
               <p class="ct-brandline"><span class="ct-kind">{{ t(selected.category) }}</span><b v-if="selected.brand">{{ selected.brand }}</b></p>
               <h2>{{ selected.description }}</h2>
               <p class="ct-sku">{{ t('Part number') }}: {{ selected.sku }}</p>
@@ -186,7 +187,9 @@ export default {
     const selected = computed(() => enrich(selectedRow.value));
     const specRows = computed(() => Object.entries(selected.value?.specs || {}).filter(([key]) => key !== 'about').map(([key, value]) => ({ key, label: t(SPEC_LABELS[key] || key), value })));
     const aboutText = computed(() => selected.value?.specs?.about || '');
-    const photoFailed = (event) => { event.target.style.display = 'none'; };
+    // The tile shows a spinner while the photo loads, the photo when it is in, and an icon when it never comes.
+    const photoLoaded = (event) => { event.target.parentElement.classList.add('is-loaded'); };
+    const photoFailed = (event) => { event.target.style.display = 'none'; event.target.parentElement.classList.add('is-failed'); };
     const quickers = computed(() => selected.value ? quickList(selected.value.offers).slice(0, 5) : []);
     const metrics = computed(() => [
       { label: 'Catalog items', value: everything.value.length.toLocaleString() },
@@ -223,7 +226,7 @@ export default {
     const openList = () => { tab.value = 'list'; nextTick(() => side.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
     const describeIt = () => { openList(); nextTick(() => { const panel = listPanel.value; if (panel && panel.$el) panel.$el.querySelector('.sl-custom')?.click(); }); };
     const resetFilters = () => { query.value = ''; category.value = ''; brand.value = ''; sort.value = 'category'; showOnlySavings.value = false; onlyStock.value = false; };
-    return { store, t, money, query, category, brand, sort, showOnlySavings, onlyStock, groups, brands, everything, progress, catalog, visible, shown, metrics, selected, specRows, aboutText, photoFailed, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
+    return { store, t, money, query, category, brand, sort, showOnlySavings, onlyStock, groups, brands, everything, progress, catalog, visible, shown, metrics, selected, specRows, aboutText, photoLoaded, photoFailed, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
   },
 };
 </script>
