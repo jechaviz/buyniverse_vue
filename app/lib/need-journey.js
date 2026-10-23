@@ -75,6 +75,27 @@
     return (fit.length >= 2 ? fit : ranked).slice(0, limit || 4).map(function (x) { return x.supplier; });
   }
 
+  /**
+   * Hardware suppliers that can answer a request quickly. A supplier with no price list for the
+   * items (or none at all) quotes on request; `maxHours` is the longest the buyer will wait, and a
+   * supplier that needs longer than that to answer is left out. Fastest first.
+   */
+  function quickQuoteSuppliers(state, productIds, maxHours) {
+    var ids = (productIds || []).filter(Boolean);
+    var priced = {};
+    (state.products || []).filter(function (p) { return ids.indexOf(p.id) >= 0; }).forEach(function (p) {
+      (p.offers || []).forEach(function (o) { priced[o.supplierId] = (priced[o.supplierId] || 0) + 1; });
+    });
+    var limit = Number(maxHours) > 0 ? Number(maxHours) : Infinity;
+    return (state.suppliers || []).filter(function (s) {
+      var m = s.marketplace;
+      if (!m || m.listed === false || m.category !== "hardware" || Number(s.risk) > 40) return false;
+      if (Number(m.responseHours || 24) > limit) return false;
+      // No price list at all, or no price for most of the items asked: it has to quote.
+      return m.priceList === false || (priced[s.id] || 0) < Math.max(1, ids.length);
+    }).sort(function (a, b) { return Number(a.marketplace.responseHours || 24) - Number(b.marketplace.responseHours || 24) || Number(b.score) - Number(a.score); });
+  }
+
   function isPaid(invoice) {
     if (!invoice) return false;
     var s = String(invoice.paymentStatus || invoice.status || "").toLowerCase();
@@ -153,7 +174,7 @@
     return journey({ purchaseRequests: scoped(st.purchaseRequests), sourcingEvents: scoped(st.sourcingEvents), auctions: scoped(st.auctions), purchaseOrders: scoped(st.purchaseOrders), invoices: st.invoices || [], suppliers: st.suppliers || [] });
   }
 
-  var api = { fromStore: fromStore, CATEGORIES: CATEGORIES, STAGES: STAGES, byKey: byKey, guess: guess, categoryOfRecord: categoryOfRecord, matchSuppliers: matchSuppliers, journey: journey, counts: counts };
+  var api = { fromStore: fromStore, CATEGORIES: CATEGORIES, STAGES: STAGES, byKey: byKey, guess: guess, categoryOfRecord: categoryOfRecord, matchSuppliers: matchSuppliers, quickQuoteSuppliers: quickQuoteSuppliers, journey: journey, counts: counts };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.BuyniverseNeed = api;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

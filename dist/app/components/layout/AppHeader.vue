@@ -26,16 +26,18 @@
         <i class="fa-regular fa-bell"></i><b v-if="unreadNotifications.length">{{ unreadNotifications.length }}</b>
       </button>
       <div v-if="notificationsOpen" class="ws-pop">
-        <div class="ws-pop__head">
-          <h2>{{ store.t("Notifications") }}</h2>
-          <p>{{ unreadNotifications.length ? store.t(`${unreadNotifications.length} unread`) : store.t("You are all caught up") }}</p>
+        <div class="ws-pop__head ws-pop__head--bar">
+          <div>
+            <h2>{{ store.t("Notifications") }}</h2>
+            <p>{{ unreadNotifications.length ? store.t(`${unreadNotifications.length} unread`) : store.t("You are all caught up") }}</p>
+          </div>
+          <button v-if="unreadNotifications.length" type="button" class="ws-pop__mark" :title="store.t('Mark all read')" :aria-label="store.t('Mark all read')" @click="$emit('mark-all-read')"><i class="fa-solid fa-check-double"></i></button>
         </div>
         <RouterLink v-for="notification in visibleNotifications" :key="notification.id" :to="notification.link" class="ws-note" :class="{ 'is-new': !notification.isRead }" @click="$emit('open-notification', notification)">
           <i class="fa-solid" :class="notification.icon"></i>
           <span><b>{{ notification.title }}</b><span>{{ notification.text }}</span><time>{{ formatDate ? formatDate(notification.at) : notification.at }}</time></span>
         </RouterLink>
         <p v-if="!visibleNotifications.length" class="ws-pop__head">{{ store.t("No notifications yet.") }}</p>
-        <section v-if="unreadNotifications.length"><button type="button" class="ws-text-btn" @click="$emit('mark-all-read')">{{ store.t("Mark all read") }}</button></section>
       </div>
     </div>
 

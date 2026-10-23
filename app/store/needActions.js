@@ -70,6 +70,81 @@
         return { request: request, event: null, auction: null, pending: true };
       },
 
+      /**
+       * Publish a shopping list. Lines with a chosen price (a supplier's price list) become one purchase request per
+       * supplier; lines without one (not on any price list, or typed by the buyer) go together into a quick quote that
+       * suppliers answer within `hours`. Returns { requests, event, pending, priced, quick, invited } or null.
+       */
+      publishShoppingList(input) {
+        input = input || {};
+        var user = this.currentUser && this.currentUser.value;
+        if (!user || (this.marketplaceMode && this.marketplaceMode.value === "supplier")) { this.notice("Only buyers can publish a need", "fa-shield-halved"); return null; }
+        var Need = global.BuyniverseNeed;
+        var raw = Array.isArray(input.lines) ? input.lines.slice(0, 60) : [];
+        var hours = Number(input.hours) > 0 ? Math.min(168, Number(input.hours)) : 24;
+        var priced = {}, quick = [], invalid = false;
+        raw.forEach(function (line) {
+          var product = line.productId ? state.products.filter(function (p) { return p.id === line.productId; })[0] : null;
+          var quantity = Number(line.quantity), description = text(line.description || (product && product.description), 160);
+          if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000 || description.length < 3) { invalid = true; return; }
+          var offer = product && line.offerId ? (product.offers || []).filter(function (o) { return o.id === line.offerId; })[0] : null;
+          if (offer) {
+            var unitPrice = Number(offer.price);
+            if (!safeAmount(unitPrice, 0.01)) { invalid = true; return; }
+            (priced[offer.supplierId] = priced[offer.supplierId] || []).push({ product: product, offer: offer, description: description, quantity: quantity, unitPrice: unitPrice });
+            return;
+          }
+          var estimate = Number(line.budget) > 0 ? Number(line.budget) : product ? Number(product.referencePrice || product.rate) : 0;
+          if (!safeAmount(estimate, 0.01)) { invalid = true; return; }
+          quick.push({ product: product, description: description, quantity: quantity, unitPrice: estimate, spec: text(line.spec, 300) });
+        });
+        var suppliersWithPrice = Object.keys(priced);
+        if (invalid || (!suppliersWithPrice.length && !quick.length)) {
+          this.notice("Complete the quantity of each item; an item that is not in the catalog also needs a budget", "fa-triangle-exclamation");
+          return null;
+        }
+        var invited = [];
+        if (quick.length) {
+          invited = Need.quickQuoteSuppliers(state, quick.map(function (l) { return l.product && l.product.id; }), hours).slice(0, 6);
+          if (invited.length < 2) { this.notice("Fewer than two suppliers can answer in that time; allow more time", "fa-triangle-exclamation"); return null; }
+        }
+        var requests = [], event = null, pending = false, store = this;
+        var currencyOf = function (lines) { var withProduct = lines.filter(function (l) { return l.product; })[0]; return (withProduct && withProduct.product.currency) || "MXN"; };
+        var open = function (request) {
+          store.procurementEvent(request, "Shopping list published", request.title, "success");
+          if (store.canApproveRequest(request)) { store.procurementTransition(request, "Approved", "Approved by the publisher"); return true; }
+          store.procurementTransition(request, "Pending approval", "Submitted to " + ((store.user && store.user(request.approverId) && store.user(request.approverId).name) || "the approver"));
+          request.nextAction = "Approval decision"; pending = true;
+          if (store.addNotification) store.addNotification({ userId: request.approverId, title: "A shopping list is waiting for your approval", text: request.id + " · " + request.title, link: "/procurement/queue?request=" + request.id, icon: "fa-stamp" });
+          return false;
+        };
+        suppliersWithPrice.forEach(function (supplierId) {
+          var lines = priced[supplierId], supplier = state.suppliers.filter(function (s) { return s.id === supplierId; })[0];
+          var amount = Number(lines.reduce(function (sum, l) { return sum + l.quantity * l.unitPrice; }, 0).toFixed(2));
+          var request = scoped({
+            id: nextId("PR-", state.purchaseRequests, 2410), title: "Shopping list · " + (supplier ? supplier.name : supplierId), requesterId: user.id, ownerId: user.id, approverId: "user-admin-admin",
+            department: text(input.department, 80) || "Purchasing", amount: amount, currency: currencyOf(lines), status: "Draft", priority: "Medium", category: lines[0].product.category,
+            dueDate: new Date(Date.now() + Math.max.apply(null, lines.map(function (l) { return l.offer.leadDays || 7; })) * 86400000).toISOString(), budgetCode: "CATALOG-2026",
+            notes: text(input.notes, 2000), nextAction: "Submit for approval", supplierId: supplierId, preferredOfferId: lines[0].offer.id,
+            items: lines.map(function (l) { return { id: uid("pr-line"), productId: l.product.id, description: l.description, quantity: l.quantity, unitPrice: l.unitPrice, supplierId: supplierId }; }), audit: [],
+          });
+          state.purchaseRequests.unshift(request); requests.push(request); open(request);
+        });
+        if (quick.length) {
+          var amountQuick = Number(quick.reduce(function (sum, l) { return sum + l.quantity * l.unitPrice; }, 0).toFixed(2));
+          var quickRequest = scoped({
+            id: nextId("PR-", state.purchaseRequests, 2410), title: "Shopping list · quick quote (" + quick.length + (quick.length === 1 ? " item" : " items") + ")", requesterId: user.id, ownerId: user.id, approverId: "user-admin-admin",
+            department: text(input.department, 80) || "Purchasing", amount: amountQuick, currency: currencyOf(quick), status: "Draft", priority: "High", category: "Hardware",
+            dueDate: new Date(Date.now() + hours * 3600000).toISOString(), budgetCode: "", notes: text(input.notes, 2000), nextAction: "Submit for approval",
+            items: quick.map(function (l) { return { id: uid("pr-line"), productId: l.product ? l.product.id : undefined, description: l.description + (l.spec ? " - " + l.spec : ""), quantity: l.quantity, unitPrice: l.unitPrice }; }), audit: [],
+            need: { mode: "rfq", days: Math.max(1, Math.ceil(hours / 24)), hours: hours, minutes: 60, categoryKey: "products", supplierIds: invited.map(function (s) { return s.id; }) },
+          });
+          state.purchaseRequests.unshift(quickRequest); requests.push(quickRequest);
+          if (open(quickRequest)) { var launched = this.launchNeed(quickRequest); event = launched && launched.event; }
+        }
+        return { requests: requests, event: event, pending: pending, priced: suppliersWithPrice.length, quick: quick.length, invited: invited.length };
+      },
+
       /** Open the quote round or live auction for an approved need, inviting the suppliers that fit. */
       launchNeed(request) {
         var intent = request && request.need;
@@ -85,14 +160,17 @@
 
       /** Internal: build and publish the round once the caller's right to do so has been established. */
       openNeedRound(request, intent) {
-        var suppliers = global.BuyniverseNeed.matchSuppliers(state, intent.categoryKey, 4);
+        // A shopping list's quick quote names the suppliers it invited; any other need is matched by category.
+        var suppliers = intent.supplierIds && intent.supplierIds.length
+          ? state.suppliers.filter(function (s) { return intent.supplierIds.indexOf(s.id) >= 0; })
+          : global.BuyniverseNeed.matchSuppliers(state, intent.categoryKey, 4);
         if (suppliers.length < 2) { this.notice("Fewer than two suppliers fit this need yet", "fa-triangle-exclamation"); return null; }
         var auction = intent.mode === "auction";
         var year = new Date().getFullYear();
         var event = scoped({
           id: nextId(auction ? "AUC-" + year + "-" : "RFQ-" + year + "-", state.sourcingEvents, 100), title: text(request.title, 160), type: auction ? "Auction" : "RFQ", status: "Draft",
           requestId: request.id, projectId: request.projectId || null, ownerId: request.ownerId, budget: Number(request.amount), currency: request.currency, round: 1,
-          deadline: new Date(Date.now() + (auction ? intent.minutes * 60000 : intent.days * 86400000)).toISOString(), visibility: "Private", autoExtend: auction,
+          deadline: new Date(Date.now() + (auction ? intent.minutes * 60000 : intent.hours ? intent.hours * 3600000 : intent.days * 86400000)).toISOString(), visibility: "Private", autoExtend: auction,
           publishedAt: null, invitedSupplierIds: suppliers.map(function (s) { return s.id; }), messagesOpen: 0, savingsTarget: auction ? 10 : 8, awardReason: "", awardedSupplierId: null,
           weights: auction ? { price: 55, quality: 20, delivery: 10, risk: 10, esg: 5 } : { price: 40, quality: 25, delivery: 15, risk: 15, esg: 5 },
           lots: (request.items || []).map(function (item) { return { id: uid("lot"), description: item.description, quantity: item.quantity, unit: "unit", ceiling: Number((item.quantity * item.unitPrice).toFixed(2)), targetPrice: item.unitPrice }; }),

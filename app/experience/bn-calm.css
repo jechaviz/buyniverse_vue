@@ -88,6 +88,9 @@ html:not(.dark) .ws-main { box-shadow: 0 24px 60px -34px rgba(20, 30, 70, .28); 
 .ws-pop__head h2, .ws-pop__head p { margin: 0; }
 .ws-pop__head h2 { font: 800 .95rem var(--font-head, inherit); }
 .ws-pop__head p { margin-top: 3px; color: var(--c-ink2); font-size: .78rem; }
+.ws-pop__head--bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ws-pop__mark { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--c-plane); color: var(--c-ink2); cursor: pointer; transition: background-color .15s, color .15s; }
+.ws-pop__mark:hover { background: var(--c-plane2); color: var(--ambient, var(--c-ink)); }
 .ws-pop section { padding: 14px 22px 18px; box-shadow: 0 -1px 0 var(--c-hair); }
 .ws-pop section > h3 { margin: 0 0 10px; color: var(--c-ink3); font: 700 .66rem var(--font-head, inherit); letter-spacing: .12em; text-transform: uppercase; }
 .ws-pop__item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 22px; border: 0; background: none; color: var(--c-ink); font-size: .84rem; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }

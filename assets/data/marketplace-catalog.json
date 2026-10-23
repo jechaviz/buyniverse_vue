@@ -42,7 +42,8 @@
     "responseHours": 4,
     "verified": true,
     "reviews": 128,
-    "accent": "violet"
+    "accent": "violet",
+    "priceList": true
    }
   },
   {
@@ -668,7 +669,8 @@
     "responseHours": 4,
     "verified": true,
     "reviews": 71,
-    "accent": "violet"
+    "accent": "violet",
+    "priceList": false
    }
   },
   {
@@ -750,6 +752,520 @@
     "verified": true,
     "reviews": 49,
     "accent": "violet"
+   }
+  },
+  {
+   "id": "sup-19",
+   "name": "Mayoreo Cómputo MX",
+   "status": "Preferred",
+   "rating": 4.7,
+   "score": 91,
+   "risk": 16,
+   "esg": 76,
+   "onTime": 92,
+   "responseRate": 92,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2011,
+    "employees": "11-50",
+    "leadDays": 2,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 3,
+    "verified": true,
+    "reviews": 60,
+    "accent": "amber",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-20",
+   "name": "Sierra Distribución IT",
+   "status": "Reliable",
+   "rating": 4.5,
+   "score": 88,
+   "risk": 21,
+   "esg": 72,
+   "onTime": 89,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "NL",
+    "city": "monterrey",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2007,
+    "employees": "11-50",
+    "leadDays": 3,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 4,
+    "verified": true,
+    "reviews": 36,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-21",
+   "name": "ByteBodega",
+   "status": "Reliable",
+   "rating": 4.4,
+   "score": 85,
+   "risk": 24,
+   "esg": 70,
+   "onTime": 88,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "JAL",
+    "city": "guadalajara",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2005,
+    "employees": "11-50",
+    "leadDays": 2,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 2,
+    "verified": true,
+    "reviews": 36,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-22",
+   "name": "CompuNorte",
+   "status": "Qualified",
+   "rating": 4.3,
+   "score": 83,
+   "risk": 27,
+   "esg": 73,
+   "onTime": 89,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "BCN",
+    "city": "tijuana",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2008,
+    "employees": "11-50",
+    "leadDays": 4,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 6,
+    "verified": true,
+    "reviews": 41,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-23",
+   "name": "OfiTech Mayoreo",
+   "status": "Reliable",
+   "rating": 4.6,
+   "score": 89,
+   "risk": 19,
+   "esg": 71,
+   "onTime": 88,
+   "responseRate": 90,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "QRO",
+    "city": "queretaro",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2006,
+    "employees": "11-50",
+    "leadDays": 3,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 3,
+    "verified": true,
+    "reviews": 42,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-24",
+   "name": "Pacífico Digital",
+   "status": "Reliable",
+   "rating": 4.5,
+   "score": 87,
+   "risk": 22,
+   "esg": 71,
+   "onTime": 88,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "JAL",
+    "city": "guadalajara",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2006,
+    "employees": "11-50",
+    "leadDays": 3,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 5,
+    "verified": true,
+    "reviews": 41,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-25",
+   "name": "Cima Hardware",
+   "status": "Qualified",
+   "rating": 4.2,
+   "score": 82,
+   "risk": 29,
+   "esg": 73,
+   "onTime": 89,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "NL",
+    "city": "monterrey",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2008,
+    "employees": "11-50",
+    "leadDays": 5,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 8,
+    "verified": true,
+    "reviews": 42,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-26",
+   "name": "TecnoAndes Import",
+   "status": "Qualified",
+   "rating": 4.1,
+   "score": 80,
+   "risk": 33,
+   "esg": 71,
+   "onTime": 88,
+   "responseRate": 90,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "CO",
+    "region": "DC",
+    "city": "bogota",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2006,
+    "employees": "11-50",
+    "leadDays": 9,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 12,
+    "verified": true,
+    "reviews": 41,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-27",
+   "name": "Impresión Total",
+   "status": "Preferred",
+   "rating": 4.8,
+   "score": 93,
+   "risk": 14,
+   "esg": 85,
+   "onTime": 88,
+   "responseRate": 89,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "CDMX",
+    "city": "cdmx",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2005,
+    "employees": "11-50",
+    "leadDays": 2,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 2,
+    "verified": true,
+    "reviews": 36,
+    "accent": "emerald",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-28",
+   "name": "Redes del Bajío",
+   "status": "Preferred",
+   "rating": 4.6,
+   "score": 90,
+   "risk": 17,
+   "esg": 73,
+   "onTime": 89,
+   "responseRate": 90,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "peripherals",
+     "price-list"
+    ],
+    "country": "MX",
+    "region": "QRO",
+    "city": "queretaro",
+    "headline": "IT hardware with a live price list",
+    "about": "Distributor of business hardware. Prices and stock are published and refreshed every day.",
+    "founded": 2008,
+    "employees": "11-50",
+    "leadDays": 3,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 4,
+    "verified": true,
+    "reviews": 41,
+    "accent": "violet",
+    "priceList": true
+   }
+  },
+  {
+   "id": "sup-29",
+   "name": "Equipos Especiales del Golfo",
+   "status": "Qualified",
+   "rating": 4.4,
+   "score": 84,
+   "risk": 25,
+   "esg": 71,
+   "onTime": 88,
+   "responseRate": 90,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "quotes-on-request"
+    ],
+    "country": "MX",
+    "region": "VER",
+    "city": "veracruz",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": 2006,
+    "employees": "11-50",
+    "leadDays": 5,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 2,
+    "verified": true,
+    "reviews": 42,
+    "accent": "violet",
+    "priceList": false
+   }
+  },
+  {
+   "id": "sup-30",
+   "name": "Importadora Meridiana",
+   "status": "Qualified",
+   "rating": 4.3,
+   "score": 82,
+   "risk": 28,
+   "esg": 79,
+   "onTime": 93,
+   "responseRate": 94,
+   "certifications": [
+    "ISO 9001"
+   ],
+   "marketplace": {
+    "listed": true,
+    "sector": "technology",
+    "category": "hardware",
+    "capabilities": [
+     "computing",
+     "quotes-on-request"
+    ],
+    "country": "MX",
+    "region": "YUC",
+    "city": "merida",
+    "headline": "No price list: send the list, get an offer within hours",
+    "about": "Sources special orders and large lots. Has no published price list, so it answers each request with its own offer.",
+    "founded": 2014,
+    "employees": "11-50",
+    "leadDays": 7,
+    "minOrder": 500,
+    "currency": "MXN",
+    "languages": [
+     "Spanish"
+    ],
+    "coverage": "National",
+    "responseHours": 3,
+    "verified": true,
+    "reviews": 80,
+    "accent": "amber",
+    "priceList": false
    }
   }
  ]
