@@ -4,8 +4,8 @@
  *
  * The products are real. ElectroPrice (electroprice.appniverse.com) is a real seller of electronics in Mexico and, in
  * Buyniverse, the supplier with a price list for hardware: scripts/data/electroprice-catalog.json is a curated sample of
- * its catalog (real products, brands, part numbers, prices, stock and specifications; see
- * scripts/extract_electroprice_catalog.js). Nothing about the products is invented here.
+ * its catalog (real products, brands, part numbers, stock and specifications, and the prices it pays; see
+ * scripts/extract_electroprice_catalog.js). The products are not invented; the selling price is that cost plus a 35% markup.
  *
  * The other hardware suppliers of the demo are fictional and have no price list: they answer a quick quote. They exist
  * because a quote round and a live round need rivals, and the virtual people (scripts/build_demo_cast.js) play them.
@@ -20,6 +20,11 @@ const target = path.join(__dirname, "..", "app", "data", "demo.js");
 const sample = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "electroprice-catalog.json"), "utf8"));
 const START = "  // <generated:catalog> scripts/build_demo_catalog.js, do not edit by hand";
 const END = "  // </generated:catalog>";
+
+// The captured prices are ElectroPrice's cost. What a buyer sees is cost plus this markup, so that there is room to
+// negotiate: at least 35% on cost, leaving 10-15% when the price is bargained down for volume.
+const MARKUP = 0.35;
+const sell = (cost) => Math.round(cost * (1 + MARKUP) * 100) / 100;
 
 // ElectroPrice: real. Its rating, score and risk are the demo's own sample metrics for a supplier with no history here yet.
 const ELECTROPRICE = {
@@ -48,9 +53,9 @@ const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").rep
 const products = sample.products.map((item, index) => {
   const id = "cat-" + String(index + 1).padStart(3, "0");
   return {
-    id, sku: item.sku, description: item.name, brand: item.brand, model: item.specs.model || item.sku, rate: item.price, referencePrice: Math.max(item.reference, item.price), unit: "Each", currency: sample.currency,
+    id, sku: item.sku, description: item.name, brand: item.brand, model: item.specs.model || item.sku, rate: sell(item.price), referencePrice: sell(Math.max(item.reference, item.price)), unit: "Each", currency: sample.currency,
     category: item.group, preferredSupplierId: ELECTROPRICE.id, procurementRule: "Approved catalog item", specs: item.specs,
-    offers: [{ id: `offer-${id}-ep`, supplierId: ELECTROPRICE.id, price: item.price, leadDays: ELECTROPRICE.lead, stock: item.stock, terms: "Prepaid", compliant: true }],
+    offers: [{ id: `offer-${id}-ep`, supplierId: ELECTROPRICE.id, price: sell(item.price), leadDays: ELECTROPRICE.lead, stock: item.stock, terms: "Prepaid", compliant: true }],
   };
 });
 

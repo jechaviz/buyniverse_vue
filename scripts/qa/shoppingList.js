@@ -36,6 +36,9 @@ check(electroprice && electroprice.marketplace.priceList === true && electropric
 check(catalog.every((p) => p.offers.length === 1 && p.offers[0].supplierId === electroprice.id && p.currency === "MXN" && Object.keys(p.specs).length >= 2), "every catalog product is ElectroPrice's, with MXN prices and its captured specifications");
 check(catalog.every((p) => p.sku && p.brand && p.rate > 0 && p.offers[0].stock >= 3 && p.referencePrice >= p.rate), "every product has a real part number, brand, price and stock, and a reference not below its price");
 check(catalog.some((p) => p.referencePrice > p.rate), "some products show a real spread between sources");
+const cost = Object.fromEntries(JSON.parse(fs.readFileSync(path.join(root, "scripts/data/electroprice-catalog.json"), "utf8")).products.map((p) => [p.sku, p.price]));
+check(catalog.every((p) => cost[p.sku] > 0 && p.rate >= cost[p.sku] * 1.35 - 0.01 && p.offers[0].price === p.rate), "every price carries at least a 35% margin over ElectroPrice's cost");
+check(catalog.every((p) => p.rate * (1 - 0.15) >= cost[p.sku] * 1.10), "a 15% negotiated discount still leaves at least 10% over cost");
 check(!/(CVA|CTONLINE|CT ONLINE|INGRAM|SYSCOM)/i.test(JSON.stringify(catalog)), "the wholesale providers' names never reach the demo");
 const supplierIds = new Set(state.suppliers.map((s) => s.id));
 check(catalog.every((p) => p.offers.every((o) => supplierIds.has(o.supplierId) && o.price > 0 && o.leadDays >= 1)), "every offer belongs to a supplier in the demo and has a price and lead time");
