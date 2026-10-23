@@ -30,7 +30,7 @@
     const Workspace = load("./app/pages/WorkspacePage.vue?v=60");
     const Project = load("./app/pages/ProjectPage.vue?v=30");
     const Detail = load("./app/pages/DetailPage.vue?v=36");
-    const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=35");
+    const PostJobWizard = load("./app/pages/PostJobWizard.vue?v=36");
     const JobDetails = load("./app/pages/JobDetailsPage.vue?v=38");
     const Fiscal = load("./app/pages/FiscalPage.vue?v=33");
     const ContractPage = load("./app/pages/ContractPage.vue?v=34");
@@ -42,7 +42,7 @@
     const InvoiceView = load("./app/pages/InvoiceViewPage.vue?v=37");
     const Directory = load("./app/pages/DirectoryPage.vue?v=41");
     const ProductCatalog = load("./app/pages/ProductCatalogPage.vue?v=5");
-    const Procurement = load("./app/pages/ProcurementPage.vue?v=42");
+    const Procurement = load("./app/pages/ProcurementPage.vue?v=45");
     const Onboarding = load("./app/pages/OnboardingPage.vue?v=5");
     const NeedPage = load("./app/pages/NeedPage.vue?v=5");
     const Setup = load("./app/pages/SetupPage.vue?v=2");

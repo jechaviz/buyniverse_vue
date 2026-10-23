@@ -15,6 +15,7 @@
   if (global.__buyniverseI18n_marketing) dicts.push(global.__buyniverseI18n_marketing);
   if (global.__buyniverseI18n_rfq) dicts.push(global.__buyniverseI18n_rfq);
   if (global.__buyniverseI18n_catalog) dicts.push(global.__buyniverseI18n_catalog);
+  if (global.__buyniverseI18n_cast) dicts.push(global.__buyniverseI18n_cast);
 
   if (typeof globalThis !== "undefined") {
     if (globalThis.__buyniverseI18n_core) dicts.push(globalThis.__buyniverseI18n_core);

@@ -60,6 +60,7 @@
           <select v-model="selectedAuctionId" class="field w-auto min-w-44 text-xs font-semibold py-1.5 px-2.5" @change="selectAuction">
             <option v-for="item in accessibleAuctions" :key="item.id" :value="item.id">{{ item.id }} · {{ item.title }}</option>
           </select>
+          <button v-if="store.isDemo.value && !isSupplier" class="btn-muted text-xs py-1.5 px-3" :title="store.t('Open a live round that plays itself with virtual suppliers')" @click="startDemo"><i class="fa-solid fa-masks-theater mr-1"></i>{{ store.t('Start a demo round') }}</button>
           <template v-if="isOrganizer">
             <button v-if="auction.status === 'Paused'" class="btn-brand text-xs py-1.5 px-3" @click="resume"><i class="fa-solid fa-play mr-1"></i>{{ store.t('Resume') }}</button>
             <button v-else-if="auction.status === 'Running'" class="btn-muted text-xs py-1.5 px-3" @click="pause"><i class="fa-solid fa-pause mr-1"></i>{{ store.t('Pause') }}</button>
@@ -203,6 +204,8 @@
         :can-announce="canAnnounce"
       />
 
+      <VirtualTeam v-else-if="tab === 'cast'" :auction="auction" @restart="startDemo" />
+
       <!-- Audit Tab -->
       <AuctionAuditTab
         v-else
@@ -216,6 +219,7 @@
     <i class="fa-solid fa-lock text-3xl text-slate-400"></i>
     <h2 class="mt-4 text-xl font-800">No invited live rounds</h2>
     <p class="mt-2 text-sm text-slate-500">Only organizers and invited suppliers can open auction details.</p>
+    <button v-if="store.isDemo.value" class="btn-brand mt-5" @click="startDemo"><i class="fa-solid fa-masks-theater mr-1"></i>{{ store.t('Start a demo round') }}</button>
   </section>
 </template>
 <script>
@@ -228,16 +232,18 @@ const AuctionHistoryTab = load("./app/pages/procurement/auction/AuctionHistoryTa
 const AuctionAuditTab = load("./app/pages/procurement/auction/AuctionAuditTab.vue?v=1");
 const CommunicationThread = load("./app/components/CommunicationThread.vue?v=1");
 const SavingsWaterfall = load("./app/components/commercial/SavingsWaterfall.vue?v=4");
+const VirtualTeam = load("./app/pages/procurement/auction/AuctionCastTab.vue?v=1");
 
 const COLOR_PALETTE = ["#0ea5e9", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#14b8a6", "#6366f1", "#f97316"];
 
 export default {
-  components: { AuctionLiveChart, AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread, SavingsWaterfall },
+  components: { AuctionLiveChart, AuctionRankTable, AuctionHistoryTab, AuctionAuditTab, CommunicationThread, SavingsWaterfall, VirtualTeam },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
       get: () => {
         const allowed = store.marketplaceMode.value === "supplier" ? ["live", "rank", "history", "communications"] : ["live", "history", "rank", "communications", "audit"];
+        if (store.isDemo.value && store.marketplaceMode.value !== "supplier") allowed.push("cast");
         return allowed.includes(route.query.tab) ? route.query.tab : "live";
       },
       set: (key) => router.push({ path: "/procurement/auction", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
@@ -322,6 +328,7 @@ export default {
     const tabs = computed(() => {
       const base = [{ key: "live", label: "Live Room", icon: "fa-tower-broadcast" }, { key: "rank", label: "Rankings", icon: "fa-ranking-star" }, { key: "history", label: "Bid Log", icon: "fa-list-ol" }, { key: "communications", label: "Messages", icon: "fa-comments" }];
       if (isOrganizer.value) base.push({ key: "audit", label: "Audit Log", icon: "fa-shield-halved" });
+      if (store.isDemo.value && store.marketplaceMode.value !== "supplier") base.push({ key: "cast", label: "Virtual team", icon: "fa-masks-theater" });
       return base;
     });
 
@@ -332,9 +339,13 @@ export default {
 
     const statusLabel = (s) => ({ Running: "Live Bidding", Paused: "Paused", Awarded: "Awarded", Cancelled: "Cancelled" }[s] || s);
 
+    const now = ref(Date.now());
     const timeLeft = computed(() => {
       if (!auction.value || auction.value.status !== "Running") return "00:00";
-      return "03:42";
+      const seconds = Math.max(0, Math.floor((Date.parse(auction.value.closingAt || auction.value.endAt) - now.value) / 1000));
+      const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = seconds % 60;
+      const two = (n) => String(n).padStart(2, "0");
+      return h ? `${h}:${two(m)}:${two(s)}` : `${two(m)}:${two(s)}`;
     });
 
     const kpis = computed(() => {
@@ -501,9 +512,16 @@ export default {
       if (!bidAmount.value && Number.isFinite(Number(value))) bidAmount.value = Math.max(1, Number(value) - 1);
     }, { immediate: true });
 
+    // The clock follows real time (the demo's virtual people are driven from App.vue).
+    let castTimer = null;
+    const startDemo = () => {
+      const started = store.startDemoAuction();
+      if (started) { selectedAuctionId.value = started.id; router.push({ path: "/procurement/auction", query: { auction: started.id, tab: "live" } }); }
+    };
     onMounted(() => {
+      castTimer = setInterval(() => { now.value = Date.now(); }, 1000);
       timer = setInterval(() => {
-        if (store.isDemo.value && auction.value?.status === "Running" && Math.random() < 0.08) {
+        if (store.isDemo.value && auction.value?.status === "Running" && !auction.value.demoCast && Math.random() < 0.08) {
           const others = auction.value.participants.filter((p) => p.supplierId !== currentSupplierId.value && !p.disqualified && p.autoBid);
           if (others.length) {
             const bot = others[Math.floor(Math.random() * others.length)];
@@ -513,7 +531,7 @@ export default {
       }, 3000);
     });
 
-    onBeforeUnmount(() => { if (timer) clearInterval(timer); if (unsubscribeRealtime) unsubscribeRealtime(); if (stopLedger) stopLedger(); });
+    onBeforeUnmount(() => { if (timer) clearInterval(timer); if (castTimer) clearInterval(castTimer); if (unsubscribeRealtime) unsubscribeRealtime(); if (stopLedger) stopLedger(); });
 
     return {
       store, router, auction, commercial, selectedAuctionId, accessibleAuctions, isOrganizer, canAnnounce, isSupplier, bidder,
@@ -523,7 +541,7 @@ export default {
       areaPath, chartSupplierSeries, yTicks, compact, recentBids, historyBids, clock, sourceLabel,
       actionLabel, selectAuction, pause, resume, extend, sendAlert, cancel, award, toggleDisqualified,
       placeBid, improveOffer, bidAmount, bidError, bidInput, liveActivity, signalCopy, realtimeStatus,
-      currentSupplierId,
+      currentSupplierId, startDemo,
     };
   },
 };

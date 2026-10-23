@@ -55,7 +55,7 @@
           department: text(input.department, 80) || "Purchasing", amount: Number(budget.toFixed(2)), currency: currency, status: "Draft", priority: "Medium",
           category: category.label, dueDate: new Date(Date.now() + days * 86400000).toISOString(), budgetCode: "", notes: text(input.notes, 2000),
           nextAction: "Submit for approval", items: [{ id: uid("pr-line"), description: title, quantity: quantity, unitPrice: Number((budget / quantity).toFixed(2)) }], audit: [],
-          need: { mode: mode, days: days, minutes: Math.max(10, Math.min(1440, Number(input.minutes) || 60)), categoryKey: category.key },
+          need: { mode: mode, days: days, minutes: Math.max(2, Math.min(1440, Number(input.minutes) || 60)), categoryKey: category.key, supplierIds: Array.isArray(input.supplierIds) ? input.supplierIds.slice(0, 12) : undefined },
         });
         state.purchaseRequests.unshift(request);
         this.procurementEvent(request, "Need published", category.label + " · " + title, "success");

@@ -28,8 +28,12 @@
       ? global.BuyniverseNeedActions.createNeedActions(state, ui, helpers)
       : (typeof require !== "undefined" ? require("./needActions.js") : null)?.createNeedActions?.(state, ui, helpers) || {};
 
+    const cast = global.BuyniverseCastActions
+      ? global.BuyniverseCastActions.createCastActions(state, ui, helpers)
+      : (typeof require !== "undefined" ? require("./castActions.js") : null)?.createCastActions?.(state, ui, helpers) || {};
+
     const communicationContext = (type, contextId) => {
-      const contextType = ["project", "sourcing", "auction"].includes(type) ? type : null;
+      const contextType = ["project", "sourcing", "auction", "order"].includes(type) ? type : null;
       const idValue = clean(contextId, 120);
       if (!contextType || !idValue) return null;
 
@@ -59,6 +63,19 @@
           participants: userIds([record.ownerId, ...supplierUserIds(supplierIds)]),
           supplierIds,
           link: `/procurement/sourcing?event=${record.id}&tab=communications`,
+        };
+      }
+
+      if (contextType === "order") {
+        const record = (state.purchaseOrders || []).find((item) => item.id === idValue);
+        if (!record) return null;
+        // Both companies' teams talk here: the buyer, the supplier's people and, in the demo, the buyer's own internal team.
+        const team = state.users.filter((user) => user.virtual && (user.supplierProfileId === record.supplierId || user.team?.side === "buyer")).map((user) => user.id);
+        return {
+          type: contextType, id: idValue, record, title: record.title, ownerId: record.buyerId,
+          participants: userIds([record.buyerId, ...supplierUserIds([record.supplierId]), ...team]),
+          supplierIds: [record.supplierId].filter(Boolean),
+          link: `/procurement/execution?order=${record.id}&tab=team`,
         };
       }
 
@@ -99,6 +116,7 @@
             subject: context.title, participants: context.participants, messages: [],
           };
           state.conversations.push(conversation);
+          conversation = state.conversations[state.conversations.length - 1];   // the reactive record, so a view of this thread follows new messages
         } else {
           conversation.participants = context.participants;
         }
@@ -136,6 +154,7 @@
             subject: subject || context.title, participants: context.participants, messages: [],
           };
           state.conversations.push(conversation);
+          conversation = state.conversations[state.conversations.length - 1];   // the reactive record, so a view of this thread follows new messages
         } else {
           conversation.participants = context.participants;
           if (subject) conversation.subject = subject;
@@ -494,6 +513,7 @@
 
       ...procurement,
       ...need,
+      ...cast,
 
       renderMessageTemplate(templateId, contextType, contextId) {
         const template = state.messageTemplates?.find((item) => item.id === templateId);

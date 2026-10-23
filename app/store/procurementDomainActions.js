@@ -568,20 +568,29 @@
         return false;
       },
 
-      simulateLiveAuctionBid(auctionRef, supplierId) {
+      // Demo only: a virtual supplier bids. `amount` defaults to one step below the current bid.
+      simulateLiveAuctionBid(auctionRef, supplierId, amount) {
         const auction = typeof auctionRef === "string" ? this.auction(auctionRef) : auctionRef;
-        if (!this.isDemo?.value || !auction || !this.canManageProcurement(this.sourcingEvent(auction.eventId))) return null;
+        if (!this.isDemo?.value || !auction) return null;
         const participant = auction.participants?.find((item) => item.supplierId === supplierId && !item.disqualified);
-        const amount = auction.currentBid - Math.max(1, Number(auction.minStep) || 1);
-        if (!participant || amount < Number(auction.floor)) return null;
-        const result = window.ProcurementCommon.placeReverseBid(auction, supplierId, amount, participant.name || "Demo bidder");
-        if (result.ok) {
-          const audit = auction.audit?.[0];
-          if (audit) state.procurementAudit.unshift({ ...audit, objectId: auction.id });
-          const event = this.sourcingEvent(auction.eventId);
-          emitAuctionSignal(this, auction, event, { supplierId, source: "simulation" });
+        const offer = Number.isFinite(Number(amount)) && Number(amount) > 0 ? Number(amount) : auction.currentBid - Math.max(1, Number(auction.minStep) || 1);
+        if (!participant || offer < Number(auction.floor)) return null;
+        const result = window.ProcurementCommon.placeReverseBid(auction, supplierId, offer, participant.name || "Demo bidder");
+        if (!result.ok) return null;
+        const audit = auction.audit?.[0];
+        if (audit) state.procurementAudit.unshift({ ...audit, objectId: auction.id });
+        const closeAt = Date.parse(auction.closingAt || auction.endAt);
+        const remaining = closeAt - Date.now();
+        let extended = false;
+        if (auction.autoExtend !== false && remaining >= 0 && remaining <= Math.max(1, Number(auction.antiSnipingSeconds) || 60) * 1000 && auction.extensionCount < auction.maxExtensions) {
+          auction.closingAt = new Date(closeAt + 60000).toISOString();
+          auction.endAt = auction.closingAt;
+          auction.extensionCount += 1;
+          extended = true;
+          this.procurementEvent(auction, "Anti-sniping extension", "+60 seconds after valid offer", "info");
         }
-        return result.ok ? result.bid : null;
+        emitAuctionSignal(this, auction, this.sourcingEvent(auction.eventId), { supplierId, extended, source: "simulation" });
+        return result.bid;
       },
 
       awardLiveAuction(auctionRef, reason) {
@@ -632,6 +641,7 @@
           link: `/procurement/auction?auction=${auction.id}`, icon: "fa-trophy",
         }));
         this.notice("Auction awarded and purchase order created", "fa-trophy");
+        if (this.isDemo?.value && typeof this.castOpenOrder === "function") this.castOpenOrder(order.id);
         return order;
       },
 

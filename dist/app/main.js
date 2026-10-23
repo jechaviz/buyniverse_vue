@@ -128,7 +128,7 @@ const isSafeRemoteState = (value) => {
       (user) =>
         user &&
         isSafeId(user.id) &&
-        ["Client", "Freelancer", "Admin"].includes(user.type),
+        ["Client", "Freelancer", "Admin", "Contact"].includes(user.type),
     ) &&
     value.jobs.every(
       (job) =>
@@ -561,7 +561,7 @@ const startApplication = async () => {
     });
   }
 
-  const app = createApp(load("./app/App.vue?v=77"));
+  const app = createApp(load("./app/App.vue?v=79"));
   window.__buyniverseErrors = [];
   app.config.errorHandler = (error, instance, info) => {
     const detail = {

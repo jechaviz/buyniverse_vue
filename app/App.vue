@@ -48,7 +48,7 @@
         <AppHeader
           :ui="ui"
           :user="user"
-          :users="store.state.users"
+          :users="store.state.users.filter((user) => !user.virtual)"
           :current-user-id="store.state.currentUserId"
           :marketplace-mode="marketplaceMode"
           :marketplace-mode-options="marketplaceModeOptions"
@@ -302,7 +302,7 @@ export default {
       preference.write("buyniverse-vue-theme", dark.value ? "dark" : "light");
     };
 
-    let lastActivity = Date.now(), sessionTimer = 0;
+    let lastActivity = Date.now(), sessionTimer = 0, castTimer = 0;
     const touchSession = () => { if (!store.ui.locked) lastActivity = Date.now(); };
     const keyHandler = (e) => {
       touchSession();
@@ -320,6 +320,8 @@ export default {
       sessionTimer = window.setInterval(() => {
         if (!store.ui.locked && Date.now() - lastActivity >= 15 * 60 * 1000) store.lockSession("15 minutes of inactivity");
       }, 30000);
+      // The demo's virtual people act once a second, wherever the visitor is (a live round, an order, anywhere else).
+      castTimer = window.setInterval(() => { if (store.isDemo.value) store.castTick(Date.now()); }, 1000);
       nextTick(() => window.requestAnimationFrame(() => window.dispatchEvent(new Event("buyniverse:app-shell-ready"))));
     });
 
@@ -327,6 +329,7 @@ export default {
       window.removeEventListener("pointerdown", touchSession);
       window.removeEventListener("keydown", keyHandler);
       window.clearInterval(sessionTimer);
+      window.clearInterval(castTimer);
       stopTranslator();
     });
 

@@ -1,0 +1,57 @@
+(function (global) {
+  "use strict";
+  // The demo's virtual people: live-round cast, order teams and tasks, simulated mailbox.
+  var dict = {
+    "Virtual team": "Equipo virtual",
+    "Everyone here is simulated, only for this demo: they bid, ask questions, answer and email each other like real suppliers would.": "Todos aquí son simulados, solo para esta demo: pujan, hacen preguntas, responden y se escriben correos como lo harían proveedores reales.",
+    "Speed": "Velocidad",
+    "Resume the simulation": "Reanudar la simulación",
+    "Pause the simulation": "Pausar la simulación",
+    "Start another demo round": "Iniciar otra puja de demostración",
+    "Start a demo round": "Iniciar una puja de demostración",
+    "Open a live round that plays itself with virtual suppliers": "Abre una puja en vivo que se juega sola con proveedores virtuales",
+    "Leading": "Va ganando",
+    "Withdrew": "Se retiró",
+    "Bidding": "Pujando",
+    "Waiting": "Esperando",
+    "bids": "pujas",
+    "Steady bidder": "Puja constante",
+    "Aggressive bidder": "Puja agresiva",
+    "Cautious bidder": "Puja cautelosa",
+    "Opens with a big drop": "Abre con una gran baja",
+    "Bids in the last seconds": "Puja en los últimos segundos",
+    "The buyer's own team": "El equipo interno del comprador",
+    "If you do not answer a supplier question, the buyer team does after a while. Write in Messages and the suppliers reply.": "Si no respondes una pregunta de un proveedor, el equipo del comprador lo hace después de un rato. Escribe en Mensajes y los proveedores responden.",
+
+    "Simulated mailbox": "Bandeja de correo simulada",
+    "These emails are shown only here and are never sent. Every address is on yopmail.com, a public disposable inbox.": "Estos correos solo se muestran aquí y nunca se envían. Todas las direcciones son de yopmail.com, un buzón público y desechable.",
+    "No emails yet. They appear as the people in this demo write to each other.": "Aún no hay correos. Aparecen conforme las personas de esta demo se escriben entre sí.",
+    "Sender": "De",
+    "To": "Para",
+    "When": "Cuándo",
+    "Open this mailbox in Yopmail (it stays empty: nothing was sent)": "Abrir este buzón en Yopmail (seguirá vacío: no se envió nada)",
+
+    "Teams and tasks": "Equipos y tareas",
+    "Each company's own team works this order: they talk, hand each other tasks and email. Everyone here is simulated, only for this demo.": "El equipo interno de cada empresa trabaja este pedido: conversan, se pasan tareas y se escriben correos. Todos aquí son simulados, solo para esta demo.",
+    "Client": "Cliente",
+    "Order tasks": "Tareas del pedido",
+    "done": "hechas",
+    "Nothing yet.": "Todavía nada.",
+    "due": "vence",
+    "Add a task: what, and for whom": "Agrega una tarea: qué y para quién",
+    "Assign to": "Asignar a",
+    "Add task": "Agregar tarea",
+    "Client team": "Equipo del cliente",
+    "Supplier team": "Equipo del proveedor",
+    "To do": "Por hacer",
+    "In progress": "En curso",
+    "Unassigned": "Sin asignar",
+    "Task added": "Tarea agregada",
+    "Complete the task and who it is for": "Escribe la tarea y para quién es",
+    "This task belongs to someone else": "Esta tarea es de otra persona",
+    "Round open: virtual suppliers are bidding": "Puja abierta: los proveedores virtuales están pujando",
+    "A supplier asked a question": "Un proveedor hizo una pregunta",
+    "A task is waiting for you": "Hay una tarea esperando por ti"
+  };
+  if (typeof global !== "undefined") global.__buyniverseI18n_cast = dict;
+})(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

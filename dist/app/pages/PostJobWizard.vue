@@ -137,14 +137,14 @@ export default {
     };
     const removeFile = (id) => { project.value.files = project.value.files.filter((i) => i.id !== id); };
 
-    const availableTeam = computed(() => store.state.users.filter((u) => !project.value.team.some((m) => m.userId === u.id)));
+    const availableTeam = computed(() => store.state.users.filter((u) => !u.virtual && !project.value.team.some((m) => m.userId === u.id)));
     const addTeam = (userId) => {
       if (!userId) return;
       project.value.team.push({ userId, role: "Contributor", permission: "view" });
     };
     const removeTeam = (userId) => { project.value.team = project.value.team.filter((m) => m.userId !== userId); };
 
-    const availableApprovers = computed(() => store.state.users.filter((u) => !project.value.approvers.some((a) => a.userId === u.id)));
+    const availableApprovers = computed(() => store.state.users.filter((u) => !u.virtual && !project.value.approvers.some((a) => a.userId === u.id)));
     const orderedApprovers = computed(() => [...project.value.approvers].sort((a, b) => a.level - b.level));
     const addApprover = (userId) => {
       if (!userId) return;

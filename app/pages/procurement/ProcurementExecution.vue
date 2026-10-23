@@ -121,6 +121,7 @@
 
       <OrderLinesTab v-else-if="tab === 'lines'" :order="order" :format-money="store.money" />
       <OrderMatchingTab v-else-if="tab === 'matching'" :match-documents="matchDocuments" :match-ready="matchReady" :invoices="eligibleInvoices" :selected-invoice-id="selectedInvoiceId" :format-money="store.money" @update:selected-invoice-id="selectedInvoiceId = $event" @attach-invoice="attachInvoice" @run-match="runMatch" />
+      <OrderTeamTab v-else-if="tab === 'team'" :order="order" />
       <OrderExceptionsTab v-else-if="tab === 'exceptions'" :order="order" :user-name="(id) => store.user(id)?.name" @add="addException" @resolve="resolveException" />
       <div v-else-if="tab === 'documents'" class="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-4">
         <RouterLink v-if="order.invoiceId" :to="`/invoices/${order.invoiceId}`" class="rounded-xl border border-slate-200/70 p-4 hover:border-brand dark:border-slate-700">
@@ -153,13 +154,14 @@ const OrderReceiptModal = load("./app/pages/procurement/execution/OrderReceiptMo
 const OrderLinesTab = load("./app/pages/procurement/execution/OrderLinesTab.vue?v=1");
 const OrderMatchingTab = load("./app/pages/procurement/execution/OrderMatchingTab.vue?v=2");
 const OrderExceptionsTab = load("./app/pages/procurement/execution/OrderExceptionsTab.vue?v=1");
+const OrderTeamTab = load("./app/pages/procurement/execution/OrderTeamTab.vue?v=2");
 
 export default {
-  components: { DataTable, OrderReceiptModal, OrderLinesTab, OrderMatchingTab, OrderExceptionsTab },
+  components: { DataTable, OrderReceiptModal, OrderLinesTab, OrderMatchingTab, OrderExceptionsTab, OrderTeamTab },
   setup() {
     const store = inject("store"), route = useRoute(), router = useRouter();
     const tab = computed({
-      get: () => ["overview", "lines", "receipts", "matching", "exceptions", "documents", "audit"].includes(route.query.tab) ? route.query.tab : "overview",
+      get: () => ["overview", "lines", "receipts", "matching", "exceptions", "documents", "audit", "team"].includes(route.query.tab) ? route.query.tab : "overview",
       set: (key) => router.push({ path: "/procurement/execution", query: window.WebCommon.mergeRouteQuery(route.query, { tab: key }) }),
     });
     const receiveOpen = ref(route.query.view === "receipt"), receiptLines = ref([]);
@@ -206,6 +208,7 @@ export default {
     const tabs = computed(() => order.value ? [
       { key: "overview", label: "Overview", icon: "fa-layer-group" },
       { key: "lines", label: "Order lines", icon: "fa-list", count: order.value.lines.length },
+      ...(store.isDemo.value ? [{ key: "team", label: "Teams and tasks", icon: "fa-people-arrows", count: store.orderTasks(order.value.id).filter((task) => task.status !== "done").length || undefined }] : []),
       { key: "matching", label: "Invoice check", icon: "fa-link" },
       { key: "exceptions", label: "Issues", icon: "fa-triangle-exclamation", count: openExceptions.value.length },
       { key: "documents", label: "Documents", icon: "fa-folder-open" },
