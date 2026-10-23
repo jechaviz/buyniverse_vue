@@ -49,6 +49,12 @@ check(rows.every((r) => cost[r.sku] > 0 && r.price >= cost[r.sku] * 1.35 - 0.02)
 check(rows.every((r) => r.price * (1 - 0.15) >= cost[r.sku] * 1.10), "a 15% negotiated discount still leaves at least 10% over cost");
 check(!/b(CVA|CTONLINE|CT ONLINE|INGRAM MICRO)b/i.test(fs.readdirSync(shardDir).map((f) => fs.readFileSync(path.join(shardDir, f), "utf8")).join("")), "the wholesale providers' names never reach the demo");
 check(!fs.readdirSync(shardDir).some((f) => /cost/i.test(f)) && !/"cost"/.test(fs.readFileSync(path.join(shardDir, "index.json"), "utf8")), "the cost is not among the served files");
+check(rows.filter((r) => r.image).length >= rows.length * 0.99, `${rows.filter((r) => r.image).length} of ${rows.length} products have a photo`);
+check(rows.every((r) => !r.image || /^https:\/\/(static\.ctonline\.mx\/imagenes\/[A-Za-z0-9._\-\/]+\.(jpg|png)|me2\.grupocva\.com\/me\/imagen\/imagen_art_detalles\.php\?fProd=\d+)$/.test(r.image)), "every photo is on one of the two allowed image hosts");
+check(rows.every((r) => !r.image || r.imageReferrer === (r.image.includes("grupocva") ? "origin" : "no-referrer")), "each photo host gets the Referer policy it accepts");
+for (const file of [".htaccess", "index.html", "index.php", "serve.py", "backend/v-service/src/buyniverse.v"]) check(/img-src 'self' data: blob: https:\/\/static\.ctonline\.mx https:\/\/me2\.grupocva\.com;/.test(read(file)), `${file} lets those two hosts, and only those, serve images`);
+const spec = rows.filter((r) => Object.keys(r.specs).length >= 4).length;
+check(spec >= 5000 && rows.every((r) => r.specs.model), `${spec} products carry real specifications; the rest carry their model and, where there is one, a description`);
 const offer = Catalog.offerOf(rows.find((r) => r.stock > 0)), onOrder = Catalog.offerOf(rows.find((r) => r.stock === 0));
 check(offer.supplierId === electroprice.id && offer.leadDays < onOrder.leadDays && onOrder.stock === 0, "an on-order product has a longer lead time than one in stock");
 
@@ -135,5 +141,6 @@ check(store.publishShoppingList({ lines: [line(laptop, 1, laptop.offers[0])] }) 
 // The page wires all of it.
 const page = read("app/pages/ProductCatalogPage.vue"), panel = read("app/pages/catalog/ShoppingList.vue");
 check(/ShoppingList/.test(page) && /quickQuoteSuppliers/.test(page) && /addToList/.test(page), "the catalog page adds to the list and shows who can quote quickly");
+check(/class="ct-photo"/.test(page) && /ct-hero-photo/.test(page) && /photoFailed/.test(page) && /loading="lazy"/.test(page), "cards and the detail show the photo, lazily, and fall back to an icon when it fails");
 check(/publishShoppingList/.test(panel) && /quickQuoteSuppliers/.test(panel), "the list panel publishes through the store and checks who can answer in time");
 console.log("=== SHOPPING LIST PASSED ===");

@@ -16,7 +16,7 @@ CSP = (
     "script-src 'self' 'sha256-ys9gXXSuRGbv8Nx0g2R3L756m+Os3ZdHz1Od15DWfYE=' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://accounts.google.com/gsi/client; script-src-attr 'none'; "
     "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
     "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-    "img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com/gsi/ https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'"
+    "img-src 'self' data: blob: https://static.ctonline.mx https://me2.grupocva.com; connect-src 'self' https://accounts.google.com/gsi/ https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com; media-src 'self'; worker-src 'none'"
 )
 
 

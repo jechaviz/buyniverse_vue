@@ -8,7 +8,7 @@
  * demo loads on demand:
  *
  *   app/data/electroprice/index.json         groups and counts
- *   app/data/electroprice/<group>.json       the products of one group: [sku, name, brand, price, reference, stock, specs]
+ *   app/data/electroprice/<group>.json       the products of one group: [sku, name, brand, price, reference, stock, specs, photo]
  *   scripts/data/electroprice-costs.json     sku -> cost, only for QA (never served)
  *
  * The captured prices are what ElectroPrice pays. The price in the shards is that cost plus a 35% markup, so a volume
@@ -60,7 +60,11 @@ const GROUPS = [
   ["components", "Components", (c) => /PROCESADORES|TARJETA MADRE|GABINETES|VENTILADORES|Accesorios para Componentes|Tarjetas|Ensamble|MEMORIAS/i.test(c)],
   ["other", "Accessories & other", () => true],
 ];
-const groupOf = (row) => { const c = clean(row.category) + " " + clean(row.subcategory), t = clean(row.source_title || row.normalized_title); return GROUPS.find(([, , test]) => test(c, t))[0]; };
+// The main device groups hold devices: a battery "for MacBook", a lanyard or a stand that the provider filed under laptops goes to
+// accessories. A device is named by its type first ("Laptop Dell ...", "Monitor AOC ..."); anything else in these groups is an accessory.
+const DEVICE_GROUPS = new Set(["laptops", "desktops", "monitors", "tablets", "phones", "printers", "displays", "servers"]);
+const DEVICE_START = /^(LAPTOP|LAPTOPS|NOTEBOOK|COMPUTADORA|COMPUTADORAS|PC\b|PCS\b|MINI ?PC|ALL[ -]?IN[ -]?ONE|MONITOR|MONITORES|TABLET|TABLETA|IPAD|IMPRESORA|MULTIFUNCIONAL|ESC[AÁ]NER|ESCANER|SERVIDOR|SERVER|TELEVISOR|TELEVISI[OÓ]N|SMART TV|TV\b|PANTALLA|PROYECTOR|VIDEOPROYECTOR|CELULAR|SMARTPHONE|TEL[EÉ]FONO|MACBOOK|WORKSTATION|ESTACI[OÓ]N DE TRABAJO|PLOTTER|SISTEMA|EQUIPO|PORT[AÁ]TIL|PUNTO DE VENTA|KIOSCO)/i;
+const groupOf = (row) => { const c = clean(row.category) + " " + clean(row.subcategory), t = clean(row.source_title || row.normalized_title); const key = GROUPS.find(([, , test]) => test(c, t))[0]; return DEVICE_GROUPS.has(key) && !DEVICE_START.test(t) ? "other" : key; };
 
 const SMALL = new Set(["PC", "USB", "LED", "LCD", "SSD", "HDD", "NAS", "UPS", "RAM", "DDR4", "DDR5", "HDMI", "WIFI", "IP", "NVR", "DVR", "TV", "4K", "HD", "RJ45", "POE", "PCIE", "AMD", "HP", "LG", "AOC", "MSI", "VGA", "SFP", "LTE", "ATX", "RGB", "OEM"]);
 const LOWER = new Set(["PARA", "CON", "SIN", "DE", "DEL", "LA", "EL", "Y", "EN", "POR", "O", "A", "LOS", "LAS", "UN", "UNA"]);
@@ -77,6 +81,13 @@ const tidy = (text) => {
   return joined.length <= 100 ? joined : joined.slice(0, 100).replace(/\s+\S*$/, "");
 };
 const sentence = (text) => { const d = clean(text).split(/(?<=[.;])\s/)[0].replace(/[.;]+$/, "").slice(0, 140); return d.length >= 12 ? d.charAt(0) + d.slice(1).toLowerCase() : ""; };
+// A photo is a short token, not a URL: "t<path>" is a photo on the seller's image host, "v<id>" one on its second source.
+// The first is preferred (larger). Products with no usable photo get "".
+const photoOf = (list) => {
+  for (const r of list) { const m = /^https:\/\/static\.ctonline\.mx\/imagenes\/([A-Za-z0-9._\-/]+\.(?:jpg|png))$/.exec(clean(r.image_url)); if (m && r.image_status === "valid") return "t" + m[1]; }
+  for (const r of list) { const m = /fProd=(\d+)$/.exec(clean(r.image_url)); if (m && r.image_status === "valid") return "v" + m[1]; }
+  return "";
+};
 const SKIP_SPEC = /^Color del producto$|^Peso$|^Anchura|^Altura|^Profundidad|^C[oó]digo|^Ancho|^Alto|^Largo|^Dimensiones/i;
 
 const byKey = new Map();
@@ -98,12 +109,12 @@ for (const { id, rows: list } of byKey.values()) {
   const richest = list.find((r) => Array.isArray(r.specifications) && r.specifications.length >= 2) || best;
   const brandRaw = clean(best.brand), brand = brandRaw.length <= 3 ? brandRaw.toUpperCase() : titleCase(brandRaw);
   const specs = {};
-  (richest.specifications || []).filter((s) => s.tipo && s.valor && String(s.valor).length <= 60 && clean(s.tipo).length <= 38 && !SKIP_SPEC.test(clean(s.tipo))).slice(0, 5).forEach((s) => { specs[clean(s.tipo)] = clean(s.valor); });
+  (richest.specifications || []).filter((s) => s.tipo && s.valor && String(s.valor).length <= 60 && clean(s.tipo).length <= 38 && !SKIP_SPEC.test(clean(s.tipo))).slice(0, 9).forEach((s) => { specs[clean(s.tipo)] = clean(s.valor); });
   if (!Object.keys(specs).length) { const about = sentence(best.description); if (about) specs.about = about; }
   const model = clean(best.manufacturer_model || best.manufacturer_sku || id);
   const group = groupOf(best);
   (shards[group] = shards[group] || []).push([
-    id, tidy(titleCase(clean(best.source_title || best.normalized_title))), brand, sell(cost), sell(top), stocked.length ? Math.min(9999, Math.max(...stocked.map((r) => Number(r.stock) || 0))) : 0, { model, ...specs },
+    id, tidy(titleCase(clean(best.source_title || best.normalized_title))), brand, sell(cost), sell(top), stocked.length ? Math.min(9999, Math.max(...stocked.map((r) => Number(r.stock) || 0))) : 0, { model, ...specs }, photoOf(list),
   ]);
   costs[id] = Math.round(cost * 100) / 100;
 }
@@ -121,5 +132,7 @@ for (const [gkey, label] of GROUPS.map((g) => [g[0], g[1]])) {
 }
 fs.writeFileSync(path.join(SHARDS, "index.json"), JSON.stringify(index));
 fs.writeFileSync(COSTS, JSON.stringify(costs));
+const all = Object.values(shards).flat();
+console.log(`photos: ${all.filter((r) => r[7]).length}/${all.length}, with 3+ specifications: ${all.filter((r) => Object.keys(r[6]).length >= 4).length}`);
 const mb = fs.readdirSync(SHARDS).reduce((n, f) => n + fs.statSync(path.join(SHARDS, f)).size, 0) / 1048576;
 console.log(`wrote ${index.total} products in ${index.groups.length} groups (${mb.toFixed(1)} MB, usd rate ${RATE})\n` + index.groups.map((g) => `  ${g.key}: ${g.count} (${g.inStock} in stock)`).join("\n"));

@@ -12,7 +12,7 @@
   "use strict";
 
   var SUPPLIER = "sup-31";             // ElectroPrice in app/data/demo.js
-  var VERSION = "1";
+  var VERSION = "3";
   var cache = { index: null, groups: {}, pending: {}, listeners: [], list: null };
 
   function url(name) { return "app/data/electroprice/" + name + ".json?v=" + VERSION; }
@@ -24,12 +24,21 @@
   }
   function notify() { cache.list = null; cache.listeners.slice().forEach(function (fn) { try { fn(api.progress()); } catch (error) { /* a listener never breaks loading */ } }); }
 
+  // A photo token is "t<path>" (the seller's main image host, which refuses a foreign Referer) or "v<id>" (its second source, which wants the origin).
+  function photoUrl(token) {
+    if (!token) return "";
+    if (token.charAt(0) === "t") return "https://static.ctonline.mx/imagenes/" + token.slice(1);
+    if (token.charAt(0) === "v") return "https://me2.grupocva.com/me/imagen/imagen_art_detalles.php?fProd=" + token.slice(1);
+    return "";
+  }
+  function photoReferrer(token) { return token && token.charAt(0) === "v" ? "origin" : "no-referrer"; }
+
   function lightRow(row, group, label) {
     var specs = row[6] || {};
     var text = [row[1], row[0], row[2], Object.keys(specs).map(function (k) { return specs[k]; }).join(" ")].join(" ").toLowerCase();
     return {
       id: "ep-" + row[0], sku: row[0], description: row[1], brand: row[2], price: row[3], reference: Math.max(row[3], row[4]), stock: row[5], specs: specs,
-      category: label, group: group, hay: text, savingsPercent: row[4] > row[3] ? Math.round((1 - row[3] / row[4]) * 100) : 0, source: "catalog",
+      image: photoUrl(row[7]), imageReferrer: photoReferrer(row[7]), category: label, group: group, hay: text, savingsPercent: row[4] > row[3] ? Math.round((1 - row[3] / row[4]) * 100) : 0, source: "catalog",
     };
   }
 
@@ -81,6 +90,7 @@
       return { loaded: Object.keys(cache.groups).length, total: total, done: total > 0 && Object.keys(cache.groups).length >= total, products: cache.index ? cache.index.total : 0 };
     },
     subscribe: function (fn) { cache.listeners.push(fn); return function () { cache.listeners = cache.listeners.filter(function (x) { return x !== fn; }); }; },
+    photoUrl: photoUrl,
     offerOf: offerOf,
     row: lightRow,
     toProduct: toProduct,

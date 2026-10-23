@@ -33,16 +33,22 @@
     <section class="ct-split">
       <div>
         <div class="ct-grid">
-          <article v-for="product in visible" :key="product.id" class="ct-card group flex flex-col" :class="{ 'is-on': selectedProductId === product.id }">
-            <div class="flex items-start justify-between gap-2"><span class="ct-kind">{{ t(product.category) }}</span><span v-if="product.stock === 0" class="text-[10px] font-bold text-amber-500"><i class="fa-regular fa-clock mr-1"></i>{{ t('On order') }}</span><span v-else-if="product.compliantOffers === product.offers.length" class="text-[10px] font-bold text-emerald-600"><i class="fa-solid fa-shield-halved mr-1"></i>{{ t('Qualified') }}</span></div>
-            <button class="mt-3 text-left text-lg font-800 leading-6 hover:text-brand" @click="selectProduct(product.id)">{{ product.description }}</button>
-            <p class="mt-1 text-[11px] text-slate-400">{{ product.sku }} · {{ t(product.unit) }}</p>
+          <article v-for="product in visible" :key="product.id" class="ct-card ct-shop group flex flex-col" :class="{ 'is-on': selectedProductId === product.id }">
+            <button type="button" class="ct-photo" :aria-label="product.description" @click="selectProduct(product.id)">
+              <i class="fa-regular fa-image ct-photo-ph"></i>
+              <img v-if="product.image" :src="product.image" :alt="product.description" :referrerpolicy="product.imageReferrer" loading="lazy" decoding="async" @error="photoFailed" />
+              <span v-if="product.stock === 0" class="ct-flag is-order"><i class="fa-regular fa-clock"></i> {{ t('On order') }}</span>
+              <span v-else class="ct-flag is-stock"><i class="fa-solid fa-circle-check"></i> {{ t('In stock') }}</span>
+              <span v-if="product.savingsPercent" class="ct-off">−{{ product.savingsPercent }}%</span>
+            </button>
+            <p class="ct-brandline"><span class="ct-kind">{{ t(product.category) }}</span><b v-if="product.brand">{{ product.brand }}</b></p>
+            <button class="ct-name" @click="selectProduct(product.id)">{{ product.description }}</button>
             <p v-if="product.keySpecs" class="ct-specs">{{ product.keySpecs }}</p>
-            <div class="mt-4 flex items-end justify-between"><div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ t('Best verified price') }}</p><p class="text-xl font-800">{{ money(product.best.price, product.currency) }}</p></div><div class="text-right"><p v-if="product.savingsPercent" class="text-[11px] font-bold text-emerald-600"><i class="fa-solid fa-arrow-trend-down mr-1"></i>{{ product.savingsPercent }}% {{ t('less') }}</p><p class="text-[10px] text-slate-400">{{ t('vs reference') }}</p></div></div>
-            <div class="ct-meta"><span><i class="fa-solid fa-building-circle-check mr-1 text-brand"></i>{{ product.offers.length }} {{ product.offers.length === 1 ? t('offer') : t('offers') }}</span><span><i class="fa-regular fa-clock mr-1 text-brand"></i>{{ product.best.leadDays }} {{ t('days') }}</span><span><i class="fa-solid fa-cubes-stacked mr-1 text-brand"></i>{{ product.best.stock || t('On order') }}</span></div>
+            <div class="ct-priceline"><b>{{ money(product.best.price, product.currency) }}</b><s v-if="product.referencePrice > product.best.price">{{ money(product.referencePrice, product.currency) }}</s></div>
+            <p class="ct-ship"><i class="fa-solid fa-truck-fast"></i> {{ product.best.supplier.name }} · {{ product.best.leadDays }} {{ t('days') }}<span v-if="product.best.stock"> · {{ product.best.stock }} {{ t('available') }}</span></p>
             <p v-if="product.quickCount" class="ct-quick"><i class="fa-solid fa-bolt"></i> {{ product.quickCount }} {{ t('more can quote in') }} ≈ {{ product.quickHours }} h</p>
             <div class="mt-auto flex gap-2 pt-3">
-              <button type="button" class="ct-ghost flex-1" :class="{ 'is-on': selectedProductId === product.id }" @click="selectProduct(product.id)"><i class="fa-solid fa-scale-balanced mr-1"></i>{{ selectedProductId === product.id ? t('Comparing offers') : t('Compare offers') }}</button>
+              <button type="button" class="ct-ghost flex-1" :class="{ 'is-on': selectedProductId === product.id }" @click="selectProduct(product.id)"><i class="fa-solid fa-circle-info mr-1"></i>{{ t('Details') }}</button>
               <button v-if="canBuy" type="button" class="ct-go flex-1" :class="{ 'ct-added': inList(product.id) }" @click="addToList(product, product.best)"><i class="fa-solid mr-1" :class="inList(product.id) ? 'fa-check' : 'fa-cart-plus'"></i>{{ inList(product.id) ? `${t('In list')} · ${quantityInList(product.id)}` : t('Add to list') }}</button>
             </div>
           </article>
@@ -58,8 +64,16 @@
         </div>
 
         <div v-show="tab === 'offers'" class="ct-sheet" aria-live="polite">
-          <div class="border-b border-slate-200/80 p-4 dark:border-slate-800"><div class="flex items-start justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-wide text-brand">{{ t('Offer comparison') }}</p><h2 class="mt-1 text-lg font-800">{{ selected ? selected.description : t('Select a product') }}</h2><p v-if="selected" class="mt-1 text-xs text-slate-500">{{ selected.sku }} · {{ selected.offers.length }} {{ t('qualified supplier offers') }}</p></div><i class="fa-solid fa-scale-balanced text-xl text-brand/50"></i></div></div>
           <template v-if="selected">
+            <div class="ct-hero">
+              <div class="ct-hero-photo"><i class="fa-regular fa-image ct-photo-ph"></i><img v-if="selected.image" :key="selected.id" :src="selected.image" :alt="selected.description" :referrerpolicy="selected.imageReferrer" decoding="async" @error="photoFailed" /></div>
+              <p class="ct-brandline"><span class="ct-kind">{{ t(selected.category) }}</span><b v-if="selected.brand">{{ selected.brand }}</b></p>
+              <h2>{{ selected.description }}</h2>
+              <p class="ct-sku">{{ t('Part number') }}: {{ selected.sku }}</p>
+              <div class="ct-priceline is-big"><b>{{ money(selected.best.price, selected.currency) }}</b><s v-if="selected.referencePrice > selected.best.price">{{ money(selected.referencePrice, selected.currency) }}</s><span v-if="selected.savingsPercent" class="ct-off-inline">−{{ selected.savingsPercent }}%</span></div>
+              <p class="ct-ship"><span class="ct-flag-inline" :class="selected.stock === 0 ? 'is-order' : 'is-stock'"><i class="fa-solid" :class="selected.stock === 0 ? 'fa-clock' : 'fa-circle-check'"></i> {{ selected.stock === 0 ? t('On order') : `${selected.stock} ${t('available')}` }}</span> · {{ selected.offers.length }} {{ selected.offers.length === 1 ? t('offer') : t('qualified supplier offers') }}</p>
+            </div>
+            <p v-if="aboutText" class="ct-about">{{ aboutText }}</p>
             <dl v-if="specRows.length" class="ct-spec-table"><div v-for="row in specRows" :key="row.key"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div></dl>
             <div class="border-b border-slate-100 bg-slate-50/60 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60"><label class="text-[11px] font-bold text-slate-500">{{ t('Quantity') }}<input v-model.number="quantity" class="field mt-1 h-9 w-28" type="number" min="1" max="100000" step="1" inputmode="numeric" /></label><span class="ml-3 text-xs text-slate-500">{{ t('Reference') }}: <s>{{ money(selected.referencePrice * quantity, selected.currency) }}</s></span></div>
             <div class="divide-y divide-slate-100 dark:divide-slate-800"><article v-for="offer in selected.offers" :key="offer.id" class="ct-offer" :class="{ 'is-on': offer.id === selectedOfferId }"><div class="flex gap-2"><span class="grid h-8 w-8 flex-none place-items-center rounded-lg bg-slate-100 text-xs font-800 text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ initials(offer.supplier.name) }}</span><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><p class="truncate text-sm font-800">{{ offer.supplier.name }}</p><b class="whitespace-nowrap text-sm" :class="offer.id === selected.best.id ? 'text-emerald-600' : ''">{{ money(offer.price * quantity, selected.currency) }}</b></div><p class="mt-0.5 text-[11px] text-slate-500">{{ money(offer.price, selected.currency) }}/{{ t(selected.unit) }} · {{ offer.terms }}</p></div></div><div class="mt-2 grid grid-cols-3 gap-1 text-center text-[10px]"><span><b class="block text-xs">{{ offer.leadDays }}d</b>{{ t('Delivery') }}</span><span><b class="block text-xs">{{ offer.supplier.score }}</b>{{ t('Score') }}</span><span><b class="block text-xs" :class="offer.supplier.risk <= 25 ? 'text-emerald-600' : 'text-amber-600'">{{ offer.supplier.risk }}</b>{{ t('Risk') }}</span></div><div class="mt-3 flex gap-2"><button class="ct-ghost flex-1" :class="{ 'is-on': offer.id === selectedOfferId }" @click="selectedOfferId = offer.id">{{ offer.id === selected.best.id ? t('Best value') : t('Select offer') }}</button><button v-if="canBuy" class="ct-go flex-1" @click="addToList(selected, offer, quantity)"><i class="fa-solid fa-cart-plus mr-1"></i>{{ t('Add to list') }}</button></div></article></div>
@@ -90,6 +104,8 @@ const { inject, computed, ref, shallowRef, watch, nextTick, onMounted, onBeforeU
 
 const load = (p) => Vue.defineAsyncComponent(() => window["vue3-sfc-loader"].loadModule(p, window.sfcOptions));
 const GROUP_ICONS = { 'Monitors': 'fa-display', 'Laptops': 'fa-laptop', 'Desktops': 'fa-desktop', 'Printers & scanners': 'fa-print', 'Keyboards & mice': 'fa-keyboard', 'Networking': 'fa-network-wired', 'Storage': 'fa-hard-drive', 'Power & UPS': 'fa-plug-circle-bolt', 'Tablets': 'fa-tablet-screen-button', 'Audio & headsets': 'fa-headset', 'Cables & adapters': 'fa-usb', 'Displays & TVs': 'fa-tv', 'Phones': 'fa-mobile-screen', 'Security & access': 'fa-video', 'Components': 'fa-microchip', 'Software': 'fa-compact-disc', 'Servers': 'fa-server', 'Consumables & supplies': 'fa-fill-drip', 'Warranties & services': 'fa-shield-halved', 'POS & retail': 'fa-cash-register', 'Gaming': 'fa-gamepad', 'Accessories & other': 'fa-boxes-stacked' };
+// The order of the categories: what a company buys most as a device first, accessories and services last.
+const GROUP_ORDER = ['Laptops', 'Desktops', 'Monitors', 'Tablets', 'Phones', 'Printers & scanners', 'Networking', 'Storage', 'Components', 'Keyboards & mice', 'Audio & headsets', 'Displays & TVs', 'Servers', 'Power & UPS', 'Security & access', 'Software', 'Cables & adapters', 'POS & retail', 'Gaming', 'Consumables & supplies', 'Warranties & services', 'Accessories & other'];
 const SPEC_LABELS = { brand: 'Brand', model: 'Model', about: 'About' };
 
 export default {
@@ -132,7 +148,8 @@ export default {
     const groups = computed(() => {
       const counts = new Map();
       everything.value.forEach((row) => counts.set(row.category, (counts.get(row.category) || 0) + 1));
-      return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([name, count]) => ({ name, count, icon: GROUP_ICONS[name] || 'fa-box' }));
+      const order = (name) => { const i = GROUP_ORDER.indexOf(name); return i < 0 ? 100 : i; };
+      return [...counts.entries()].sort((a, b) => order(a[0]) - order(b[0]) || b[1] - a[1]).map(([name, count]) => ({ name, count, icon: GROUP_ICONS[name] || 'fa-box' }));
     });
     const groupRank = computed(() => new Map(groups.value.map((group, index) => [group.name, index])));
     const brands = computed(() => {
@@ -145,7 +162,7 @@ export default {
       const list = everything.value.filter((row) => (!category.value || row.category === category.value) && (!brand.value || row.brand === brand.value) && (!showOnlySavings.value || row.savingsPercent > 0) && (!onlyStock.value || row.stock > 0) && words.every((word) => row.hay.includes(word)));
       const rank = groupRank.value;
       const by = {
-        category: (a, b) => (rank.get(a.category) ?? 999) - (rank.get(b.category) ?? 999) || a.description.localeCompare(b.description),
+        category: (a, b) => (rank.get(a.category) ?? 999) - (rank.get(b.category) ?? 999) || (b.stock > 0) - (a.stock > 0) || a.description.localeCompare(b.description),
         savings: (a, b) => b.savingsPercent - a.savingsPercent || a.price - b.price,
         price: (a, b) => a.price - b.price, priceDesc: (a, b) => b.price - a.price, name: (a, b) => a.description.localeCompare(b.description),
       };
@@ -167,7 +184,9 @@ export default {
     const visible = computed(() => catalog.value.slice(0, shown.value).map(enrich));
     const selectedRow = computed(() => everything.value.find((row) => row.id === selectedProductId.value) || catalog.value[0] || null);
     const selected = computed(() => enrich(selectedRow.value));
-    const specRows = computed(() => Object.entries(selected.value?.specs || {}).map(([key, value]) => ({ key, label: t(SPEC_LABELS[key] || key), value })));
+    const specRows = computed(() => Object.entries(selected.value?.specs || {}).filter(([key]) => key !== 'about').map(([key, value]) => ({ key, label: t(SPEC_LABELS[key] || key), value })));
+    const aboutText = computed(() => selected.value?.specs?.about || '');
+    const photoFailed = (event) => { event.target.style.display = 'none'; };
     const quickers = computed(() => selected.value ? quickList(selected.value.offers).slice(0, 5) : []);
     const metrics = computed(() => [
       { label: 'Catalog items', value: everything.value.length.toLocaleString() },
@@ -204,7 +223,7 @@ export default {
     const openList = () => { tab.value = 'list'; nextTick(() => side.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
     const describeIt = () => { openList(); nextTick(() => { const panel = listPanel.value; if (panel && panel.$el) panel.$el.querySelector('.sl-custom')?.click(); }); };
     const resetFilters = () => { query.value = ''; category.value = ''; brand.value = ''; sort.value = 'category'; showOnlySavings.value = false; onlyStock.value = false; };
-    return { store, t, money, query, category, brand, sort, showOnlySavings, onlyStock, groups, brands, everything, progress, catalog, visible, shown, metrics, selected, specRows, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
+    return { store, t, money, query, category, brand, sort, showOnlySavings, onlyStock, groups, brands, everything, progress, catalog, visible, shown, metrics, selected, specRows, aboutText, photoFailed, quickers, selectedProductId, selectedOfferId, quantity, canBuy, tab, side, listPanel, listCount, inList, quantityInList, selectProduct, initials, addToList, openList, describeIt, resetFilters };
   },
 };
 </script>
