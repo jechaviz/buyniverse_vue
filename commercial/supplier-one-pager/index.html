@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Ficha para Proveedores / Supplier One-Pager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand/brand-tokens.css" />
+  <script src="../brand/suite-runtime.js" defer></script>
+  <style>
+    .sheet { max-width: 860px; margin: 28px auto 56px; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-soft); border: 1px solid var(--bn-hair); }
+    .hero { padding: 34px 40px 28px; background: radial-gradient(460px 280px at 88% 12%, rgba(54,227,192,0.25), transparent 65%), #05070d; color: #fff; }
+    .hero__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .hero h1 { font-family: var(--font-display); font-size: 1.95rem; line-height: 1.08; letter-spacing: -0.04em; margin: 8px 0 10px; }
+    .hero p { margin: 0; color: var(--bn-dark-ink-2); font-size: 0.9rem; max-width: 680px; }
+    .body { padding: 28px 40px 32px; display: grid; gap: 22px; }
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .pillar { padding: 18px; border-radius: 14px; border: 1px solid var(--bn-hair); background: var(--bn-surface-soft); }
+    .pillar strong { display: block; font-family: var(--font-display); font-size: 0.95rem; margin: 6px 0; color: var(--bn-ink); }
+    .pillar p { margin: 0; font-size: 0.8rem; color: var(--bn-ink-2); }
+    .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .plan { padding: 22px; border-radius: 14px; border: 1px solid var(--bn-hair); background: #fff; }
+    .plan--pro { background: #070a14; color: #eef2fb; border-color: rgba(54,227,192,0.45); }
+    .plan__price { font-family: var(--font-mono); font-size: 1.55rem; font-weight: 700; margin: 6px 0 12px; color: var(--bn-aurora-deep); }
+    .plan--pro .plan__price { color: var(--bn-teal); }
+    .plan ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.8rem; }
+    .plan--pro ul { color: #cbd5e1; }
+    .cta-strip { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 22px; border-radius: 14px; background: var(--bn-teal-soft); border: 1px solid rgba(12,159,132,0.28); color: #064e3b; }
+    @media (max-width: 720px) { .pillars, .plans { grid-template-columns: 1fr; } .hero, .body { padding: 24px; } }
+    @media print { .sheet { margin: 0; border: 0; border-radius: 0; box-shadow: none; max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html"><img src="../brand/assets/logo-a-orbit-tile.svg" width="28" height="28" alt="Buyniverse" /><span>Buyniverse</span></a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Ficha de Valor · Proveedores B2B" data-en="Value Sheet · B2B Suppliers">Ficha de Valor · Proveedores B2B</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="../index.html" data-es="Hub Comercial" data-en="Commercial Hub">Hub Comercial</a>
+      <div class="bn-lang-toggle"><button type="button" data-set-lang="es" class="is-active">ES</button><button type="button" data-set-lang="en">EN</button></div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Imprimir / PDF (1 hoja)" data-en="Print / PDF (1 Page)">Imprimir / PDF (1 hoja)</button>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <section class="hero">
+      <div class="hero__top">
+        <img src="../brand/assets/logo-a-wordmark-dark.svg" height="32" alt="Buyniverse" />
+        <span class="pill pill--dark" data-es="PARA PROVEEDORES · 0% COMISIÓN" data-en="FOR SUPPLIERS · 0% COMMISSION">PARA PROVEEDORES · 0% COMISIÓN</span>
+      </div>
+      <h1 data-es="Vende a empresas reales con 0% de comisión por adjudicación." data-en="Win real corporate orders with 0% award commission.">Vende a empresas reales con 0% de comisión por adjudicación.</h1>
+      <p class="lang-es">En Buyniverse los compradores llegan con presupuesto aprobado y reglas transparentes. Conservas el 100% de tu precio ganador sin recortes de margen.</p>
+      <p class="lang-en">On Buyniverse, corporate buyers arrive with approved budgets and clear rules. You keep 100% of your winning price with zero margin haircut.</p>
+    </section>
+
+    <div class="body">
+      <section class="pillars">
+        <div class="pillar">
+          <span class="pill pill--teal">0% FEE</span>
+          <strong data-es="Tu precio es 100% tuyo" data-en="Keep 100% of your bid">Tu precio es 100% tuyo</strong>
+          <p class="lang-es">No cobramos porcentaje sobre tus ventas adjudicadas. Así puedes competir con tu mejor precio neto sin inflar cotizaciones.</p>
+          <p class="lang-en">We never take a cut of your winning orders, letting you bid your sharpest net price without padding margins.</p>
+        </div>
+        <div class="pillar">
+          <span class="pill">FAIR RULES</span>
+          <strong data-es="Competencia limpia y auditable" data-en="Fair, auditable competition">Competencia limpia y auditable</strong>
+          <p class="lang-es">RFQ sellado hasta el cierre y subastas con extensión anti-sniping: nadie filtra tu cotización antes de tiempo ni gana por trucos de último segundo.</p>
+          <p class="lang-en">Sealed RFQs until close and anti-sniping auctions: no quote leakage and no last-second ambush tactics.</p>
+        </div>
+        <div class="pillar">
+          <span class="pill">CFDI 4.0</span>
+          <strong data-es="Del fallo a la factura en un lugar" data-en="Award to invoice in one place">Del fallo a la factura en un lugar</strong>
+          <p class="lang-es">Recibes orden de compra clara, canal unificado con el cliente y seguimiento directo hacia recepción y facturación CFDI 4.0.</p>
+          <p class="lang-en">Receive clear purchase orders, unified buyer messaging, and streamlined receipt and CFDI 4.0 billing tracking.</p>
+        </div>
+      </section>
+
+      <section class="plans">
+        <div class="plan">
+          <span class="kicker" data-es="PLAN BASE" data-en="STARTER PLAN">PLAN BASE</span>
+          <div class="plan__price" data-es="Gratis" data-en="Free">Gratis</div>
+          <ul class="lang-es">
+            <li>Hasta <strong>3 respuestas a invitaciones al mes</strong> sin costo.</li>
+            <li><strong>0% comisión</strong> sobre montos adjudicados.</li>
+            <li>Participación completa en RFQ sellados y subastas en vivo.</li>
+            <li>Perfil comercial y recepción de órdenes de compra.</li>
+          </ul>
+          <ul class="lang-en">
+            <li>Up to <strong>3 invitation responses per month</strong> at zero cost.</li>
+            <li><strong>0% commission</strong> on awarded order value.</li>
+            <li>Full access to sealed RFQs and live reverse auctions.</li>
+            <li>Company profile and digital purchase order workflow.</li>
+          </ul>
+        </div>
+        <div class="plan plan--pro">
+          <span class="kicker" style="color:var(--bn-teal)" data-es="OPCIONAL · MAYOR VISIBILIDAD" data-en="OPTIONAL · PRIORITY ACCESS">OPCIONAL · MAYOR VISIBILIDAD</span>
+          <div class="plan__price">USD 49 <span style="font-size:0.85rem;font-weight:500">/ <span data-es="mes" data-en="mo">mes</span></span></div>
+          <ul class="lang-es">
+            <li><strong>Respuestas ilimitadas</strong> a invitaciones y rondas de compra.</li>
+            <li><strong>Sello «Proveedor Verificado»</strong> validado en servidor (cumplimiento documental).</li>
+            <li><strong>Prioridad en el directorio</strong> y emparejamiento automático de necesidades.</li>
+            <li>Sigue siendo <strong>0% comisión por adjudicación</strong>.</li>
+          </ul>
+          <ul class="lang-en">
+            <li><strong>Unlimited responses</strong> to buyer invitations and quote rounds.</li>
+            <li><strong>«Verified Supplier» badge</strong> backed by server compliance checks.</li>
+            <li><strong>Directory priority</strong> in automated buyer-to-supplier matching.</li>
+            <li>Still <strong>0% commission on awarded orders</strong>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="cta-strip">
+        <div>
+          <strong style="display:block;font-family:var(--font-display);font-size:0.95rem" data-es="Activa tu cuenta de proveedor en menos de 5 minutos" data-en="Activate your supplier account in under 5 minutes">Activa tu cuenta de proveedor en menos de 5 minutos</strong>
+          <span style="font-size:0.78rem" data-es="Sin tarjeta de crédito para iniciar · Invitaciones verificadas de compradores corporativos." data-en="No credit card required to start · Verified invitations from corporate buyers.">Sin tarjeta de crédito para iniciar · Invitaciones verificadas de compradores corporativos.</span>
+        </div>
+        <div class="mono" style="text-align:right;font-size:0.78rem;font-weight:700;white-space:nowrap">buyniverse.com<br/>hi@buyniverse.com</div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es" data-resolution="landscape">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, height=1080" />
+  <title>Buyniverse · Presentación Comercial HyperFrames (16:9)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    :root {
+      --bg: #05070d;
+      --ink: #eef2fb;
+      --muted: #a6b4d0;
+      --dim: #93a3c4;
+      --aurora: #6f94ff;
+      --teal: #36e3c0;
+      --violet: #a78bfa;
+      --sky: #0ea5e9;
+      --amber: #f59e0b;
+      --line: rgba(160, 187, 229, 0.16);
+      --glass: linear-gradient(155deg, rgba(22, 34, 62, 0.86), rgba(9, 14, 30, 0.82));
+      --display: "Sora", "Plus Jakarta Sans", Arial, sans-serif;
+      --sans: "Plus Jakarta Sans", Arial, sans-serif;
+      --mono: "JetBrains Mono", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    html[data-lang="es"] .lang-en { display: none !important; }
+    html[data-lang="en"] .lang-es { display: none !important; }
+
+    /* Interactive browser scaling mode (never active in headless HyperFrames capture) */
+    html.is-interactive,
+    body.is-interactive {
+      width: 100vw;
+      height: 100vh;
+      background: #020308;
+    }
+    body.is-interactive #root {
+      position: fixed;
+      left: 50%;
+      top: 48%;
+      transform-origin: center center;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.85);
+      border-radius: 18px;
+    }
+
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .clip {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .ground {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(820px 540px at 86% 10%, rgba(63, 106, 242, 0.28), transparent 60%),
+        radial-gradient(680px 480px at 12% 92%, rgba(54, 227, 192, 0.16), transparent 62%),
+        linear-gradient(145deg, #060913 0%, #091228 55%, #05070d 100%);
+    }
+    .grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.24;
+      background-image:
+        linear-gradient(rgba(148, 176, 232, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 176, 232, 0.12) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(to bottom, #000, transparent 90%);
+    }
+    .content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 78px 116px 72px;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--display);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: #fff;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(54, 227, 192, 0.1);
+      border: 1px solid rgba(54, 227, 192, 0.32);
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 14px var(--teal);
+    }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-top: 44px;
+    }
+    h1 {
+      font-family: var(--display);
+      font-size: 76px;
+      line-height: 1.04;
+      letter-spacing: -0.048em;
+      margin: 18px 0 16px;
+      color: #fff;
+      max-width: 1380px;
+    }
+    h1.md { font-size: 60px; max-width: 1320px; }
+    .grad {
+      background: linear-gradient(92deg, #36e3c0 0%, #5b84ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .lead {
+      font-size: 26px;
+      line-height: 1.45;
+      color: var(--muted);
+      max-width: 1040px;
+      margin: 0;
+    }
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .glass--hi {
+      border-color: rgba(54, 227, 192, 0.42);
+      background: linear-gradient(155deg, rgba(19, 54, 58, 0.56), rgba(9, 18, 34, 0.86));
+    }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 44px; flex: 1; align-content: center; }
+    .grid-2 { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 30px; margin-top: 38px; flex: 1; align-items: stretch; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 44px; flex: 1; align-content: center; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; margin-top: 52px; }
+    .card { padding: 34px; display: flex; flex-direction: column; justify-content: space-between; }
+    .card h3 { font-family: var(--display); font-size: 28px; margin: 14px 0 10px; color: #fff; letter-spacing: -0.03em; }
+    .card p { font-size: 20px; line-height: 1.48; color: var(--muted); margin: 0; }
+    .big-num { font-family: var(--mono); font-size: 56px; font-weight: 700; color: var(--teal); letter-spacing: -0.04em; line-height: 1; }
+    .stage { padding: 30px 26px; min-height: 250px; position: relative; }
+    .stage__num { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+    .stage strong { display: block; font-family: var(--display); font-size: 28px; margin: 22px 0 10px; color: #fff; letter-spacing: -0.03em; }
+    .stage span { display: block; font-size: 18px; color: var(--muted); line-height: 1.45; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-radius: 16px; background: rgba(4, 9, 22, 0.55); border: 1px solid rgba(255, 255, 255, 0.06); font-size: 20px; }
+    .row strong { font-family: var(--mono); color: #fff; }
+    .row.win { border-color: rgba(54, 227, 192, 0.4); background: rgba(54, 227, 192, 0.09); }
+    .row.win strong { color: var(--teal); }
+    .stack { display: grid; gap: 16px; }
+    .foot {
+      margin-top: auto;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 17px;
+      color: var(--dim);
+    }
+    .chart-box { position: relative; height: 340px; margin-top: 22px; border-radius: 20px; background: rgba(4, 9, 22, 0.6); border: 1px solid rgba(255, 255, 255, 0.07); overflow: hidden; }
+    .provider-line { transform-origin: left center; }
+    .wf-bar { height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-family: var(--mono); font-size: 20px; font-weight: 700; }
+    .closing-pills { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 40px; }
+    .closing-pills span { padding: 14px 24px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); font-family: var(--mono); font-size: 19px; color: #dbe6fa; }
+
+    /* Interactive Presenter HUD (hidden in headless/render mode) */
+    #hud {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(7, 10, 20, 0.9);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-family: var(--sans);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    body.is-interactive #hud { display: flex; }
+    #hud button {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: #fff;
+      height: 32px;
+      padding: 0 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #hud button:hover { background: rgba(255, 255, 255, 0.16); }
+    #hud button.is-on { background: var(--aurora); border-color: transparent; }
+    #hud .hud-meta { font-family: var(--mono); font-size: 12px; color: var(--teal); padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="70" data-width="1920" data-height="1080">
+
+      <!-- SCENE 1: HERO HOOK (0–7s) -->
+      <section id="scene-1" class="clip" data-start="0" data-duration="7" data-track-index="1">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s1-a">
+            <div class="brand">
+              <svg width="48" height="48" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="g1" x1="14" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#36e3c0"/><stop offset="100%" stop-color="#3f6af2"/></linearGradient></defs><rect width="64" height="64" rx="17" fill="#090f20" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/><path d="M20.5 14v22.5a13.5 13.5 0 1 0 24.6-7.7" stroke="url(#g1)" stroke-width="6.4" stroke-linecap="round"/><circle cx="36.4" cy="23.2" r="4.3" fill="#fff"/></svg>
+              <span>Buyniverse</span>
+            </div>
+            <span class="status"><i class="dot"></i><span data-es="PRESENTACIÓN COMERCIAL · 2026" data-en="COMMERCIAL PRESENTATION · 2026">PRESENTACIÓN COMERCIAL · 2026</span></span>
+          </div>
+          <div class="kicker s1-b" style="margin-top:110px" data-es="COMPRAS B2B VERIFICABLES EN SERVIDOR" data-en="SERVER-VERIFIED B2B PROCUREMENT">COMPRAS B2B VERIFICABLES EN SERVIDOR</div>
+          <h1 class="s1-c">
+            <span class="lang-es">Publica una vez y haz que las ofertas <span class="grad">compitan por ti.</span></span>
+            <span class="lang-en">Publish once and let offers <span class="grad">compete for you.</span></span>
+          </h1>
+          <p class="lead s1-d lang-es">RFQ sellado con base de mercado, subastas inversas en vivo con libro inmutable, conciliación 3-Way Match y facturación CFDI 4.0 en un solo flujo.</p>
+          <p class="lead s1-d lang-en">Sealed RFQs with market baselines, immutable live reverse auctions, 3-Way Match reconciliation, and CFDI 4.0 invoicing in one unified flow.</p>
+          <div class="closing-pills s1-e">
+            <span data-es="Te quedas 3 de cada 4 pesos ahorrados" data-en="Keep 3 of every 4 dollars saved">Te quedas 3 de cada 4 pesos ahorrados</span>
+            <span data-es="0% comisión a proveedores" data-en="0% supplier award commission">0% comisión a proveedores</span>
+            <span data-es="Piloto 30 días sin cobro" data-en="30-day zero-billing pilot">Piloto 30 días sin cobro</span>
+          </div>
+          <div class="foot"><span>buyniverse.com</span><span>01 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 2: THE PROBLEM (7–14s) -->
+      <section id="scene-2" class="clip" data-start="7" data-duration="7" data-track-index="2">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s2-a">
+            <div class="kicker" style="margin:0">02 · <span data-es="EL PROBLEMA REAL" data-en="THE REAL PROBLEM">EL PROBLEMA REAL</span></div>
+            <span class="status"><i class="dot"></i><span data-es="FUGA SILENCIOSA DE MARGEN" data-en="SILENT MARGIN LEAKAGE">FUGA SILENCIOSA DE MARGEN</span></span>
+          </div>
+          <h1 class="md s2-b" data-es="El ERP registra la factura, pero el precio se pierde en correos y WhatsApp." data-en="Your ERP logs the invoice, but price discovery gets lost in emails and chats.">El ERP registra la factura, pero el precio se pierde en correos y WhatsApp.</h1>
+          <div class="grid-3">
+            <article class="card glass s2-c">
+              <div class="big-num" style="color:#62a5ff">01</div>
+              <div>
+                <h3 data-es="Cotizaciones sin competencia real" data-en="Quotes Without Real Competition">Cotizaciones sin competencia real</h3>
+                <p class="lang-es">Tres PDFs en formatos distintos enviados por correo no generan tensión competitiva ni revelan el precio real del mercado.</p>
+                <p class="lang-en">Three incompatible PDFs over email create zero competitive tension and hide true market clearing prices.</p>
+              </div>
+            </article>
+            <article class="card glass s2-c">
+              <div class="big-num" style="color:#f59e0b">02</div>
+              <div>
+                <h3 data-es="Cero evidencia para Auditoría" data-en="Zero Audit Trail">Cero evidencia para Auditoría</h3>
+                <p class="lang-es">Sin línea base congelada ni historial inmutable de ofertas, Finanzas no puede verificar cuánto se ahorró ni por qué ganó un proveedor.</p>
+                <p class="lang-en">Without locked baselines or immutable bid logs, Finance cannot verify actual savings or award rationale.</p>
+              </div>
+            </article>
+            <article class="card glass s2-c">
+              <div class="big-num" style="color:#ff6b8b">03</div>
+              <div>
+                <h3 data-es="Desfases en recepción y CFDI" data-en="Receipt &amp; CFDI Mismatches">Desfases en recepción y CFDI</h3>
+                <p class="lang-es">Órdenes desconectadas del almacén y de la facturación CFDI 4.0 provocan retrabajos y riesgo fiscal evitable.</p>
+                <p class="lang-en">Disconnected POs, warehouse receipts, and CFDI 4.0 invoices drive manual rework and avoidable tax exposure.</p>
+              </div>
+            </article>
+          </div>
+          <div class="foot"><span data-es="Compras B2B · Diagnóstico operativo" data-en="B2B Procurement · Operational Diagnosis">Compras B2B · Diagnóstico operativo</span><span>02 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 3: 5-STAGE NECESITO PIPELINE (14–21s) -->
+      <section id="scene-3" class="clip" data-start="14" data-duration="7" data-track-index="3">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s3-a">
+            <div class="kicker" style="margin:0">03 · <span data-es="EL FLUJO «NECESITO»" data-en="THE «NECESITO» LIFECYCLE">EL FLUJO «NECESITO»</span></div>
+            <span class="status"><i class="dot"></i><span data-es="UN SOLO EXPEDIENTE" data-en="ONE UNIFIED RECORD">UN SOLO EXPEDIENTE</span></span>
+          </div>
+          <h1 class="md s3-b" data-es="De la necesidad al pago CFDI en 5 etapas gobernadas." data-en="From Need to CFDI Payment Across 5 Governed Stages.">De la necesidad al pago CFDI en 5 etapas gobernadas.</h1>
+          <div class="grid-5">
+            <div class="stage glass s3-c"><span class="stage__num" style="color:var(--aurora)">01</span><strong data-es="Publicas" data-en="Publish">Publicas</strong><span data-es="Presupuesto congelado y aprobación gobernada por rol." data-en="Locked budget and role-governed approvals.">Presupuesto congelado y aprobación gobernada por rol.</span></div>
+            <div class="stage glass s3-c"><span class="stage__num" style="color:var(--violet)">02</span><strong data-es="Compiten" data-en="Compete">Compiten</strong><span data-es="RFQ sellado y/o subasta inversa en vivo con anti-sniping." data-en="Sealed RFQ and/or live reverse auction with anti-sniping.">RFQ sellado y/o subasta inversa en vivo con anti-sniping.</span></div>
+            <div class="stage glass s3-c"><span class="stage__num" style="color:var(--sky)">03</span><strong data-es="Eliges" data-en="Choose">Eliges</strong><span data-es="Comparativa ponderada y adjudicación inmutable." data-en="Weighted comparison and immutable award ledger.">Comparativa ponderada y adjudicación inmutable.</span></div>
+            <div class="stage glass s3-c"><span class="stage__num" style="color:var(--amber)">04</span><strong data-es="Recibes" data-en="Receive">Recibes</strong><span data-es="Orden de compra, recepción en almacén y evidencia." data-en="Purchase order, warehouse receipt, and evidence.">Orden de compra, recepción en almacén y evidencia.</span></div>
+            <div class="stage glass glass--hi s3-c"><span class="stage__num" style="color:var(--teal)">05</span><strong data-es="Pagas" data-en="Pay">Pagas</strong><span data-es="Conciliación 3-Way Match y timbrado CFDI 4.0." data-en="3-Way Match and server-side CFDI 4.0 stamping.">Conciliación 3-Way Match y timbrado CFDI 4.0.</span></div>
+          </div>
+          <div class="foot"><span data-es="Un mismo modelo de datos para Compras, Proveedores, Almacén y Finanzas" data-en="Single source of truth across Procurement, Suppliers, Warehouse &amp; Finance">Un mismo modelo de datos para Compras, Proveedores, Almacén y Finanzas</span><span>03 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 4: SEALED RFQ & MARKET BASELINE (21–28s) -->
+      <section id="scene-4" class="clip" data-start="21" data-duration="7" data-track-index="4">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s4-a">
+            <div class="kicker" style="margin:0">04 · <span data-es="RFQ SELLADO EN SERVIDOR" data-en="SERVER-SIDE SEALED RFQ">RFQ SELLADO EN SERVIDOR</span></div>
+            <span class="status"><i class="dot"></i><span data-es="BASE DE MERCADO OBJETIVA" data-en="OBJECTIVE MARKET BASELINE">BASE DE MERCADO OBJETIVA</span></span>
+          </div>
+          <h1 class="md s4-b" data-es="Sobres cerrados hasta el cierre y línea base imposible de manipular." data-en="Sealed Bids Until Close and a Tamper-Proof Market Baseline.">Sobres cerrados hasta el cierre y línea base imposible de manipular.</h1>
+          <div class="grid-2">
+            <div class="card glass s4-c">
+              <div class="kicker" style="margin:0;font-size:15px" data-es="COTIZACIONES SELLADAS · EJEMPLO ILUSTRATIVO" data-en="SEALED QUOTES · ILLUSTRATIVE EXAMPLE">COTIZACIONES SELLADAS · EJEMPLO ILUSTRATIVO</div>
+              <div class="stack" style="margin-top:22px">
+                <div class="row"><span data-es="Proveedor A · Logística Norte" data-en="Supplier A · North Logistics">Proveedor A · Logística Norte</span><strong>MXN 1,920,000</strong></div>
+                <div class="row"><span data-es="Proveedor B · Orbis Supply (Mediana)" data-en="Supplier B · Orbis Supply (Median)">Proveedor B · Orbis Supply (Mediana)</span><strong style="color:#62a5ff">MXN 1,850,000</strong></div>
+                <div class="row"><span data-es="Proveedor C · Atlas Industrial" data-en="Supplier C · Atlas Industrial">Proveedor C · Atlas Industrial</span><strong>MXN 1,790,000</strong></div>
+                <div class="row win"><span data-es="Línea base bloqueada = max(Presupuesto, Mediana)" data-en="Locked baseline = max(Budget, Median)">Línea base bloqueada = max(Presupuesto, Mediana)</span><strong>MXN 1,850,000</strong></div>
+              </div>
+            </div>
+            <div class="card glass glass--hi s4-d">
+              <h3 style="margin-top:0" data-es="Por qué Finanzas confía en esta regla" data-en="Why Finance Trusts This Rule">Por qué Finanzas confía en esta regla</h3>
+              <div class="stack" style="margin-top:14px">
+                <p class="lang-es">• <strong>Cero filtración:</strong> el comprador no ve las cotizaciones hasta que cierra la ventana.</p>
+                <p class="lang-en">• <strong>Zero bid leakage:</strong> buyers cannot peek at quotes until the deadline closes.</p>
+                <p class="lang-es">• <strong>Registro inmutable:</strong> cada revisión se guarda como nueva fila con sello de tiempo.</p>
+                <p class="lang-en">• <strong>Append-only ledger:</strong> every revision creates an immutable timestamped row.</p>
+                <p class="lang-es">• <strong>Base justa:</strong> la mediana del mercado valida el ahorro real frente a presupuestos desactualizados.</p>
+                <p class="lang-en">• <strong>Fair baseline:</strong> market median anchors true savings even when budgets are stale.</p>
+              </div>
+            </div>
+          </div>
+          <div class="foot"><span>server/modules/rfq · MariaDB immutable ledger</span><span>04 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 5: LIVE REVERSE AUCTION (28–35s) -->
+      <section id="scene-5" class="clip" data-start="28" data-duration="7" data-track-index="5">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s5-a">
+            <div class="kicker" style="margin:0">05 · <span data-es="SUBASTA INVERSA EN VIVO" data-en="LIVE REVERSE AUCTION">SUBASTA INVERSA EN VIVO</span></div>
+            <span class="status"><i class="dot"></i>ANTI-SNIPING ACTIVO</span>
+          </div>
+          <h1 class="md s5-b" data-es="Competencia en tiempo real con libro inmutable y regla anti-francotirador." data-en="Real-Time Price Discovery With Immutable Ledger &amp; Anti-Sniping.">Competencia en tiempo real con libro inmutable y regla anti-francotirador.</h1>
+          <div class="grid-2">
+            <div class="card glass s5-c">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <strong style="font-size:22px" data-es="Descenso de ofertas (simulación ilustrativa)" data-en="Bid descent (illustrative simulation)">Descenso de ofertas (simulación ilustrativa)</strong>
+                <span class="mono" style="color:var(--teal);font-size:22px;font-weight:700">MXN 1,590,000 (-14.1%)</span>
+              </div>
+              <div class="chart-box">
+                <svg viewBox="0 0 820 340" width="100%" height="100%">
+                  <line x1="0" y1="65" x2="820" y2="65" stroke="rgba(255,255,255,0.12)" stroke-dasharray="6 6"/>
+                  <line x1="0" y1="160" x2="820" y2="160" stroke="rgba(255,255,255,0.07)"/>
+                  <line x1="0" y1="255" x2="820" y2="255" stroke="rgba(255,255,255,0.07)"/>
+                  <g id="s5-lines">
+                    <polyline class="provider-line" points="20,76 160,110 320,132 480,168 640,192 785,214" fill="none" stroke="#62a5ff" stroke-width="5" stroke-linecap="round"/>
+                    <polyline class="provider-line" points="20,92 160,104 320,148 480,174 640,218 785,240" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+                    <polyline class="provider-line" points="20,82 160,126 320,166 480,212 640,256 785,288" fill="none" stroke="#36e3c0" stroke-width="7" stroke-linecap="round"/>
+                    <circle id="s5-dot" cx="785" cy="288" r="11" fill="#36e3c0"/>
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <div class="stack s5-d" style="align-content:center">
+              <div class="row"><span>Nexo Logistics · <small style="color:var(--muted)">Riesgo bajo</small></span><strong>MXN 1,680,000</strong></div>
+              <div class="row"><span>Atlas Industrial · <small style="color:var(--muted)">Entrega 10d</small></span><strong>MXN 1,640,000</strong></div>
+              <div class="row win"><span>Orbis Supply · <small style="color:var(--teal)">Mejor oferta</small></span><strong>MXN 1,590,000</strong></div>
+              <div class="card glass" style="padding:24px;border-color:rgba(245,158,11,0.35)">
+                <p style="font-size:18px;color:#fde68a" class="lang-es"><strong>Extensión automática anti-sniping:</strong> cualquier puja válida en el último tramo extiende el cierre para todos los participantes.</p>
+                <p style="font-size:18px;color:#fde68a" class="lang-en"><strong>Automatic anti-sniping:</strong> any valid bid in the final window extends closing time equally for every bidder.</p>
+              </div>
+            </div>
+          </div>
+          <div class="foot"><span data-es="Libro de pujas autoritativo · Datos de contacto protegidos hasta adjudicación" data-en="Authoritative bid ledger · Supplier contacts shielded until award">Libro de pujas autoritativo · Datos de contacto protegidos hasta adjudicación</span><span>05 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 6: 3-WAY MATCH & CFDI 4.0 (35–42s) -->
+      <section id="scene-6" class="clip" data-start="35" data-duration="7" data-track-index="6">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s6-a">
+            <div class="kicker" style="margin:0">06 · <span data-es="CONTROL FINANCIERO Y FISCAL" data-en="FINANCIAL &amp; FISCAL CONTROL">CONTROL FINANCIERO Y FISCAL</span></div>
+            <span class="status"><i class="dot"></i>3-WAY MATCH + CFDI 4.0</span>
+          </div>
+          <h1 class="md s6-b" data-es="Ninguna orden se cierra hasta que orden, recepción y CFDI coinciden." data-en="No Order Closes Until PO, Receipt, and CFDI 4.0 Match.">Ninguna orden se cierra hasta que orden, recepción y CFDI coinciden.</h1>
+          <div class="grid-3">
+            <article class="card glass s6-c">
+              <div class="big-num" style="color:var(--aurora)">PO</div>
+              <div>
+                <h3 data-es="1. Orden de Compra" data-en="1. Purchase Order">1. Orden de Compra</h3>
+                <p class="lang-es">Generada directamente desde la adjudicación inmutable con precios, plazos y aprobaciones registradas.</p>
+                <p class="lang-en">Generated directly from the immutable award record with locked pricing, terms, and approvals.</p>
+              </div>
+            </article>
+            <article class="card glass s6-c">
+              <div class="big-num" style="color:var(--amber)">GR</div>
+              <div>
+                <h3 data-es="2. Recepción Verificada" data-en="2. Verified Receipt">2. Recepción Verificada</h3>
+                <p class="lang-es">Almacén o solicitante valida cantidades, entregas parciales y evidencias antes de habilitar facturación.</p>
+                <p class="lang-en">Warehouse or requester confirms quantities, partial deliveries, and proof before billing clears.</p>
+              </div>
+            </article>
+            <article class="card glass glass--hi s6-c">
+              <div class="big-num">4.0</div>
+              <div>
+                <h3 data-es="3. Timbrado CFDI 4.0" data-en="3. CFDI 4.0 Invoicing">3. Timbrado CFDI 4.0</h3>
+                <p class="lang-es">Sellos digitales CSD cifrados en servidor y timbrado PAC vinculado al mismo expediente auditable.</p>
+                <p class="lang-en">Server-encrypted CSD fiscal keys and PAC stamping linked directly to the audit dossier.</p>
+              </div>
+            </article>
+          </div>
+          <div class="foot"><span data-es="Listo para auditoría interna y cumplimiento SAT en México" data-en="Built for internal audit and Mexican SAT compliance">Listo para auditoría interna y cumplimiento SAT en México</span><span>06 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 7: TRANSPARENT ECONOMIC MODEL (42–49s) -->
+      <section id="scene-7" class="clip" data-start="42" data-duration="7" data-track-index="7">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s7-a">
+            <div class="kicker" style="margin:0">07 · <span data-es="MODELO ECONÓMICO TRANSPARENTE" data-en="TRANSPARENT COMMERCIAL MODEL">MODELO ECONÓMICO TRANSPARENTE</span></div>
+            <span class="status"><i class="dot"></i><span data-es="AHORRO VERIFICADO CON PISO" data-en="VERIFIED SAVINGS WITH FLOOR">AHORRO VERIFICADO CON PISO</span></span>
+          </div>
+          <h1 class="md s7-b" data-es="Te quedas con 3 de cada 4 pesos que ahorras." data-en="Keep 3 out of every 4 dollars you save.">Te quedas con 3 de cada 4 pesos que ahorras.</h1>
+          <div class="grid-2">
+            <div class="card glass s7-c" style="justify-content:center;gap:18px">
+              <div class="wf-bar" style="background:rgba(98,165,255,0.16);border:1px solid rgba(98,165,255,0.35);width:100%"><span data-es="Línea base congelada" data-en="Locked Baseline">Línea base congelada</span><span>MXN 1,850,000</span></div>
+              <div class="wf-bar" style="background:rgba(255,255,255,0.08);width:86%"><span data-es="Precio adjudicado" data-en="Awarded Price">Precio adjudicado</span><span>MXN 1,590,000</span></div>
+              <div class="wf-bar" style="background:rgba(54,227,192,0.18);border:1px solid rgba(54,227,192,0.45);color:var(--teal);width:76%"><span data-es="Se queda el comprador (75%)" data-en="Buyer Net Savings (75%)">Se queda el comprador (75%)</span><span>+MXN 195,000</span></div>
+              <div class="wf-bar" style="background:rgba(63,106,242,0.22);border:1px solid rgba(63,106,242,0.45);width:42%"><span data-es="Comisión (25%)" data-en="Fee (25%)">Comisión (25%)</span><span>MXN 65,000</span></div>
+            </div>
+            <div class="card glass glass--hi s7-d" style="justify-content:center;gap:16px">
+              <h3 style="margin:0" data-es="Reglas exactas en servidor (fee.php)" data-en="Exact Server Rules (fee.php)">Reglas exactas en servidor (fee.php)</h3>
+              <p class="lang-es">• <strong>Tasa por tramo:</strong> 25% hasta MXN 5M ahorrados/año · 20% por excedente.</p>
+              <p class="lang-en">• <strong>Tiered rate:</strong> 25% up to USD 250k/yr trailing savings · 20% above.</p>
+              <p class="lang-es">• <strong>Piso y tope claros:</strong> piso 0.4% (mín. MXN 3,000) por adjudicación; tope duro 8%.</p>
+              <p class="lang-en">• <strong>Clear floor &amp; cap:</strong> 0.4% floor (min. USD 150) per award; 8% hard cap.</p>
+              <p class="lang-es">• <strong>Sin adjudicación = MXN 0</strong> · <strong>Proveedores = 0% comisión</strong> por adjudicación.</p>
+              <p class="lang-en">• <strong>No award = USD 0</strong> · <strong>Suppliers = 0% commission</strong> on awards.</p>
+            </div>
+          </div>
+          <div class="foot"><span data-es="*Ejemplo ilustrativo calculado con la fórmula exacta del servidor (no es promesa de ahorro)" data-en="*Illustrative example computed with exact server math (not a savings guarantee)">*Ejemplo ilustrativo calculado con la fórmula exacta del servidor (no es promesa de ahorro)</span><span>07 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 8: ENTERPRISE SECURITY (49–56s) -->
+      <section id="scene-8" class="clip" data-start="49" data-duration="7" data-track-index="8">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s8-a">
+            <div class="kicker" style="margin:0">08 · <span data-es="SEGURIDAD Y CONFIANZA TÉCNICA" data-en="ENTERPRISE SECURITY &amp; TRUST">SEGURIDAD Y CONFIANZA TÉCNICA</span></div>
+            <span class="status"><i class="dot"></i>130+ QA CHECKS</span>
+          </div>
+          <h1 class="md s8-b" data-es="Construido desde el día uno para pasar la revisión de TI y Auditoría." data-en="Engineered From Day One to Pass IT Security &amp; Audit Review.">Construido desde el día uno para pasar la revisión de TI y Auditoría.</h1>
+          <div class="grid-4">
+            <article class="card glass s8-c"><div class="big-num">SSO</div><div><h3 data-es="Google verificado" data-en="Verified Google SSO">Google verificado</h3><p data-es="Token validado en servidor, nonce único y CSRF. Cero contraseñas propias." data-en="Server-verified tokens, single-use nonce, CSRF. Zero stored passwords.">Token validado en servidor, nonce único y CSRF. Cero contraseñas propias.</p></div></article>
+            <article class="card glass s8-c"><div class="big-num">AES</div><div><h3 data-es="Aislamiento y cifrado" data-en="Isolation &amp; Encryption">Aislamiento y cifrado</h3><p data-es="Control por empresa, sucursal y rol; llaves fiscales CSD cifradas en reposo." data-en="Company, branch &amp; role boundaries; encrypted CSD fiscal certificates.">Control por empresa, sucursal y rol; llaves fiscales CSD cifradas en reposo.</p></div></article>
+            <article class="card glass s8-c"><div class="big-num">300</div><div><h3 data-es="Vectores de paridad" data-en="Parity Test Vectors">Vectores de paridad</h3><p data-es="Calculadora pública, dashboard y liquidación en servidor dan el mismo centavo." data-en="Public calculator, dashboards, and server settlements match to the cent.">Calculadora pública, dashboard y liquidación en servidor dan el mismo centavo.</p></div></article>
+            <article class="card glass glass--hi s8-c"><div class="big-num">5m</div><div><h3 data-es="Vigilancia y respaldos" data-en="Monitoring &amp; Backups">Vigilancia y respaldos</h3><p data-es="Chequeo cada 5 min y respaldos diarios verificados con prueba de restauración." data-en="5-minute health checks plus checksum-verified daily backups &amp; restore tests.">Chequeo cada 5 min y respaldos diarios verificados con prueba de restauración.</p></div></article>
+          </div>
+          <div class="foot"><span>docs/PRODUCTION_SECURITY_GATE.md · MariaDB + PHP + Vue</span><span>08 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 9: 30-DAY PILOT (56–63s) -->
+      <section id="scene-9" class="clip" data-start="56" data-duration="7" data-track-index="9">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content">
+          <div class="top-bar s9-a">
+            <div class="kicker" style="margin:0">09 · <span data-es="ADOPCIÓN SIN RIESGO" data-en="ZERO-RISK ADOPTION">ADOPCIÓN SIN RIESGO</span></div>
+            <span class="status"><i class="dot"></i><span data-es="MODO INFORMATIVO · MXN 0" data-en="INFORMATIVE MODE · USD 0">MODO INFORMATIVO · MXN 0</span></span>
+          </div>
+          <h1 class="md s9-b" data-es="Empieza con un piloto de 30 días sin cobro de comisión." data-en="Start With a 30-Day Zero-Billing Informative Pilot.">Empieza con un piloto de 30 días sin cobro de comisión.</h1>
+          <div class="grid-4">
+            <article class="card glass s9-c"><div class="big-num" style="color:var(--aurora)">S1</div><div><h3 data-es="Alta y categoría" data-en="Setup &amp; Category">Alta y categoría</h3><p data-es="Configuración guiada de empresa, aprobadores y 1 categoría prioritaria." data-en="Guided setup of company, approvers, and 1 priority spend category.">Configuración guiada de empresa, aprobadores y 1 categoría prioritaria.</p></div></article>
+            <article class="card glass s9-c"><div class="big-num" style="color:var(--violet)">S2</div><div><h3 data-es="Primer RFQ sellado" data-en="First Sealed RFQ">Primer RFQ sellado</h3><p data-es="Invitación a tus proveedores actuales con 0% comisión para ellos." data-en="Invite incumbent vendors at 0% award commission.">Invitación a tus proveedores actuales con 0% comisión para ellos.</p></div></article>
+            <article class="card glass s9-c"><div class="big-num" style="color:var(--sky)">S3</div><div><h3 data-es="Subasta en vivo" data-en="Live Reverse Auction">Subasta en vivo</h3><p data-es="Puja en tiempo real con anti-sniping y adjudicación auditable." data-en="Real-time bidding with anti-sniping and auditable award.">Puja en tiempo real con anti-sniping y adjudicación auditable.</p></div></article>
+            <article class="card glass glass--hi s9-c"><div class="big-num">S4</div><div><h3 data-es="Revisión con CFO" data-en="CFO Impact Review">Revisión con CFO</h3><p data-es="Validación del ahorro verificado contra mercado antes de activar cobro." data-en="Review verified market savings before deciding on production billing.">Validación del ahorro verificado contra mercado antes de activar cobro.</p></div></article>
+          </div>
+          <div class="foot"><span data-es="Cohorte inicial: 5 empresas por categoría" data-en="Initial cohort: 5 anchor companies per category">Cohorte inicial: 5 empresas por categoría</span><span>09 / 10</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 10: CLOSING CTA (63–70s) -->
+      <section id="scene-10" class="clip" data-start="63" data-duration="7" data-track-index="10">
+        <div class="ground"></div><div class="grid"></div>
+        <div class="content" style="justify-content:center">
+          <div class="brand s10-a" style="font-size:40px">
+            <svg width="76" height="76" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="g10" x1="14" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#36e3c0"/><stop offset="100%" stop-color="#3f6af2"/></linearGradient></defs><rect width="64" height="64" rx="17" fill="#090f20" stroke="rgba(255,255,255,0.16)" stroke-width="1.5"/><path d="M20.5 14v22.5a13.5 13.5 0 1 0 24.6-7.7" stroke="url(#g10)" stroke-width="6.4" stroke-linecap="round"/><circle cx="36.4" cy="23.2" r="4.3" fill="#fff"/></svg>
+            <span>Buyniverse</span>
+          </div>
+          <h1 class="s10-b" style="margin-top:36px">
+            <span class="lang-es">Velocidad competitiva. <span class="grad">Evidencia verificable.</span></span>
+            <span class="lang-en">Competitive velocity. <span class="grad">Verifiable proof.</span></span>
+          </h1>
+          <p class="lead s10-c lang-es">Simula tu próxima compra en 30 segundos o agenda tu piloto informativo de 30 días.</p>
+          <p class="lead s10-c lang-en">Simulate your next purchase in 30 seconds or schedule your 30-day informative pilot.</p>
+          <div class="closing-pills s10-d">
+            <span style="border-color:rgba(54,227,192,0.45);color:var(--teal)">https://buyniverse.com</span>
+            <span>buyniverse.com/#/ahorro</span>
+            <span>hi@buyniverse.com</span>
+          </div>
+        </div>
+      </section>
+  </div>
+
+  <!-- Interactive Presentation HUD (Browser Only) -->
+  <nav id="hud" aria-label="Presentation controls">
+    <button type="button" id="hud-prev">←</button>
+    <span class="hud-meta" id="hud-counter">01 / 10</span>
+    <button type="button" id="hud-next">→</button>
+    <button type="button" id="hud-play">▶ Play</button>
+    <button type="button" id="hud-es" class="is-on">ES</button>
+    <button type="button" id="hud-en">EN</button>
+    <button type="button" id="hud-fs">⛶</button>
+  </nav>
+
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    const rise = (sel, at, stagger = 0.1) => tl.fromTo(sel, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.62, stagger, ease: "power3.out" }, at);
+
+    // Scene 1 (0–7s)
+    rise(".s1-a", 0.15); rise(".s1-b", 0.4); rise(".s1-c", 0.6); rise(".s1-d", 0.9); rise(".s1-e span", 1.15, 0.12);
+    // Scene 2 (7–14s)
+    rise(".s2-a", 7.15); rise(".s2-b", 7.35); rise(".s2-c", 7.75, 0.16);
+    // Scene 3 (14–21s)
+    rise(".s3-a", 14.15); rise(".s3-b", 14.35); rise(".s3-c", 14.75, 0.12);
+    // Scene 4 (21–28s)
+    rise(".s4-a", 21.15); rise(".s4-b", 21.35); rise(".s4-c", 21.75); rise(".s4-d", 22.05);
+    // Scene 5 (28–35s)
+    rise(".s5-a", 28.15); rise(".s5-b", 28.35); rise(".s5-c", 28.75); rise(".s5-d > *", 29.0, 0.14);
+    tl.fromTo("#s5-lines .provider-line", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 1.4, stagger: 0.18, ease: "power2.out" }, 29.1);
+    tl.fromTo("#s5-dot", { scale: 0, opacity: 0, transformOrigin: "center" }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.8)" }, 30.65);
+    // Scene 6 (35–42s)
+    rise(".s6-a", 35.15); rise(".s6-b", 35.35); rise(".s6-c", 35.75, 0.16);
+    // Scene 7 (42–49s)
+    rise(".s7-a", 42.15); rise(".s7-b", 42.35); rise(".s7-c .wf-bar", 42.75, 0.15); rise(".s7-d", 43.1);
+    // Scene 8 (49–56s)
+    rise(".s8-a", 49.15); rise(".s8-b", 49.35); rise(".s8-c", 49.75, 0.12);
+    // Scene 9 (56–63s)
+    rise(".s9-a", 56.15); rise(".s9-b", 56.35); rise(".s9-c", 56.75, 0.12);
+    // Scene 10 (63–70s)
+    rise(".s10-a", 63.2); rise(".s10-b", 63.5); rise(".s10-c", 63.85); rise(".s10-d span", 64.15, 0.14);
+
+    // Ensure full 70s duration is held deterministically
+    tl.to({}, { duration: 0.1 }, 69.9);
+    window.__timelines.main = tl;
+
+    // Interactive browser deck mode (auto-disabled during HyperFrames capture / webdriver / ?mode=render)
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const isCapture = navigator.webdriver || params.get("mode") === "render" || window.__HYPERFRAMES__ || (window.innerWidth === 1920 && window.innerHeight === 1080 && !params.has("present"));
+      if (isCapture) return;
+
+      document.documentElement.classList.add("is-interactive");
+      document.body.classList.add("is-interactive");
+      const wrap = document.getElementById("root");
+      const clips = Array.from(document.querySelectorAll(".clip"));
+      const counter = document.getElementById("hud-counter");
+      const btnPlay = document.getElementById("hud-play");
+      let idx = 0;
+      let playing = false;
+
+      function fit() {
+        const s = Math.min((window.innerWidth - 36) / 1920, (window.innerHeight - 92) / 1080);
+        wrap.style.transform = `translate(-50%, -50%) scale(${Math.max(0.2, s)})`;
+      }
+      window.addEventListener("resize", fit);
+      fit();
+
+      function showSlide(i, animate) {
+        idx = Math.max(0, Math.min(clips.length - 1, i));
+        const start = Number(clips[idx].getAttribute("data-start"));
+        const dur = Number(clips[idx].getAttribute("data-duration"));
+        clips.forEach((c, n) => { c.style.visibility = n === idx ? "visible" : "hidden"; });
+        counter.textContent = String(idx + 1).padStart(2, "0") + " / " + clips.length;
+        if (animate) {
+          tl.pause(start);
+          tl.tweenTo(start + Math.min(dur - 0.1, 2.5));
+        } else {
+          tl.pause(start + Math.min(dur - 0.1, 2.5));
+        }
+      }
+
+      function setLang(l) {
+        document.documentElement.setAttribute("data-lang", l);
+        document.querySelectorAll("[data-es][data-en]").forEach((el) => { el.textContent = el.getAttribute("data-" + l); });
+        document.getElementById("hud-es").classList.toggle("is-on", l === "es");
+        document.getElementById("hud-en").classList.toggle("is-on", l === "en");
+      }
+
+      document.getElementById("hud-prev").onclick = () => { playing = false; btnPlay.textContent = "▶ Play"; showSlide(idx - 1, true); };
+      document.getElementById("hud-next").onclick = () => { playing = false; btnPlay.textContent = "▶ Play"; showSlide(idx + 1, true); };
+      document.getElementById("hud-es").onclick = () => setLang("es");
+      document.getElementById("hud-en").onclick = () => setLang("en");
+      document.getElementById("hud-fs").onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+      btnPlay.onclick = () => {
+        playing = !playing;
+        btnPlay.textContent = playing ? "⏸ Pause" : "▶ Play";
+        if (playing) {
+          clips.forEach((c) => { c.style.visibility = "hidden"; });
+          tl.play(Number(clips[idx].getAttribute("data-start")));
+        } else {
+          tl.pause();
+        }
+      };
+
+      tl.eventCallback("onUpdate", () => {
+        if (!playing) return;
+        const t = tl.time();
+        clips.forEach((c, n) => {
+          const s = Number(c.getAttribute("data-start"));
+          const d = Number(c.getAttribute("data-duration"));
+          const active = t >= s && t < s + d;
+          c.style.visibility = active ? "visible" : "hidden";
+          if (active) { idx = n; counter.textContent = String(n + 1).padStart(2, "0") + " / " + clips.length; }
+        });
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); document.getElementById("hud-next").click(); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); document.getElementById("hud-prev").click(); }
+      });
+
+      if (params.get("lang") === "en") setLang("en");
+      showSlide(0, true);
+    })();
+  </script>
+</body>
+</html>

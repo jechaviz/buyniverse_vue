@@ -34,7 +34,7 @@ html:not(.dark) .ws-ambient { opacity: .5; }
 .ws-brand svg { flex: none; width: 34px; height: 34px; overflow: visible; }
 .ws-brand b { color: var(--c-ink2); font-weight: 600; }
 .ws-brand:hover .ws-brand__dot { animation: ws-orbit 1.6s var(--ease) infinite; }
-.ws-brand__dot { transform-origin: 17px 19px; transform-box: view-box; }
+.ws-brand__dot { transform-origin: 17px 18.5px; transform-box: view-box; }
 @keyframes ws-orbit { to { transform: rotate(360deg); } }
 .ws-nav { display: grid; flex: 1; align-content: start; gap: 24px; overflow-y: auto; scrollbar-width: none; }
 .ws-nav::-webkit-scrollbar { display: none; }

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" fill="none">
+  <defs>
+    <linearGradient id="bn-wm-light-g" x1="14" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0c9f84"/>
+      <stop offset="58%" stop-color="#3f6af2"/>
+      <stop offset="100%" stop-color="#2749c6"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="15" fill="#070a14"/>
+  <path d="M 20 15 L 20 35 A 12 12 0 1 0 41.8 28.2" stroke="url(#bn-wm-light-g)" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="34.1" cy="23.2" r="3.8" fill="#ffffff"/>
+  <text x="76" y="42" fill="#0a0f1e" font-family="Sora, Plus Jakarta Sans, Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="-1.1">Buyniverse</text>
+</svg>

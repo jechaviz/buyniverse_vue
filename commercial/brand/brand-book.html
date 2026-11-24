@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Manual de Identidad Corporativa / Brand Book v2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand-tokens.css" />
+  <script src="suite-runtime.js" defer></script>
+  <style>
+    .cover {
+      position: relative;
+      padding: 72px 60px 64px;
+      background:
+        radial-gradient(600px 380px at 90% 8%, rgba(63,106,242,0.28), transparent 65%),
+        radial-gradient(480px 340px at 10% 95%, rgba(54,227,192,0.16), transparent 65%),
+        #05070d;
+      color: #fff;
+    }
+    .cover__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 56px; }
+    .cover h1 { font-family: var(--font-display); font-size: clamp(2.1rem, 4.2vw, 3.15rem); line-height: 1.05; letter-spacing: -0.045em; margin: 14px 0 18px; max-width: 720px; }
+    .cover p { max-width: 640px; color: var(--bn-dark-ink-2); font-size: 1.02rem; margin: 0; }
+    .cover__meta { margin-top: 44px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-wrap: wrap; gap: 32px; font-family: var(--font-mono); font-size: 0.74rem; color: var(--bn-dark-ink-2); }
+    .cover__meta strong { display: block; color: #fff; margin-top: 4px; font-size: 0.82rem; }
+    .sec { padding: 52px 60px; border-top: 1px solid var(--bn-hair); }
+    @media (max-width: 720px) { .cover, .sec { padding: 36px 24px; } }
+    .sec h2 { font-family: var(--font-display); font-size: 1.65rem; letter-spacing: -0.04em; margin: 8px 0 14px; color: var(--bn-ink); }
+    .sec__lead { color: var(--bn-ink-2); max-width: 720px; margin: 0 0 28px; font-size: 0.96rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    @media (max-width: 760px) { .grid-2, .grid-3, .grid-5 { grid-template-columns: 1fr; } }
+    .box { border-radius: var(--r-md); padding: 24px; border: 1px solid var(--bn-hair); background: var(--bn-surface); }
+    .box--dark { background: #070a14; color: #fff; border-color: rgba(255,255,255,0.1); }
+    .logo-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; min-height: 160px; }
+    .clearspace { position: relative; padding: 24px 32px; border: 1px dashed rgba(63,106,242,0.55); border-radius: 12px; display: inline-flex; align-items: center; gap: 14px; }
+    .clearspace::before { content: "1x"; position: absolute; top: 4px; left: 8px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--bn-aurora); }
+    .swatch { border-radius: 14px; overflow: hidden; border: 1px solid var(--bn-hair); background: #fff; }
+    .swatch__chip { height: 84px; padding: 12px; display: flex; align-items: flex-end; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; }
+    .swatch__info { padding: 12px 14px; }
+    .swatch__info strong { display: block; font-size: 0.85rem; }
+    .swatch__info span { font-size: 0.75rem; color: var(--bn-ink-2); }
+    .stage-pill { padding: 16px; border-radius: 14px; border: 1px solid var(--bn-hair); background: #fff; }
+    .stage-pill i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-bottom: 8px; }
+    .stage-pill strong { display: block; font-size: 0.86rem; }
+    .stage-pill code { font-family: var(--font-mono); font-size: 0.72rem; color: var(--bn-ink-3); }
+    .type-row { display: grid; grid-template-columns: 180px 1fr; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--bn-hair); align-items: baseline; }
+    @media (max-width: 680px) { .type-row { grid-template-columns: 1fr; gap: 6px; } }
+    .type-row:last-child { border-bottom: 0; }
+    .type-meta { font-family: var(--font-mono); font-size: 0.74rem; color: var(--bn-ink-3); }
+    .guard-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .guard-list li { padding: 14px 16px; border-radius: 12px; font-size: 0.88rem; }
+    .guard-do li { background: var(--bn-teal-soft); color: #065f4f; }
+    .guard-dont li { background: #fef2f2; color: #991b1b; }
+    .og-preview {
+      border-radius: 16px;
+      padding: 36px 40px;
+      background:
+        radial-gradient(420px 260px at 88% 12%, rgba(63,106,242,0.34), transparent 65%),
+        radial-gradient(360px 220px at 14% 92%, rgba(54,227,192,0.18), transparent 65%),
+        #05070d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 230px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html">
+        <img src="assets/logo-a-orbit-tile.svg" alt="Buyniverse" width="28" height="28" />
+        <span>Buyniverse</span>
+      </a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Manual de Identidad Corporativa v2.0" data-en="Corporate Brand Book v2.0">Manual de Identidad Corporativa v2.0</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="logo-explorations.html" data-es="3 Propuestas de Logo" data-en="3 Logo Proposals">3 Propuestas de Logo</a>
+      <div class="bn-lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-set-lang="es" class="is-active">ES</button>
+        <button type="button" data-set-lang="en">EN</button>
+      </div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Exportar PDF" data-en="Export PDF">Exportar PDF</button>
+    </div>
+  </header>
+
+  <article class="bn-doc">
+    <section class="cover">
+      <div class="cover__top">
+        <img src="assets/logo-a-wordmark-dark.svg" alt="Buyniverse" height="40" />
+        <span class="pill pill--dark">BRAND SYSTEM v2.0 · 2026</span>
+      </div>
+      <span class="kicker" style="color:var(--bn-teal)" data-es="IDENTIDAD CORPORATIVA Y GUÍA DE COMUNICACIÓN" data-en="CORPORATE IDENTITY &amp; COMMUNICATION GUIDELINES">IDENTIDAD CORPORATIVA Y GUÍA DE COMUNICACIÓN</span>
+      <h1 data-es="Manual de Marca Buyniverse" data-en="Buyniverse Brand Book">Manual de Marca Buyniverse</h1>
+      <p class="lang-es">Sistema visual, arquitectónico y verbal diseñado para proyectar rigor financiero, claridad operativa y confianza auditable en cada punto de contacto: producto, whitepapers, presentaciones comerciales, contratos y comunicación con proveedores.</p>
+      <p class="lang-en">Visual, architectural, and verbal system designed to project financial rigor, operational clarity, and auditable trust across every touchpoint: product, whitepapers, sales presentations, contracts, and supplier communications.</p>
+      <div class="cover__meta">
+        <div><span data-es="MARCA MAESTRA" data-en="MASTER MARK">MARCA MAESTRA</span><strong>Órbita Convergente (b)</strong></div>
+        <div><span data-es="POSICIONAMIENTO" data-en="POSITIONING">POSICIONAMIENTO</span><strong data-es="Publica una vez. Las ofertas compiten por ti." data-en="Publish once. Offers compete for you.">Publica una vez. Las ofertas compiten por ti.</strong></div>
+        <div><span data-es="IDIOMAS" data-en="LANGUAGES">IDIOMAS</span><strong>ES-MX · EN-US</strong></div>
+      </div>
+    </section>
+
+    <!-- 01 LOGO SYSTEM -->
+    <section class="sec avoid-break">
+      <span class="kicker">01 · <span data-es="SISTEMA DE LOGOTIPO" data-en="LOGO SYSTEM">SISTEMA DE LOGOTIPO</span></span>
+      <h2 data-es="Isotipo, imagotipo y área de resguardo" data-en="Symbol, Lockups &amp; Clearspace">Isotipo, imagotipo y área de resguardo</h2>
+      <p class="sec__lead lang-es">El isotipo <strong>Órbita Convergente</strong> sintetiza una «b» geométrica y una órbita de mercado cerrada por un nodo luminoso. El punto simboliza el momento en que múltiples propuestas convergen en la oferta ganadora.</p>
+      <p class="sec__lead lang-en">The <strong>Convergent Orbit</strong> symbol unites a geometric "b" with a market orbit completed by a luminous node. The dot signifies the instant competing proposals converge on the winning bid.</p>
+
+      <div class="grid-2">
+        <div class="box box--dark logo-stage">
+          <div class="clearspace">
+            <img src="assets/logo-a-orbit.svg" width="52" height="52" alt="Buyniverse dark mark" />
+            <span class="display" style="font-size:1.75rem;font-weight:700;color:#fff">Buyniverse</span>
+          </div>
+          <span class="mono" style="font-size:0.72rem;color:var(--bn-dark-ink-2)" data-es="Versión Principal · Fondos Oscuros (#05070d)" data-en="Primary Lockup · Dark Surfaces (#05070d)">Versión Principal · Fondos Oscuros (#05070d)</span>
+        </div>
+        <div class="box logo-stage">
+          <div class="clearspace">
+            <img src="assets/logo-a-orbit-light.svg" width="52" height="52" alt="Buyniverse light mark" />
+            <span class="display" style="font-size:1.75rem;font-weight:700;color:#0a0f1e">Buyniverse</span>
+          </div>
+          <span class="mono" style="font-size:0.72rem;color:var(--bn-ink-3)" data-es="Versión Editorial · Documentos y PDF (#fbfcff)" data-en="Editorial Lockup · Documents &amp; PDF (#fbfcff)">Versión Editorial · Documentos y PDF (#fbfcff)</span>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:16px">
+        <div class="box" style="text-align:center">
+          <img src="assets/logo-a-orbit-tile.svg" width="56" height="56" alt="App tile" />
+          <div style="font-weight:700;font-size:0.86rem;margin-top:10px" data-es="App Tile &amp; Favicon" data-en="App Tile &amp; Favicon">App Tile &amp; Favicon</div>
+          <div class="mono" style="font-size:0.72rem;color:var(--bn-ink-3)">Min: 16×16 px · rx 26%</div>
+        </div>
+        <div class="box" style="text-align:center">
+          <img src="assets/logo-a-orbit-mono-dark.svg" width="56" height="56" alt="Mono dark" />
+          <div style="font-weight:700;font-size:0.86rem;margin-top:10px" data-es="Monocromo Tinta" data-en="Monochrome Ink">Monocromo Tinta</div>
+          <div class="mono" style="font-size:0.72rem;color:var(--bn-ink-3)">Contratos, CFDI, sellos</div>
+        </div>
+        <div class="box box--dark" style="text-align:center">
+          <img src="assets/logo-a-orbit-mono-light.svg" width="56" height="56" alt="Mono white" />
+          <div style="font-weight:700;font-size:0.86rem;margin-top:10px" data-es="Monocromo Blanco" data-en="Monochrome White">Monocromo Blanco</div>
+          <div class="mono" style="font-size:0.72rem;color:var(--bn-dark-ink-2)">Video, fotografía, merch</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 COLOR SYSTEM -->
+    <section class="sec page-break avoid-break">
+      <span class="kicker">02 · <span data-es="PALETA CROMÁTICA UNIFICADA" data-en="UNIFIED COLOR SYSTEM">PALETA CROMÁTICA UNIFICADA</span></span>
+      <h2 data-es="Contraste ejecutivo, calma operativa y acentos de etapa" data-en="Executive Contrast, Calm Precision &amp; Stage Accents">Contraste ejecutivo, calma operativa y acentos de etapa</h2>
+      <p class="sec__lead lang-es">Conserva los tokens reales de <code>bn-calm.css</code> para que la web, las presentaciones HyperFrames y los documentos impresos pertenezcan al mismo universo visual.</p>
+      <p class="sec__lead lang-en">Preserves the live product tokens in <code>bn-calm.css</code> so web app, HyperFrames decks, and printed PDFs belong to a single visual universe.</p>
+
+      <div class="grid-3">
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#05070d;color:#fff">#05070D</div>
+          <div class="swatch__info"><strong>Night Canvas</strong><span data-es="Fondo principal oscuro · Decks y portadas" data-en="Primary dark canvas · Decks &amp; covers">Fondo principal oscuro · Decks y portadas</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#3f6af2;color:#fff">#3F6AF2</div>
+          <div class="swatch__info"><strong>Aurora Blue</strong><span data-es="Acento primario · Acción y confianza" data-en="Primary accent · Action &amp; trust">Acento primario · Acción y confianza</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#36e3c0;color:#05070d">#36E3C0</div>
+          <div class="swatch__info"><strong>Verified Teal</strong><span data-es="Ahorro verificado · Mejor puja · OK" data-en="Verified savings · Best bid · OK">Ahorro verificado · Mejor puja · OK</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#fbfcff;color:#0a0f1e;border-bottom:1px solid #e2e8f0">#FBFCFF</div>
+          <div class="swatch__info"><strong>Editorial Paper</strong><span data-es="Fondo claro · Whitepaper y propuestas" data-en="Light surface · Whitepaper &amp; proposals">Fondo claro · Whitepaper y propuestas</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#0a0f1e;color:#fff">#0A0F1E</div>
+          <div class="swatch__info"><strong>Deep Ink</strong><span data-es="Tipografía principal sobre papel" data-en="Primary body &amp; display ink on paper">Tipografía principal sobre papel</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch__chip" style="background:#0c9f84;color:#fff">#0C9F84</div>
+          <div class="swatch__info"><strong>Deep Teal (Print AA+)</strong><span data-es="Ahorro y cifras positivas sobre fondo claro" data-en="Savings &amp; positive metrics on light surfaces">Ahorro y cifras positivas sobre fondo claro</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin:28px 0 12px;font-size:0.95rem" data-es="Acentos semánticos de las 5 etapas («Necesito»)" data-en="5-Stage Semantic Accents («Necesito»)">Acentos semánticos de las 5 etapas («Necesito»)</h3>
+      <div class="grid-5">
+        <div class="stage-pill"><i style="background:#3f6af2"></i><strong data-es="1. Publicas" data-en="1. Publish">1. Publicas</strong><code>#3F6AF2</code></div>
+        <div class="stage-pill"><i style="background:#8b5cf6"></i><strong data-es="2. Compiten" data-en="2. Compete">2. Compiten</strong><code>#8B5CF6</code></div>
+        <div class="stage-pill"><i style="background:#0ea5e9"></i><strong data-es="3. Eliges" data-en="3. Choose">3. Eliges</strong><code>#0EA5E9</code></div>
+        <div class="stage-pill"><i style="background:#f59e0b"></i><strong data-es="4. Recibes" data-en="4. Receive">4. Recibes</strong><code>#F59E0B</code></div>
+        <div class="stage-pill"><i style="background:#0c9f84"></i><strong data-es="5. Pagas" data-en="5. Pay">5. Pagas</strong><code>#0C9F84</code></div>
+      </div>
+    </section>
+
+    <!-- 03 TYPOGRAPHY -->
+    <section class="sec avoid-break">
+      <span class="kicker">03 · <span data-es="SISTEMA TIPOGRÁFICO" data-en="TYPOGRAPHY SYSTEM">SISTEMA TIPOGRÁFICO</span></span>
+      <h2 data-es="Tres familias con roles estrictos" data-en="Three Families With Strict Roles">Tres familias con roles estrictos</h2>
+      <div class="box">
+        <div class="type-row">
+          <div class="type-meta"><strong>Sora</strong><br/>Display · 700 / 800<br/>Tracking -0.04em</div>
+          <div class="display" style="font-size:1.9rem;font-weight:700;line-height:1.1" data-es="Publica una vez y haz que las ofertas compitan por ti." data-en="Publish once and let offers compete for you.">Publica una vez y haz que las ofertas compitan por ti.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><strong>Plus Jakarta Sans</strong><br/>UI &amp; Editorial · 400–700<br/>Line-height 1.6</div>
+          <div style="font-size:1rem;color:var(--bn-ink-2)" data-es="Diseñada para lectura prolongada en whitepapers, propuestas ejecutivas y pantallas densas de comparación de cotizaciones." data-en="Engineered for sustained reading across whitepapers, executive proposals, and dense quote comparison screens.">Diseñada para lectura prolongada en whitepapers, propuestas ejecutivas y pantallas densas de comparación de cotizaciones.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><strong>JetBrains Mono</strong><br/>Data &amp; Audit · 500 / 700<br/>Tabular numerals</div>
+          <div class="mono" style="font-size:1.15rem;font-weight:600;color:var(--bn-aurora-deep)">MXN 1,850,000 → MXN 1,590,000 · -14.1% · CFDI 4.0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 VOICE, TONE & COMPLIANCE GUARDRAILS -->
+    <section class="sec page-break avoid-break">
+      <span class="kicker">04 · <span data-es="VOZ, TONO Y GUARDRAILS COMERCIALES" data-en="VOICE, TONE &amp; COMMERCIAL GUARDRAILS">VOZ, TONO Y GUARDRAILS COMERCIALES</span></span>
+      <h2 data-es="Sobriedad verificable: qué decimos y qué nunca prometemos" data-en="Verifiable Restraint: What We Say and Never Promise">Sobriedad verificable: qué decimos y qué nunca prometemos</h2>
+      <p class="sec__lead lang-es">Alineado estrictamente a la auditoría del producto (<code>docs/auditoria-2026-10.md</code> y <code>docs/produccion.md</code>). Cada número comercial debe poder comprobarse en el libro del servidor.</p>
+      <p class="sec__lead lang-en">Strictly aligned with the product audit (<code>docs/auditoria-2026-10.md</code> and <code>docs/produccion.md</code>). Every commercial figure must be verifiable against the server ledger.</p>
+      <div class="grid-2">
+        <div class="box">
+          <h3 style="margin:0 0 12px;color:#065f4f" data-es="✓ SÍ comunicar" data-en="✓ DO communicate">✓ SÍ comunicar</h3>
+          <ul class="guard-list guard-do">
+            <li data-es="«Te quedas con 3 de cada 4 pesos que ahorras» (tasa estándar 25% sobre ahorro verificado, con piso 0.4% mín. MXN 3,000 y tope 8%)." data-en="«Keep 3 out of every 4 dollars you save» (standard 25% fee on verified savings, 0.4% floor min. USD 150, 8% cap).">«Te quedas con 3 de cada 4 pesos que ahorras» (tasa estándar 25% sobre ahorro verificado, con piso 0.4% mín. MXN 3,000 y tope 8%).</li>
+            <li data-es="«Sin adjudicación, sin cobro» y «0% comisión a proveedores por adjudicación»." data-en="«No award, no fee» and «0% supplier award commission».">«Sin adjudicación, sin cobro» y «0% comisión a proveedores por adjudicación».</li>
+            <li data-es="Ejemplos claramente etiquetados como ilustrativos o calculados con la fórmula real del servidor." data-en="Examples clearly labeled as illustrative or computed via the exact server fee formula.">Ejemplos claramente etiquetados como ilustrativos o calculados con la fórmula real del servidor.</li>
+            <li data-es="Evidencia en servidor: RFQ sellado con base de mercado (mediana), libro inmutable de pujas, timbrado CFDI 4.0." data-en="Server-side evidence: sealed RFQ with market median baseline, immutable bid ledger, CFDI 4.0 invoicing.">Evidencia en servidor: RFQ sellado con base de mercado (mediana), libro inmutable de pujas, timbrado CFDI 4.0.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3 style="margin:0 0 12px;color:#991b1b" data-es="✕ NUNCA publicar" data-en="✕ NEVER publish">✕ NUNCA publicar</h3>
+          <ul class="guard-list guard-dont">
+            <li data-es="Nunca afirmar «sin ahorro, sin comisión» (al adjudicar con poco o nulo ahorro aplica el piso operativo)." data-en="Never state «no savings, no fee» (an awarded transaction with minimal savings triggers the operational floor).">Nunca afirmar «sin ahorro, sin comisión» (al adjudicar con poco o nulo ahorro aplica el piso operativo).</li>
+            <li data-es="Nunca prometer un porcentaje de ahorro garantizado en anuncios o propuestas." data-en="Never promise a guaranteed savings percentage in ads or proposals.">Nunca prometer un porcentaje de ahorro garantizado en anuncios o propuestas.</li>
+            <li data-es="Nunca vender «escrow / custodia de fondos» como capacidad activa del flujo de compras." data-en="Never market «escrow / funds custody» as an active capability in the procurement workflow.">Nunca vender «escrow / custodia de fondos» como capacidad activa del flujo de compras.</li>
+            <li data-es="Nunca citar datos de la demo virtual como resultados reales de clientes." data-en="Never present virtual demo metrics as real customer outcomes.">Nunca citar datos de la demo virtual como resultados reales de clientes.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 DIGITAL STATIONERY -->
+    <section class="sec avoid-break">
+      <span class="kicker">05 · <span data-es="APLICACIONES DIGITALES Y PAPELERÍA" data-en="DIGITAL APPLICATIONS &amp; STATIONERY">APLICACIONES DIGITALES Y PAPELERÍA</span></span>
+      <h2 data-es="Open Graph, redes sociales y firma corporativa" data-en="Open Graph, Social Banners &amp; Corporate Signature">Open Graph, redes sociales y firma corporativa</h2>
+      <div class="og-preview">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <img src="assets/logo-a-wordmark-dark.svg" height="34" alt="Buyniverse" />
+          <span class="pill pill--dark">buyniverse.com</span>
+        </div>
+        <div>
+          <div class="display" style="font-size:1.85rem;font-weight:700;line-height:1.1;max-width:560px" data-es="Publica una vez y haz que las ofertas compitan por ti." data-en="Publish once and let offers compete for you.">Publica una vez y haz que las ofertas compitan por ti.</div>
+          <div style="color:var(--bn-dark-ink-2);font-size:0.9rem;margin-top:8px" data-es="RFQ sellado · Subastas inversas en vivo · 3-Way Match · CFDI 4.0" data-en="Sealed RFQ · Live Reverse Auctions · 3-Way Match · CFDI 4.0">RFQ sellado · Subastas inversas en vivo · 3-Way Match · CFDI 4.0</div>
+        </div>
+      </div>
+      <p style="margin-top:16px;font-size:0.86rem;color:var(--bn-ink-2)">
+        <span class="lang-es">Assets maestros generados: SVGs vectoriales en <code>commercial/brand/assets/</code>, PNGs (<code>32/64/192/512/1024</code>) + <code>og-buyniverse.png</code> (1200×630) propagados a <code>assets/brand/</code>, y <a href="assets/email-signature.html">firma de correo HTML lista para copiar</a>.</span>
+        <span class="lang-en">Generated master assets: vector SVGs in <code>commercial/brand/assets/</code>, raster PNGs (<code>32/64/192/512/1024</code>) + <code>og-buyniverse.png</code> (1200×630) propagated to <code>assets/brand/</code>, plus <a href="assets/email-signature.html">copy-ready HTML email signature</a>.</span>
+      </p>
+    </section>
+  </article>
+</body>
+</html>

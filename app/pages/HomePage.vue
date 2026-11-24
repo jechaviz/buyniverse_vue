@@ -62,7 +62,7 @@
             <p>{{ store.t(step.body) }}</p>
           </li>
         </ol>
-        <video v-if="filmAvailable" class="hp-film hp-reveal" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/buyniverse-mark-1024.png?v=3" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
+        <video v-if="filmAvailable" class="hp-film hp-reveal" src="assets/media/buyniverse-marketplace.mp4" poster="assets/brand/og-buyniverse.png?v=1" controls preload="none" playsinline :aria-label="store.t('How Buyniverse works, 20 second film')"></video>
       </div>
     </section>
 

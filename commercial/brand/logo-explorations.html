@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Exploración de Logotipo / Logo Exploration Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand-tokens.css" />
+  <script src="suite-runtime.js" defer></script>
+  <style>
+    body { background: #070a14; color: var(--bn-dark-ink); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 48px 24px 96px; }
+    .hero { display: grid; gap: 18px; margin-bottom: 48px; }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.06; margin: 0; letter-spacing: -0.045em; color: #fff; }
+    .hero p { max-width: 760px; color: var(--bn-dark-ink-2); font-size: 1.02rem; margin: 0; }
+    .diag-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 28px 0 56px; }
+    .diag-card { padding: 20px; border-radius: var(--r-md); background: rgba(255,255,255,0.035); border: 1px solid var(--bn-dark-hair); }
+    .diag-card h3 { margin: 8px 0 6px; font-size: 0.96rem; color: #fff; }
+    .diag-card p { margin: 0; font-size: 0.84rem; color: var(--bn-dark-ink-2); }
+    .proposal { margin-bottom: 44px; border-radius: var(--r-lg); border: 1px solid var(--bn-dark-hair); background: linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)); overflow: hidden; }
+    .proposal.is-recommended { border-color: rgba(54,227,192,0.42); box-shadow: 0 30px 80px -36px rgba(63,106,242,0.45); }
+    .proposal__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 28px 32px 22px; border-bottom: 1px solid var(--bn-dark-hair); }
+    .proposal__head h2 { margin: 6px 0 6px; font-family: var(--font-display); font-size: 1.55rem; color: #fff; letter-spacing: -0.035em; }
+    .proposal__head p { margin: 0; max-width: 680px; color: var(--bn-dark-ink-2); font-size: 0.92rem; }
+    .badge-rec { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--r-pill); background: rgba(54,227,192,0.14); color: var(--bn-teal); border: 1px solid rgba(54,227,192,0.35); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .badge-alt { display: inline-flex; padding: 6px 14px; border-radius: var(--r-pill); background: rgba(255,255,255,0.06); color: var(--bn-dark-ink-2); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+    .specimen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--bn-dark-hair); }
+    @media (max-width: 860px) { .specimen-grid { grid-template-columns: repeat(2, 1fr); } }
+    .specimen { padding: 28px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 190px; }
+    .specimen--dark { background: #05070d; }
+    .specimen--light { background: #fbfcff; color: #0a0f1e; }
+    .specimen--mono { background: #ffffff; color: #0a0f1e; }
+    .specimen--scale { background: #0b1121; }
+    .specimen__label { font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.62; }
+    .lockup { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 700; font-size: 1.38rem; letter-spacing: -0.04em; }
+    .scale-row { display: flex; align-items: flex-end; gap: 18px; }
+    .scale-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.65rem; color: var(--bn-dark-ink-2); }
+    .context-bar { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; padding: 24px 32px; background: rgba(5,7,13,0.45); }
+    @media (max-width: 820px) { .context-bar { grid-template-columns: 1fr; } }
+    .mini-app { padding: 14px 18px; border-radius: 14px; background: #0d1426; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
+    .mini-app__brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 0.96rem; color: #fff; letter-spacing: -0.03em; }
+    .mini-app__nav { display: flex; gap: 14px; font-size: 0.75rem; color: var(--bn-dark-ink-2); }
+    .mini-card { padding: 16px 20px; border-radius: 14px; background: linear-gradient(135deg, #0b1224, #142246); border: 1px solid rgba(63,106,242,0.3); display: flex; align-items: center; justify-content: space-between; }
+    .rubric { margin-top: 52px; border-radius: var(--r-lg); border: 1px solid var(--bn-dark-hair); background: rgba(255,255,255,0.025); padding: 32px; }
+    .rubric h2 { margin: 0 0 18px; font-family: var(--font-display); color: #fff; font-size: 1.4rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { text-align: left; padding: 13px 14px; border-bottom: 1px solid var(--bn-dark-hair); }
+    th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--bn-dark-ink-2); }
+    td.win { color: var(--bn-teal); font-weight: 700; font-family: var(--font-mono); }
+    .mono-svg { filter: grayscale(100%) contrast(220%) brightness(0.15); }
+    @media print {
+      body { background: #fff !important; color: #0a0f1e !important; }
+      .proposal, .diag-card, .rubric { background: #fff !important; color: #0a0f1e !important; border-color: #d4dce8 !important; }
+      .hero h1, .proposal__head h2, .diag-card h3, .rubric h2 { color: #0a0f1e !important; }
+      .hero p, .proposal__head p, .diag-card p { color: #424e68 !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html">
+        <img src="assets/logo-a-orbit-tile.svg" alt="Buyniverse" width="28" height="28" />
+        <span>Buyniverse</span>
+      </a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Exploración de Logotipo (3 Propuestas)" data-en="Logo Exploration Board (3 Proposals)">Exploración de Logotipo (3 Propuestas)</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="brand-book.html" data-es="Manual de Marca" data-en="Brand Book">Manual de Marca</a>
+      <div class="bn-lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-set-lang="es" class="is-active">ES</button>
+        <button type="button" data-set-lang="en">EN</button>
+      </div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Exportar PDF" data-en="Export PDF">Exportar PDF</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="kicker" data-es="FASE 1 · EVOLUCIÓN DE IDENTIDAD CORPORATIVA" data-en="PHASE 1 · CORPORATE IDENTITY EVOLUTION">FASE 1 · EVOLUCIÓN DE IDENTIDAD CORPORATIVA</span>
+      <h1 data-es="Unificando Buyniverse bajo una marca B2B de precisión" data-en="Unifying Buyniverse under a precision B2B mark">Unificando Buyniverse bajo una marca B2B de precisión</h1>
+      <p class="lang-es">Auditoría de las 3 identidades que convivían en el repositorio y evaluación comparativa de 3 nuevas direcciones de logotipo diseñadas para escalar desde un favicon de 16 px hasta un whitepaper institucional, una sala de subastas en vivo y un pitch de inversión.</p>
+      <p class="lang-en">Audit of the 3 legacy marks coexisting in the repository and side-by-side comparison of 3 new logo directions built to scale from a 16 px favicon to an institutional whitepaper, live reverse auction room, and investor pitch deck.</p>
+    </section>
+
+    <section class="diag-grid">
+      <article class="diag-card">
+        <span class="kicker" style="color:#f59e0b" data-es="LEGACY 01 · RETIRO" data-en="LEGACY 01 · RETIRE">LEGACY 01 · RETIRO</span>
+        <h3 data-es="Etiqueta de precio 3D morada" data-en="3D Purple Price Tag">Etiqueta de precio 3D morada</h3>
+        <p class="lang-es">Transmitía descuento retail/B2C, perdía nitidez en tamaños pequeños y chocaba con la seriedad exigida por CFOs y áreas de Compras.</p>
+        <p class="lang-en">Signaled B2C retail discounting, lost clarity at small sizes, and clashed with the institutional rigor expected by CFOs and Procurement teams.</p>
+      </article>
+      <article class="diag-card">
+        <span class="kicker" style="color:#f59e0b" data-es="LEGACY 02 · DESCONECTADA" data-en="LEGACY 02 · DISCONNECTED">LEGACY 02 · DESCONECTADA</span>
+        <h3 data-es="Monograma B coral en showcase" data-en="Coral B Monogram Showcase">Monograma B coral en showcase</h3>
+        <p class="lang-es">Buen nivel ejecutivo en papelería, pero con una paleta rojo coral completamente ajena al sistema Aurora/Teal/Night del producto real.</p>
+        <p class="lang-en">Strong executive presence on stationery, but built on a crimson-coral palette completely detached from the live product's Aurora/Teal/Night system.</p>
+      </article>
+      <article class="diag-card">
+        <span class="kicker" style="color:var(--bn-teal)" data-es="BASE ACTUAL · EVOLUCIONAR" data-en="CURRENT BASE · EVOLVE">BASE ACTUAL · EVOLUCIONAR</span>
+        <h3 data-es="Anillo Calm + punto orbital" data-en="Calm Ring + Orbiting Dot">Anillo Calm + punto orbital</h3>
+        <p class="lang-es">Estética moderna y sobria alineada a la app, pero un círculo simple + punto resulta demasiado genérico fuera del producto sin un rasgo propio.</p>
+        <p class="lang-en">Modern and calm inside the app, yet a bare circle + dot feels too generic outside the interface without a distinctive proprietary silhouette.</p>
+      </article>
+    </section>
+
+    <!-- PROPOSAL A -->
+    <section class="proposal is-recommended avoid-break">
+      <div class="proposal__head">
+        <div>
+          <span class="kicker" style="color:var(--bn-teal)" data-es="PROPUESTA A · MARCA OFICIAL ACEPTADA (APP + SUITE)" data-en="PROPOSAL A · APPROVED OFFICIAL MARK (APP + SUITE)">PROPUESTA A · MARCA OFICIAL ACEPTADA (APP + SUITE)</span>
+          <h2 data-es="Órbita Convergente (Monograma orbital «b»)" data-en="Convergent Orbit (Orbital «b» Monogram)">Órbita Convergente (Monograma orbital «b»)</h2>
+          <p class="lang-es">Evoluciona directamente el anillo <em>Buyniverse Calm</em>: un trazo continuo con gradiente Turquesa→Aurora forma el tallo y la órbita de una <strong>«b» geométrica abierta</strong>, cerrada por un núcleo brillante que representa la convergencia de ofertas hacia el mejor precio.</p>
+          <p class="lang-en">Directly evolves the <em>Buyniverse Calm</em> ring: a continuous Teal→Aurora stroke traces the stem and orbit of an <strong>open geometric "b"</strong>, completed by a luminous node representing competing offers converging on the optimal price.</p>
+        </div>
+        <span class="badge-rec" data-es="✓ Aceptada · Marca Oficial" data-en="✓ Approved · Official Mark">✓ Aceptada · Marca Oficial</span>
+      </div>
+      <div class="specimen-grid">
+        <div class="specimen specimen--dark">
+          <div class="lockup" style="color:#fff">
+            <img src="assets/logo-a-orbit.svg" alt="Proposal A dark" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Oscuro · Principal" data-en="Dark · Primary">Oscuro · Principal</span>
+        </div>
+        <div class="specimen specimen--light">
+          <div class="lockup" style="color:#0a0f1e">
+            <img src="assets/logo-a-orbit-light.svg" alt="Proposal A light" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Claro · Editorial" data-en="Light · Editorial">Claro · Editorial</span>
+        </div>
+        <div class="specimen specimen--mono">
+          <div class="lockup" style="color:#0a0f1e">
+            <img src="assets/logo-a-orbit-mono-dark.svg" alt="Proposal A mono" width="44" height="44" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Monocromo · Contratos" data-en="Monochrome · Legal">Monocromo · Contratos</span>
+        </div>
+        <div class="specimen specimen--scale">
+          <div class="scale-row">
+            <div class="scale-item"><img src="assets/logo-a-orbit-tile.svg" width="48" height="48" alt="48px" /><span>48px</span></div>
+            <div class="scale-item"><img src="assets/logo-a-orbit-tile.svg" width="32" height="32" alt="32px" /><span>32px</span></div>
+            <div class="scale-item"><img src="assets/logo-a-orbit-tile.svg" width="16" height="16" alt="16px" /><span>16px</span></div>
+          </div>
+          <span class="specimen__label" data-es="App Icon &amp; Favicon" data-en="App Icon &amp; Favicon">App Icon &amp; Favicon</span>
+        </div>
+      </div>
+      <div class="context-bar">
+        <div class="mini-app">
+          <div class="mini-app__brand">
+            <img src="assets/logo-a-orbit-tile.svg" width="28" height="28" alt="" />
+            <span>Buyniverse</span>
+          </div>
+          <div class="mini-app__nav">
+            <span data-es="Necesidades" data-en="Needs">Necesidades</span>
+            <span data-es="Mercado" data-en="Market">Mercado</span>
+            <span data-es="Dinero" data-en="Money">Dinero</span>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;color:#fff">buyniverse.com</div>
+            <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--bn-teal);margin-top:2px" data-es="COMPRAS B2B · SUBASTAS · CFDI 4.0" data-en="B2B PROCUREMENT · AUCTIONS · CFDI 4.0">COMPRAS B2B · SUBASTAS · CFDI 4.0</div>
+          </div>
+          <img src="assets/logo-a-orbit.svg" width="36" height="36" alt="" />
+        </div>
+      </div>
+    </section>
+
+    <!-- PROPOSAL B -->
+    <section class="proposal avoid-break">
+      <div class="proposal__head">
+        <div>
+          <span class="kicker" data-es="PROPUESTA B · ALTERNATIVA CORPORATIVA" data-en="PROPOSAL B · CORPORATE ALTERNATIVE">PROPUESTA B · ALTERNATIVA CORPORATIVA</span>
+          <h2 data-es="Nexo B (Monograma arquitectónico de dos lazos)" data-en="Nexus B (Architectural Dual-Loop Monogram)">Nexo B (Monograma arquitectónico de dos lazos)</h2>
+          <p class="lang-es">Retoma la potencia ejecutiva del monograma <strong>«B»</strong> del showcase previo, pero reconstruido en geometría limpia con la paleta Aurora/Teal. Los dos lazos representan la conexión verificada entre comprador y proveedor.</p>
+          <p class="lang-en">Recaptures the executive gravitas of the earlier showcase <strong>"B"</strong> monogram, rebuilt with clean geometry in the Aurora/Teal palette. Its two loops symbolize the verified link between buyer and supplier.</p>
+        </div>
+        <span class="badge-alt" data-es="Alternativa lista en SVG" data-en="SVG-ready Alternative">Alternativa lista en SVG</span>
+      </div>
+      <div class="specimen-grid">
+        <div class="specimen specimen--dark">
+          <div class="lockup" style="color:#fff">
+            <img src="assets/logo-b-nexus.svg" alt="Proposal B dark" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Oscuro · Principal" data-en="Dark · Primary">Oscuro · Principal</span>
+        </div>
+        <div class="specimen specimen--light">
+          <div class="lockup" style="color:#0a0f1e">
+            <img src="assets/logo-b-nexus.svg" alt="Proposal B light" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Claro · Editorial" data-en="Light · Editorial">Claro · Editorial</span>
+        </div>
+        <div class="specimen specimen--mono">
+          <div class="lockup" style="color:#0a0f1e">
+            <img class="mono-svg" src="assets/logo-b-nexus.svg" alt="Proposal B mono" width="44" height="44" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Monocromo" data-en="Monochrome">Monocromo</span>
+        </div>
+        <div class="specimen specimen--scale">
+          <div class="scale-row">
+            <div class="scale-item"><img src="assets/logo-b-nexus.svg" width="48" height="48" alt="48px" /><span>48px</span></div>
+            <div class="scale-item"><img src="assets/logo-b-nexus.svg" width="32" height="32" alt="32px" /><span>32px</span></div>
+            <div class="scale-item"><img src="assets/logo-b-nexus.svg" width="16" height="16" alt="16px" /><span>16px</span></div>
+          </div>
+          <span class="specimen__label" data-es="Escala 48 / 32 / 16" data-en="Scale 48 / 32 / 16">Escala 48 / 32 / 16</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROPOSAL C -->
+    <section class="proposal avoid-break">
+      <div class="proposal__head">
+        <div>
+          <span class="kicker" data-es="PROPUESTA C · INFRAESTRUCTURA FINTECH" data-en="PROPOSAL C · FINTECH INFRASTRUCTURE">PROPUESTA C · INFRAESTRUCTURA FINTECH</span>
+          <h2 data-es="Vector de Puja (Descenso competitivo + 3 vías)" data-en="Bid Vector (Competitive Descent + 3-Way Match)">Vector de Puja (Descenso competitivo + 3 vías)</h2>
+          <p class="lang-es">Tres niveles horizontales decrecientes simbolizan el descenso competitivo de precios en subasta inversa y la conciliación de 3 vías (Orden → Recibo → CFDI), rematados por el nodo ganador en turquesa.</p>
+          <p class="lang-en">Three descending horizontal tiers symbolize competitive price compression in reverse auctions and 3-way match (PO → Receipt → CFDI), punctuated by the winning teal node.</p>
+        </div>
+        <span class="badge-alt" data-es="Alternativa lista en SVG" data-en="SVG-ready Alternative">Alternativa lista en SVG</span>
+      </div>
+      <div class="specimen-grid">
+        <div class="specimen specimen--dark">
+          <div class="lockup" style="color:#fff">
+            <img src="assets/logo-c-vector.svg" alt="Proposal C dark" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Oscuro · Principal" data-en="Dark · Primary">Oscuro · Principal</span>
+        </div>
+        <div class="specimen specimen--light">
+          <div class="lockup" style="color:#0a0f1e">
+            <img src="assets/logo-c-vector.svg" alt="Proposal C light" width="46" height="46" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Claro · Editorial" data-en="Light · Editorial">Claro · Editorial</span>
+        </div>
+        <div class="specimen specimen--mono">
+          <div class="lockup" style="color:#0a0f1e">
+            <img class="mono-svg" src="assets/logo-c-vector.svg" alt="Proposal C mono" width="44" height="44" />
+            <span>Buyniverse</span>
+          </div>
+          <span class="specimen__label" data-es="Monocromo" data-en="Monochrome">Monocromo</span>
+        </div>
+        <div class="specimen specimen--scale">
+          <div class="scale-row">
+            <div class="scale-item"><img src="assets/logo-c-vector.svg" width="48" height="48" alt="48px" /><span>48px</span></div>
+            <div class="scale-item"><img src="assets/logo-c-vector.svg" width="32" height="32" alt="32px" /><span>32px</span></div>
+            <div class="scale-item"><img src="assets/logo-c-vector.svg" width="16" height="16" alt="16px" /><span>16px</span></div>
+          </div>
+          <span class="specimen__label" data-es="Escala 48 / 32 / 16" data-en="Scale 48 / 32 / 16">Escala 48 / 32 / 16</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="rubric avoid-break">
+      <h2 data-es="Matriz de decisión (por qué adoptamos Propuesta A como marca maestra)" data-en="Decision Matrix (Why Proposal A Is the Master Flagship)">Matriz de decisión (por qué adoptamos Propuesta A como marca maestra)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th data-es="Criterio" data-en="Criterion">Criterio</th>
+            <th data-es="A · Órbita Convergente" data-en="A · Convergent Orbit">A · Órbita Convergente</th>
+            <th data-es="B · Nexo B" data-en="B · Nexus B">B · Nexo B</th>
+            <th data-es="C · Vector de Puja" data-en="C · Bid Vector">C · Vector de Puja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-es="Reconocimiento inmediato como «Buyniverse»" data-en="Instant recognition as «Buyniverse»">Reconocimiento inmediato como «Buyniverse»</td>
+            <td class="win">9.5 / 10 (b + órbita)</td>
+            <td>9.0 / 10 (B directa)</td>
+            <td>7.0 / 10 (abstracta)</td>
+          </tr>
+          <tr>
+            <td data-es="Continuidad con la app actual (bn-calm.css + punto orbital)" data-en="Continuity with live app (bn-calm.css + orbiting dot)">Continuidad con la app actual (bn-calm.css + punto orbital)</td>
+            <td class="win">10 / 10 (nativa)</td>
+            <td>7.5 / 10</td>
+            <td>7.5 / 10</td>
+          </tr>
+          <tr>
+            <td data-es="Legibilidad extrema a 16 px (favicon / pestaña)" data-en="Extreme legibility at 16 px (favicon / browser tab)">Legibilidad extrema a 16 px (favicon / pestaña)</td>
+            <td class="win">9.5 / 10 (2 trazos)</td>
+            <td>8.0 / 10</td>
+            <td>7.5 / 10</td>
+          </tr>
+          <tr>
+            <td data-es="Potencial de animación (hover, HyperFrames, 3D)" data-en="Motion potential (hover, HyperFrames, 3D)">Potencial de animación (hover, HyperFrames, 3D)</td>
+            <td class="win">10 / 10 (órbita viva)</td>
+            <td>8.0 / 10</td>
+            <td>8.5 / 10</td>
+          </tr>
+          <tr>
+            <td data-es="Solvencia en contratos, PDFs y juntas con CFO" data-en="Authority in contracts, PDFs, and CFO boardrooms">Solvencia en contratos, PDFs y juntas con CFO</td>
+            <td class="win">9.5 / 10</td>
+            <td>9.5 / 10</td>
+            <td>9.0 / 10</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

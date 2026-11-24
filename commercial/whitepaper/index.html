@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Whitepaper Institucional y Técnico (2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand/brand-tokens.css" />
+  <script src="../brand/suite-runtime.js" defer></script>
+  <style>
+    .wp-cover {
+      padding: 76px 64px 68px;
+      background:
+        radial-gradient(640px 400px at 90% 8%, rgba(63,106,242,0.3), transparent 65%),
+        radial-gradient(500px 360px at 8% 92%, rgba(54,227,192,0.16), transparent 65%),
+        #05070d;
+      color: #fff;
+    }
+    .wp-cover__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 64px; }
+    .wp-cover h1 { font-family: var(--font-display); font-size: clamp(2.1rem, 4.1vw, 3.15rem); line-height: 1.06; letter-spacing: -0.045em; margin: 16px 0 20px; max-width: 780px; }
+    .wp-cover__sub { color: var(--bn-dark-ink-2); font-size: 1.05rem; max-width: 680px; margin: 0 0 44px; line-height: 1.55; }
+    .wp-cover__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.12); }
+    @media (max-width: 760px) { .wp-cover__stats { grid-template-columns: repeat(2, 1fr); } .wp-cover, .wp-sec { padding: 36px 24px !important; } }
+    .wp-stat { padding: 16px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .wp-stat strong { display: block; font-family: var(--font-mono); font-size: 1.25rem; color: var(--bn-teal); }
+    .wp-stat span { display: block; margin-top: 4px; font-size: 0.76rem; color: var(--bn-dark-ink-2); line-height: 1.35; }
+    .wp-sec { padding: 52px 64px; border-top: 1px solid var(--bn-hair); }
+    .wp-sec h2 { font-family: var(--font-display); font-size: 1.68rem; letter-spacing: -0.04em; margin: 10px 0 14px; color: var(--bn-ink); line-height: 1.15; }
+    .wp-sec h3 { font-family: var(--font-display); font-size: 1.08rem; letter-spacing: -0.02em; margin: 24px 0 8px; color: var(--bn-ink); }
+    .wp-sec p { color: var(--bn-ink-2); font-size: 0.95rem; margin: 0 0 14px; }
+    .callout { padding: 20px 24px; border-radius: var(--r-md); background: var(--bn-aurora-soft); border-left: 4px solid var(--bn-aurora); margin: 22px 0; }
+    .callout--teal { background: var(--bn-teal-soft); border-left-color: var(--bn-teal-deep); }
+    .callout strong { color: var(--bn-ink); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+    @media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    .card { padding: 22px; border-radius: var(--r-md); border: 1px solid var(--bn-hair); background: #fff; }
+    .card h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: 0.98rem; color: var(--bn-ink); }
+    .card p { margin: 0; font-size: 0.86rem; color: var(--bn-ink-2); }
+    .diagram-box { margin: 24px 0; padding: 26px; border-radius: var(--r-md); background: #070a14; color: #fff; border: 1px solid rgba(255,255,255,0.08); }
+    .formula-box { padding: 22px 26px; border-radius: var(--r-md); background: #0b1121; color: #eef2fb; font-family: var(--font-mono); font-size: 0.86rem; line-height: 1.75; margin: 20px 0; }
+    .formula-box b { color: var(--bn-teal); }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.86rem; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--bn-hair); }
+    th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--bn-ink-3); background: var(--bn-surface-soft); }
+    td.num { font-family: var(--font-mono); font-weight: 600; text-align: right; }
+    th.num { text-align: right; }
+    td.hi { color: var(--bn-teal-deep); font-weight: 700; }
+    .toc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; margin-top: 18px; }
+    @media (max-width: 680px) { .toc { grid-template-columns: 1fr; } }
+    .toc a { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bn-hair); text-decoration: none; color: var(--bn-ink); font-size: 0.9rem; font-weight: 600; }
+    .toc a span { font-family: var(--font-mono); color: var(--bn-aurora); font-size: 0.78rem; }
+    .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 22px 0; }
+    @media (max-width: 760px) { .roadmap { grid-template-columns: 1fr 1fr; } }
+    .step-card { padding: 18px; border-radius: 14px; background: var(--bn-surface-soft); border: 1px solid var(--bn-hair); }
+    .step-card small { font-family: var(--font-mono); font-weight: 700; color: var(--bn-aurora); font-size: 0.72rem; }
+    .step-card h4 { margin: 6px 0; font-size: 0.92rem; }
+    .step-card p { margin: 0; font-size: 0.8rem; }
+    .wp-foot { padding: 32px 64px; background: #070a14; color: var(--bn-dark-ink-2); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html">
+        <img src="../brand/assets/logo-a-orbit-tile.svg" alt="Buyniverse" width="28" height="28" />
+        <span>Buyniverse</span>
+      </a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Whitepaper Institucional y Técnico (2026)" data-en="Institutional &amp; Technical Whitepaper (2026)">Whitepaper Institucional y Técnico (2026)</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="../index.html" data-es="Hub Comercial" data-en="Commercial Hub">Hub Comercial</a>
+      <div class="bn-lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-set-lang="es" class="is-active">ES</button>
+        <button type="button" data-set-lang="en">EN</button>
+      </div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Exportar PDF" data-en="Export PDF">Exportar PDF</button>
+    </div>
+  </header>
+
+  <article class="bn-doc">
+    <!-- COVER -->
+    <section class="wp-cover">
+      <div class="wp-cover__head">
+        <img src="../brand/assets/logo-a-wordmark-dark.svg" alt="Buyniverse" height="40" />
+        <span class="pill pill--dark">WHITEPAPER · EDITION 2026</span>
+      </div>
+      <span class="kicker" style="color:var(--bn-teal)" data-es="INFRAESTRUCTURA DE COMPRAS B2B · SOURCING COMPETITIVO · CUMPLIMIENTO FISCAL" data-en="B2B PROCUREMENT INFRASTRUCTURE · COMPETITIVE SOURCING · FISCAL COMPLIANCE">INFRAESTRUCTURA DE COMPRAS B2B · SOURCING COMPETITIVO · CUMPLIMIENTO FISCAL</span>
+      <h1 data-es="Compras B2B verificables: cómo el RFQ sellado y las subastas inversas convierten la opacidad en ahorro auditable" data-en="Verifiable B2B Procurement: How Sealed RFQs and Live Reverse Auctions Turn Opacity into Auditable Savings">Compras B2B verificables: cómo el RFQ sellado y las subastas inversas convierten la opacidad en ahorro auditable</h1>
+      <p class="wp-cover__sub lang-es">Documento técnico y financiero para direcciones de Compras, CFOs y equipos de Auditoría. Detalla el flujo unificado «Necesito», la arquitectura de libro inmutable en servidor, la fórmula de comisión sobre ahorro verificado con piso y el marco de cumplimiento CFDI 4.0 en México y LATAM.</p>
+      <p class="wp-cover__sub lang-en">Technical and financial paper for Procurement leaders, CFOs, and Audit teams. Details the unified "Necesito" lifecycle, server-side immutable bid ledger architecture, verified-savings-with-floor commercial model, and CFDI 4.0 compliance framework for Mexico and LATAM.</p>
+      <div class="wp-cover__stats">
+        <div class="wp-stat"><strong>5 <span data-es="etapas" data-en="stages">etapas</span></strong><span data-es="Un solo expediente de la necesidad al CFDI" data-en="Single record from need to CFDI payment">Un solo expediente de la necesidad al CFDI</span></div>
+        <div class="wp-stat"><strong>25% / 20%</strong><span data-es="Comisión sobre ahorro verificado (tope 8%)" data-en="Fee on verified savings (8% hard cap)">Comisión sobre ahorro verificado (tope 8%)</span></div>
+        <div class="wp-stat"><strong>0%</strong><span data-es="Comisión por adjudicación a proveedores" data-en="Supplier award fee (no bid inflation)">Comisión por adjudicación a proveedores</span></div>
+        <div class="wp-stat"><strong>30 <span data-es="días" data-en="days">días</span></strong><span data-es="Piloto en modo informativo sin cobro" data-en="Informative-mode pilot with zero billing">Piloto en modo informativo sin cobro</span></div>
+      </div>
+    </section>
+
+    <!-- TABLE OF CONTENTS -->
+    <section class="wp-sec avoid-break">
+      <span class="kicker" data-es="CONTENIDO DEL DOCUMENTO" data-en="TABLE OF CONTENTS">CONTENIDO DEL DOCUMENTO</span>
+      <div class="toc">
+        <a href="#sec-1"><b data-es="1. El costo oculto del procurement manual" data-en="1. The Hidden Cost of Manual Procurement">1. El costo oculto del procurement manual</b><span>01</span></a>
+        <a href="#sec-2"><b data-es="2. El paradigma «Necesito»: 5 etapas unificadas" data-en="2. The «Necesito» Paradigm: 5 Unified Stages">2. El paradigma «Necesito»: 5 etapas unificadas</b><span>02</span></a>
+        <a href="#sec-3"><b data-es="3. Mecánica de mercado: RFQ sellado y subasta en vivo" data-en="3. Market Mechanics: Sealed RFQ &amp; Live Auction">3. Mecánica de mercado: RFQ sellado y subasta en vivo</b><span>03</span></a>
+        <a href="#sec-4"><b data-es="4. Modelo económico: ahorro verificado con piso" data-en="4. Economic Model: Verified Savings with Floor">4. Modelo económico: ahorro verificado con piso</b><span>04</span></a>
+        <a href="#sec-5"><b data-es="5. Seguridad, auditoría y cumplimiento CFDI 4.0" data-en="5. Security, Auditability &amp; CFDI 4.0 Compliance">5. Seguridad, auditoría y cumplimiento CFDI 4.0</b><span>05</span></a>
+        <a href="#sec-6"><b data-es="6. Programa Piloto de 30 días en modo informativo" data-en="6. 30-Day Informative Pilot Program">6. Programa Piloto de 30 días en modo informativo</b><span>06</span></a>
+      </div>
+    </section>
+
+    <!-- SECTION 1 -->
+    <section id="sec-1" class="wp-sec page-break">
+      <span class="kicker">01 · <span data-es="DIAGNÓSTICO DEL PROBLEMA" data-en="PROBLEM STATEMENT">DIAGNÓSTICO DEL PROBLEMA</span></span>
+      <h2 data-es="Por qué las compras B2B pierden margen antes de firmar la orden" data-en="Why B2B Procurement Leaks Margin Before the PO Is Signed">Por qué las compras B2B pierden margen antes de firmar la orden</h2>
+      <p class="lang-es">En la mayoría de las empresas medianas y corporativas en México y América Latina, el gasto indirecto y recurrente —tecnología, logística, suministros, mantenimiento y servicios profesionales— sigue operándose mediante cadenas de correo, hojas de cálculo desconectadas y mensajes de WhatsApp. Aunque el ERP registra la factura final, el momento donde realmente se forma el precio ocurre en una caja negra sin trazabilidad.</p>
+      <p class="lang-en">Across mid-market and enterprise organizations in Mexico and Latin America, recurring and indirect spend—IT hardware, freight, supplies, maintenance, and professional services—still runs on email threads, disconnected spreadsheets, and chat messages. While ERPs record the final invoice, actual price discovery happens inside an unaudited black box.</p>
+
+      <div class="grid-3 avoid-break">
+        <div class="card">
+          <h4 data-es="1. Competencia asimétrica" data-en="1. Asymmetric Competition">1. Competencia asimétrica</h4>
+          <p class="lang-es">Cotizar por correo produce 2 o 3 PDFs con formatos incompatibles. Sin presión competitiva transparente ni fecha sellada, los precios reflejan inercia comercial y no el mercado real.</p>
+          <p class="lang-en">Email quoting yields 2–3 incompatible PDFs. Without structured competitive pressure or sealed deadlines, quotes reflect relationship inertia rather than true market clearing prices.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="2. Trazabilidad rota" data-en="2. Broken Audit Trail">2. Trazabilidad rota</h4>
+          <p class="lang-es">Cuando Auditoría o Finanzas pregunta por qué se adjudicó a un proveedor específico, la evidencia vive repartida en bandejas personales sin sello de tiempo ni línea base bloqueada.</p>
+          <p class="lang-en">When Finance or Audit asks why a vendor won, the justification sits scattered across personal inboxes with no timestamped baseline or immutable bid history.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="3. Conciliación y riesgo fiscal" data-en="3. Reconciliation &amp; Fiscal Risk">3. Conciliación y riesgo fiscal</h4>
+          <p class="lang-es">Desfases entre orden de compra, recepción de almacén y factura CFDI 4.0 provocan retrabajos, pagos duplicados y exposición ante revisiones del SAT.</p>
+          <p class="lang-en">Mismatches across purchase orders, warehouse receipts, and CFDI 4.0 invoices drive manual rework, billing leakage, and fiscal audit exposure.</p>
+        </div>
+      </div>
+
+      <div class="callout avoid-break">
+        <p style="margin:0" class="lang-es"><strong>Tesis de Buyniverse:</strong> una compra corporativa no debería fragmentarse en seis herramientas ni requerir un contrato anual de software de cientos de miles de pesos antes de demostrar valor. Toda adquisición es una sola <em>necesidad</em> avanzando por cinco etapas verificables en servidor.</p>
+        <p style="margin:0" class="lang-en"><strong>The Buyniverse Thesis:</strong> corporate purchasing shouldn't splinter across six tools or require six-figure annual SaaS commitments before proving ROI. Every acquisition is a single <em>need</em> moving through five server-verified stages.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section id="sec-2" class="wp-sec">
+      <span class="kicker">02 · <span data-es="ARQUITECTURA DE PRODUCTO" data-en="PRODUCT ARCHITECTURE">ARQUITECTURA DE PRODUCTO</span></span>
+      <h2 data-es="El paradigma «Necesito»: publica una vez y haz que las ofertas compitan por ti" data-en="The «Necesito» Paradigm: Publish Once and Let Offers Compete">El paradigma «Necesito»: publica una vez y haz que las ofertas compitan por ti</h2>
+      <p class="lang-es">Buyniverse reemplaza los módulos aislados tradicionales por un modelo de datos único (<code>need-journey.js</code>) donde comprador, aprobador, proveedores, almacén y finanzas consultan la misma verdad operativa.</p>
+      <p class="lang-en">Buyniverse replaces siloed legacy modules with a single canonical journey model (<code>need-journey.js</code>) where buyers, approvers, suppliers, warehouse staff, and finance share one operational source of truth.</p>
+
+      <div class="diagram-box avoid-break">
+        <div class="mono" style="font-size:0.72rem;color:var(--bn-teal);margin-bottom:14px;letter-spacing:0.1em" data-es="CICLO DE VIDA UNIFICADO DE 5 ETAPAS · GOBERNANZA EN SERVIDOR" data-en="5-STAGE UNIFIED LIFECYCLE · SERVER-ENFORCED GOVERNANCE">CICLO DE VIDA UNIFICADO DE 5 ETAPAS · GOBERNANZA EN SERVIDOR</div>
+        <svg viewBox="0 0 820 155" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5-stage procurement flow">
+          <defs>
+            <linearGradient id="flow-line" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#3f6af2"/><stop offset="50%" stop-color="#0ea5e9"/><stop offset="100%" stop-color="#36e3c0"/>
+            </linearGradient>
+          </defs>
+          <line x1="72" y1="44" x2="748" y2="44" stroke="url(#flow-line)" stroke-width="3" stroke-dasharray="6 6"/>
+          <!-- Stage 1 -->
+          <g transform="translate(12,12)">
+            <rect width="142" height="128" rx="14" fill="rgba(63,106,242,0.14)" stroke="rgba(63,106,242,0.45)"/>
+            <circle cx="26" cy="32" r="13" fill="#3f6af2"/><text x="26" y="36" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">01</text>
+            <text x="16" y="68" fill="#fff" font-family="Sora,sans-serif" font-size="14" font-weight="700">Publicas / Publish</text>
+            <text x="16" y="88" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">Alcance, presupuesto</text>
+            <text x="16" y="104" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">&amp; flujo de aprobación</text>
+          </g>
+          <!-- Stage 2 -->
+          <g transform="translate(174,12)">
+            <rect width="142" height="128" rx="14" fill="rgba(139,92,246,0.14)" stroke="rgba(139,92,246,0.45)"/>
+            <circle cx="26" cy="32" r="13" fill="#8b5cf6"/><text x="26" y="36" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">02</text>
+            <text x="16" y="68" fill="#fff" font-family="Sora,sans-serif" font-size="14" font-weight="700">Compiten / Compete</text>
+            <text x="16" y="88" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">RFQ sellado y/o</text>
+            <text x="16" y="104" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">Subasta inversa en vivo</text>
+          </g>
+          <!-- Stage 3 -->
+          <g transform="translate(336,12)">
+            <rect width="142" height="128" rx="14" fill="rgba(14,165,233,0.14)" stroke="rgba(14,165,233,0.45)"/>
+            <circle cx="26" cy="32" r="13" fill="#0ea5e9"/><text x="26" y="36" text-anchor="middle" fill="#fff" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">03</text>
+            <text x="16" y="68" fill="#fff" font-family="Sora,sans-serif" font-size="14" font-weight="700">Eliges / Choose</text>
+            <text x="16" y="88" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">Matriz precio + riesgo,</text>
+            <text x="16" y="104" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">adjudicación inmutable</text>
+          </g>
+          <!-- Stage 4 -->
+          <g transform="translate(498,12)">
+            <rect width="142" height="128" rx="14" fill="rgba(245,158,11,0.14)" stroke="rgba(245,158,11,0.45)"/>
+            <circle cx="26" cy="32" r="13" fill="#f59e0b"/><text x="26" y="36" text-anchor="middle" fill="#05070d" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">04</text>
+            <text x="16" y="68" fill="#fff" font-family="Sora,sans-serif" font-size="14" font-weight="700">Recibes / Receive</text>
+            <text x="16" y="88" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">Orden de compra,</text>
+            <text x="16" y="104" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">recepción y evidencia</text>
+          </g>
+          <!-- Stage 5 -->
+          <g transform="translate(660,12)">
+            <rect width="142" height="128" rx="14" fill="rgba(54,227,192,0.14)" stroke="rgba(54,227,192,0.48)"/>
+            <circle cx="26" cy="32" r="13" fill="#36e3c0"/><text x="26" y="36" text-anchor="middle" fill="#05070d" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">05</text>
+            <text x="16" y="68" fill="#fff" font-family="Sora,sans-serif" font-size="14" font-weight="700">Pagas / Pay</text>
+            <text x="16" y="88" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">3-Way Match y</text>
+            <text x="16" y="104" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="11">facturación CFDI 4.0</text>
+          </g>
+        </svg>
+      </div>
+
+      <p class="lang-es"><strong>Gobernanza sin atajos:</strong> si quien publica una necesidad no cuenta con facultades de aprobación, el evento queda en espera y la delegación del aprobador aplica únicamente para esa aprobación puntual. La selección automática de proveedores filtra por categoría, desempeño y regla de riesgo (excluyendo automáticamente perfiles con riesgo &gt; 40 y asegurando al menos dos oferentes).</p>
+      <p class="lang-en"><strong>Governed publishing without shortcuts:</strong> when a requester lacks approval authority, the request queues for its designated approver—with single-action delegation rather than standing privileges. Automated supplier matching selects by category fit, rating, and risk policy (excluding profiles with risk &gt; 40 and requiring at least two competitors).</p>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section id="sec-3" class="wp-sec page-break">
+      <span class="kicker">03 · <span data-es="MECÁNICA DE MERCADO EN SERVIDOR" data-en="SERVER-SIDE MARKET MECHANICS">MECÁNICA DE MERCADO EN SERVIDOR</span></span>
+      <h2 data-es="RFQ sellado con base de mercado y subasta inversa inmutable" data-en="Sealed RFQ with Market Baseline &amp; Immutable Reverse Auctions">RFQ sellado con base de mercado y subasta inversa inmutable</h2>
+
+      <div class="grid-2 avoid-break">
+        <div class="card">
+          <h4 data-es="RFQ Sellado (server/modules/rfq)" data-en="Sealed RFQ (server/modules/rfq)">RFQ Sellado (server/modules/rfq)</h4>
+          <p class="lang-es">El presupuesto se congela al abrir la ronda con fecha y huella. Las cotizaciones son inmutables (cada revisión crea un registro nuevo) y <strong>permanecen ocultas al organizador hasta el cierre</strong>. Al adjudicar, la línea base se determina como <code>max(presupuesto, mediana de cotizaciones)</code>, evitando distorsiones por presupuestos artificialmente bajos.</p>
+          <p class="lang-en">The budget locks upon publication with timestamp and fingerprint. Quotes are append-only immutable records and <strong>remain sealed from the buyer until closing</strong>. Upon award, the baseline is computed as <code>max(budget, median of quotes)</code>, eliminating artificial baseline compression.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="Subasta Inversa en Vivo" data-en="Live Reverse Auction">Subasta Inversa en Vivo</h4>
+          <p class="lang-es">Libro de pujas autoritativo en servidor que valida piso, decremento mínimo, ventana temporal y <strong>extensión automática anti-francotirador (anti-sniping)</strong>. Los datos de contacto del proveedor se mantienen protegidos hasta la adjudicación, garantizando competencia justa.</p>
+          <p class="lang-en">Authoritative server-side bid ledger enforcing floor, minimum decrement step, time window, and <strong>automatic anti-sniping extensions</strong>. Supplier contact details stay shielded until award, preserving fair competition.</p>
+        </div>
+      </div>
+
+      <div class="diagram-box avoid-break">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span class="mono" style="font-size:0.72rem;color:var(--bn-teal);letter-spacing:0.08em" data-es="SIMULACIÓN ILUSTRATIVA · DESCENSO COMPETITIVO EN SUBASTA INVERSA" data-en="ILLUSTRATIVE SIMULATION · COMPETITIVE DESCENT IN LIVE REVERSE AUCTION">SIMULACIÓN ILUSTRATIVA · DESCENSO COMPETITIVO EN SUBASTA INVERSA</span>
+          <span class="mono" style="font-size:0.72rem;color:#9ba7c2">ANTI-SNIPING: ON</span>
+        </div>
+        <svg viewBox="0 0 800 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <line x1="60" y1="30" x2="770" y2="30" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
+          <line x1="60" y1="85" x2="770" y2="85" stroke="rgba(255,255,255,0.08)"/>
+          <line x1="60" y1="140" x2="770" y2="140" stroke="rgba(255,255,255,0.08)"/>
+          <text x="10" y="34" fill="#9ba7c2" font-family="JetBrains Mono,monospace" font-size="10">100%</text>
+          <text x="10" y="89" fill="#9ba7c2" font-family="JetBrains Mono,monospace" font-size="10">92%</text>
+          <text x="10" y="144" fill="#36e3c0" font-family="JetBrains Mono,monospace" font-size="10">85%</text>
+          <text x="64" y="22" fill="#9ba7c2" font-family="Plus Jakarta Sans,sans-serif" font-size="10">Línea base congelada / Locked Baseline</text>
+          <polyline points="60,36 180,54 310,66 440,86 580,98 730,114" fill="none" stroke="#62a5ff" stroke-width="3" stroke-linecap="round"/>
+          <polyline points="60,42 180,48 310,74 440,80 580,108 730,126" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+          <polyline points="60,38 180,62 310,82 440,104 580,124 730,148" fill="none" stroke="#36e3c0" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="730" cy="148" r="7" fill="#36e3c0"/>
+          <text x="615" y="176" fill="#36e3c0" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">Adjudicación / Award (-14.1%)</text>
+          <text x="60" y="186" fill="#6f7c99" font-family="JetBrains Mono,monospace" font-size="10">T=00:00</text>
+          <text x="380" y="186" fill="#6f7c99" font-family="JetBrains Mono,monospace" font-size="10">T=03:00</text>
+          <text x="705" y="186" fill="#6f7c99" font-family="JetBrains Mono,monospace" font-size="10">T=06:00</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section id="sec-4" class="wp-sec page-break">
+      <span class="kicker">04 · <span data-es="MODELO ECONÓMICO TRANSPARENTE" data-en="TRANSPARENT ECONOMIC MODEL">MODELO ECONÓMICO TRANSPARENTE</span></span>
+      <h2 data-es="Ahorro verificado con piso: alineación total con el comprador" data-en="Verified Savings with Floor: Full Buyer Alignment">Ahorro verificado con piso: alineación total con el comprador</h2>
+      <p class="lang-es">A diferencia del software de compras que exige licencias anuales rígidas o marketplaces que cobran comisiones ocultas a proveedores (encareciendo las cotizaciones), Buyniverse calcula una sola liquidación inmutable en el servidor al momento de adjudicar (<code>server/modules/commerce/fee.php</code>, verificada contra 300 vectores de prueba de paridad cliente-servidor).</p>
+      <p class="lang-en">Unlike procurement suites requiring heavy upfront licenses or marketplaces charging hidden supplier fees (which vendors simply bake into higher bids), Buyniverse computes a single immutable settlement server-side upon award (<code>server/modules/commerce/fee.php</code>, verified against 300 client-server parity test vectors).</p>
+
+      <div class="formula-box avoid-break">
+        <div><b>Ahorro verificado</b> = max(0, LíneaBaseBloqueada − PrecioAdjudicado)</div>
+        <div><b>Comisión</b> = min(<b>Tope 8%</b>, max(<b>Piso</b>, <b>Tasa × Ahorro verificado</b>))</div>
+        <div style="color:#9ba7c2;margin-top:8px">
+          • Tasa estándar: <b>25%</b> hasta MXN 5,000,000 (USD 250k) de ahorro acumulado 12m · <b>20%</b> sobre el excedente.<br/>
+          • Piso operativo por adjudicación: <b>0.4%</b> del monto adjudicado (mínimo <b>MXN 3,000</b> / <b>USD 150</b>).<br/>
+          • Sin adjudicación: <b>MXN 0</b>. Proveedores: <b>0% comisión por adjudicación</b> (hasta 3 respuestas/mes gratis; Verificado USD 49/mes).
+        </div>
+      </div>
+
+      <div class="callout callout--teal avoid-break">
+        <p style="margin:0" class="lang-es"><strong>Regla de oro para el comprador:</strong> en el tramo estándar te quedas con <strong>3 de cada 4 pesos que ahorras</strong> —y hasta 4 de cada 5 pesos al superar el umbral anual— con un techo duro del 8% sobre el monto adjudicado.</p>
+        <p style="margin:0" class="lang-en"><strong>Buyer's rule of thumb:</strong> in the standard bracket you keep <strong>3 out of every 4 dollars saved</strong>—and 4 out of 5 above the annual threshold—protected by an 8% hard cap on the awarded amount.</p>
+      </div>
+
+      <h3 data-es="Escenarios anuales ilustrativos (USD — basados en la fórmula real del servidor)" data-en="Illustrative Annual Scenarios (USD — Computed via Exact Server Formula)">Escenarios anuales ilustrativos (USD — basados en la fórmula real del servidor)</h3>
+      <table class="avoid-break">
+        <thead>
+          <tr>
+            <th data-es="Perfil de empresa" data-en="Company Profile">Perfil de empresa</th>
+            <th class="num" data-es="Compras/año" data-en="Awards/yr">Compras/año</th>
+            <th class="num" data-es="Ahorro/compra*" data-en="Saving/award*">Ahorro/compra*</th>
+            <th class="num" data-es="Ahorro anual bruto" data-en="Gross Annual Saving">Ahorro anual bruto</th>
+            <th class="num" data-es="Comisión Buyniverse" data-en="Buyniverse Fee">Comisión Buyniverse</th>
+            <th class="num" data-es="Retención neta comprador" data-en="Buyer Net Retention">Retención neta comprador</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong data-es="Pequeña empresa" data-en="Small Business">Pequeña empresa</strong></td>
+            <td class="num">6</td>
+            <td class="num">$4,000</td>
+            <td class="num">$24,000</td>
+            <td class="num">$6,000</td>
+            <td class="num hi">75% ($18,000)</td>
+          </tr>
+          <tr>
+            <td><strong data-es="Mediana empresa" data-en="Mid-Market">Mediana empresa</strong></td>
+            <td class="num">24</td>
+            <td class="num">$12,000</td>
+            <td class="num">$288,000</td>
+            <td class="num">$70,100</td>
+            <td class="num hi">76% ($217,900)</td>
+          </tr>
+          <tr>
+            <td><strong data-es="Corporativo" data-en="Enterprise">Corporativo</strong></td>
+            <td class="num">80</td>
+            <td class="num">$25,000</td>
+            <td class="num">$2,000,000</td>
+            <td class="num">$412,500</td>
+            <td class="num hi">79% ($1,587,500)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.78rem;color:var(--bn-ink-3)" class="lang-es">*Nota de transparencia: cifras ilustrativas basadas en ahorros supuestos por compra para ejemplificar el funcionamiento progresivo por tramos. Los resultados reales dependen de las ofertas recibidas en cada evento. Si una adjudicación no genera ahorro o este es menor al piso, aplica el piso operativo (0.4%, mín. MXN 3,000 / USD 150).</p>
+      <p style="font-size:0.78rem;color:var(--bn-ink-3)" class="lang-en">*Transparency notice: illustrative figures assuming hypothetical per-event savings to demonstrate tiered bracket math. Actual results depend on offers received in each buyer's events. Awarded events with zero or minimal savings trigger the operational floor (0.4%, min. USD 150 / MXN 3,000).</p>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section id="sec-5" class="wp-sec page-break">
+      <span class="kicker">05 · <span data-es="SEGURIDAD, GOBIERNO Y CUMPLIMIENTO" data-en="SECURITY, GOVERNANCE &amp; COMPLIANCE">SEGURIDAD, GOBIERNO Y CUMPLIMIENTO</span></span>
+      <h2 data-es="Arquitectura preparada para auditoría corporativa y SAT" data-en="Architecture Built for Enterprise Audit and Mexican Tax Compliance">Arquitectura preparada para auditoría corporativa y SAT</h2>
+      <div class="grid-2 avoid-break">
+        <div class="card">
+          <h4 data-es="Acceso y aislamiento multi-tenant" data-en="Access &amp; Multi-Tenant Isolation">Acceso y aislamiento multi-tenant</h4>
+          <p class="lang-es">Inicio de sesión mediante Google con verificación criptográfica de token en servidor, nonce de un solo uso y protección CSRF (sin contraseñas propias vulnerables). Cada petición se valida por empresa, sucursal y rol.</p>
+          <p class="lang-en">Google sign-in with server-verified tokens, single-use nonces, and CSRF protection (zero custom password storage). Every API request enforces company, branch, and role boundaries server-side.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="Facturación CFDI 4.0 y cifrado fiscal" data-en="CFDI 4.0 Stamping &amp; Fiscal Encryption">Facturación CFDI 4.0 y cifrado fiscal</h4>
+          <p class="lang-es">Sellos digitales (CSD), cuentas de cobro e invitaciones cifrados en reposo. Timbrado CFDI 4.0 ejecutado en servidor vía PAC y conciliación de 3 vías (Orden ↔ Recepción ↔ CFDI) dentro del mismo expediente.</p>
+          <p class="lang-en">Digital fiscal certificates (CSD), billing accounts, and invitations encrypted at rest. Server-side CFDI 4.0 PAC stamping paired with 3-Way Match (PO ↔ Receipt ↔ CFDI) inside one unified record.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="Liquidaciones y pujas inmutables" data-en="Immutable Bids &amp; Settlements">Liquidaciones y pujas inmutables</h4>
+          <p class="lang-es">Los registros de <code>award_settlements</code>, cotizaciones RFQ y pujas en vivo están protegidos mediante triggers de base de datos que impiden reescritura o borrado posterior.</p>
+          <p class="lang-en"><code>award_settlements</code>, RFQ submissions, and live auction bids are protected by database triggers preventing retroactive edits or deletions.</p>
+        </div>
+        <div class="card">
+          <h4 data-es="Continuidad operativa y respaldo" data-en="Operational Continuity &amp; Backups">Continuidad operativa y respaldo</h4>
+          <p class="lang-es">Respaldo diario verificado con checksum y rotación (14 diarios + 6 mensuales), prueba automatizada de restauración y vigilancia cada 5 minutos con alertas automáticas.</p>
+          <p class="lang-en">Daily checksum-verified database backups with retention (14 daily + 6 monthly), automated restore tests, and 5-minute health monitoring with alerting.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section id="sec-6" class="wp-sec avoid-break">
+      <span class="kicker">06 · <span data-es="ADOPCIÓN SIN FRICCIÓN" data-en="FRICTIONLESS ADOPTION">ADOPCIÓN SIN FRICCIÓN</span></span>
+      <h2 data-es="Programa Piloto de 30 días en modo informativo" data-en="30-Day Informative-Mode Pilot Program">Programa Piloto de 30 días en modo informativo</h2>
+      <p class="lang-es">Antes de activar cualquier cobro de comisión, las empresas seleccionadas operan un piloto estructurado con la comisión en <strong>modo informativo</strong>: el servidor ejecuta y muestra la liquidación exacta de cada adjudicación, pero el cargo es <strong>MXN 0</strong> durante los 30 días de validación.</p>
+      <p class="lang-en">Before activating any commission billing, participating organizations run a structured pilot in <strong>informative mode</strong>: the server calculates and displays exact settlements for every award, while actual billing stays at <strong>USD 0</strong> throughout the 30-day validation window.</p>
+
+      <div class="roadmap">
+        <div class="step-card">
+          <small data-es="SEMANA 1" data-en="WEEK 1">SEMANA 1</small>
+          <h4 data-es="Alta y categoría" data-en="Setup &amp; Category">Alta y categoría</h4>
+          <p class="lang-es">Alta guiada de empresa, roles de aprobación y selección de 1 categoría prioritaria.</p>
+          <p class="lang-en">Guided company onboarding, approval roles, and selection of 1 priority spend category.</p>
+        </div>
+        <div class="step-card">
+          <small data-es="SEMANA 2" data-en="WEEK 2">SEMANA 2</small>
+          <h4 data-es="Primer RFQ sellado" data-en="First Sealed RFQ">Primer RFQ sellado</h4>
+          <p class="lang-es">Publicación de 1 necesidad real e invitación a mínimo 2–5 proveedores (0% costo para ellos).</p>
+          <p class="lang-en">Publish 1 real need and invite at least 2–5 suppliers (zero cost to participate).</p>
+        </div>
+        <div class="step-card">
+          <small data-es="SEMANA 3" data-en="WEEK 3">SEMANA 3</small>
+          <h4 data-es="Subasta y adjudicación" data-en="Auction &amp; Award">Subasta y adjudicación</h4>
+          <p class="lang-es">Ejecución de puja en vivo con anti-sniping, adjudicación con evidencia y OC.</p>
+          <p class="lang-en">Run live reverse auction with anti-sniping, auditable award decision, and PO generation.</p>
+        </div>
+        <div class="step-card">
+          <small data-es="SEMANA 4" data-en="WEEK 4">SEMANA 4</small>
+          <h4 data-es="Auditoría de impacto" data-en="Impact Review">Auditoría de impacto</h4>
+          <p class="lang-es">Revisión con Finanzas del ahorro medido contra mercado y decisión de pase a operación.</p>
+          <p class="lang-en">Finance review of verified market savings and go/no-go decision to production billing.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="wp-foot">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img src="../brand/assets/logo-a-orbit.svg" width="26" height="26" alt="Buyniverse" />
+        <span><strong style="color:#fff">Buyniverse Technologies</strong> · buyniverse.com · hi@buyniverse.com</span>
+      </div>
+      <span class="mono">WHITEPAPER v2.0 · ES/EN · 2026</span>
+    </footer>
+  </article>
+</body>
+</html>

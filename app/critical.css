@@ -140,14 +140,15 @@ html:not(.dark) #app-boot .boot-card {
 
 #app-boot[hidden] { display: none !important; }
 
-/* The logo as a spinner (shared by the boot screen and the hero caret):
-   the white dot of the ring orbits its centre once every 1.6 s. When it is back at its start it flashes,
-   then it fades and orbits again, while the ring's colour keeps cycling through the hue wheel. */
+/* Proposal A (Convergent Orbit) as a spinner (shared by the boot screen and the hero caret):
+   the convergence node orbits the "b" bowl centre (17, 18.5) once every 1.6 s, flashing as it returns
+   to close the silhouette, while the stroke cycles smoothly through the hue wheel. */
 .bn-logo-spin { display: block; overflow: visible; }
 .bn-logo-spin .ls-a { stop-color: var(--a, #36e3c0); }
-.bn-logo-spin .ls-b { stop-color: var(--b, #4d7cff); }
-.bn-logo-spin .ls-orbit { transform-box: view-box; transform-origin: 17px 19px; animation: lsOrbit 1.6s linear infinite; }
-.bn-logo-spin .ls-dot { animation: lsFlash 1.6s ease-out infinite; }
+.bn-logo-spin .ls-b { stop-color: var(--b, #3f6af2); }
+.bn-logo-spin .ls-orbit { transform-box: view-box; transform-origin: 17px 18.5px; animation: lsOrbit 1.6s linear infinite; }
+.bn-logo-spin .ls-dot { fill: #fff; animation: lsFlash 1.6s ease-out infinite; }
+html:not(.dark) #app-boot .bn-logo-spin .ls-dot { fill: #0a0f1e; }
 .bn-logo-spin .ls-ring { animation: lsHue 4.8s linear infinite; }
 
 #app-boot .boot-mark {

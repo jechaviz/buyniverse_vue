@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Playbook Comercial, Objeciones y Outreach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand/brand-tokens.css" />
+  <script src="../brand/suite-runtime.js" defer></script>
+  <style>
+    .hero { padding: 52px 56px 44px; background: radial-gradient(500px 320px at 88% 10%, rgba(63,106,242,0.28), transparent 65%), #05070d; color: #fff; }
+    .hero h1 { font-family: var(--font-display); font-size: 2.2rem; letter-spacing: -0.04em; margin: 12px 0 12px; }
+    .hero p { color: var(--bn-dark-ink-2); max-width: 700px; margin: 0; }
+    .sec { padding: 44px 56px; border-top: 1px solid var(--bn-hair); }
+    @media (max-width: 720px) { .hero, .sec { padding: 28px 20px; } }
+    .sec h2 { font-family: var(--font-display); font-size: 1.48rem; letter-spacing: -0.035em; margin: 8px 0 16px; }
+    .obj-grid { display: grid; gap: 14px; }
+    .obj { padding: 20px 22px; border-radius: 14px; border: 1px solid var(--bn-hair); background: #fff; }
+    .obj__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .obj__q { font-family: var(--font-display); font-weight: 700; font-size: 0.98rem; color: var(--bn-ink); }
+    .obj__a { margin: 0; font-size: 0.88rem; color: var(--bn-ink-2); }
+    .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 780px) { .tpl-grid { grid-template-columns: 1fr; } }
+    .tpl { padding: 20px; border-radius: 14px; border: 1px solid var(--bn-hair); background: var(--bn-surface-soft); display: flex; flex-direction: column; gap: 10px; }
+    .tpl__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .tpl__top strong { font-size: 0.9rem; color: var(--bn-ink); }
+    .tpl pre { margin: 0; white-space: pre-wrap; font-family: var(--font-sans); font-size: 0.82rem; line-height: 1.55; color: var(--bn-ink-2); background: #fff; padding: 14px; border-radius: 10px; border: 1px solid var(--bn-hair); flex: 1; }
+    .copy-btn { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--bn-aurora); background: var(--bn-aurora-soft); color: var(--bn-aurora-deep); font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+    .timeline { display: grid; gap: 12px; }
+    .slot { display: grid; grid-template-columns: 110px 1fr; gap: 16px; padding: 16px 18px; border-radius: 12px; background: var(--bn-surface-soft); border: 1px solid var(--bn-hair); }
+    @media (max-width: 640px) { .slot { grid-template-columns: 1fr; gap: 6px; } }
+    .slot__min { font-family: var(--font-mono); font-weight: 700; color: var(--bn-aurora); font-size: 0.84rem; }
+    .slot strong { display: block; font-size: 0.92rem; margin-bottom: 4px; }
+    .slot p { margin: 0; font-size: 0.84rem; color: var(--bn-ink-2); }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html"><img src="../brand/assets/logo-a-orbit-tile.svg" width="28" height="28" alt="Buyniverse" /><span>Buyniverse</span></a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Sales Playbook · Objeciones, Outreach y Guion de Demo" data-en="Sales Playbook · Battlecards, Outreach &amp; Demo Script">Sales Playbook · Objeciones, Outreach y Guion de Demo</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="../index.html" data-es="Hub Comercial" data-en="Commercial Hub">Hub Comercial</a>
+      <div class="bn-lang-toggle"><button type="button" data-set-lang="es" class="is-active">ES</button><button type="button" data-set-lang="en">EN</button></div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Exportar PDF" data-en="Export PDF">Exportar PDF</button>
+    </div>
+  </header>
+
+  <article class="bn-doc">
+    <section class="hero">
+      <span class="kicker" style="color:var(--bn-teal)" data-es="HERRAMIENTA INTERNA DE VENTAS B2B" data-en="B2B SALES ENABLEMENT PLAYBOOK">HERRAMIENTA INTERNA DE VENTAS B2B</span>
+      <h1 data-es="Playbook Comercial Buyniverse" data-en="Buyniverse Commercial Playbook">Playbook Comercial Buyniverse</h1>
+      <p class="lang-es">Matriz de objeciones por perfil, mensajes listos para copiar (sin promesas engañosas) y guion de demo de 15 minutos sobre el entorno privado <code>/demo/</code>.</p>
+      <p class="lang-en">Role-based objection battlecards, compliance-checked copy-ready outreach templates, and a 15-minute live demo script using the private <code>/demo/</code> environment.</p>
+    </section>
+
+    <!-- 01 OBJECTION BATTLECARDS -->
+    <section class="sec">
+      <span class="kicker">01 · <span data-es="MATRIZ DE OBJECIONES (BATTLECARDS)" data-en="OBJECTION BATTLECARDS">MATRIZ DE OBJECIONES (BATTLECARDS)</span></span>
+      <h2 data-es="Respuestas precisas y auditables por perfil" data-en="Accurate, Auditable Responses by Persona">Respuestas precisas y auditables por perfil</h2>
+
+      <div class="obj-grid">
+        <div class="obj avoid-break">
+          <div class="obj__head"><span class="obj__q" data-es="«¿Y si en una compra no ahorramos nada? ¿Nos cobran igual?»" data-en="«What if a purchase generates zero savings—do you still charge?»">«¿Y si en una compra no ahorramos nada? ¿Nos cobran igual?»</span><span class="pill">CFO</span></div>
+          <p class="obj__a lang-es">Si no adjudicas, <strong>pagas MXN 0</strong>. Si adjudicas con ahorro mínimo o nulo, no mentimos diciendo «gratis»: aplica un piso operativo bajo y predecible (0.4% del monto adjudicado, mínimo MXN 3,000) que cubre la infraestructura y protege el modelo. Y durante el <strong>piloto de 30 días en modo informativo</strong> el cobro es 0 para que compruebes el ahorro real antes de decidir.</p>
+          <p class="obj__a lang-en">If you don't award, you pay <strong>USD 0</strong>. If you award with minimal or zero savings, we're upfront: a small operational floor applies (0.4% of awarded value, min. USD 150). Better yet, during the <strong>30-day informative pilot</strong> actual billing is zero so Finance validates real results first.</p>
+        </div>
+        <div class="obj avoid-break">
+          <div class="obj__head"><span class="obj__q" data-es="«Los proveedores van a subir sus precios para absorber su comisión.»" data-en="«Suppliers will just inflate quotes to cover your marketplace fee.»">«Los proveedores van a subir sus precios para absorber su comisión.»</span><span class="pill" data-es="COMPRAS" data-en="PROCUREMENT">COMPRAS</span></div>
+          <p class="obj__a lang-es">Exactamente por eso <strong>los proveedores pagan 0% de comisión por adjudicación</strong>. No tienen ningún sobrecosto que trasladar a su oferta, y al competir en RFQ sellado o subasta inversa con anti-sniping compiten sobre su margen neto real.</p>
+          <p class="obj__a lang-en">That's precisely why <strong>suppliers pay 0% award commission</strong>. They have zero platform tax to bake into bids, and competing inside a sealed RFQ or anti-sniping reverse auction pushes them to quote true net pricing.</p>
+        </div>
+        <div class="obj avoid-break">
+          <div class="obj__head"><span class="obj__q" data-es="«¿Cómo sé que el ahorro no es un número inflado en el navegador?»" data-en="«How do we know the savings math isn't manipulated client-side?»">«¿Cómo sé que el ahorro no es un número inflado en el navegador?»</span><span class="pill" data-es="AUDITORÍA / CFO" data-en="AUDIT / CFO">AUDITORÍA / CFO</span></div>
+          <p class="obj__a lang-es">La línea base se congela en el servidor antes de recibir ofertas; en RFQ sellado usamos el mayor entre tu presupuesto y la <strong>mediana real de cotizaciones</strong>. La liquidación (<code>award_settlements</code>) se escribe una sola vez en MariaDB con triggers que prohíben editarla o borrarla.</p>
+          <p class="obj__a lang-en">Baselines lock server-side before any bid lands; in sealed RFQs we use max(budget, actual quote median). Each settlement (<code>award_settlements</code>) is written once in MariaDB with database triggers blocking edits or deletes.</p>
+        </div>
+        <div class="obj avoid-break">
+          <div class="obj__head"><span class="obj__q" data-es="«¿Qué tan seguro es subir nuestra información fiscal y de compras?»" data-en="«How secure is our procurement and fiscal (CFDI) data?»">«¿Qué tan seguro es subir nuestra información fiscal y de compras?»</span><span class="pill" data-es="TI / SEGURIDAD" data-en="IT / SECURITY">TI / SEGURIDAD</span></div>
+          <p class="obj__a lang-es">Autenticación vía Google SSO verificada en servidor (sin contraseñas propias), aislamiento estricto por empresa/sucursal/rol, cifrado en reposo para sellos CSD y cuentas de cobro, respaldos diarios con verificación de integridad y monitoreo cada 5 minutos.</p>
+          <p class="obj__a lang-en">Server-verified Google SSO (zero stored passwords), strict company/branch/role isolation, encryption at rest for CSD fiscal keys and payout accounts, checksum-verified daily backups, and 5-minute health monitoring.</p>
+        </div>
+        <div class="obj avoid-break">
+          <div class="obj__head"><span class="obj__q" data-es="«¿Para qué me registro como proveedor si solo buscan exprimir precio?»" data-en="«Why join as a supplier if it's just a race to the bottom?»">«¿Para qué me registro como proveedor si solo buscan exprimir precio?»</span><span class="pill pill--teal" data-es="PROVEEDOR" data-en="SUPPLIER">PROVEEDOR</span></div>
+          <p class="obj__a lang-es">Accedes gratis a compradores corporativos con presupuesto aprobado, pagas <strong>0% de comisión sobre tus ventas</strong>, nadie filtra tu propuesta antes del cierre y la matriz de adjudicación evalúa calidad, tiempo de entrega y riesgo —no solo precio.</p>
+          <p class="obj__a lang-en">You gain free access to corporate buyers with approved budgets, pay <strong>0% commission on won orders</strong>, benefit from sealed-bid protection, and are scored on quality, delivery lead time, and compliance—not price alone.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 OUTREACH PACK -->
+    <section class="sec page-break">
+      <span class="kicker">02 · <span data-es="PLANTILLAS DE PROSPECCIÓN (LISTAS PARA COPIAR)" data-en="COPY-READY OUTREACH TEMPLATES">PLANTILLAS DE PROSPECCIÓN (LISTAS PARA COPIAR)</span></span>
+      <h2 data-es="Correos y mensajes de WhatsApp sin promesas engañosas" data-en="Compliance-Safe Cold Emails &amp; WhatsApp Scripts">Correos y mensajes de WhatsApp sin promesas engañosas</h2>
+
+      <div class="tpl-grid">
+        <div class="tpl avoid-break">
+          <div class="tpl__top">
+            <strong data-es="Email 1 · Comprador / CFO (Primer toque)" data-en="Email 1 · Buyer / CFO (First Touch)">Email 1 · Comprador / CFO (Primer toque)</strong>
+            <button type="button" class="copy-btn no-print" onclick="copyTpl(this)" data-es="Copiar" data-en="Copy">Copiar</button>
+          </div>
+          <pre class="lang-es">Asunto: Una categoría, 30 días en modo informativo (sin cobro)
+
+Hola [Nombre],
+
+Cuando una empresa cotiza por correo o WhatsApp, la formación de precio suele quedar fuera de auditoría y los proveedores no compiten bajo reglas parejas.
+
+En Buyniverse unificamos el flujo en 5 pasos: publicas la necesidad, tus proveedores compiten en RFQ sellado o subasta inversa en vivo (con 0% comisión para ellos), adjudicas con evidencia inmutable y cierras con 3-Way Match y CFDI 4.0.
+
+Antes de cualquier cobro, estamos abriendo un piloto de 30 días en modo informativo para 5 empresas: pruebas una sola categoría real, mides el ahorro contra mercado y Finanzas valida el resultado con MXN 0 en comisiones.
+
+¿Te hace sentido ver una simulación de 15 minutos esta semana?
+
+Saludos,
+[Tu Nombre] · buyniverse.com</pre>
+          <pre class="lang-en">Subject: One spend category, 30-day informative pilot (zero billing)
+
+Hi [Name],
+
+When B2B quotes run through email threads, price discovery lacks an audit trail and suppliers rarely compete on a level field.
+
+Buyniverse unifies purchasing into 5 server-verified stages: publish a need, let suppliers compete via sealed RFQ or live reverse auction (with 0% supplier award fees), award with an immutable ledger, and close with 3-Way Match and CFDI 4.0.
+
+We are opening a 30-day informative-mode pilot for 5 companies: test one live category, measure market savings against a locked baseline, and review with Finance at USD 0 commission billing.
+
+Open to a 15-minute live walkthrough this week?
+
+Best,
+[Your Name] · buyniverse.com</pre>
+        </div>
+
+        <div class="tpl avoid-break">
+          <div class="tpl__top">
+            <strong data-es="Email 2 · Seguimiento con Calculadora" data-en="Email 2 · Follow-Up with Calculator">Email 2 · Seguimiento con Calculadora</strong>
+            <button type="button" class="copy-btn no-print" onclick="copyTpl(this)" data-es="Copiar" data-en="Copy">Copiar</button>
+          </div>
+          <pre class="lang-es">Asunto: Re: Simula tu retención neta en 30 segundos
+
+Hola [Nombre],
+
+Te comparto nuestra calculadora pública (buyniverse.com/#/ahorro): ingresa un presupuesto de referencia y una oferta recibida para ver al instante el ahorro, nuestra comisión (tasa estándar 25% con piso 0.4% y tope 8%) y lo que se queda tu empresa —la misma fórmula exacta que ejecuta el servidor.
+
+Si eliges una compra próxima para correrla en el piloto informativo de 30 días, en menos de una hora la dejamos lista.
+
+¿Jueves o viernes a las 10:00 te funciona?
+
+[Tu Nombre]</pre>
+          <pre class="lang-en">Subject: Re: Estimate your net retention in 30 seconds
+
+Hi [Name],
+
+Sharing our public calculator (buyniverse.com/#/ahorro): drop in a single reference budget and an offer you received to see the exact saving, Buyniverse's fee (25% standard, 0.4% floor, 8% cap), and what your company keeps—computed by the same server formula.
+
+Pick one upcoming purchase for our 30-day informative pilot and we can have it live in under an hour.
+
+Does Thursday or Friday at 10 AM work?
+
+[Your Name]</pre>
+        </div>
+
+        <div class="tpl avoid-break">
+          <div class="tpl__top">
+            <strong data-es="WhatsApp / LinkedIn · Comprador" data-en="WhatsApp / LinkedIn · Buyer">WhatsApp / LinkedIn · Comprador</strong>
+            <button type="button" class="copy-btn no-print" onclick="copyTpl(this)" data-es="Copiar" data-en="Copy">Copiar</button>
+          </div>
+          <pre class="lang-es">Hola [Nombre], vi que lideras Compras en [Empresa]. En Buyniverse ayudamos a equipos a correr RFQ sellado y subastas inversas en vivo con trazabilidad en servidor y 0% comisión a proveedores. Estamos abriendo 5 lugares para un piloto de 30 días en modo informativo (MXN 0 de comisión). ¿Te comparto el one-pager de 1 hoja?</pre>
+          <pre class="lang-en">Hi [Name], noticed you lead Procurement at [Company]. At Buyniverse we help teams run sealed RFQs and live reverse auctions with server-side audit trails and 0% supplier fees. We're opening 5 spots for a 30-day informative pilot (USD 0 billing). Want me to send over our 1-page datasheet?</pre>
+        </div>
+
+        <div class="tpl avoid-break">
+          <div class="tpl__top">
+            <strong data-es="Email / WhatsApp · Invitación a Proveedor" data-en="Email / WhatsApp · Supplier Invite">Email / WhatsApp · Invitación a Proveedor</strong>
+            <button type="button" class="copy-btn no-print" onclick="copyTpl(this)" data-es="Copiar" data-en="Copy">Copiar</button>
+          </div>
+          <pre class="lang-es">Asunto: Invitación sin comisión (0%) a licitar con compradores corporativos
+
+Hola [Nombre],
+
+Te invitamos a sumar a [Proveedor] al directorio de Buyniverse. A diferencia de otros marketplaces, NO cobramos comisión sobre tus adjudicaciones (0%): conservas el 100% de tu precio ganador y puedes responder hasta 3 invitaciones al mes gratis.
+
+Todas las rondas corren bajo RFQ sellado y subastas con regla anti-sniping para que compitas en igualdad de condiciones.
+
+¿Te envío la ficha de 1 página para proveedores?
+
+[Tu Nombre] · buyniverse.com</pre>
+          <pre class="lang-en">Subject: 0% commission invitation to bid on corporate orders
+
+Hi [Name],
+
+We'd like to invite [Supplier] to join Buyniverse. Unlike typical marketplaces, we charge 0% commission on awarded orders—you keep 100% of your winning price and can answer up to 3 buyer invitations/month for free.
+
+Every round runs on sealed RFQs and anti-sniping auctions for fair competition.
+
+Can I send over our 1-page supplier sheet?
+
+[Your Name] · buyniverse.com</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 15-MINUTE DEMO SCRIPT -->
+    <section class="sec page-break avoid-break">
+      <span class="kicker">03 · <span data-es="GUION DE DEMOSTRACIÓN EN VIVO (15 MINUTOS)" data-en="15-MINUTE LIVE DEMO SCRIPT">GUION DE DEMOSTRACIÓN EN VIVO (15 MINUTOS)</span></span>
+      <h2 data-es="Cómo presentar /demo/ con el elenco virtual y cerrar el piloto" data-en="Running /demo/ with Virtual Bidders to Close the Pilot">Cómo presentar /demo/ con el elenco virtual y cerrar el piloto</h2>
+      <div class="timeline">
+        <div class="slot">
+          <div class="slot__min">00:00 – 02:30</div>
+          <div><strong data-es="1. Contexto y regla de transparencia" data-en="1. Context &amp; Transparency Frame">1. Contexto y regla de transparencia</strong><p class="lang-es">Pregunta qué categoría compran cada mes por correo. Aclara explícitamente: «Todo lo que verás corre en nuestra demo privada con catálogo real de 20,576 SKUs y proveedores virtuales para ilustrar el flujo sin tocar datos productivos.»</p><p class="lang-en">Ask which spend category runs through email today. State clearly: "Everything shown runs in our private demo using a real 20,576-SKU catalog and virtual bidders to demonstrate the live mechanics."</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot__min">02:30 – 05:30</div>
+          <div><strong data-es="2. Flujo «Necesito» y gobernanza de aprobación" data-en="2. «Necesito» Flow &amp; Approval Governance">2. Flujo «Necesito» y gobernanza de aprobación</strong><p class="lang-es">Publica una necesidad desde la barra «Necesito…». Muestra cómo la línea base se bloquea al abrir, cómo la aprobación no otorga permisos permanentes y cómo se filtran proveedores por riesgo (≤ 40).</p><p class="lang-en">Publish a need from the "I need…" bar. Highlight locked baseline creation, single-action approval delegation, and automatic supplier risk filtering (≤ 40).</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot__min">05:30 – 09:30</div>
+          <div><strong data-es="3. Subasta inversa en vivo (acelerada a 2× / 4×)" data-en="3. Live Reverse Auction (2× / 4× Speed)">3. Subasta inversa en vivo (acelerada a 2× / 4×)</strong><p class="lang-es">Lanza <em>Iniciar una puja de demostración</em> (MXN 1,850,000 · 6 proveedores virtuales). Muestra las preguntas en el canal, cómo los competidores se retiran al tocar su piso y cómo el francotirador dispara la extensión <strong>anti-sniping</strong>.</p><p class="lang-en">Launch <em>Start demo auction</em> (MXN 1,850,000 · 6 virtual bidders). Show live Q&amp;A, bidders dropping out at their floor, and the sniper triggering the <strong>anti-sniping</strong> extension.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot__min">09:30 – 12:30</div>
+          <div><strong data-es="4. Adjudicación, Equipos/Tareas y 3-Way Match + CFDI 4.0" data-en="4. Award, Order Team &amp; 3-Way Match + CFDI 4.0">4. Adjudicación, Equipos/Tareas y 3-Way Match + CFDI 4.0</strong><p class="lang-es">Adjudica al ganador, muestra la pestaña <em>Equipos y tareas</em> del pedido (colaboración cliente-proveedor) y el bloque de conciliación 3 vías + timbrado CFDI 4.0.</p><p class="lang-en">Award the winner, open the order's <em>Teams &amp; tasks</em> collaboration view, and walk through 3-Way Match + CFDI 4.0 compliance.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot__min">12:30 – 15:00</div>
+          <div><strong data-es="5. Calculadora real y cierre del Piloto 30 días" data-en="5. Exact Fee Calculator &amp; 30-Day Pilot Close">5. Calculadora real y cierre del Piloto 30 días</strong><p class="lang-es">Abre <code>/ahorro</code> o el Generador de Propuesta de Piloto con un gasto real del prospecto. Cierra proponiendo: «Elijamos 1 categoría y corramos 30 días en modo informativo con MXN 0 de comisión.»</p><p class="lang-en">Open <code>/ahorro</code> or the Pilot Proposal Generator with one real prospect purchase. Close with: "Let's pick 1 category and run 30 days in informative mode at USD 0 billing."</p></div>
+        </div>
+      </div>
+    </section>
+  </article>
+
+  <script>
+    function copyTpl(btn) {
+      var tpl = btn.closest(".tpl");
+      var lang = window.BuyniverseSuite.getLang();
+      var pre = tpl.querySelector("pre.lang-" + lang);
+      if (pre) window.BuyniverseSuite.copyText(pre.textContent.trim(), btn);
+    }
+  </script>
+</body>
+</html>

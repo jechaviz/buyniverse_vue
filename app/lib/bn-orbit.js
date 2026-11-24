@@ -14,9 +14,10 @@
   "use strict";
 
   var TAU = Math.PI * 2;
-  // Brand geometry in 32-unit logo space
-  var RING = { x: 17, y: 19, r: 7.2, w: 3.6 };
-  var DOT = { x: 12, y: 7.5, r: 2.8 };
+  // Proposal A (Convergent Orbit) geometry in 32-unit logo space:
+  // Open "b" stem (9.5, 6 -> 18.5) + orbital bowl centered at (17, 18.5) r=7.5 + convergence node at (18.3, 11.1)
+  var RING = { x: 17, y: 18.5, r: 7.5, w: 3.6, stemX: 9.5, stemTop: 6, openEnd: -0.61 };
+  var DOT = { x: 18.3, y: 11.1, r: 2.4 };
   var R_FAR = 7.4, R_MID = 5.6, R_NEAR = 3.9;
   var APPROACH_MS = 850, PAD = 3.5;
 
@@ -142,12 +143,12 @@
         ctx.restore();
       }
 
-      // 3. Market Rail (Buyniverse Outer Ring)
-      var grad = ctx.createLinearGradient(RING.x - 8, RING.y - 8, RING.x + 8, RING.y + 8);
+      // 3. Market Rail (Proposal A Convergent Orbit "b" stroke)
+      var grad = ctx.createLinearGradient(7, 5, 26, 27);
       grad.addColorStop(0, "#36e3c0");
-      grad.addColorStop(1, "#4d7cff");
+      grad.addColorStop(1, "#3f6af2");
 
-      // Outer dashed track
+      // Outer dashed track around bowl
       ctx.strokeStyle = css(accent, 0.22);
       ctx.lineWidth = 0.09;
       ctx.setLineDash([0.8, 1.2]);
@@ -156,21 +157,24 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Main structural ring
+      // Main structural Proposal A "b" path: vertical stem + open counter-clockwise orbital arc
       ctx.strokeStyle = grad;
       ctx.lineWidth = RING.w;
       ctx.lineCap = "round";
-      ctx.globalAlpha = 0.95;
+      ctx.lineJoin = "round";
+      ctx.globalAlpha = 0.96;
       ctx.beginPath();
-      ctx.arc(RING.x, RING.y, RING.r, 0, TAU);
+      ctx.moveTo(RING.stemX, RING.stemTop);
+      ctx.lineTo(RING.stemX, RING.y);
+      ctx.arc(RING.x, RING.y, RING.r, Math.PI, RING.openEnd, true);
       ctx.stroke();
       ctx.globalAlpha = 1;
 
-      // Precision tick marks along the ring perimeter
-      ctx.strokeStyle = "rgba(255,255,255,0.45)";
+      // Precision tick marks along the active orbital arc
+      ctx.strokeStyle = "rgba(255,255,255,0.42)";
       ctx.lineWidth = 0.08;
-      for (var k = 0; k < 12; k++) {
-        var tk = (k * TAU) / 12;
+      for (var k = 0; k < 9; k++) {
+        var tk = Math.PI - (k / 8) * (Math.PI - RING.openEnd);
         var cosK = Math.cos(tk), sinK = Math.sin(tk);
         ctx.beginPath();
         ctx.moveTo(RING.x + cosK * (RING.r - 0.8), RING.y + sinK * (RING.r - 0.8));

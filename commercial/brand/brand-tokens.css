@@ -1,0 +1,257 @@
+/*
+ * Buyniverse Corporate Brand System & Commercial Suite Tokens (v2.0 — 2026)
+ * Single visual source of truth for Brand Book, Whitepaper, One-Pagers,
+ * Pilot Proposal Generator, Investor Pitch Deck, Sales Playbook, and Hub.
+ */
+
+:root {
+  /* Core Brand Palette — Buyniverse Calm Executive */
+  --bn-night: #05070d;
+  --bn-night-2: #0a1020;
+  --bn-night-3: #10192f;
+  --bn-paper: #fbfcff;
+  --bn-canvas: #eef2f9;
+  --bn-surface: #ffffff;
+  --bn-surface-soft: #f3f6fc;
+
+  /* Brand Accents */
+  --bn-aurora: #3f6af2;
+  --bn-aurora-deep: #294fd0;
+  --bn-aurora-soft: #e9efff;
+  --bn-teal: #36e3c0;
+  --bn-teal-deep: #0c9f84;
+  --bn-teal-soft: #e3fbf5;
+
+  /* 5-Stage Semantic Palette (aligned to CONCEPT_NECESITO.md) */
+  --stage-publish: #3f6af2;
+  --stage-compete: #8b5cf6;
+  --stage-choose: #0ea5e9;
+  --stage-receive: #f59e0b;
+  --stage-pay: #0c9f84;
+
+  /* Ink & Hairlines */
+  --bn-ink: #0a0f1e;
+  --bn-ink-2: #424e68;
+  --bn-ink-3: #68758f;
+  --bn-hair: rgba(10, 15, 30, 0.09);
+  --bn-hair-strong: rgba(10, 15, 30, 0.16);
+  --bn-dark-ink: #eef2fb;
+  --bn-dark-ink-2: #9ba7c2;
+  --bn-dark-ink-3: #6f7c99;
+  --bn-dark-hair: rgba(255, 255, 255, 0.1);
+
+  /* Typography */
+  --font-display: "Sora", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* Geometry & Motion */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-soft: 0 18px 50px -24px rgba(10, 15, 30, 0.16);
+  --shadow-dark: 0 28px 70px -28px rgba(0, 0, 0, 0.55);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--bn-ink);
+  background: var(--bn-canvas);
+  line-height: 1.6;
+}
+
+/* Bilingual visibility rules */
+html[data-lang="es"] .lang-en { display: none !important; }
+html[data-lang="en"] .lang-es { display: none !important; }
+
+/* Shared Top Suite Toolbar (hidden when printing) */
+.bn-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: rgba(5, 7, 13, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--bn-dark-ink);
+}
+
+.bn-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.bn-toolbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.96rem;
+  letter-spacing: -0.03em;
+}
+
+.bn-toolbar__sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.bn-toolbar__doc {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bn-dark-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bn-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bn-lang-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bn-lang-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--bn-dark-ink-2);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+
+.bn-lang-toggle button.is-active {
+  background: var(--bn-aurora);
+  color: #ffffff;
+}
+
+.bn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 15px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s var(--ease), transform 0.15s var(--ease);
+}
+
+.bn-btn:hover { background: rgba(255, 255, 255, 0.12); }
+
+.bn-btn--primary {
+  background: linear-gradient(135deg, var(--bn-teal), var(--bn-aurora));
+  border-color: transparent;
+  color: #041017;
+  font-weight: 700;
+}
+
+.bn-btn--primary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* Reusable Typographic Helpers */
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.display { font-family: var(--font-display); letter-spacing: -0.04em; }
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bn-aurora);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: var(--r-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bn-aurora-soft);
+  color: var(--bn-aurora-deep);
+}
+
+.pill--teal { background: var(--bn-teal-soft); color: var(--bn-teal-deep); }
+.pill--dark { background: rgba(255,255,255,0.08); color: var(--bn-teal); border: 1px solid rgba(54,227,192,0.24); }
+
+/* Editorial Sheet Container */
+.bn-doc {
+  max-width: 960px;
+  margin: 32px auto 64px;
+  background: var(--bn-paper);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  border: 1px solid var(--bn-hair);
+}
+
+/* Print / PDF Export Standards */
+@media print {
+  @page {
+    size: letter;
+    margin: 14mm 15mm;
+  }
+  html, body {
+    background: #ffffff !important;
+    color: #0a0f1e !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .bn-toolbar, .no-print { display: none !important; }
+  .bn-doc {
+    max-width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .page-break { page-break-before: always; break-before: page; }
+  .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+}

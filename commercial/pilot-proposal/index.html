@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Generador de Propuesta de Piloto 30 Días</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand/brand-tokens.css" />
+  <script src="../brand/suite-runtime.js" defer></script>
+  <style>
+    .layout { max-width: 1280px; margin: 24px auto 64px; padding: 0 20px; display: grid; grid-template-columns: 330px 1fr; gap: 24px; align-items: start; }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+    .editor { position: sticky; top: 76px; padding: 22px; border-radius: var(--r-lg); background: #070a14; color: #eef2fb; border: 1px solid rgba(255,255,255,0.1); display: grid; gap: 13px; }
+    .editor h2 { margin: 0; font-family: var(--font-display); font-size: 1.05rem; color: #fff; }
+    .editor p { margin: 0; font-size: 0.76rem; color: var(--bn-dark-ink-2); }
+    .field { display: grid; gap: 5px; }
+    .field label { font-size: 0.72rem; font-weight: 700; color: var(--bn-dark-ink-2); text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--font-mono); }
+    .field input, .field select { width: 100%; height: 36px; padding: 0 11px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: #fff; font-family: var(--font-sans); font-size: 0.85rem; }
+    .field select option { background: #0a1020; color: #fff; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .proposal-doc { background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-soft); border: 1px solid var(--bn-hair); }
+    .prop-head { padding: 44px 48px 36px; background: radial-gradient(480px 300px at 90% 10%, rgba(63,106,242,0.3), transparent 65%), #05070d; color: #fff; }
+    .prop-head__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+    .prop-head h1 { font-family: var(--font-display); font-size: 2rem; line-height: 1.08; letter-spacing: -0.04em; margin: 10px 0 12px; }
+    .prop-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 0.78rem; color: var(--bn-dark-ink-2); }
+    .prop-meta strong { display: block; color: #fff; margin-top: 3px; font-size: 0.86rem; }
+    .prop-sec { padding: 34px 48px; border-top: 1px solid var(--bn-hair); }
+    .prop-sec h2 { font-family: var(--font-display); font-size: 1.28rem; letter-spacing: -0.03em; margin: 6px 0 12px; }
+    .sim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+    @media (max-width: 720px) { .sim-grid, .prop-meta { grid-template-columns: 1fr 1fr; } .prop-head, .prop-sec { padding: 24px; } }
+    .sim-kpi { padding: 16px; border-radius: 12px; background: var(--bn-surface-soft); border: 1px solid var(--bn-hair); }
+    .sim-kpi--hi { background: var(--bn-teal-soft); border-color: rgba(12,159,132,0.3); }
+    .sim-kpi small { display: block; font-size: 0.7rem; font-weight: 700; color: var(--bn-ink-3); text-transform: uppercase; font-family: var(--font-mono); }
+    .sim-kpi strong { display: block; font-family: var(--font-mono); font-size: 1.25rem; margin-top: 5px; color: var(--bn-ink); }
+    .sim-kpi--hi strong { color: var(--bn-teal-deep); }
+    .sim-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 12px; }
+    .sim-table th, .sim-table td { padding: 10px 12px; border-bottom: 1px solid var(--bn-hair); text-align: left; }
+    .sim-table th { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; color: var(--bn-ink-3); background: var(--bn-surface-soft); }
+    .sim-table td.num, .sim-table th.num { text-align: right; font-family: var(--font-mono); }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 32px; }
+    .sig-box { padding-top: 44px; border-top: 1px solid var(--bn-ink-3); font-size: 0.82rem; color: var(--bn-ink-2); }
+    .sig-box strong { display: block; color: var(--bn-ink); }
+    @media print {
+      .layout { display: block !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .editor { display: none !important; }
+      .proposal-doc { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html"><img src="../brand/assets/logo-a-orbit-tile.svg" width="28" height="28" alt="Buyniverse" /><span>Buyniverse</span></a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Generador de Propuesta de Piloto 30 Días" data-en="30-Day Pilot Proposal Generator">Generador de Propuesta de Piloto 30 Días</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="../index.html" data-es="Hub Comercial" data-en="Commercial Hub">Hub Comercial</a>
+      <div class="bn-lang-toggle"><button type="button" data-set-lang="es" class="is-active">ES</button><button type="button" data-set-lang="en">EN</button></div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Exportar Propuesta PDF" data-en="Export Proposal PDF">Exportar Propuesta PDF</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="editor no-print">
+      <h2 data-es="Personalizar propuesta" data-en="Customize Proposal">Personalizar propuesta</h2>
+      <p data-es="Al exportar a PDF este panel se oculta automáticamente. Las cifras usan la fórmula exacta de fee.php." data-en="This panel hides automatically on PDF export. Math mirrors server/modules/commerce/fee.php.">Al exportar a PDF este panel se oculta automáticamente. Las cifras usan la fórmula exacta de fee.php.</p>
+
+      <div class="field">
+        <label data-es="Empresa prospecto" data-en="Prospect Company">Empresa prospecto</label>
+        <input id="in-company" type="text" value="Grupo Industrial del Norte S.A. de C.V." />
+      </div>
+      <div class="field">
+        <label data-es="Contacto y cargo" data-en="Contact &amp; Title">Contacto y cargo</label>
+        <input id="in-contact" type="text" value="Lic. Sofía Morales · Dirección de Compras" />
+      </div>
+      <div class="field">
+        <label data-es="Categoría piloto" data-en="Pilot Category">Categoría piloto</label>
+        <input id="in-category" type="text" value="Hardware TI y Equipamiento Corporativo" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label data-es="Moneda" data-en="Currency">Moneda</label>
+          <select id="in-currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select>
+        </div>
+        <div class="field">
+          <label data-es="Eventos/año" data-en="Events/yr">Eventos/año</label>
+          <input id="in-events" type="number" min="1" max="500" value="18" />
+        </div>
+      </div>
+      <div class="field">
+        <label data-es="Gasto anual objetivo" data-en="Target Annual Spend">Gasto anual objetivo</label>
+        <input id="in-spend" type="number" min="10000" step="50000" value="18000000" />
+      </div>
+      <div class="field">
+        <label><span data-es="Supuesto ilustrativo de ahorro" data-en="Illustrative Saving Scenario">Supuesto ilustrativo de ahorro</span>: <span id="lbl-pct" class="mono" style="color:var(--bn-teal)">8%</span></label>
+        <input id="in-pct" type="range" min="1" max="20" step="0.5" value="8" />
+      </div>
+      <div class="field">
+        <label data-es="Ejecutivo Buyniverse" data-en="Buyniverse Lead">Ejecutivo Buyniverse</label>
+        <input id="in-rep" type="text" value="Equipo Comercial Buyniverse" />
+      </div>
+    </aside>
+
+    <article class="proposal-doc">
+      <section class="prop-head">
+        <div class="prop-head__top">
+          <img src="../brand/assets/logo-a-wordmark-dark.svg" height="34" alt="Buyniverse" />
+          <span class="pill pill--dark" data-es="PROPUESTA DE PILOTO · MODO INFORMATIVO" data-en="PILOT PROPOSAL · INFORMATIVE MODE">PROPUESTA DE PILOTO · MODO INFORMATIVO</span>
+        </div>
+        <span class="kicker" style="color:var(--bn-teal)" data-es="PROGRAMA DE VALIDACIÓN DE 30 DÍAS" data-en="30-DAY VALIDATION PROGRAM">PROGRAMA DE VALIDACIÓN DE 30 DÍAS</span>
+        <h1><span data-es="Propuesta de Piloto para" data-en="Pilot Proposal for">Propuesta de Piloto para</span> <span id="out-company">Grupo Industrial del Norte S.A. de C.V.</span></h1>
+        <div class="prop-meta">
+          <div><span data-es="DIRIGIDO A" data-en="PREPARED FOR">DIRIGIDO A</span><strong id="out-contact">Lic. Sofía Morales · Dirección de Compras</strong></div>
+          <div><span data-es="CATEGORÍA PRIORITARIA" data-en="PRIORITY CATEGORY">CATEGORÍA PRIORITARIA</span><strong id="out-category">Hardware TI y Equipamiento Corporativo</strong></div>
+          <div><span data-es="FECHA DE EMISIÓN" data-en="ISSUE DATE">FECHA DE EMISIÓN</span><strong id="out-date">2026</strong></div>
+        </div>
+      </section>
+
+      <section class="prop-sec avoid-break">
+        <span class="kicker">01 · <span data-es="ALCANCE DEL PILOTO (30 DÍAS · SIN COSTO DE COMISIÓN)" data-en="PILOT SCOPE (30 DAYS · ZERO COMMISSION BILLING)">ALCANCE DEL PILOTO (30 DÍAS · SIN COSTO DE COMISIÓN)</span></span>
+        <h2 data-es="Validar ahorro real sobre una categoría antes de activar cobro" data-en="Validate Real Savings in One Category Before Turning On Fees">Validar ahorro real sobre una categoría antes de activar cobro</h2>
+        <p class="lang-es" style="font-size:0.9rem;color:var(--bn-ink-2)">Durante 30 días calendario, <strong class="dyn-co"></strong> operará su categoría piloto en Buyniverse con la comisión configurada en <strong>modo informativo</strong>: el servidor calculará y mostrará la liquidación auditable de cada adjudicación, pero el importe facturable por comisiones será <strong>0</strong>. Proveedores invitados participan con <strong>0% comisión por adjudicación</strong>.</p>
+        <p class="lang-en" style="font-size:0.9rem;color:var(--bn-ink-2)">For 30 calendar days, <strong class="dyn-co"></strong> will run its pilot category on Buyniverse in <strong>informative fee mode</strong>: the server calculates and displays the exact auditable settlement per award while actual commission billing remains <strong>0</strong>. Invited suppliers participate with <strong>0% award commission</strong>.</p>
+      </section>
+
+      <section class="prop-sec avoid-break">
+        <span class="kicker">02 · <span data-es="ESCENARIO ECONÓMICO ILUSTRATIVO (FÓRMULA EXACTA DEL SERVIDOR)" data-en="ILLUSTRATIVE ECONOMIC SCENARIO (EXACT SERVER FORMULA)">ESCENARIO ECONÓMICO ILUSTRATIVO (FÓRMULA EXACTA DEL SERVIDOR)</span></span>
+        <h2 data-es="Proyección anual ilustrativa de retención neta" data-en="Illustrative Annual Net Retention Projection">Proyección anual ilustrativa de retención neta</h2>
+
+        <div class="sim-grid">
+          <div class="sim-kpi"><small data-es="Gasto anual" data-en="Annual Spend">Gasto anual</small><strong id="kpi-spend">—</strong></div>
+          <div class="sim-kpi"><small data-es="Ahorro bruto*" data-en="Gross Saving*">Ahorro bruto*</small><strong id="kpi-saving">—</strong></div>
+          <div class="sim-kpi"><small data-es="Comisión anual" data-en="Annual Fee">Comisión anual</small><strong id="kpi-fee">—</strong></div>
+          <div class="sim-kpi sim-kpi--hi"><small data-es="Se queda cliente" data-en="Buyer Keeps">Se queda cliente</small><strong id="kpi-kept">—</strong></div>
+        </div>
+
+        <table class="sim-table">
+          <thead>
+            <tr>
+              <th data-es="Concepto (modelo pos-piloto)" data-en="Line Item (Post-Pilot Model)">Concepto (modelo pos-piloto)</th>
+              <th class="num" data-es="Por evento promedio" data-en="Per Average Event">Por evento promedio</th>
+              <th class="num" data-es="Proyección anual" data-en="Annual Projection">Proyección anual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td data-es="Línea base promedio (presupuesto / mediana mercado)" data-en="Average baseline (budget / market median)">Línea base promedio (presupuesto / mediana mercado)</td><td class="num" id="tb-ev-base">—</td><td class="num" id="tb-yr-base">—</td></tr>
+            <tr><td data-es="Monto adjudicado estimado" data-en="Estimated awarded amount">Monto adjudicado estimado</td><td class="num" id="tb-ev-award">—</td><td class="num" id="tb-yr-award">—</td></tr>
+            <tr><td data-es="Ahorro verificado ilustrativo" data-en="Illustrative verified saving">Ahorro verificado ilustrativo</td><td class="num" id="tb-ev-save">—</td><td class="num" id="tb-yr-save">—</td></tr>
+            <tr><td><span data-es="Comisión Buyniverse" data-en="Buyniverse fee">Comisión Buyniverse</span> (<span id="tb-basis" class="mono">saving</span>)</td><td class="num" id="tb-ev-fee">—</td><td class="num" id="tb-yr-fee">—</td></tr>
+            <tr><td><strong data-es="Ahorro neto retenido por el cliente" data-en="Net savings retained by buyer">Ahorro neto retenido por el cliente</strong></td><td class="num" style="color:var(--bn-teal-deep);font-weight:700" id="tb-ev-net">—</td><td class="num" style="color:var(--bn-teal-deep);font-weight:700" id="tb-yr-net">—</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.75rem;color:var(--bn-ink-3);margin-top:12px" class="lang-es">*Cálculo ilustrativo ejecutado con los términos vigentes del servidor (25% hasta MXN 5M / USD 250k de ahorro acumulado en 12 meses, 20% sobre excedente; piso 0.4% mín. MXN 3,000 / USD 150 por adjudicación; tope 8%). No constituye promesa ni garantía de ahorro; los resultados reales dependen de las ofertas recibidas.</p>
+        <p style="font-size:0.75rem;color:var(--bn-ink-3);margin-top:12px" class="lang-en">*Illustrative calculation computed using live server terms (25% up to USD 250k / MXN 5M trailing 12-month savings, 20% above; 0.4% floor min. USD 150 / MXN 3,000 per award; 8% cap). Not a guarantee of savings; actual outcomes depend on live supplier bids.</p>
+      </section>
+
+      <section class="prop-sec page-break avoid-break">
+        <span class="kicker">03 · <span data-es="CRITERIOS DE ÉXITO Y ACEPTACIÓN DEL PILOTO" data-en="PILOT SUCCESS CRITERIA &amp; SIGN-OFF">CRITERIOS DE ÉXITO Y ACEPTACIÓN DEL PILOTO</span></span>
+        <h2 data-es="Qué mediremos al cierre del día 30" data-en="What We Measure on Day 30">Qué mediremos al cierre del día 30</h2>
+        <ul style="font-size:0.88rem;color:var(--bn-ink-2);display:grid;gap:8px;padding-left:20px">
+          <li data-es="Al menos 1 a 3 compras reales ejecutadas mediante RFQ sellado y/o subasta inversa en vivo con mínimo 2 proveedores." data-en="At least 1 to 3 live sourcing events completed via sealed RFQ and/or reverse auction with 2+ suppliers.">Al menos 1 a 3 compras reales ejecutadas mediante RFQ sellado y/o subasta inversa en vivo con mínimo 2 proveedores.</li>
+          <li data-es="Reporte de ahorro verificado contra línea base congelada (presupuesto o mediana de cotizaciones) y bitácora completa para Auditoría." data-en="Verified savings report against locked baseline (budget or quote median) plus complete audit trail.">Reporte de ahorro verificado contra línea base congelada (presupuesto o mediana de cotizaciones) y bitácora completa para Auditoría.</li>
+          <li data-es="Validación con Finanzas del régimen de comisión (ahorro, piso o tope) antes de acordar la transición opcional a modo de cobro." data-en="Finance sign-off on fee mechanics (saving, floor, or cap) prior to optional transition to production billing.">Validación con Finanzas del régimen de comisión (ahorro, piso o tope) antes de acordar la transición opcional a modo de cobro.</li>
+        </ul>
+
+        <div class="sig-grid">
+          <div class="sig-box">
+            <strong id="sig-company">Grupo Industrial del Norte S.A. de C.V.</strong>
+            <span id="sig-contact">Lic. Sofía Morales · Dirección de Compras</span>
+          </div>
+          <div class="sig-box">
+            <strong>Buyniverse Technologies</strong>
+            <span id="sig-rep">Equipo Comercial Buyniverse</span> · hi@buyniverse.com
+          </div>
+        </div>
+      </section>
+    </article>
+  </div>
+
+  <script>
+    function recalc() {
+      var S = window.BuyniverseSuite;
+      if (!S) return;
+      var company = document.getElementById("in-company").value.trim() || "Empresa Cliente";
+      var contact = document.getElementById("in-contact").value.trim() || "Dirección de Compras";
+      var category = document.getElementById("in-category").value.trim() || "Categoría Piloto";
+      var currency = document.getElementById("in-currency").value;
+      var events = Math.max(1, parseInt(document.getElementById("in-events").value, 10) || 1);
+      var spend = Math.max(1000, parseFloat(document.getElementById("in-spend").value) || 0);
+      var pct = parseFloat(document.getElementById("in-pct").value) || 8;
+      var rep = document.getElementById("in-rep").value.trim() || "Equipo Comercial Buyniverse";
+
+      document.getElementById("lbl-pct").textContent = pct.toFixed(1).replace(/\.0$/, "") + "%";
+      document.getElementById("out-company").textContent = company;
+      document.getElementById("sig-company").textContent = company;
+      document.getElementById("out-contact").textContent = contact;
+      document.getElementById("sig-contact").textContent = contact;
+      document.getElementById("out-category").textContent = category;
+      document.getElementById("sig-rep").textContent = rep;
+      document.querySelectorAll(".dyn-co").forEach(function (n) { n.textContent = company; });
+
+      var evBase = spend / events;
+      var evAward = evBase * (1 - pct / 100);
+      var trailing = 0;
+      var yrFeeCents = 0;
+      var yrSaveCents = 0;
+      var firstRes = null;
+
+      for (var i = 0; i < events; i++) {
+        var res = S.computeFee({
+          baselineCents: Math.round(evBase * 100),
+          awardedCents: Math.round(evAward * 100),
+          trailingSavingCents: trailing,
+          currency: currency
+        });
+        if (i === 0) firstRes = res;
+        trailing += res.savingCents;
+        yrSaveCents += res.savingCents;
+        yrFeeCents += res.feeCents;
+      }
+
+      var yrNet = Math.max(0, (yrSaveCents - yrFeeCents) / 100);
+      var keepPct = yrSaveCents > 0 ? Math.round(((yrSaveCents - yrFeeCents) / yrSaveCents) * 100) : 0;
+
+      document.getElementById("kpi-spend").textContent = S.formatMoney(spend, currency);
+      document.getElementById("kpi-saving").textContent = S.formatMoney(yrSaveCents / 100, currency);
+      document.getElementById("kpi-fee").textContent = S.formatMoney(yrFeeCents / 100, currency);
+      document.getElementById("kpi-kept").textContent = keepPct + "% (" + S.formatMoney(yrNet, currency) + ")";
+
+      document.getElementById("tb-ev-base").textContent = S.formatMoney(evBase, currency);
+      document.getElementById("tb-yr-base").textContent = S.formatMoney(spend, currency);
+      document.getElementById("tb-ev-award").textContent = S.formatMoney(evAward, currency);
+      document.getElementById("tb-yr-award").textContent = S.formatMoney(evAward * events, currency);
+      document.getElementById("tb-ev-save").textContent = S.formatMoney(firstRes.savingCents / 100, currency);
+      document.getElementById("tb-yr-save").textContent = S.formatMoney(yrSaveCents / 100, currency);
+      document.getElementById("tb-ev-fee").textContent = S.formatMoney(firstRes.feeCents / 100, currency);
+      document.getElementById("tb-yr-fee").textContent = S.formatMoney(yrFeeCents / 100, currency);
+      document.getElementById("tb-ev-net").textContent = S.formatMoney(firstRes.netKeptCents / 100, currency);
+      document.getElementById("tb-yr-net").textContent = S.formatMoney(yrNet, currency);
+      document.getElementById("tb-basis").textContent = firstRes.basis;
+
+      var locale = S.getLang() === "en" ? "en-US" : "es-MX";
+      document.getElementById("out-date").textContent = new Intl.DateTimeFormat(locale, { year: "numeric", month: "long", day: "numeric" }).format(new Date());
+    }
+
+    window.onBuyniverseLangChange = recalc;
+    document.addEventListener("DOMContentLoaded", function () {
+      ["in-company", "in-contact", "in-category", "in-currency", "in-events", "in-spend", "in-pct", "in-rep"].forEach(function (id) {
+        document.getElementById(id).addEventListener("input", recalc);
+        document.getElementById(id).addEventListener("change", recalc);
+      });
+      setTimeout(recalc, 30);
+    });
+  </script>
+</body>
+</html>

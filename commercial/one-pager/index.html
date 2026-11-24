@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · One-Pager Ejecutivo (Compradores B2B)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../brand/brand-tokens.css" />
+  <script src="../brand/suite-runtime.js" defer></script>
+  <style>
+    .sheet { max-width: 860px; margin: 28px auto 56px; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-soft); border: 1px solid var(--bn-hair); }
+    .hero { padding: 34px 40px 28px; background: radial-gradient(420px 260px at 90% 10%, rgba(63,106,242,0.3), transparent 65%), #05070d; color: #fff; }
+    .hero__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .hero h1 { font-family: var(--font-display); font-size: 1.95rem; line-height: 1.08; letter-spacing: -0.04em; margin: 8px 0 10px; }
+    .hero p { margin: 0; color: var(--bn-dark-ink-2); font-size: 0.9rem; max-width: 680px; }
+    .body { padding: 28px 40px 32px; display: grid; gap: 22px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .kpi { padding: 14px; border-radius: 12px; background: var(--bn-surface-soft); border: 1px solid var(--bn-hair); }
+    .kpi strong { display: block; font-family: var(--font-mono); font-size: 1.18rem; color: var(--bn-aurora-deep); }
+    .kpi span { display: block; font-size: 0.72rem; color: var(--bn-ink-2); margin-top: 3px; line-height: 1.3; }
+    .stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .st { padding: 12px; border-radius: 10px; background: #fff; border: 1px solid var(--bn-hair); }
+    .st small { font-family: var(--font-mono); font-weight: 700; font-size: 0.68rem; color: var(--bn-aurora); }
+    .st strong { display: block; font-size: 0.82rem; margin: 3px 0; }
+    .st span { display: block; font-size: 0.7rem; color: var(--bn-ink-2); line-height: 1.3; }
+    .cols { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    .panel { padding: 18px 20px; border-radius: 14px; border: 1px solid var(--bn-hair); background: var(--bn-surface-soft); }
+    .panel--dark { background: #070a14; color: #eef2fb; border-color: rgba(255,255,255,0.1); }
+    .panel h2 { font-family: var(--font-display); font-size: 0.98rem; margin: 0 0 10px; }
+    .panel ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.8rem; }
+    .panel--dark ul { color: #cbd5e1; }
+    .cta-strip { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 22px; border-radius: 14px; background: linear-gradient(135deg, #0b1224, #14224a); color: #fff; }
+    .cta-strip strong { display: block; font-family: var(--font-display); font-size: 0.96rem; }
+    .cta-strip span { font-size: 0.78rem; color: var(--bn-dark-ink-2); }
+    @media (max-width: 720px) { .kpis, .stages, .cols { grid-template-columns: 1fr; } .hero, .body { padding: 24px; } }
+    @media print { .sheet { margin: 0; border: 0; border-radius: 0; box-shadow: none; max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="../index.html"><img src="../brand/assets/logo-a-orbit-tile.svg" width="28" height="28" alt="Buyniverse" /><span>Buyniverse</span></a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="One-Pager Ejecutivo · Compradores B2B" data-en="Executive One-Pager · B2B Buyers">One-Pager Ejecutivo · Compradores B2B</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <a class="bn-btn" href="../index.html" data-es="Hub Comercial" data-en="Commercial Hub">Hub Comercial</a>
+      <div class="bn-lang-toggle"><button type="button" data-set-lang="es" class="is-active">ES</button><button type="button" data-set-lang="en">EN</button></div>
+      <button type="button" class="bn-btn bn-btn--primary" data-print-doc data-es="Imprimir / PDF (1 hoja)" data-en="Print / PDF (1 Page)">Imprimir / PDF (1 hoja)</button>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <section class="hero">
+      <div class="hero__top">
+        <img src="../brand/assets/logo-a-wordmark-dark.svg" height="32" alt="Buyniverse" />
+        <span class="pill pill--dark" data-es="DATASHEET EJECUTIVO · 2026" data-en="EXECUTIVE DATASHEET · 2026">DATASHEET EJECUTIVO · 2026</span>
+      </div>
+      <h1 data-es="Publica una vez y haz que tus proveedores compitan por ti." data-en="Publish once and let suppliers compete for your business.">Publica una vez y haz que tus proveedores compitan por ti.</h1>
+      <p class="lang-es">Plataforma B2B de RFQ sellado, subastas inversas en vivo y control fiscal CFDI 4.0. Diseñada para CFOs y Direcciones de Compras que exigen ahorro medible en servidor y evidencia lista para auditoría.</p>
+      <p class="lang-en">B2B platform for sealed RFQs, live reverse auctions, and CFDI 4.0 fiscal control. Built for CFOs and Procurement Directors demanding server-verified savings and audit-ready evidence.</p>
+    </section>
+
+    <div class="body">
+      <section class="kpis">
+        <div class="kpi"><strong>3 / 4</strong><span data-es="Te quedas con 3 de cada 4 pesos ahorrados (tasa 25%)" data-en="Keep 3 of every 4 dollars saved (25% standard rate)">Te quedas con 3 de cada 4 pesos ahorrados (tasa 25%)</span></div>
+        <div class="kpi"><strong>0%</strong><span data-es="Comisión a proveedores (no inflan cotizaciones)" data-en="Supplier award commission (no inflated quotes)">Comisión a proveedores (no inflan cotizaciones)</span></div>
+        <div class="kpi"><strong>8%</strong><span data-es="Tope máximo sobre el monto adjudicado" data-en="Hard fee cap on awarded transaction value">Tope máximo sobre el monto adjudicado</span></div>
+        <div class="kpi"><strong>MXN 0</strong><span data-es="Sin adjudicación no hay cobro · Piloto 30 días gratis" data-en="No award, no fee · 30-day informative pilot">Sin adjudicación no hay cobro · Piloto 30 días gratis</span></div>
+      </section>
+
+      <section>
+        <div class="kicker" style="margin-bottom:10px" data-es="UN SOLO FLUJO DE 5 ETAPAS" data-en="ONE UNIFIED 5-STAGE WORKFLOW">UN SOLO FLUJO DE 5 ETAPAS</div>
+        <div class="stages">
+          <div class="st"><small>01</small><strong data-es="Publicas" data-en="Publish">Publicas</strong><span data-es="Alcance, presupuesto bloqueado y aprobadores." data-en="Scope, locked budget, and approval rules.">Alcance, presupuesto bloqueado y aprobadores.</span></div>
+          <div class="st"><small>02</small><strong data-es="Compiten" data-en="Compete">Compiten</strong><span data-es="RFQ sellado y/o subasta inversa con anti-sniping." data-en="Sealed RFQ and/or live auction with anti-sniping.">RFQ sellado y/o subasta inversa con anti-sniping.</span></div>
+          <div class="st"><small>03</small><strong data-es="Eliges" data-en="Choose">Eliges</strong><span data-es="Comparativa ponderada y adjudicación inmutable." data-en="Weighted comparison and immutable award record.">Comparativa ponderada y adjudicación inmutable.</span></div>
+          <div class="st"><small>04</small><strong data-es="Recibes" data-en="Receive">Recibes</strong><span data-es="Orden de compra, recepción y bitácora." data-en="Purchase order, warehouse receipt, and logs.">Orden de compra, recepción y bitácora.</span></div>
+          <div class="st"><small>05</small><strong data-es="Pagas" data-en="Pay">Pagas</strong><span data-es="Conciliación 3-Way Match y CFDI 4.0." data-en="3-Way Match and CFDI 4.0 invoicing.">Conciliación 3-Way Match y CFDI 4.0.</span></div>
+        </div>
+      </section>
+
+      <section class="cols">
+        <div class="panel">
+          <h2 data-es="Modelo comercial transparente (en servidor)" data-en="Transparent Commercial Model (Server-Computed)">Modelo comercial transparente (en servidor)</h2>
+          <ul class="lang-es">
+            <li><strong>Base objetiva:</strong> en RFQ sellado es el mayor entre tu presupuesto y la mediana del mercado; no se altera tras recibir ofertas.</li>
+            <li><strong>Tasa por tramo:</strong> 25% del ahorro verificado hasta MXN 5M acumulados/año y 20% por el excedente.</li>
+            <li><strong>Piso y tope claros:</strong> piso operativo de 0.4% (mín. MXN 3,000) por adjudicación y tope máximo del 8% del monto adjudicado.</li>
+            <li><strong>Sin contratos forzosos:</strong> sin adjudicación no se factura comisión.</li>
+          </ul>
+          <ul class="lang-en">
+            <li><strong>Objective baseline:</strong> in sealed RFQs, max(budget, market median)—locked before quotes open.</li>
+            <li><strong>Tiered rate:</strong> 25% of verified savings up to USD 250k/yr trailing savings, 20% above.</li>
+            <li><strong>Clear floor &amp; cap:</strong> 0.4% operational floor (min. USD 150) per award, capped at 8% of awarded value.</li>
+            <li><strong>Zero lock-in:</strong> no award means zero fee.</li>
+          </ul>
+        </div>
+        <div class="panel panel--dark">
+          <h2 style="color:#fff" data-es="Seguridad y cumplimiento corporativo" data-en="Enterprise Security &amp; Compliance">Seguridad y cumplimiento corporativo</h2>
+          <ul class="lang-es">
+            <li><strong>Google SSO en servidor:</strong> verificación de token, nonce único y CSRF; sin contraseñas propias.</li>
+            <li><strong>Aislamiento total:</strong> control por empresa, sucursal y rol; llaves fiscales CSD cifradas.</li>
+            <li><strong>Libro inmutable:</strong> pujas, cotizaciones y liquidaciones protegidas contra edición posterior.</li>
+            <li><strong>Continuidad:</strong> respaldos diarios verificados y monitoreo cada 5 minutos.</li>
+          </ul>
+          <ul class="lang-en">
+            <li><strong>Server-verified Google SSO:</strong> cryptographic token validation, single-use nonce, CSRF protection.</li>
+            <li><strong>Strict multi-tenancy:</strong> company, branch, and role isolation; encrypted fiscal CSD keys.</li>
+            <li><strong>Immutable ledger:</strong> bids, quotes, and settlements locked against retroactive tampering.</li>
+            <li><strong>Reliability:</strong> checksum-verified daily backups and 5-minute automated health checks.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="cta-strip">
+        <div>
+          <strong data-es="Piloto de 30 días en modo informativo (MXN 0 en comisiones)" data-en="30-Day Informative Pilot (USD 0 Commission Billing)">Piloto de 30 días en modo informativo (MXN 0 en comisiones)</strong>
+          <span data-es="Prueba 1 categoría real con tus proveedores y mide el impacto antes de activar cobro." data-en="Test 1 live spend category with your suppliers and measure verified impact before activating fees.">Prueba 1 categoría real con tus proveedores y mide el impacto antes de activar cobro.</span>
+        </div>
+        <div class="mono" style="text-align:right;font-size:0.78rem;color:var(--bn-teal);white-space:nowrap">
+          buyniverse.com<br/>hi@buyniverse.com
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

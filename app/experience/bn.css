@@ -152,7 +152,7 @@ html.dark .bn, .bn .bn-cinema {
 .bn-logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--bn-ink); }
 .bn-logo img { display: block; }
 .bn-logo__mark { display: block; flex: none; overflow: visible; }
-.bn-logo__orbit { transform-origin: 17px 19px; transform-box: view-box; }
+.bn-logo__orbit { transform-origin: 17px 18.5px; transform-box: view-box; }
 .bn-logo:hover .bn-logo__orbit, .bn-logo:focus-visible .bn-logo__orbit { animation: bn-orbit 1.6s cubic-bezier(.5, 0, .2, 1) infinite; }
 @keyframes bn-orbit { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .bn-logo__orbit { animation: none !important; } }

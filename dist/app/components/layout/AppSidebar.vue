@@ -1,10 +1,10 @@
 <template>
   <aside class="ws-side" :class="{ 'is-open': mobileOpen }" :aria-label="store.t('Main navigation')">
     <RouterLink to="/dashboard" class="ws-brand" :aria-label="store.t('Buyniverse home')" @click="$emit('close-mobile')">
-      <svg viewBox="0 0 32 32" aria-hidden="true">
-        <defs><linearGradient id="ws-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36e3c0" /><stop offset="1" stop-color="#4d7cff" /></linearGradient></defs>
-        <circle cx="17" cy="19" r="7" fill="none" stroke="url(#ws-ring)" stroke-width="4" />
-        <g class="ws-brand__dot"><circle cx="12" cy="7.5" r="3" fill="currentColor" /></g>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><linearGradient id="ws-ring" x1="7" y1="5" x2="26" y2="27" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#36e3c0" /><stop offset="1" stop-color="#3f6af2" /></linearGradient></defs>
+        <path d="M9.5 6v12.5a7.5 7.5 0 1 0 13.65-4.3" stroke="url(#ws-ring)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+        <g class="ws-brand__dot"><circle cx="18.3" cy="11.1" r="2.4" fill="currentColor" /></g>
       </svg>
       <span>buy<b>niverse</b></span>
     </RouterLink>

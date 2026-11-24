@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es-MX" data-lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyniverse · Hub de Herramientas Comerciales e Identidad Corporativa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="brand/brand-tokens.css" />
+  <script src="brand/suite-runtime.js" defer></script>
+  <style>
+    body {
+      background:
+        radial-gradient(760px 440px at 88% 0%, rgba(63,106,242,0.22), transparent 65%),
+        radial-gradient(640px 400px at 8% 100%, rgba(54,227,192,0.12), transparent 65%),
+        #05070d;
+      color: var(--bn-dark-ink);
+      min-height: 100vh;
+    }
+    .hub { max-width: 1180px; margin: 0 auto; padding: 48px 24px 88px; }
+    .hub-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 44px; padding-bottom: 32px; border-bottom: 1px solid var(--bn-dark-hair); }
+    .hub-hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.1rem); line-height: 1.05; letter-spacing: -0.045em; margin: 12px 0 12px; color: #fff; max-width: 760px; }
+    .hub-hero p { margin: 0; color: var(--bn-dark-ink-2); max-width: 680px; font-size: 0.98rem; }
+    .sec-title { display: flex; align-items: center; justify-content: space-between; margin: 40px 0 16px; }
+    .sec-title h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0; color: #fff; letter-spacing: -0.03em; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+    .tool {
+      display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
+      padding: 24px; border-radius: 20px; text-decoration: none; color: inherit;
+      background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.018));
+      border: 1px solid rgba(255,255,255,0.09);
+      transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+    }
+    .tool:hover { transform: translateY(-3px); border-color: rgba(54,227,192,0.45); background: rgba(255,255,255,0.065); }
+    .tool--featured { border-color: rgba(63,106,242,0.45); box-shadow: 0 24px 60px -30px rgba(63,106,242,0.4); }
+    .tool__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .tag { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.07); color: var(--bn-teal); text-transform: uppercase; letter-spacing: 0.06em; }
+    .tool h3 { font-family: var(--font-display); font-size: 1.15rem; margin: 12px 0 6px; color: #fff; letter-spacing: -0.025em; }
+    .tool p { margin: 0; font-size: 0.85rem; color: var(--bn-dark-ink-2); line-height: 1.5; }
+    .tool__foot { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07); font-family: var(--font-mono); font-size: 0.72rem; color: var(--bn-dark-ink-3); }
+    .tool__go { color: var(--bn-teal); font-weight: 700; }
+    .guard-banner { margin-top: 48px; padding: 20px 24px; border-radius: 16px; background: rgba(54,227,192,0.07); border: 1px solid rgba(54,227,192,0.25); font-size: 0.84rem; color: #c7f9ed; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; }
+  </style>
+</head>
+<body>
+  <header class="bn-toolbar">
+    <div class="bn-toolbar__left">
+      <a class="bn-toolbar__brand" href="index.html">
+        <img src="brand/assets/logo-a-orbit-tile.svg" width="28" height="28" alt="Buyniverse" />
+        <span>Buyniverse</span>
+      </a>
+      <span class="bn-toolbar__sep"></span>
+      <span class="bn-toolbar__doc" data-es="Suite Comercial e Identidad Corporativa v2.0" data-en="Commercial Suite &amp; Corporate Identity v2.0">Suite Comercial e Identidad Corporativa v2.0</span>
+    </div>
+    <div class="bn-toolbar__actions">
+      <div class="bn-lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-set-lang="es" class="is-active">ES</button>
+        <button type="button" data-set-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="hub">
+    <section class="hub-hero">
+      <div>
+        <span class="kicker" style="color:var(--bn-teal)" data-es="CENTRO DE ACTIVOS COMERCIALES · ES / EN" data-en="COMMERCIAL ASSETS HUB · ES / EN">CENTRO DE ACTIVOS COMERCIALES · ES / EN</span>
+        <h1 data-es="Suite Comercial e Identidad Corporativa de Buyniverse" data-en="Buyniverse Commercial Suite &amp; Corporate Identity">Suite Comercial e Identidad Corporativa de Buyniverse</h1>
+        <p class="lang-es">Todas las herramientas comerciales, editoriales, interactivas y de marca unificadas bajo la nueva identidad <strong>Órbita Convergente v2.0</strong>, en español e inglés, con exportación directa a PDF y presentación HyperFrames.</p>
+        <p class="lang-en">Every commercial, editorial, interactive, and brand asset unified under the new <strong>Convergent Orbit v2.0</strong> identity, fully bilingual (ES/EN), ready for direct PDF export and HyperFrames presentation/video rendering.</p>
+      </div>
+      <img src="brand/assets/logo-a-wordmark-dark.svg" height="44" alt="Buyniverse" />
+    </section>
+
+    <!-- BRANDING -->
+    <div class="sec-title">
+      <h2 data-es="1. Identidad Corporativa y Logotipo" data-en="1. Corporate Identity &amp; Logo System">1. Identidad Corporativa y Logotipo</h2>
+      <span class="mono" style="font-size:0.74rem;color:var(--bn-dark-ink-3)">assets/brand/ synced</span>
+    </div>
+    <section class="grid">
+      <a class="tool tool--featured" href="brand/logo-explorations.html">
+        <div>
+          <div class="tool__top"><span class="tag">LOGO · 3 OPTIONS</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">ES / EN</span></div>
+          <h3 data-es="Tablero de 3 Propuestas de Logo" data-en="3 Logo Proposals Exploration Board">Tablero de 3 Propuestas de Logo</h3>
+          <p data-es="Comparativa visual en oscuro, claro, monocromo, favicon 16px, cabecera de app y matriz de decisión (Propuesta A activa)." data-en="Side-by-side comparison across dark, light, monochrome, 16px favicon, app header, and decision rubric (Proposal A active).">Comparativa visual en oscuro, claro, monocromo, favicon 16px, cabecera de app y matriz de decisión (Propuesta A activa).</p>
+        </div>
+        <div class="tool__foot"><span>SVG + PDF</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool" href="brand/brand-book.html">
+        <div>
+          <div class="tool__top"><span class="tag">BRAND BOOK v2.0</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">ES / EN</span></div>
+          <h3 data-es="Manual de Identidad Corporativa" data-en="Corporate Brand Book">Manual de Identidad Corporativa</h3>
+          <p data-es="Logotipos, área de resguardo, paleta Calm Executive, tipografía, guardrails legales/comerciales y preview Open Graph." data-en="Logos, clearspace, Calm Executive palette, typography, commercial compliance guardrails, and Open Graph preview.">Logotipos, área de resguardo, paleta Calm Executive, tipografía, guardrails legales/comerciales y preview Open Graph.</p>
+        </div>
+        <div class="tool__foot"><span>HTML → PDF</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool" href="brand/assets/email-signature.html">
+        <div>
+          <div class="tool__top"><span class="tag">STATIONERY</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">GMAIL / OUTLOOK</span></div>
+          <h3 data-es="Firma de Correo Corporativa" data-en="Corporate Email Signature">Firma de Correo Corporativa</h3>
+          <p data-es="Firma HTML lista para copiar y pegar con el nuevo ícono oficial, enlace a la calculadora de ahorro y propuesta de valor." data-en="Copy-ready HTML signature featuring the new master mark, savings calculator link, and positioning tagline.">Firma HTML lista para copiar y pegar con el nuevo ícono oficial, enlace a la calculadora de ahorro y propuesta de valor.</p>
+        </div>
+        <div class="tool__foot"><span>HTML Ready</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+    </section>
+
+    <!-- PRESENTATIONS & WHITEPAPER -->
+    <div class="sec-title">
+      <h2 data-es="2. Whitepaper y Presentaciones Ejecutivas" data-en="2. Whitepaper &amp; Executive Presentations">2. Whitepaper y Presentaciones Ejecutivas</h2>
+      <span class="mono" style="font-size:0.74rem;color:var(--bn-dark-ink-3)">HTML · PDF · HYPERFRAMES</span>
+    </div>
+    <section class="grid">
+      <a class="tool tool--featured" href="whitepaper/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">WHITEPAPER</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">ES / EN</span></div>
+          <h3 data-es="Whitepaper Institucional y Técnico" data-en="Institutional &amp; Technical Whitepaper">Whitepaper Institucional y Técnico</h3>
+          <p data-es="Documento editorial completo con diagramas SVG del ciclo «Necesito», subasta inversa, fórmula de ahorro verificado con piso, CFDI 4.0 y piloto 30 días." data-en="Full editorial whitepaper with SVG lifecycle diagrams, reverse auction curve, verified-savings-with-floor math, CFDI 4.0 security, and 30-day pilot roadmap.">Documento editorial completo con diagramas SVG del ciclo «Necesito», subasta inversa, fórmula de ahorro verificado con piso, CFDI 4.0 y piloto 30 días.</p>
+        </div>
+        <div class="tool__foot"><span>Web + PDF Print</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool tool--featured" href="../tools/commercial-deck/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">HYPERFRAMES 16:9</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">DECK + MP4</span></div>
+          <h3 data-es="Presentación Comercial HyperFrames" data-en="HyperFrames Commercial Presentation">Presentación Comercial HyperFrames</h3>
+          <p data-es="Presentación animada con GSAP + HyperFrames (10 escenas 1920×1080): navegable en vivo con teclado o renderizable a MP4 determinista." data-en="GSAP + HyperFrames animated deck (10 scenes at 1920×1080): live keyboard-navigable presentation or deterministic MP4 video export.">Presentación animada con GSAP + HyperFrames (10 escenas 1920×1080): navegable en vivo con teclado o renderizable a MP4 determinista.</p>
+        </div>
+        <div class="tool__foot"><span>Interactive + Render</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool" href="investor-deck/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">INVESTOR DECK</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">10 SLIDES</span></div>
+          <h3 data-es="Investor Pitch Deck (16:9)" data-en="Investor Pitch Deck (16:9)">Investor Pitch Deck (16:9)</h3>
+          <p data-es="Deck de 10 diapositivas para ángeles y VCs: problema, solución, moat técnico verificado, modelo de negocio, GTM y hoja de ruta." data-en="10-slide pitch deck for angels &amp; VCs: problem, solution, built technical moat, business model, GTM wedge, and roadmap.">Deck de 10 diapositivas para ángeles y VCs: problema, solución, moat técnico verificado, modelo de negocio, GTM y hoja de ruta.</p>
+        </div>
+        <div class="tool__foot"><span>Present Mode + PDF</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+    </section>
+
+    <!-- SALES ENABLEMENT -->
+    <div class="sec-title">
+      <h2 data-es="3. Kit de Prospección, Ventas y Cierre de Pilotos" data-en="3. Sales Enablement &amp; Pilot Closing Kit">3. Kit de Prospección, Ventas y Cierre de Pilotos</h2>
+      <span class="mono" style="font-size:0.74rem;color:var(--bn-dark-ink-3)">BUYERS + SUPPLIERS</span>
+    </div>
+    <section class="grid">
+      <a class="tool" href="one-pager/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">BUYER 1-PAGER</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">1 PAGE PDF</span></div>
+          <h3 data-es="One-Pager Ejecutivo (Compradores)" data-en="Executive One-Pager (Buyers)">One-Pager Ejecutivo (Compradores)</h3>
+          <p data-es="Datasheet de 1 hoja listo para adjuntar en primer contacto por correo o WhatsApp con CFOs y Directores de Compras." data-en="1-page executive datasheet built for first-touch email or WhatsApp outreach to CFOs and Procurement Directors.">Datasheet de 1 hoja listo para adjuntar en primer contacto por correo o WhatsApp con CFOs y Directores de Compras.</p>
+        </div>
+        <div class="tool__foot"><span>1-Sheet Print</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool" href="supplier-one-pager/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">SUPPLIER 1-PAGER</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">0% FEE</span></div>
+          <h3 data-es="Ficha de Valor (Proveedores)" data-en="Supplier Value One-Pager">Ficha de Valor (Proveedores)</h3>
+          <p data-es="Hoja de onboarding para proveedores: 0% comisión por adjudicación, competencia justa y plan opcional Proveedor Verificado." data-en="Supplier onboarding sheet: 0% award commission, sealed fair competition, and optional Verified Supplier tier.">Hoja de onboarding para proveedores: 0% comisión por adjudicación, competencia justa y plan opcional Proveedor Verificado.</p>
+        </div>
+        <div class="tool__foot"><span>1-Sheet Print</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool tool--featured" href="pilot-proposal/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">INTERACTIVE PDF</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">FEE.PHP PARITY</span></div>
+          <h3 data-es="Generador de Propuesta de Piloto" data-en="Interactive Pilot Proposal Generator">Generador de Propuesta de Piloto</h3>
+          <p data-es="Personaliza cliente, categoría y gasto anual para calcular la proyección con la fórmula exacta del servidor y exportar la propuesta en PDF." data-en="Customize prospect, category, and annual spend to compute exact server-parity fee projections and export a client-ready PDF proposal.">Personaliza cliente, categoría y gasto anual para calcular la proyección con la fórmula exacta del servidor y exportar la propuesta en PDF.</p>
+        </div>
+        <div class="tool__foot"><span>Dynamic → PDF</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+
+      <a class="tool" href="sales-kit/index.html">
+        <div>
+          <div class="tool__top"><span class="tag">PLAYBOOK</span><span class="mono" style="font-size:0.7rem;color:var(--bn-dark-ink-3)">COPY-READY</span></div>
+          <h3 data-es="Playbook, Objeciones y Outreach" data-en="Sales Playbook, Battlecards &amp; Outreach">Playbook, Objeciones y Outreach</h3>
+          <p data-es="Battlecards por perfil (CFO, Compras, TI, Proveedor), correos y WhatsApps listos para copiar, y guion de demo de 15 minutos." data-en="Role battlecards (CFO, Procurement, IT, Supplier), copy-ready email/WhatsApp scripts, and 15-minute live demo playbook.">Battlecards por perfil (CFO, Compras, TI, Proveedor), correos y WhatsApps listos para copiar, y guion de demo de 15 minutos.</p>
+        </div>
+        <div class="tool__foot"><span>Battlecards + Scripts</span><span class="tool__go" data-es="Abrir →" data-en="Open →">Abrir →</span></div>
+      </a>
+    </section>
+
+    <div class="guard-banner">
+      <span class="lang-es"><strong>Cumplimiento verificado:</strong> Todas las cifras de esta suite coinciden con <code>server/modules/commerce/fee.php</code> y <code>docs/auditoria-2026-10.md</code> (sin promesas falsas de ahorro ni menciones de escrow no implementado).</span>
+      <span class="lang-en"><strong>Compliance verified:</strong> All figures across this suite match <code>server/modules/commerce/fee.php</code> and <code>docs/auditoria-2026-10.md</code> (zero guaranteed-savings claims and zero unimplemented escrow claims).</span>
+      <span class="mono" style="font-size:0.72rem;opacity:0.8">v2.0 · 2026</span>
+    </div>
+  </main>
+</body>
+</html>
